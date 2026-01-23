@@ -1,0 +1,6 @@
+{
+  "name": "auth0",
+  "displayName": "Auth0 Skills",
+  "version": "1.0.0",
+  "description": "Essential Auth0 skills including quickstarts, migration from other providers, and Multi-Factor Authentication (MFA)."
+}

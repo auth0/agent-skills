@@ -1,0 +1,46 @@
+{
+  "name": "auth0-agent-skills",
+  "owner": {
+    "name": "Auth0",
+    "email": "support@auth0.com"
+  },
+  "plugins": [
+    {
+      "name": "auth0",
+      "source": "plugins/auth0",
+      "description": "Essential Auth0 skills including quickstarts, migration from other providers, and Multi-Factor Authentication (MFA).",
+      "version": "1.0.0",
+      "repository": "https://github.com/auth0/agent-skills.git",
+      "license": "Apache-2.0",
+      "author": {
+        "name": "Auth0",
+        "email": "support@auth0.com"
+      },
+      "keywords": ["auth0", "quickstart", "migration", "mfa", "security"],
+      "category": "authentication"
+    },
+    {
+      "name": "auth0-sdks",
+      "source": "plugins/auth0-sdks",
+      "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Angular, Express, and React Native with complete implementation guides.",
+      "version": "1.0.0",
+      "repository": "https://github.com/auth0/agent-skills.git",
+      "license": "Apache-2.0",
+      "author": {
+        "name": "Auth0",
+        "email": "support@auth0.com"
+      },
+      "keywords": [
+        "auth0",
+        "sdk",
+        "react",
+        "nextjs",
+        "vue",
+        "angular",
+        "express",
+        "react-native"
+      ],
+      "category": "sdk"
+    }
+  ]
+}
