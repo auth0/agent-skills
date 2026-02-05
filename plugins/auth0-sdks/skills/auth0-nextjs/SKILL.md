@@ -68,13 +68,51 @@ export const auth0 = new Auth0Client({
 });
 ```
 
-Create `middleware.ts` at project root:
+**Middleware Configuration (Next.js 15 vs 16):**
+
+**Next.js 15** - Create `middleware.ts` at project root:
 
 ```typescript
 import { NextRequest } from 'next/server';
 import { auth0 } from './lib/auth0';
 
 export async function middleware(request: NextRequest) {
+  return await auth0.middleware(request);
+}
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+  ],
+};
+```
+
+**Next.js 16** - You have two options:
+
+**Option 1:** Use `middleware.ts` (same as Next.js 15):
+
+```typescript
+import { NextRequest } from 'next/server';
+import { auth0 } from './lib/auth0';
+
+export async function middleware(request: NextRequest) {
+  return await auth0.middleware(request);
+}
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+  ],
+};
+```
+
+**Option 2:** Use `proxy.ts` at project root:
+
+```typescript
+import { NextRequest } from 'next/server';
+import { auth0 } from './lib/auth0';
+
+export async function proxy(request: NextRequest) {
   return await auth0.middleware(request);
 }
 
@@ -183,7 +221,7 @@ Visit `http://localhost:3000` and test the login flow.
 |---------|-----|
 | Using v3 environment variables | v4 uses `APP_BASE_URL` and `AUTH0_DOMAIN` (not `AUTH0_BASE_URL` or `AUTH0_ISSUER_BASE_URL`) |
 | Forgot to add callback URL in Auth0 Dashboard | Add `/auth/callback` to Allowed Callback URLs (e.g., `http://localhost:3000/auth/callback`) |
-| Missing middleware.ts | v4 requires middleware to mount auth routes - create `middleware.ts` with `auth0.middleware()` |
+| Missing middleware configuration | v4 requires middleware to mount auth routes - create `middleware.ts` (Next.js 15+16) or `proxy.ts` (Next.js 16 only) with `auth0.middleware()` |
 | Wrong route paths | v4 uses `/auth/login` not `/api/auth/login` - routes drop the `/api` prefix |
 | Missing or weak AUTH0_SECRET | Generate secure secret with `openssl rand -hex 32` and store in .env.local |
 | Using .env instead of .env.local | Next.js requires .env.local for local secrets, and .env.local should be in .gitignore |
@@ -206,7 +244,9 @@ Visit `http://localhost:3000` and test the login flow.
 
 **V4 Setup:**
 - Create `lib/auth0.ts` with `Auth0Client` instance
-- Create `middleware.ts` with `auth0.middleware()` (required)
+- Create middleware configuration (required):
+  - Next.js 15: `middleware.ts` with `middleware()` function
+  - Next.js 16: `middleware.ts` with `middleware()` OR `proxy.ts` with `proxy()` function
 - Optional: Wrap with `<Auth0Provider>` for SSR user
 
 **Client-Side Hooks:**

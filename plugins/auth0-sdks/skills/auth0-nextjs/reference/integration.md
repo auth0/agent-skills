@@ -104,7 +104,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 ## Middleware (App Router)
 
-Protect multiple routes with middleware:
+Protect multiple routes with middleware.
+
+**Next.js 15** - Use `middleware.ts`:
 
 ```typescript
 // middleware.ts
@@ -112,6 +114,44 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth0 } from './lib/auth0';
 
 export async function middleware(request: NextRequest) {
+  const authRes = await auth0.middleware(request);
+
+  // Allow auth routes to be handled by SDK
+  if (request.nextUrl.pathname.startsWith('/auth')) {
+    return authRes;
+  }
+
+  // Public routes
+  if (request.nextUrl.pathname === '/') {
+    return authRes;
+  }
+
+  // Protected routes - check session
+  const session = await auth0.getSession(request);
+
+  if (!session) {
+    const { origin } = new URL(request.url);
+    return NextResponse.redirect(`${origin}/auth/login?returnTo=${request.nextUrl.pathname}`);
+  }
+
+  return authRes;
+}
+
+export const config = {
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)',
+  ],
+};
+```
+
+**Next.js 16** - Use either `middleware.ts` (same as above) or `proxy.ts`:
+
+```typescript
+// proxy.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { auth0 } from './lib/auth0';
+
+export async function proxy(request: NextRequest) {
   const authRes = await auth0.middleware(request);
 
   // Allow auth routes to be handled by SDK
