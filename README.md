@@ -205,35 +205,6 @@ The MFA skill covers:
 | auth0-token-exchange | Custom Token Exchange (RFC 8693) |
 | auth0-enterprise | PAR, CIBA, RAR, and enterprise features |
 
-## Examples
-
-Working examples with automated Playwright tests:
-
-| Example | Framework | Port | Tests |
-|---------|-----------|------|-------|
-| [react-spa](./examples/react-spa) | React + Vite | 5173 | 2 passing |
-| [vue-spa](./examples/vue-spa) | Vue.js + Vite | 5174 | 2 passing |
-| [angular-spa](./examples/angular-spa) | Angular 17 | 4200 | 2 passing |
-| [nextjs-app](./examples/nextjs-app) | Next.js App Router | 3000 | 2 passing |
-| [express-api](./examples/express-api) | Express.js | 4000 | 4 passing |
-| [flask-api](./examples/flask-api) | Python Flask | 4001 | 3 passing |
-
-### Running Examples
-
-```bash
-# Start a frontend example
-cd examples/react-spa
-npm install
-npm run dev
-
-# Start an API example
-cd examples/flask-api
-pip install -r requirements.txt
-python app.py
-
-# Run tests (requires the app to be running)
-npm test
-```
 
 ## Migration Support
 
@@ -270,49 +241,75 @@ auth0/agent-skills/
 │   │   │   └── plugin.json       # Plugin configuration
 │   │   └── skills/
 │   │       ├── auth0-quickstart/
-│   │       │   └── SKILL.md
+│   │       │   ├── SKILL.md
+│   │       │   └── reference/
+│   │       │       ├── cli.md
+│   │       │       ├── concepts.md
+│   │       │       └── environments.md
 │   │       ├── auth0-migration/
-│   │       │   └── SKILL.md
+│   │       │   ├── SKILL.md
+│   │       │   └── reference/
+│   │       │       ├── code-patterns.md
+│   │       │       └── user-import.md
 │   │       └── auth0-mfa/
 │   │           ├── SKILL.md
-│   │           ├── BACKEND.md
-│   │           ├── ADVANCED.md
-│   │           └── REFERENCE.md
+│   │           └── reference/
+│   │               ├── advanced.md
+│   │               ├── api.md
+│   │               ├── backend.md
+│   │               └── examples.md
 │   └── auth0-sdks/               # SDK Plugin
 │       ├── .claude-plugin/
 │       │   └── plugin.json       # Plugin configuration
 │       └── skills/
 │           ├── auth0-react/
 │           │   ├── SKILL.md
-│           │   └── REFERENCE.md
+│           │   └── reference/
+│           │       ├── api.md
+│           │       ├── integration.md
+│           │       └── setup.md
 │           ├── auth0-nextjs/
 │           │   ├── SKILL.md
-│           │   └── REFERENCE.md
+│           │   └── reference/
+│           │       ├── api.md
+│           │       ├── integration.md
+│           │       └── setup.md
 │           ├── auth0-vue/
 │           │   ├── SKILL.md
-│           │   └── REFERENCE.md
+│           │   └── reference/
+│           │       ├── api.md
+│           │       ├── integration.md
+│           │       └── setup.md
 │           ├── auth0-angular/
 │           │   ├── SKILL.md
-│           │   └── REFERENCE.md
+│           │   └── reference/
+│           │       ├── api.md
+│           │       ├── integration.md
+│           │       └── setup.md
+│           ├── auth0-nuxt/
+│           │   ├── SKILL.md
+│           │   └── references/
+│           │       ├── examples.md
+│           │       ├── route-protection.md
+│           │       └── session-stores.md
 │           ├── auth0-express/
 │           │   ├── SKILL.md
-│           │   └── REFERENCE.md
+│           │   └── reference/
+│           │       ├── api.md
+│           │       ├── integration.md
+│           │       └── setup.md
 │           └── auth0-react-native/
 │               ├── SKILL.md
-│               ├── PATTERNS.md
-│               └── REFERENCE.md
-├── internal/                     # Internal tools
-│   └── auth0-skill-generator.md
-├── examples/                     # Test examples
-│   ├── react-spa/
-│   ├── vue-spa/
-│   ├── angular-spa/
-│   ├── nextjs-app/
-│   ├── express-api/
-│   └── flask-api/
+│               └── reference/
+│                   ├── api.md
+│                   ├── patterns.md
+│                   └── setup.md
+├── .gitignore
+├── CODE_OF_CONDUCT.md
+├── CONTRIBUTING.md
+├── LICENSE
 ├── PLUGIN.md
-├── README.md
-└── LICENSE
+└── README.md
 ```
 
 ## Feedback
