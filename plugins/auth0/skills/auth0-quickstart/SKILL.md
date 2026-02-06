@@ -51,7 +51,7 @@ scoop install auth0
 # Or: choco install auth0-cli
 ```
 
-**Full installation guide:** See [CLI Reference](reference/cli.md#installation)
+**Full installation guide:** See [CLI Reference](references/cli.md#installation)
 
 ### Login to Auth0
 
@@ -94,7 +94,7 @@ auth0 apps list          # Find your app
 auth0 apps show <app-id> # Get client ID and secret
 ```
 
-**More CLI commands:** See [CLI Reference](reference/cli.md)
+**More CLI commands:** See [CLI Reference](references/cli.md)
 
 ---
 
@@ -159,25 +159,25 @@ The migration skill covers:
 
 ### Environment Variables
 Framework-specific environment variable setup:
-- [Vite, Create React App, Angular](reference/environments.md#single-page-applications-spas)
-- [Next.js, Express](reference/environments.md#server-side-applications)
-- [React Native, Expo](reference/environments.md#mobile-applications)
+- [Vite, Create React App, Angular](references/environments.md#single-page-applications-spas)
+- [Next.js, Express](references/environments.md#server-side-applications)
+- [React Native, Expo](references/environments.md#mobile-applications)
 
 ### Auth0 Concepts
 Core concepts and troubleshooting:
-- [Application Types](reference/concepts.md#application-types)
-- [Key Terms](reference/concepts.md#key-terms)
-- [OAuth Flows](reference/concepts.md#oauth-flows)
-- [Troubleshooting](reference/concepts.md#troubleshooting)
-- [Security Best Practices](reference/concepts.md#security-best-practices)
+- [Application Types](references/concepts.md#application-types)
+- [Key Terms](references/concepts.md#key-terms)
+- [OAuth Flows](references/concepts.md#oauth-flows)
+- [Troubleshooting](references/concepts.md#troubleshooting)
+- [Security Best Practices](references/concepts.md#security-best-practices)
 
 ### CLI Commands
 Complete Auth0 CLI reference:
-- [CLI Installation](reference/cli.md#installation)
-- [Creating Applications](reference/cli.md#creating-applications)
-- [User Management](reference/cli.md#user-management)
-- [Testing & Debugging](reference/cli.md#testing--debugging)
-- [Command Quick Reference](reference/cli.md#command-quick-reference)
+- [CLI Installation](references/cli.md#installation)
+- [Creating Applications](references/cli.md#creating-applications)
+- [User Management](references/cli.md#user-management)
+- [Testing & Debugging](references/cli.md#testing--debugging)
+- [Command Quick Reference](references/cli.md#command-quick-reference)
 
 ---
 
@@ -216,7 +216,7 @@ Complete Auth0 CLI reference:
 
 ---
 
-## Official Resources
+## References
 
 - [Auth0 Documentation](https://auth0.com/docs)
 - [Auth0 Quickstart Guides](https://auth0.com/docs/quickstart)

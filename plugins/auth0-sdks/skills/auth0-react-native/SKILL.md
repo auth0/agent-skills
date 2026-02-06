@@ -41,7 +41,7 @@ npx pod-install  # iOS only
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](reference/setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see [Setup Guide](references/setup.md) for complete scripts.
 
 **For manual setup:**
 
@@ -193,9 +193,9 @@ npx react-native run-android
 
 ## Detailed Documentation
 
-- **[Setup Guide](reference/setup.md)** - Automated setup, native configuration, deep linking
-- **[Patterns Guide](reference/patterns.md)** - Secure storage, biometric auth, token refresh
-- **[API Reference](reference/api.md)** - Complete SDK API, methods, configuration options
+- **[Setup Guide](references/setup.md)** - Automated setup, native configuration, deep linking
+- **[Patterns Guide](references/patterns.md)** - Secure storage, biometric auth, token refresh
+- **[API Reference](references/api.md)** - Complete SDK API, methods, configuration options
 
 ---
 
@@ -234,8 +234,8 @@ npx react-native run-android
 **Common Use Cases:**
 - Login/Logout → See Step 5 above
 - Secure token storage → Automatic with `Auth0Provider`
-- Biometric authentication → [Patterns Guide](reference/patterns.md#biometric-auth)
-- API calls with tokens → [Patterns Guide](reference/patterns.md#calling-apis)
+- Biometric authentication → [Patterns Guide](references/patterns.md#biometric-auth)
+- API calls with tokens → [Patterns Guide](references/patterns.md#calling-apis)
 - Token refresh → Automatic with `getCredentials()`
 
 ---

@@ -33,7 +33,7 @@ npm install @auth0/auth0-angular
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](reference/setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see [Setup Guide](references/setup.md) for complete scripts.
 
 **For manual setup:**
 
@@ -149,9 +149,9 @@ ng serve
 
 ## Detailed Documentation
 
-- **[Setup Guide](reference/setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
-- **[Integration Guide](reference/integration.md)** - Protected routes with guards, HTTP interceptors, error handling
-- **[API Reference](reference/api.md)** - Complete SDK API, configuration options, services reference, testing strategies
+- **[Setup Guide](references/setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
+- **[Integration Guide](references/integration.md)** - Protected routes with guards, HTTP interceptors, error handling
+- **[API Reference](references/api.md)** - Complete SDK API, configuration options, services reference, testing strategies
 
 ---
 
@@ -188,9 +188,9 @@ ng serve
 
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
-- Protected routes with guards → [Integration Guide](reference/integration.md#protected-routes)
-- HTTP interceptors for API calls → [Integration Guide](reference/integration.md#http-interceptor)
-- Error handling → [Integration Guide](reference/integration.md#error-handling)
+- Protected routes with guards → [Integration Guide](references/integration.md#protected-routes)
+- HTTP interceptors for API calls → [Integration Guide](references/integration.md#http-interceptor)
+- Error handling → [Integration Guide](references/integration.md#error-handling)
 
 ---
 
