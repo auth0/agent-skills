@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/:license-apache-blue.svg?style=flat)](https://opensource.org/licenses/Apache-2.0)
 
-📚 [Documentation](#what-are-agent-skills) • 🚀 [Getting Started](#quick-start) • 💬 [Feedback](#feedback)
+📚 [Documentation](https://auth0.com/docs/quickstart/agent-skills) • 🚀 [Getting Started](#quick-start) • 💬 [Feedback](#feedback)
 
 AI agent skills for Auth0 authentication integration. These skills help AI coding assistants (Claude Code, Cursor, Copilot) implement Auth0 correctly across any framework.
 
