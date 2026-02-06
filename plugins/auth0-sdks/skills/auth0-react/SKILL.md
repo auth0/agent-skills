@@ -35,7 +35,7 @@ npm install @auth0/auth0-react
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](reference/setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see [Setup Guide](references/setup.md) for complete scripts.
 
 **For manual setup:**
 
@@ -117,9 +117,9 @@ npm start    # CRA
 
 ## Detailed Documentation
 
-- **[Setup Guide](reference/setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
-- **[Integration Guide](reference/integration.md)** - Protected routes, API calls, error handling, advanced patterns
-- **[API Reference](reference/api.md)** - Complete SDK API, configuration options, hooks reference, testing strategies
+- **[Setup Guide](references/setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
+- **[Integration Guide](references/integration.md)** - Protected routes, API calls, error handling, advanced patterns
+- **[API Reference](references/api.md)** - Complete SDK API, configuration options, hooks reference, testing strategies
 
 ---
 
@@ -157,9 +157,9 @@ npm start    # CRA
 
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
-- Protected routes → [Integration Guide](reference/integration.md#protected-routes)
-- API calls with tokens → [Integration Guide](reference/integration.md#calling-apis)
-- Error handling → [Integration Guide](reference/integration.md#error-handling)
+- Protected routes → [Integration Guide](references/integration.md#protected-routes)
+- API calls with tokens → [Integration Guide](references/integration.md#calling-apis)
+- Error handling → [Integration Guide](references/integration.md#error-handling)
 
 ---
 

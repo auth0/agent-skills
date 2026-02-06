@@ -60,11 +60,11 @@ Search for common auth-related patterns in the codebase:
 
 ### Step 1: Export Existing Users
 
-Export users from your current provider. See [User Import Guide](reference/user-import.md) for detailed instructions:
-- [Exporting from Firebase](reference/user-import.md#firebase)
-- [Exporting from AWS Cognito](reference/user-import.md#aws-cognito)
-- [Exporting from Supabase](reference/user-import.md#supabase)
-- [Exporting from Custom Database](reference/user-import.md#custom-database)
+Export users from your current provider. See [User Import Guide](references/user-import.md) for detailed instructions:
+- [Exporting from Firebase](references/user-import.md#firebase)
+- [Exporting from AWS Cognito](references/user-import.md#aws-cognito)
+- [Exporting from Supabase](references/user-import.md#supabase)
+- [Exporting from Custom Database](references/user-import.md#custom-database)
 
 **Required data per user:**
 - Email address
@@ -88,11 +88,11 @@ auth0 api post "jobs/users-imports" \
 ```
 
 **For detailed instructions:**
-- [User JSON Format](reference/user-import.md#auth0-user-import-format)
-- [Password Hash Algorithms](reference/user-import.md#password-hash-algorithms)
-- [Import Methods](reference/user-import.md#importing-to-auth0)
-- [Monitoring Import Progress](reference/user-import.md#monitoring-import-progress)
-- [Common Import Errors](reference/user-import.md#common-import-errors)
+- [User JSON Format](references/user-import.md#auth0-user-import-format)
+- [Password Hash Algorithms](references/user-import.md#password-hash-algorithms)
+- [Import Methods](references/user-import.md#importing-to-auth0)
+- [Monitoring Import Progress](references/user-import.md#monitoring-import-progress)
+- [Common Import Errors](references/user-import.md#common-import-errors)
 
 ---
 
@@ -100,23 +100,23 @@ auth0 api post "jobs/users-imports" \
 
 Update your application code to use Auth0 SDKs.
 
-**See [Code Migration Patterns](reference/code-patterns.md) for detailed before/after examples:**
+**See [Code Migration Patterns](references/code-patterns.md) for detailed before/after examples:**
 
 **Frontend:**
-- [React Migration](reference/code-patterns.md#react-migration)
-- [Next.js Migration](reference/code-patterns.md#nextjs-migration)
-- [Vue.js Migration](reference/code-patterns.md#vuejs-migration)
-- [Angular Migration](reference/code-patterns.md#angular-migration)
-- [React Native Migration](reference/code-patterns.md#react-native-migration)
+- [React Migration](references/code-patterns.md#react-migration)
+- [Next.js Migration](references/code-patterns.md#nextjs-migration)
+- [Vue.js Migration](references/code-patterns.md#vuejs-migration)
+- [Angular Migration](references/code-patterns.md#angular-migration)
+- [React Native Migration](references/code-patterns.md#react-native-migration)
 
 **Backend:**
-- [Express.js Migration](reference/code-patterns.md#expressjs-migration)
-- [API JWT Validation](reference/code-patterns.md#backend-api-jwt-validation)
+- [Express.js Migration](references/code-patterns.md#expressjs-migration)
+- [API JWT Validation](references/code-patterns.md#backend-api-jwt-validation)
 
 **Provider-Specific:**
-- [Firebase to Auth0](reference/code-patterns.md#firebase-to-auth0)
-- [Supabase to Auth0](reference/code-patterns.md#supabase-to-auth0)
-- [Clerk to Auth0](reference/code-patterns.md#clerk-to-auth0)
+- [Firebase to Auth0](references/code-patterns.md#firebase-to-auth0)
+- [Supabase to Auth0](references/code-patterns.md#supabase-to-auth0)
+- [Clerk to Auth0](references/code-patterns.md#clerk-to-auth0)
 
 **After migrating code, use framework-specific skills:**
 - `auth0-react` for React applications
@@ -137,7 +137,7 @@ If your API validates JWTs, update to validate Auth0 tokens.
 - **Issuer:** Custom → `https://YOUR_TENANT.auth0.com/`
 - **JWKS URL:** `https://YOUR_TENANT.auth0.com/.well-known/jwks.json`
 
-**See [JWT Validation Examples](reference/code-patterns.md#backend-api-jwt-validation) for:**
+**See [JWT Validation Examples](references/code-patterns.md#backend-api-jwt-validation) for:**
 - Node.js / Express implementation
 - Python / Flask implementation
 - Key differences and migration checklist
@@ -201,21 +201,21 @@ const getUser = async () => {
 
 ### User Import
 Complete guide to exporting and importing users:
-- [Exporting from Common Providers](reference/user-import.md#exporting-users-from-common-providers)
-- [User JSON Format](reference/user-import.md#auth0-user-import-format)
-- [Password Hash Algorithms](reference/user-import.md#password-hash-algorithms)
-- [Import Methods](reference/user-import.md#importing-to-auth0)
-- [Monitoring & Troubleshooting](reference/user-import.md#monitoring-import-progress)
+- [Exporting from Common Providers](references/user-import.md#exporting-users-from-common-providers)
+- [User JSON Format](references/user-import.md#auth0-user-import-format)
+- [Password Hash Algorithms](references/user-import.md#password-hash-algorithms)
+- [Import Methods](references/user-import.md#importing-to-auth0)
+- [Monitoring & Troubleshooting](references/user-import.md#monitoring-import-progress)
 
 ### Code Migration
 Before/after examples for all major frameworks:
-- [React Patterns](reference/code-patterns.md#react-migration)
-- [Next.js Patterns](reference/code-patterns.md#nextjs-migration)
-- [Express Patterns](reference/code-patterns.md#expressjs-migration)
-- [Vue.js Patterns](reference/code-patterns.md#vuejs-migration)
-- [Angular Patterns](reference/code-patterns.md#angular-migration)
-- [React Native Patterns](reference/code-patterns.md#react-native-migration)
-- [API JWT Validation](reference/code-patterns.md#backend-api-jwt-validation)
+- [React Patterns](references/code-patterns.md#react-migration)
+- [Next.js Patterns](references/code-patterns.md#nextjs-migration)
+- [Express Patterns](references/code-patterns.md#expressjs-migration)
+- [Vue.js Patterns](references/code-patterns.md#vuejs-migration)
+- [Angular Patterns](references/code-patterns.md#angular-migration)
+- [React Native Patterns](references/code-patterns.md#react-native-migration)
+- [API JWT Validation](references/code-patterns.md#backend-api-jwt-validation)
 
 ---
 

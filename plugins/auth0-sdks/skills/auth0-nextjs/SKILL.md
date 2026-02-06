@@ -34,7 +34,7 @@ npm install @auth0/nextjs-auth0
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](reference/setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see [Setup Guide](references/setup.md) for complete scripts.
 
 **For manual setup:**
 
@@ -209,9 +209,9 @@ Visit `http://localhost:3000` and test the login flow.
 
 ## Detailed Documentation
 
-- **[Setup Guide](reference/setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
-- **[Integration Guide](reference/integration.md)** - Server-side auth, protected routes, API routes, middleware
-- **[API Reference](reference/api.md)** - Complete SDK API, hooks, helpers, session management
+- **[Setup Guide](references/setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
+- **[Integration Guide](references/integration.md)** - Server-side auth, protected routes, API routes, middleware
+- **[API Reference](references/api.md)** - Complete SDK API, hooks, helpers, session management
 
 ---
 
@@ -260,10 +260,10 @@ Visit `http://localhost:3000` and test the login flow.
 
 **Common Use Cases:**
 - Login/Logout links → Use `/auth/login` and `/auth/logout` paths (see Step 5)
-- Protected pages (App Router) → [Integration Guide](reference/integration.md#protected-pages-app-router)
-- Protected pages (Pages Router) → [Integration Guide](reference/integration.md#protected-pages-pages-router)
-- API routes with auth → [Integration Guide](reference/integration.md#protected-api-routes)
-- Middleware protection → [Integration Guide](reference/integration.md#middleware)
+- Protected pages (App Router) → [Integration Guide](references/integration.md#protected-pages-app-router)
+- Protected pages (Pages Router) → [Integration Guide](references/integration.md#protected-pages-pages-router)
+- API routes with auth → [Integration Guide](references/integration.md#protected-api-routes)
+- Middleware protection → [Integration Guide](references/integration.md#middleware)
 
 ---
 
