@@ -72,7 +72,7 @@ const app = express();
 
 // Configure Auth0 middleware
 app.use(auth({
-  authRequired: false,  // Don't require auth for all routes
+  authRequired: false,  // Default is true - set false for mixed public/protected routes
   auth0Logout: true,    // Enable logout endpoint
   secret: process.env.SECRET,
   baseURL: process.env.BASE_URL,
@@ -121,6 +121,8 @@ app.get('/api-call', requiresAuth(), async (req, res) => {
   res.json(await response.json());
 });
 ```
+
+**Note:** `authRequired` defaults to `true`. If omitted, all routes require authentication. Set to `false` for apps with public and protected routes, then use `requiresAuth()` middleware on specific routes.
 
 ### 4. Add Routes
 
@@ -203,7 +205,7 @@ Visit `http://localhost:3000` and test the login flow.
 ## Quick Reference
 
 **Middleware Options:**
-- `authRequired` - Require auth for all routes (default: false)
+- `authRequired` - Require auth for all routes (default: true)
 - `auth0Logout` - Enable /logout endpoint (default: false)
 - `secret` - Session secret (required)
 - `baseURL` - Application URL (required)
@@ -214,8 +216,16 @@ Visit `http://localhost:3000` and test the login flow.
 - `req.oidc.isAuthenticated()` - Check if user is logged in
 - `req.oidc.user` - User profile object
 - `req.oidc.accessToken` - Access token object (`{ access_token, token_type, expires_in }`); `expires_in` is seconds remaining. Destructure with `const { access_token } = req.oidc.accessToken`. Also exposes `isExpired()` and `refresh()` methods. Only populated when `authorizationParams` with `audience` + `response_type: 'code'` is configured
-- `req.oidc.idToken` - ID token
-- `req.oidc.refreshToken` - Refresh token
+- `req.oidc.idToken` - ID token string
+- `req.oidc.idTokenClaims` - Decoded ID token claims
+- `req.oidc.refreshToken` - Refresh token string
+- `req.oidc.fetchUserInfo()` - Fetch additional user info from /userinfo endpoint
+
+**Authorization Helpers:**
+- `requiresAuth()` - Require authentication for route
+- `claimEquals(claim, value)` - Require specific claim value
+- `claimIncludes(claim, ...values)` - Require claim includes values
+- `claimCheck(fn)` - Custom claim validation function
 
 **Common Use Cases:**
 - Protected routes → Use `requiresAuth()` middleware (see Step 4)
