@@ -116,11 +116,11 @@ app.get('/call-api', requiresAuth(), async (req, res) => {
 app.use(auth({
   authRequired: false,
   auth0Logout: true,
-  secret: process.env.AUTH0_SECRET,
-  baseURL: process.env.AUTH0_BASE_URL,
-  clientID: process.env.AUTH0_CLIENT_ID,
-  issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-  clientSecret: process.env.AUTH0_CLIENT_SECRET,
+  secret: process.env.SECRET,
+  baseURL: process.env.BASE_URL,
+  clientID: process.env.CLIENT_ID,
+  issuerBaseURL: process.env.ISSUER_BASE_URL,
+  clientSecret: process.env.CLIENT_SECRET,
   authorizationParams: {
     response_type: 'code',
     audience: 'https://your-api-identifier',  // Add this
@@ -172,11 +172,11 @@ app.get('/home', (req, res) => {
 app.use(auth({
   authRequired: false,          // Don't require auth globally
   auth0Logout: true,            // Enable logout route
-  secret: process.env.AUTH0_SECRET,
-  baseURL: process.env.AUTH0_BASE_URL,
-  clientID: process.env.AUTH0_CLIENT_ID,
-  issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-  clientSecret: process.env.AUTH0_CLIENT_SECRET,
+  secret: process.env.SECRET,
+  baseURL: process.env.BASE_URL,
+  clientID: process.env.CLIENT_ID,
+  issuerBaseURL: process.env.ISSUER_BASE_URL,
+  clientSecret: process.env.CLIENT_SECRET,
 
   // Authorization parameters
   authorizationParams: {
@@ -220,11 +220,11 @@ app.use(auth({
 
 | Issue | Solution |
 |-------|----------|
-| "Missing required parameter: state" | Ensure `AUTH0_SECRET` is set and at least 32 characters |
-| Session not persisting | Check cookies are enabled and `AUTH0_BASE_URL` is correct |
+| "Missing required parameter: state" | Ensure `SECRET` is set and at least 32 characters |
+| Session not persisting | Check cookies are enabled and `BASE_URL` is correct |
 | Infinite redirect loop | Check `authRequired: false` for middleware config |
-| Callback URL mismatch | Verify `AUTH0_BASE_URL/callback` is in Auth0 allowed callback URLs |
-| "Invalid redirect URI" | Ensure callback URL in Auth0 matches `AUTH0_BASE_URL` exactly |
+| Callback URL mismatch | Verify `BASE_URL/callback` is in Auth0 allowed callback URLs |
+| "Invalid redirect URI" | Ensure callback URL in Auth0 matches `BASE_URL` exactly |
 
 ---
 
@@ -301,7 +301,7 @@ app.use(auth({
 
 - **Keep secrets secure** - Never commit `.env` to version control
 - **Use HTTPS in production** - Auth0 requires secure callback URLs
-- **Rotate secrets regularly** - Update `AUTH0_SECRET` periodically
+- **Rotate secrets regularly** - Update `SECRET` periodically
 - **Validate on server** - Authentication is server-side, tokens are secure
 - **Configure session properly** - Set appropriate session durations
 - **Use helmet** - Add security headers with `npm install helmet`

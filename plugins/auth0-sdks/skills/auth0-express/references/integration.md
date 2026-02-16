@@ -193,7 +193,7 @@ app.use((err, req, res, next) => {
 
 | Issue | Solution |
 |-------|----------|
-| "Invalid state" | Regenerate AUTH0_SECRET |
+| "Invalid state" | Regenerate SECRET |
 | Session not persisting | Check cookie settings, use HTTPS in production |
 | Redirect loop | Verify callback URL matches Auth0 config |
 

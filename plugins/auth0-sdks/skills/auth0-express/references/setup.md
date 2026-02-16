@@ -37,11 +37,11 @@ SECRET=$(openssl rand -hex 32)
 
 # Create .env
 cat > .env << ENVEOF
-AUTH0_SECRET=$SECRET
-AUTH0_BASE_URL=http://localhost:3000
-AUTH0_CLIENT_ID=$CLIENT_ID
-AUTH0_CLIENT_SECRET=$CLIENT_SECRET
-AUTH0_ISSUER_BASE_URL=https://$DOMAIN
+SECRET=$SECRET
+BASE_URL=http://localhost:3000
+CLIENT_ID=$CLIENT_ID
+CLIENT_SECRET=$CLIENT_SECRET
+ISSUER_BASE_URL=https://$DOMAIN
 ENVEOF
 
 echo "✅ Created .env file"
@@ -60,11 +60,11 @@ npm install express-openid-connect dotenv
 ### Create .env
 
 ```bash
-AUTH0_SECRET=<openssl-rand-hex-32>
-AUTH0_BASE_URL=http://localhost:3000
-AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
-AUTH0_ISSUER_BASE_URL=https://your-tenant.auth0.com
+SECRET=<openssl-rand-hex-32>
+BASE_URL=http://localhost:3000
+CLIENT_ID=your-client-id
+CLIENT_SECRET=your-client-secret
+ISSUER_BASE_URL=https://your-tenant.auth0.com
 ```
 
 ### Get Auth0 Credentials
@@ -77,7 +77,7 @@ Dashboard: Create Regular Web Application, copy credentials
 
 ## Troubleshooting
 
-**"Invalid state" error:** Regenerate `AUTH0_SECRET`
+**"Invalid state" error:** Regenerate `SECRET`
 
 **Client secret required:** Express uses Regular Web Application type
 
