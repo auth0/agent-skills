@@ -42,11 +42,11 @@ npm install express-openid-connect dotenv
 Create `.env`:
 
 ```bash
-AUTH0_SECRET=<openssl-rand-hex-32>
-AUTH0_BASE_URL=http://localhost:3000
-AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
-AUTH0_ISSUER_BASE_URL=https://your-tenant.auth0.com
+SECRET=<openssl-rand-hex-32>
+BASE_URL=http://localhost:3000
+CLIENT_ID=your-client-id
+CLIENT_SECRET=your-client-secret
+ISSUER_BASE_URL=https://your-tenant.auth0.com
 ```
 
 Generate secret: `openssl rand -hex 32`
@@ -66,11 +66,11 @@ const app = express();
 app.use(auth({
   authRequired: false,  // Don't require auth for all routes
   auth0Logout: true,    // Enable logout endpoint
-  secret: process.env.AUTH0_SECRET,
-  baseURL: process.env.AUTH0_BASE_URL,
-  clientID: process.env.AUTH0_CLIENT_ID,
-  issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-  clientSecret: process.env.AUTH0_CLIENT_SECRET
+  secret: process.env.SECRET,
+  baseURL: process.env.BASE_URL,
+  clientID: process.env.CLIENT_ID,
+  issuerBaseURL: process.env.ISSUER_BASE_URL,
+  clientSecret: process.env.CLIENT_SECRET
 }));
 
 app.listen(3000, () => {
@@ -141,11 +141,11 @@ Visit `http://localhost:3000` and test the login flow.
 | Mistake | Fix |
 |---------|-----|
 | Forgot to add callback URL in Auth0 Dashboard | Add `/callback` path to Allowed Callback URLs (e.g., `http://localhost:3000/callback`) |
-| Missing or weak SECRET | Generate secure secret with `openssl rand -hex 32` and store in .env |
+| Missing or weak SECRET | Generate secure secret with `openssl rand -hex 32` and store in .env as `SECRET` |
 | Setting authRequired: true globally | Set to false and use `requiresAuth()` middleware on specific routes |
 | App created as SPA type in Auth0 | Must be Regular Web Application type for server-side auth |
 | Session secret exposed in code | Always use environment variables, never hardcode secrets |
-| Wrong baseURL for production | Update AUTH0_BASE_URL to match your production domain |
+| Wrong baseURL for production | Update BASE_URL to match your production domain |
 | Not handling logout returnTo | Add your domain to Allowed Logout URLs in Auth0 Dashboard |
 
 ---
