@@ -6,6 +6,8 @@ Setup instructions for Express.js applications.
 
 ## Quick Setup (Automated)
 
+Below automates the setup, except for the CLIENT_SECRET. Inform the user that they have to fill in the value for the CLIENT_SECRET themselves.
+
 ```bash
 #!/bin/bash
 
@@ -32,7 +34,6 @@ fi
 # Get credentials
 DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
 CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-CLIENT_SECRET=$(auth0 apps show "$APP_ID" --reveal-secrets --json | grep -o '"client_secret":"[^"]*' | cut -d'"' -f4)
 SECRET=$(openssl rand -hex 32)
 
 # Create .env
@@ -40,7 +41,7 @@ cat > .env << ENVEOF
 SECRET=$SECRET
 BASE_URL=http://localhost:3000
 CLIENT_ID=$CLIENT_ID
-CLIENT_SECRET=$CLIENT_SECRET
+CLIENT_SECRET='YOUR_CLIENT_SECRET'
 ISSUER_BASE_URL=https://$DOMAIN
 ENVEOF
 
