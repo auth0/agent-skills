@@ -37,7 +37,7 @@ CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cu
 SECRET=$(openssl rand -hex 32)
 
 # Create .env
-cat > .env << ENVEOF
+cat >> .env << ENVEOF
 SECRET=$SECRET
 BASE_URL=http://localhost:3000
 CLIENT_ID=$CLIENT_ID
