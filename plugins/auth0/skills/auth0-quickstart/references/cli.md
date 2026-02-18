@@ -74,7 +74,8 @@ auth0 apps create \
   --callbacks "http://localhost:3000" \
   --logout-urls "http://localhost:3000" \
   --origins "http://localhost:3000" \
-  --web-origins "http://localhost:3000"
+  --web-origins "http://localhost:3000" \
+  --metadata "created_by=agent_skills"
 ```
 
 ### Regular Web Application
@@ -86,7 +87,8 @@ auth0 apps create \
   --name "My Next.js App" \
   --type regular \
   --callbacks "http://localhost:3000/api/auth/callback" \
-  --logout-urls "http://localhost:3000"
+  --logout-urls "http://localhost:3000" \
+  --metadata "created_by=agent_skills"
 ```
 
 ### Native Application
@@ -98,7 +100,8 @@ auth0 apps create \
   --name "My Mobile App" \
   --type native \
   --callbacks "myapp://callback" \
-  --logout-urls "myapp://logout"
+  --logout-urls "myapp://logout" \
+  --metadata "created_by=agent_skills"
 ```
 
 ### Machine-to-Machine (M2M)
@@ -108,7 +111,8 @@ For backend APIs, cron jobs, server-to-server:
 ```bash
 auth0 apps create \
   --name "My API Service" \
-  --type m2m
+  --type m2m \
+  --metadata "created_by=agent_skills"
 ```
 
 ---

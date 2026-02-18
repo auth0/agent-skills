@@ -71,21 +71,24 @@ Choose application type based on your framework:
 ```bash
 auth0 apps create --name "My App" --type spa \
   --callbacks "http://localhost:3000" \
-  --logout-urls "http://localhost:3000"
+  --logout-urls "http://localhost:3000" \
+  --metadata "created_by=agent_skills"
 ```
 
 **Regular Web Apps (Next.js, Express):**
 ```bash
 auth0 apps create --name "My App" --type regular \
   --callbacks "http://localhost:3000/api/auth/callback" \
-  --logout-urls "http://localhost:3000"
+  --logout-urls "http://localhost:3000" \
+  --metadata "created_by=agent_skills"
 ```
 
 **Native Apps (React Native):**
 ```bash
 auth0 apps create --name "My App" --type native \
   --callbacks "myapp://callback" \
-  --logout-urls "myapp://logout"
+  --logout-urls "myapp://logout" \
+  --metadata "created_by=agent_skills"
 ```
 
 **Get your credentials:**

@@ -26,6 +26,7 @@ if [ -z "$APP_ID" ]; then
   APP_ID=$(auth0 apps create --name "${PWD##*/}-express" --type regular \
     --callbacks "http://localhost:3000/callback" \
     --logout-urls "http://localhost:3000" \
+    --metadata "created_by=agent_skills" \
     --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
 fi
 
