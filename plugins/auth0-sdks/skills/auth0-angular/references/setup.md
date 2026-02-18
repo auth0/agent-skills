@@ -44,6 +44,7 @@ if [ -z "$APP_ID" ]; then
     --logout-urls "http://localhost:4200" \
     --origins "http://localhost:4200" \
     --web-origins "http://localhost:4200" \
+    --metadata "created_by=agent_skills" \
     --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
 fi
 

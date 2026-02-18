@@ -52,7 +52,8 @@ Via CLI:
 auth0 login
 auth0 apps create --name "My Mobile App" --type native \
   --callbacks "com.yourcompany.yourapp.auth0://YOUR_DOMAIN/ios/com.yourcompany.yourapp/callback,com.yourcompany.yourapp.auth0://YOUR_DOMAIN/android/com.yourcompany.yourapp/callback" \
-  --logout-urls "com.yourcompany.yourapp.auth0://YOUR_DOMAIN/ios/com.yourcompany.yourapp/callback,com.yourcompany.yourapp.auth0://YOUR_DOMAIN/android/com.yourcompany.yourapp/callback"
+  --logout-urls "com.yourcompany.yourapp.auth0://YOUR_DOMAIN/ios/com.yourcompany.yourapp/callback,com.yourcompany.yourapp.auth0://YOUR_DOMAIN/android/com.yourcompany.yourapp/callback" \
+  --metadata "created_by=agent_skills"
 ```
 
 Via Dashboard:

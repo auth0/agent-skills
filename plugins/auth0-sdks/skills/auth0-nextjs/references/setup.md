@@ -33,6 +33,7 @@ if [ -z "$APP_ID" ]; then
     --type regular \
     --callbacks "http://localhost:3000/api/auth/callback" \
     --logout-urls "http://localhost:3000" \
+    --metadata "created_by=agent_skills" \
     --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
 fi
 

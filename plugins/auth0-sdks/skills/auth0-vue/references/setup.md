@@ -57,6 +57,7 @@ if [ -z "$APP_ID" ]; then
     --logout-urls "http://localhost:5173,http://localhost:3000" \
     --origins "http://localhost:5173,http://localhost:3000" \
     --web-origins "http://localhost:5173,http://localhost:3000" \
+    --metadata "created_by=agent_skills" \
     --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
   echo "Created app with ID: $APP_ID"
 fi
@@ -120,7 +121,8 @@ if ([string]::IsNullOrEmpty($appId)) {
     --callbacks "http://localhost:5173,http://localhost:3000" `
     --logout-urls "http://localhost:5173,http://localhost:3000" `
     --origins "http://localhost:5173,http://localhost:3000" `
-    --web-origins "http://localhost:5173,http://localhost:3000" --json
+    --web-origins "http://localhost:5173,http://localhost:3000" `
+    --metadata "created_by=agent_skills" --json
 
   $appId = ($appJson | ConvertFrom-Json).client_id
   Write-Host "Created app with ID: $appId"
