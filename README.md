@@ -30,9 +30,17 @@ Get Auth0 up running in your app in minutes:
    npx skills add auth0/agent-skills
    ```
 
-   *Option 2: Via Claude Code plugins*
-   ```
-    Settings → Plugins → Search "Auth0" → Install
+   *Option 2: Via Claude Code marketplace*
+   ```bash
+   # Open Claude Code
+   claude
+   
+   # Add the Auth0 marketplace
+   /plugin marketplace add auth0/agent-skills
+
+   # Install plugins
+   /plugin install auth0@auth0-agent-skills
+   /plugin install auth0-sdks@auth0-agent-skills
    ```
 
 2. **Ask your AI assistant to add Auth0**:
@@ -46,23 +54,43 @@ That's it! Your AI assistant will setup Auth0 on your app and you will have prod
 
 ## Installation
 
-### Option 1: Claude Plugins (Recommended for Enterprise)
+### Option 1: Claude Code Marketplace (Recommended for Enterprise)
 
 We offer **two separate plugins** for flexible installation:
 
-#### Auth0 Core Skills Plugin
+#### Step 1: Open Claude Code
+
+```bash
+claude
+```
+
+#### Step 2: Add the Auth0 Marketplace
+
+Add the Auth0 agent skills marketplace to Claude Code:
+
+```bash
+# From GitHub
+/plugin marketplace add auth0/agent-skills
+
+# Or from local path
+/plugin marketplace add /path/to/agent-skills
+```
+
+#### Step 3: Install Plugins
+
+**Auth0 Core Skills Plugin**
+
 Essential skills for getting started and advanced security:
 - `auth0-quickstart` - Framework detection and routing
 - `auth0-migration` - Migrate from other auth providers
 - `auth0-mfa` - Multi-Factor Authentication
 
-**Install:**
-1. Open Claude Code
-2. Navigate to **Settings → Plugins**
-3. Search for "Auth0 Core Skills"
-4. Click **Install**
+```bash
+/plugin install auth0@auth0-agent-skills
+```
 
-#### Auth0 SDK Skills Plugin
+**Auth0 SDK Skills Plugin**
+
 Framework-specific implementation guides:
 - `auth0-react` - React SPAs
 - `auth0-nextjs` - Next.js (App Router & Pages Router)
@@ -72,13 +100,15 @@ Framework-specific implementation guides:
 - `auth0-express` - Express.js
 - `auth0-react-native` - React Native & Expo
 
-**Install:**
-1. Open Claude Code
-2. Navigate to **Settings → Plugins**
-3. Search for "Auth0 SDK Skills"
-4. Click **Install**
+```bash
+/plugin install auth0-sdks@auth0-agent-skills
+```
 
-**Recommendation**: Install both plugins for complete Auth0 integration coverage.
+**Recommendation**: Install both plugins for complete Auth0 integration coverage:
+
+```bash
+/plugin install auth0@auth0-agent-skills auth0-sdks@auth0-agent-skills
+```
 
 ### Option 2: CLI Installation (Recommended for Developers)
 
