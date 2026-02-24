@@ -124,9 +124,6 @@ auth0 apps create \
 ```bash
 # List all applications
 auth0 apps list
-
-# List with more details
-auth0 apps list --reveal
 ```
 
 ### Show Application Details
@@ -134,9 +131,6 @@ auth0 apps list --reveal
 ```bash
 # Show app details (includes client ID and secret)
 auth0 apps show <app-id>
-
-# Show with secrets revealed
-auth0 apps show <app-id> --reveal
 ```
 
 ### Update Application
