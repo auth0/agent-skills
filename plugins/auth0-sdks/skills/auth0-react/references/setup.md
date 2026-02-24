@@ -6,7 +6,33 @@ Complete setup instructions with automated scripts and manual configuration opti
 
 ## Quick Setup (Automated)
 
-### Bash Script (macOS/Linux)
+**Never read the contents of `.env` at any point during setup.** The file may contain sensitive secrets that should not be exposed in the LLM context. If you determine you need to read the file for any reason, ask the user for explicit permission before doing so — do not proceed until the user confirms.
+
+**Before running any part of this setup that writes to `.env`, you MUST ask the user for explicit confirmation.** Follow the steps below precisely.
+
+### Step 1: Check for existing .env and confirm with user
+
+Before writing to `.env`, check whether the file already exists:
+
+```bash
+test -f .env && echo "EXISTS" || echo "NOT_FOUND"
+```
+
+Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
+
+- If `.env` does **not** exist, ask:
+  - Question: "This setup will create a `.env` file containing Auth0 credentials (domain and client ID). Do you want to proceed?"
+  - Options: "Yes, create .env" / "No, I'll configure it manually"
+
+- If `.env` **already exists**, ask:
+  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
+  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
+
+**Do not proceed with writing to `.env` unless the user selects the confirmation option.**
+
+### Step 2: Run automated setup (only after confirmation)
+
+#### Bash Script (macOS/Linux)
 
 Run this script to automatically set up everything:
 
@@ -97,19 +123,19 @@ echo "Fetching Auth0 credentials..."
 AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
 AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
 
-# Create .env file
-cat > .env << EOF
+# Append Auth0 credentials to .env
+cat >> .env << EOF
 ${PREFIX}_DOMAIN=$AUTH0_DOMAIN
 ${PREFIX}_CLIENT_ID=$AUTH0_CLIENT_ID
 EOF
 
 echo "✅ Auth0 configuration complete!"
-echo "Created .env file with:"
+echo "Appended to .env:"
 echo "  ${PREFIX}_DOMAIN=$AUTH0_DOMAIN"
 echo "  ${PREFIX}_CLIENT_ID=$AUTH0_CLIENT_ID"
 ```
 
-### PowerShell Script (Windows)
+#### PowerShell Script (Windows)
 
 ```powershell
 # Install Auth0 CLI if not present
@@ -189,10 +215,10 @@ $appDetails = auth0 apps show $appId --json | ConvertFrom-Json
 @"
 ${prefix}_DOMAIN=$($appDetails.domain)
 ${prefix}_CLIENT_ID=$($appDetails.client_id)
-"@ | Out-File -FilePath .env -Encoding UTF8
+"@ | Out-File -FilePath .env -Encoding UTF8 -Append
 
 Write-Host "✅ Auth0 configuration complete!"
-Write-Host "Created .env file with:"
+Write-Host "Appended to .env:"
 Write-Host "  ${prefix}_DOMAIN=$($appDetails.domain)"
 Write-Host "  ${prefix}_CLIENT_ID=$($appDetails.client_id)"
 ```
