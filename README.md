@@ -32,6 +32,9 @@ Get Auth0 up running in your app in minutes:
 
    *Option 2: Via Claude Code marketplace*
    ```bash
+   # Open Claude Code
+   claude
+   
    # Add the Auth0 marketplace
    /plugin marketplace add auth0/agent-skills
 
