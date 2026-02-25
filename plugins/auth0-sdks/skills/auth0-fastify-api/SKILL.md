@@ -1,0 +1,231 @@
+---
+name: auth0-fastify-api
+description: Use when protecting Fastify API endpoints with JWT access token validation - integrates @auth0/auth0-fastify-api for stateless API authentication
+---
+
+# Auth0 Fastify API Integration
+
+Protect Fastify API endpoints with JWT access token validation using @auth0/auth0-fastify-api.
+
+---
+
+## Prerequisites
+
+- Fastify API application (v5.x or newer)
+- Node.js 20 LTS or newer
+- Auth0 API configured (not Application - must be API resource)
+- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+
+## When NOT to Use
+
+- **Server-rendered web applications** - Use `@auth0/auth0-fastify` for session-based auth
+- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
+- **Next.js applications** - Use `auth0-nextjs` skill
+- **Mobile applications** - Use `auth0-react-native` for React Native/Expo
+
+---
+
+## Quick Start Workflow
+
+### 1. Install SDK
+
+```bash
+npm install @auth0/auth0-fastify-api fastify dotenv
+```
+
+### 2. Create Auth0 API
+
+You need an **API** (not Application) in Auth0:
+
+```bash
+# Using Auth0 CLI
+auth0 apis create \
+  --name "My Fastify API" \
+  --identifier https://my-api.example.com
+```
+
+Or create manually in Auth0 Dashboard → Applications → APIs
+
+### 3. Configure Environment
+
+Create `.env`:
+
+```bash
+AUTH0_DOMAIN=your-tenant.auth0.com
+AUTH0_AUDIENCE=https://my-api.example.com
+```
+
+### 4. Configure Auth Plugin
+
+Create your Fastify server (`server.js`):
+
+```javascript
+import 'dotenv/config';
+import Fastify from 'fastify';
+import fastifyAuth0Api from '@auth0/auth0-fastify-api';
+
+const fastify = Fastify({ logger: true });
+
+// Register Auth0 API plugin
+await fastify.register(fastifyAuth0Api, {
+  domain: process.env.AUTH0_DOMAIN,
+  audience: process.env.AUTH0_AUDIENCE,
+});
+
+fastify.listen({ port: 3001 });
+```
+
+### 5. Protect Routes
+
+```javascript
+// Public route - no authentication
+fastify.get('/api/public', async (request, reply) => {
+  return {
+    message: 'Hello from a public endpoint!',
+    timestamp: new Date().toISOString(),
+  };
+});
+
+// Protected route - requires valid JWT
+fastify.get('/api/private', {
+  preHandler: fastify.requireAuth()
+}, async (request, reply) => {
+  return {
+    message: 'Hello from a protected endpoint!',
+    user: request.user.sub,
+    timestamp: new Date().toISOString(),
+  };
+});
+
+// Protected route with user info
+fastify.get('/api/profile', {
+  preHandler: fastify.requireAuth()
+}, async (request, reply) => {
+  return {
+    profile: request.user,  // JWT claims
+  };
+});
+```
+
+### 6. Test API
+
+Test public endpoint:
+
+```bash
+curl http://localhost:3001/api/public
+```
+
+Test protected endpoint (requires access token):
+
+```bash
+curl http://localhost:3001/api/private \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+```
+
+---
+
+## Permission-Based Authorization
+
+Check for specific permissions in tokens:
+
+```javascript
+function requirePermission(permission) {
+  return async (request, reply) => {
+    const permissions = request.user.permissions || [];
+    if (!permissions.includes(permission)) {
+      return reply.status(403).send({
+        error: 'Forbidden',
+        message: `Missing permission: ${permission}`
+      });
+    }
+  };
+}
+
+// Route requiring 'read:messages' permission
+fastify.get('/api/messages', {
+  preHandler: [
+    fastify.requireAuth(),
+    requirePermission('read:messages')
+  ]
+}, async (request, reply) => {
+  return { messages: ['Message 1', 'Message 2'] };
+});
+```
+
+---
+
+## TypeScript Support
+
+Extend the Token interface for custom claims:
+
+```typescript
+import '@auth0/auth0-fastify-api';
+
+declare module '@auth0/auth0-fastify-api' {
+  interface Token {
+    sub: string;
+    permissions?: string[];
+    'https://myapp.com/roles'?: string[];
+    email?: string;
+  }
+}
+
+// Now TypeScript knows about custom claims
+fastify.get('/api/profile', {
+  preHandler: fastify.requireAuth()
+}, async (request, reply) => {
+  const roles = request.user['https://myapp.com/roles']; // string[] | undefined
+  return { roles };
+});
+```
+
+---
+
+## Common Mistakes
+
+| Mistake | Fix |
+|---------|-----|
+| Created Application instead of API in Auth0 | Must create API resource in Auth0 Dashboard → Applications → APIs |
+| Missing Authorization header | Include `Authorization: Bearer <token>` in all protected endpoint requests |
+| Wrong audience in token | Client must request token with matching `audience` parameter |
+| Using ID token instead of access token | Must use **access token** for API auth, not ID token |
+| Exposing audience in client code | Audience in .env is for validation only, clients specify it when requesting tokens |
+| Not handling 401/403 errors | Implement proper error handling for unauthorized/forbidden responses |
+
+---
+
+## Related Skills
+
+- `auth0-quickstart` - Basic Auth0 setup
+- `auth0-fastify` - For server-rendered Fastify web apps with sessions
+- `auth0-mfa` - Add Multi-Factor Authentication
+
+---
+
+## Quick Reference
+
+**Plugin Options:**
+- `domain` - Auth0 tenant domain (required)
+- `audience` - API identifier from Auth0 API settings (required)
+
+**Request Properties:**
+- `request.user` - Decoded JWT claims object
+- `request.user.sub` - User ID (subject)
+- `request.user.permissions` - Array of permissions (if configured)
+
+**Middleware:**
+- `fastify.requireAuth()` - Protect route with JWT validation
+
+**Common Use Cases:**
+- Protect routes → Use `preHandler: fastify.requireAuth()` (see Step 5)
+- Get user ID → `request.user.sub`
+- Check permissions → Check `request.user.permissions` array
+- Custom claims → Access via `request.user['namespace/claim']`
+
+---
+
+## References
+
+- [Auth0 Fastify API Documentation](https://auth0.com/docs/quickstart/backend/fastify)
+- [SDK GitHub Repository](https://github.com/auth0/auth0-fastify)
+- [Access Tokens Guide](https://auth0.com/docs/secure/tokens/access-tokens)
