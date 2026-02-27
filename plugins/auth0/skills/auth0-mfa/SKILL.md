@@ -47,16 +47,9 @@ Multi-Factor Authentication (MFA) requires users to provide two or more verifica
 
 ## Step 1: Enable MFA in Tenant
 
-### Via Auth0 Dashboard
+**You MUST use the Auth0 CLI to configure MFA.** Do NOT instruct users to manually configure MFA via the Auth0 Dashboard.
 
-1. Go to **Security → Multi-factor Auth**
-2. Enable desired factors (TOTP, SMS, etc.)
-3. Configure **Policies**:
-   - **Always** - Require MFA for all logins
-   - **Adaptive** - Risk-based MFA
-   - **Never** - Disable MFA (use step-up instead)
-
-### Via Auth0 CLI
+### Using Auth0 CLI (Required)
 
 ```bash
 # View current MFA configuration

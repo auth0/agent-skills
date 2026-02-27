@@ -9,6 +9,19 @@ Detect your framework and get started with Auth0 authentication.
 
 ---
 
+## IMPORTANT: CLI-First Requirement
+
+**You MUST use the Auth0 CLI to create applications and configure credentials.** Do NOT instruct users to manually create applications via the Auth0 Dashboard. The Auth0 CLI:
+
+- Automatically installs on macOS, Linux, and Windows
+- Handles authentication and account creation
+- Creates applications with correct settings for each framework type
+- Fetches credentials and can write them directly to environment files
+
+**Always use the CLI commands below.** Only fall back to manual CLI commands if the automated scripts in the framework-specific skills fail. Never fall back to Dashboard instructions.
+
+---
+
 ## Step 1: Detect Your Framework
 
 **Run this command to identify your framework:**
@@ -38,27 +51,42 @@ ls -la | grep -E "angular.json|vue.config.js|next.config"
 
 ---
 
-## Step 2: Auth0 Account Setup
+## Step 2: Auth0 Account Setup (REQUIRED)
+
+**You MUST install and use the Auth0 CLI.** Run this automated installation:
 
 ### Install Auth0 CLI
 
-**macOS/Linux:**
 ```bash
-brew install auth0/auth0-cli/auth0
+#!/bin/bash
+# Detect OS and install Auth0 CLI
+if ! command -v auth0 &> /dev/null; then
+  echo "Installing Auth0 CLI..."
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install auth0/auth0-cli/auth0
+  elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
+  elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
+    scoop install auth0
+  fi
+fi
 ```
 
-**Windows:**
-```bash
-scoop install auth0
-# Or: choco install auth0-cli
+**For Windows PowerShell:**
+```powershell
+if (!(Get-Command auth0 -ErrorAction SilentlyContinue)) {
+  scoop install auth0
+}
 ```
-
-**Full installation guide:** See [CLI Reference](references/cli.md#installation)
 
 ### Login to Auth0
 
 ```bash
-auth0 login
+# Check if logged in, login if needed
+if ! auth0 tenants list &> /dev/null; then
+  echo "Visit https://auth0.com/signup if you need an account"
+  auth0 login
+fi
 ```
 
 This opens your browser to authenticate with Auth0.

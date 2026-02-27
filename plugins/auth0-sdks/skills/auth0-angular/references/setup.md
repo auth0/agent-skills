@@ -1,83 +1,111 @@
 # Auth0 Angular Setup Guide
 
-Complete setup instructions for Angular applications.
+---
+
+## LLM Execution Instructions
+
+**You MUST follow these steps in order to set up Auth0. Execute each command and proceed to the next step.**
+
+1. Install the Auth0 CLI if not present
+2. Ensure user is logged in to Auth0
+3. Create a new Auth0 SPA application automatically
+4. Extract credentials from the CLI output
+5. Update `environment.ts` with the credentials
+
+**Do NOT show users manual Dashboard instructions unless the CLI approach completely fails after multiple attempts.**
 
 ---
 
-## Quick Setup (Automated)
+## Step 1: Install Auth0 CLI
 
-### Bash Script
+Check if Auth0 CLI is installed, install if needed:
 
 ```bash
-#!/bin/bash
+command -v auth0 &> /dev/null && echo "AUTH0_CLI_INSTALLED" || echo "AUTH0_CLI_NOT_FOUND"
+```
 
-# Install Auth0 CLI
-if ! command -v auth0 &> /dev/null; then
-  if [[ "$OSTYPE" == "darwin"* ]]; then
-    brew install auth0/auth0-cli/auth0
-  elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
-  fi
-fi
+**If not installed, run the appropriate command for the user's OS:**
 
-# Login to Auth0
-if ! auth0 tenants list &> /dev/null; then
-  echo "Auth0 Login Required"
-  read -p "Do you have an Auth0 account? (y/n): " HAS_ACCOUNT
-  if [[ "$HAS_ACCOUNT" != "y" ]]; then
-    echo "Visit https://auth0.com/signup to create an account"
-    read -p "Press Enter when ready..."
-  fi
-  auth0 login
-fi
+**macOS:**
+```bash
+brew install auth0/auth0-cli/auth0
+```
 
-# Create or select app
-auth0 apps list
-read -p "Enter your Auth0 app ID (or press Enter to create new): " APP_ID
+**Linux:**
+```bash
+curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
+```
 
-if [ -z "$APP_ID" ]; then
-  APP_NAME="${PWD##*/}-angular-app"
-  APP_ID=$(auth0 apps create \
-    --name "$APP_NAME" \
-    --type spa \
-    --callbacks "http://localhost:4200" \
-    --logout-urls "http://localhost:4200" \
-    --origins "http://localhost:4200" \
-    --web-origins "http://localhost:4200" \
-    --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-fi
-
-# Get credentials
-AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-
-echo "✅ Configuration complete!"
-echo "Update src/environments/environment.ts with:"
-echo "  domain: '$AUTH0_DOMAIN'"
-echo "  clientId: '$AUTH0_CLIENT_ID'"
+**Windows (PowerShell):**
+```powershell
+scoop install auth0
 ```
 
 ---
 
-## Manual Setup
+## Step 2: Ensure user is logged in to Auth0
 
-### Step 1: Install SDK
+Check login status:
 
 ```bash
-npm install @auth0/auth0-angular
+auth0 tenants list 2>&1
 ```
 
-### Step 2: Configure Environment
+**If the command fails or shows an error**, the user needs to log in:
 
-Create or update `src/environments/environment.ts`:
+```bash
+auth0 login
+```
+
+Tell the user: "A browser window will open. Please log in to your Auth0 account (or create one at https://auth0.com/signup if needed)."
+
+**Wait for user to complete login, then verify:**
+
+```bash
+auth0 tenants list
+```
+
+---
+
+## Step 3: Create Auth0 Application
+
+**Create a new SPA application - run this single command:**
+
+```bash
+auth0 apps create \
+  --name "$(basename "$PWD")-angular-app" \
+  --type spa \
+  --callbacks "http://localhost:4200" \
+  --logout-urls "http://localhost:4200" \
+  --origins "http://localhost:4200" \
+  --web-origins "http://localhost:4200" \
+  --metadata "created_by=agent_skills" \
+  --json
+```
+
+**This outputs JSON. Extract these values from the response:**
+- `client_id` - This is your Auth0 Client ID
+- `domain` - This is your Auth0 Domain (in the format `xxx.auth0.com` or `xxx.us.auth0.com`)
+
+**Example output parsing:**
+```bash
+# The command above outputs JSON like:
+# {"client_id":"abc123","domain":"dev-example.us.auth0.com",...}
+# Extract client_id and domain from this output
+```
+
+---
+
+## Step 4: Update environment.ts
+
+Angular uses TypeScript environment files instead of `.env`. Update `src/environments/environment.ts`:
 
 ```typescript
 export const environment = {
   production: false,
   auth0: {
-    domain: 'your-tenant.auth0.com',
-    clientId: 'your-client-id',
+    domain: '<domain-from-step-3>',
+    clientId: '<client_id-from-step-3>',
     authorizationParams: {
       redirect_uri: window.location.origin
     }
@@ -85,14 +113,16 @@ export const environment = {
 };
 ```
 
-For production (`src/environments/environment.prod.ts`):
+**Replace `<domain-from-step-3>` and `<client_id-from-step-3>` with actual values from the JSON output.**
+
+For production, also update `src/environments/environment.prod.ts`:
 
 ```typescript
 export const environment = {
   production: true,
   auth0: {
-    domain: 'your-tenant.auth0.com',
-    clientId: 'your-client-id',
+    domain: '<domain-from-step-3>',
+    clientId: '<client_id-from-step-3>',
     authorizationParams: {
       redirect_uri: 'https://your-production-domain.com'
     }
@@ -100,35 +130,80 @@ export const environment = {
 };
 ```
 
-### Step 3: Get Auth0 Credentials
+---
 
-Using Auth0 CLI:
+## Step 5: Install SDK
 
 ```bash
-auth0 login
-auth0 apps list
-auth0 apps show <app-id>
+npm install @auth0/auth0-angular
 ```
 
-Or via [Auth0 Dashboard](https://manage.auth0.com):
-1. Create Single Page Application
-2. Configure callback URLs: `http://localhost:4200`
-3. Copy domain and client ID
+---
+
+## Verification
+
+After setup, confirm to the user:
+- Auth0 application created successfully
+- Credentials updated in `environment.ts`
+- SDK installed
+
+Tell them to rebuild the app to load the new configuration.
 
 ---
 
 ## Troubleshooting
 
-**Module not found errors:**
-- Ensure @auth0/auth0-angular is in package.json
-- Run `npm install`
+### CLI Installation Issues
 
-**CORS errors:**
-- Add `http://localhost:4200` to "Allowed Web Origins" in Auth0 Dashboard
+**macOS - Homebrew not found:**
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
 
-**Environment variables not working:**
-- Angular uses environment files, not .env
-- Rebuild app after changing environment files
+**Windows - Scoop not found:**
+```powershell
+iwr -useb get.scoop.sh | iex
+```
+
+### Login Issues
+
+**Browser doesn't open:**
+```bash
+auth0 login --no-browser
+```
+
+**"Not logged in" error:**
+```bash
+auth0 login --force
+```
+
+### Common Errors
+
+**Module not found errors:** Ensure @auth0/auth0-angular is in package.json, run `npm install`
+
+**CORS errors:** Add `http://localhost:4200` to "Allowed Web Origins" via CLI:
+
+```bash
+auth0 apps update <app-id> --web-origins "http://localhost:4200"
+```
+
+**Environment variables not working:** Angular uses environment files, not `.env`. Rebuild app after changes.
+
+---
+
+## Fallback: Manual Dashboard Setup
+
+**Only use this if the CLI approach fails completely after troubleshooting.**
+
+1. Go to [Auth0 Dashboard](https://manage.auth0.com)
+2. Navigate to **Applications** → **Applications**
+3. Click **Create Application**
+4. Choose **Single Page Web Applications**
+5. Configure:
+   - **Allowed Callback URLs**: `http://localhost:4200`
+   - **Allowed Logout URLs**: `http://localhost:4200`
+   - **Allowed Web Origins**: `http://localhost:4200`
+6. Copy **Domain** and **Client ID** to `environment.ts`
 
 ---
 
