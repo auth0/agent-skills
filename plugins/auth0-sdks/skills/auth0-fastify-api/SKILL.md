@@ -124,63 +124,6 @@ curl http://localhost:3001/api/private \
 
 ---
 
-## Permission-Based Authorization
-
-Check for specific permissions in tokens:
-
-```javascript
-function requirePermission(permission) {
-  return async (request, reply) => {
-    const permissions = request.user.permissions || [];
-    if (!permissions.includes(permission)) {
-      return reply.status(403).send({
-        error: 'Forbidden',
-        message: `Missing permission: ${permission}`
-      });
-    }
-  };
-}
-
-// Route requiring 'read:messages' permission
-fastify.get('/api/messages', {
-  preHandler: [
-    fastify.requireAuth(),
-    requirePermission('read:messages')
-  ]
-}, async (request, reply) => {
-  return { messages: ['Message 1', 'Message 2'] };
-});
-```
-
----
-
-## TypeScript Support
-
-Extend the Token interface for custom claims:
-
-```typescript
-import '@auth0/auth0-fastify-api';
-
-declare module '@auth0/auth0-fastify-api' {
-  interface Token {
-    sub: string;
-    permissions?: string[];
-    'https://myapp.com/roles'?: string[];
-    email?: string;
-  }
-}
-
-// Now TypeScript knows about custom claims
-fastify.get('/api/profile', {
-  preHandler: fastify.requireAuth()
-}, async (request, reply) => {
-  const roles = request.user['https://myapp.com/roles']; // string[] | undefined
-  return { roles };
-});
-```
-
----
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -189,7 +132,6 @@ fastify.get('/api/profile', {
 | Missing Authorization header | Include `Authorization: Bearer <token>` in all protected endpoint requests |
 | Wrong audience in token | Client must request token with matching `audience` parameter |
 | Using ID token instead of access token | Must use **access token** for API auth, not ID token |
-| Exposing audience in client code | Audience in .env is for validation only, clients specify it when requesting tokens |
 | Not handling 401/403 errors | Implement proper error handling for unauthorized/forbidden responses |
 
 ---
@@ -211,15 +153,14 @@ fastify.get('/api/profile', {
 **Request Properties:**
 - `request.user` - Decoded JWT claims object
 - `request.user.sub` - User ID (subject)
-- `request.user.permissions` - Array of permissions (if configured)
 
 **Middleware:**
 - `fastify.requireAuth()` - Protect route with JWT validation
+- `fastify.requireAuth({ scopes: 'read:data' })` - Require specific scope(s)
 
 **Common Use Cases:**
 - Protect routes → Use `preHandler: fastify.requireAuth()` (see Step 5)
 - Get user ID → `request.user.sub`
-- Check permissions → Check `request.user.permissions` array
 - Custom claims → Access via `request.user['namespace/claim']`
 
 ---
