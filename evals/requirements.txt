@@ -1,0 +1,13 @@
+# Auth0 Agent Skills Evaluation Framework
+# Install with: pip install -r requirements.txt
+
+# Core dependencies
+pyyaml>=6.0
+requests>=2.31.0
+
+# For model-assisted rubric scoring (LLM-as-judge)
+anthropic>=0.21.0
+
+# For testing
+pytest>=7.4.0
+pytest-cov>=4.1.0

@@ -42,3 +42,9 @@ __pycache__/
 # Misc
 *.bak
 *.tmp
+
+# Evaluations
+evals/traces/
+evals/reports/
+evals/.venv/
+*.eval.json

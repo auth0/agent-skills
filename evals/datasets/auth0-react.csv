@@ -1,0 +1,6 @@
+id,prompt,scaffold,expected_checks,should_trigger,notes
+1,"Add Auth0 login to my React app",react-vite,"sdk_installed,provider_wrapped,env_vars_correct",true,basic positive case
+2,"Add authentication with @auth0/auth0-react",react-vite,"sdk_installed,provider_wrapped",true,explicit SDK mention
+3,"I need login and logout buttons in my React app using Auth0",react-vite,"sdk_installed,login_component,logout_component",true,UI components request
+4,"Protect some routes in my React app with Auth0",react-vite,"sdk_installed,provider_wrapped",true,route protection focus
+5,"Set up user authentication for my Vite React project",react-vite,"sdk_installed,provider_wrapped,env_vars_correct",true,Vite-specific

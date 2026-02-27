@@ -1,0 +1,6 @@
+id,prompt,scaffold,expected_checks,should_trigger,notes
+1,"Set up Auth0 for my project",react-vite,"framework_detected,cli_logged_in,app_created,metadata_present",true,basic setup request
+2,"Create an Auth0 application for my React SPA",react-vite,"app_type_spa,metadata_present,callbacks_configured",true,SPA-specific
+3,"I need to authenticate users in my app",react-vite,"framework_detected",true,general auth request
+4,"Help me get started with Auth0",react-vite,"cli_installed,cli_logged_in",true,onboarding request
+5,"Create Auth0 tenant and application",react-vite,"app_created",true,full setup
