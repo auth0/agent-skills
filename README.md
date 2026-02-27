@@ -98,6 +98,8 @@ Framework-specific implementation guides:
 - `auth0-vue` - Vue.js 3
 - `auth0-angular` - Angular 12+
 - `auth0-express` - Express.js
+- `auth0-fastify` - Fastify web applications
+- `auth0-fastify-api` - Fastify API authentication
 - `auth0-react-native` - React Native & Expo
 
 ```bash
@@ -168,6 +170,8 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 | [auth0-nextjs](./plugins/auth0-sdks/skills/auth0-nextjs/SKILL.md) | Next.js App Router & Pages Router | v1.0.0 |
 | [auth0-nuxt](./plugins/auth0-sdks/skills/auth0-nuxt/SKILL.md) | Nuxt 3/4 applications | v1.0.0 |
 | [auth0-express](./plugins/auth0-sdks/skills/auth0-express/SKILL.md) | Express.js web applications | v1.0.0 |
+| [auth0-fastify](./plugins/auth0-sdks/skills/auth0-fastify/SKILL.md) | Fastify web applications | v1.0.0 |
+| [auth0-fastify-api](./plugins/auth0-sdks/skills/auth0-fastify-api/SKILL.md) | Fastify API authentication | v1.0.0 |
 
 ### Mobile Skills (auth0-sdks plugin)
 
@@ -218,9 +222,10 @@ The MFA skill covers:
 | Frontend SPAs | Backend/Web Apps | Mobile | APIs |
 |---------------|------------------|--------|------|
 | React | Next.js | React Native | Express.js |
-| Vue.js | SvelteKit | Expo | Flask |
-| Angular | Nuxt.js | Android (Kotlin) | FastAPI |
-| | Remix | iOS (Swift) | Django REST |
+| Vue.js | SvelteKit | Expo | Fastify |
+| Angular | Nuxt.js | Android (Kotlin) | Flask |
+| | Remix | iOS (Swift) | FastAPI |
+| | Fastify | | Django REST |
 | | Ruby on Rails | | Go |
 | | PHP/Laravel | | Spring Boot |
 | | | | ASP.NET Core |
@@ -255,6 +260,8 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 | Next.js | [@auth0/nextjs-auth0](https://github.com/auth0/nextjs-auth0) | auth0-nextjs, auth0-mfa |
 | Nuxt.js | [@auth0/auth0-nuxt](https://github.com/auth0/auth0-nuxt) | auth0-nuxt |
 | Express | [express-openid-connect](https://github.com/auth0/express-openid-connect) | auth0-express, auth0-mfa |
+| Fastify | [@auth0/auth0-fastify](https://github.com/auth0/auth0-fastify) | auth0-fastify, auth0-mfa |
+| Fastify API | [@auth0/auth0-fastify-api](https://github.com/auth0/auth0-fastify) | auth0-fastify-api |
 | React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-react-native |
 | iOS/macOS | [Auth0.swift](https://github.com/auth0/Auth0.swift) | Coming soon |
 | Android | [Auth0.Android](https://github.com/auth0/Auth0.Android) | Coming soon |
@@ -328,6 +335,10 @@ auth0/agent-skills/
 │           │       ├── api.md
 │           │       ├── integration.md
 │           │       └── setup.md
+│           ├── auth0-fastify/
+│           │   └── SKILL.md
+│           ├── auth0-fastify-api/
+│           │   └── SKILL.md
 │           └── auth0-react-native/
 │               ├── SKILL.md
 │               └── reference/

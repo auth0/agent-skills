@@ -2,5 +2,5 @@
   "name": "auth0-sdks",
   "displayName": "Auth0 SDK Skills",
   "version": "1.0.0",
-  "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Angular, Express, and React Native with complete implementation guides."
+  "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Angular, Express, Fastify, and React Native with complete implementation guides."
 }
