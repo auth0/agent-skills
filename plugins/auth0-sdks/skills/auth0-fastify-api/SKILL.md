@@ -156,7 +156,8 @@ curl http://localhost:3001/api/private \
 
 **Middleware:**
 - `fastify.requireAuth()` - Protect route with JWT validation
-- `fastify.requireAuth({ scopes: 'read:data' })` - Require specific scope(s)
+- `fastify.requireAuth({ scopes: 'read:data' })` - Require specific scope
+- `fastify.requireAuth({ scopes: ['read:data', 'write:data'] })` - Require specific scopes
 
 **Common Use Cases:**
 - Protect routes → Use `preHandler: fastify.requireAuth()` (see Step 5)
