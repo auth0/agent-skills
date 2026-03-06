@@ -305,23 +305,9 @@ Auth0 supports these password hashing algorithms:
 
 ## Importing to Auth0
 
-### Method 1: Auth0 Dashboard
+**You MUST use the Auth0 CLI or Management API to import users.** Do NOT instruct users to manually import via the Auth0 Dashboard.
 
-**Steps:**
-1. Go to Auth0 Dashboard
-2. Navigate to **Authentication → Database → [Your Connection]**
-3. Click **Users** tab
-4. Click **Import Users** button
-5. Upload your JSON file
-6. Review and confirm
-
-**Limitations:**
-- File size: Max 500KB per upload
-- Users per file: Recommended max 10,000
-
----
-
-### Method 2: Auth0 CLI
+### Method 1: Auth0 CLI (Recommended)
 
 **Prerequisites:**
 ```bash
@@ -350,7 +336,7 @@ auth0 api get "jobs/{job-id}"
 
 ---
 
-### Method 3: Management API
+### Method 2: Management API
 
 **Using curl:**
 ```bash
