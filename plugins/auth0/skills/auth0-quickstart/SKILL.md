@@ -1,6 +1,6 @@
 ---
 name: auth0-quickstart
-description: Use when starting Auth0 integration in any framework - detects your stack (React, Next.js, Vue, Angular, Express, Fastify, React Native) and routes to correct SDK setup workflow
+description: Use when starting Auth0 integration in any framework - detects your stack (React, Next.js, Vue, Nuxt, Angular, Express, Fastify, React Native) and routes to correct SDK setup workflow
 ---
 
 # Auth0 Quickstart
@@ -15,7 +15,7 @@ Detect your framework and get started with Auth0 authentication.
 
 ```bash
 # Check package.json dependencies
-cat package.json | grep -E "react|next|vue|angular|express|fastify|@nestjs"
+cat package.json | grep -E "react|next|vue|nuxt|angular|express|fastify|@nestjs"
 
 # Or check project files
 ls -la | grep -E "angular.json|vue.config.js|next.config"
@@ -28,6 +28,7 @@ ls -la | grep -E "angular.json|vue.config.js|next.config"
 | React (Vite/CRA) | `"react"` in package.json, no Next.js | `auth0-react` |
 | Next.js | `"next"` in package.json | `auth0-nextjs` |
 | Vue.js | `"vue"` in package.json, no Nuxt | `auth0-vue` |
+| Nuxt | `"nuxt"` in package.json | `auth0-nuxt` |
 | Angular | `angular.json` exists or `"@angular/core"` | `auth0-angular` |
 | Express.js | `"express"` in package.json | `auth0-express` |
 | Fastify (web app) | `"fastify"` in package.json, has `@fastify/view` | `auth0-fastify` |
@@ -77,7 +78,7 @@ auth0 apps create --name "My App" --type spa \
   --metadata "created_by=agent_skills"
 ```
 
-**Regular Web Apps (Next.js, Express, Fastify):**
+**Regular Web Apps (Next.js, Nuxt, Express, Fastify):**
 ```bash
 auth0 apps create --name "My App" --type regular \
   --callbacks "http://localhost:3000/api/auth/callback" \
@@ -113,6 +114,7 @@ Based on your framework detection, use the appropriate skill:
 - **`auth0-react`** - React SPAs (Vite, Create React App)
 - **`auth0-nextjs`** - Next.js (App Router and Pages Router)
 - **`auth0-vue`** - Vue.js 3 applications
+- **`auth0-nuxt`** - Nuxt 3/4 applications
 - **`auth0-angular`** - Angular 12+ applications
 
 **Backend:**
@@ -130,7 +132,6 @@ Not yet available as separate skills. Use Auth0 documentation:
 **Frontend:**
 - [SvelteKit](https://auth0.com/docs/quickstart/webapp/sveltekit)
 - [Remix](https://auth0.com/docs/quickstart/webapp/remix)
-- [Nuxt.js](https://auth0.com/docs/quickstart/webapp/nextjs)
 
 **Backend:**
 - [Flask (Python)](https://auth0.com/docs/quickstart/webapp/python)
@@ -210,6 +211,7 @@ Complete Auth0 CLI reference:
 - `auth0-react` - React SPA integration
 - `auth0-nextjs` - Next.js integration
 - `auth0-vue` - Vue.js integration
+- `auth0-nuxt` - Nuxt 3/4 integration
 - `auth0-angular` - Angular integration
 - `auth0-express` - Express.js integration
 - `auth0-fastify` - Fastify web app integration
