@@ -218,10 +218,6 @@ Complete Auth0 CLI reference:
 
 ### Advanced Features
 - `auth0-mfa` - Multi-Factor Authentication
-- `auth0-organizations` - B2B multi-tenancy
-- `auth0-passkeys` - Passwordless authentication
-- `auth0-flows` - Customize login flows
-- `auth0-enterprise` - SAML, OIDC connections
 
 ---
 
