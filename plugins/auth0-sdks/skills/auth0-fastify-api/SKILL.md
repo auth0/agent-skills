@@ -1,6 +1,6 @@
 ---
 name: auth0-fastify-api
-description: Use when protecting Fastify API endpoints with JWT access token validation - integrates @auth0/auth0-fastify-api for stateless API authentication
+description: Use when securing Fastify API endpoints with JWT Bearer token validation, scope/permission checks, or stateless auth - integrates @auth0/auth0-fastify-api for REST APIs receiving access tokens from frontends or mobile apps.
 ---
 
 # Auth0 Fastify API Integration

@@ -1,6 +1,6 @@
 ---
 name: auth0-mfa
-description: Use when adding multi-factor authentication (MFA/2FA) or requiring additional verification for sensitive operations - covers step-up auth, adaptive MFA, and risk-based authentication with Auth0
+description: Use when adding MFA, 2FA, TOTP, SMS codes, push notifications, passkeys, or when requiring step-up verification for sensitive operations or meeting compliance requirements (HIPAA, PCI-DSS) - covers adaptive and risk-based authentication with Auth0.
 ---
 
 # Auth0 MFA Guide

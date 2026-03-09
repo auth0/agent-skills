@@ -1,6 +1,6 @@
 ---
 name: auth0-fastify
-description: Use when adding authentication to Fastify server-rendered web applications with session management - integrates @auth0/auth0-fastify for high-performance web apps
+description: Use when adding authentication (login, logout, protected routes) to Fastify web applications - integrates @auth0/auth0-fastify for session-based auth. For stateless Fastify APIs use auth0-fastify-api instead.
 ---
 
 # Auth0 Fastify Integration

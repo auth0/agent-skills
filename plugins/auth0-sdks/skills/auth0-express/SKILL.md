@@ -1,6 +1,6 @@
 ---
 name: auth0-express
-description: Use when adding authentication to Express.js server-rendered web applications with session management - integrates express-openid-connect for traditional web apps
+description: Use when adding authentication (login, logout, protected routes) to Express.js web applications - integrates express-openid-connect for session-based auth.
 ---
 
 # Auth0 Express Integration

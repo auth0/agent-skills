@@ -1,6 +1,6 @@
 ---
 name: auth0-quickstart
-description: Use when starting Auth0 integration in any framework - detects your stack (React, Next.js, Vue, Angular, Express, Fastify, React Native) and routes to correct SDK setup workflow
+description: Use when adding authentication or login to any app - detects your stack (React, Next.js, Vue, Nuxt, Angular, Express, Fastify, React Native), sets up an Auth0 account if needed, and routes to the correct SDK setup workflow.
 ---
 
 # Auth0 Quickstart
