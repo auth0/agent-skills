@@ -24,7 +24,7 @@ const route = useRoute();
         <a v-if="user" :href="`/auth/logout`">
           Logout ({{ user.name }})
         </a>
-        <a v-else :href="`/auth/login?returnTo=${route.path}`">
+        <a v-else :href="`/auth/login?returnTo=${encodeURIComponent(route.path)}`">
           Login
         </a>
       </div>
@@ -423,7 +423,7 @@ export default defineEventHandler(async (event) => {
 const handleLogin = async () => {
   // Enhanced behavior with JavaScript
   const returnTo = useRoute().fullPath;
-  await navigateTo(`/auth/login?returnTo=${returnTo}`);
+  await navigateTo(`/auth/login?returnTo=${encodeURIComponent(returnTo)}`);
 };
 </script>
 ```

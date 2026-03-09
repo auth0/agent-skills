@@ -116,7 +116,7 @@ const user = useUser();
 ```typescript
 // middleware/auth.ts - Client navigation
 export default defineNuxtRouteMiddleware((to) => {
-  if (!useUser().value) return navigateTo(`/auth/login?returnTo=${to.path}`);
+  if (!useUser().value) return navigateTo(`/auth/login?returnTo=${encodeURIComponent(to.path)}`);
 });
 ```
 
@@ -127,7 +127,7 @@ export default defineEventHandler(async (event) => {
   const auth0Client = useAuth0(event);
   const session = await auth0Client.getSession();
   if (!session)  {
-    return sendRedirect(event, `/auth/login?returnTo=${url.pathname}`);
+    return sendRedirect(event, `/auth/login?returnTo=${encodeURIComponent(url.pathname)}`);
   }
 });
 ```

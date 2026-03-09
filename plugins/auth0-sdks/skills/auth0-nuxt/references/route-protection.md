@@ -21,7 +21,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const user = useUser();
 
   if (!user.value) {
-    return navigateTo(`/auth/login?returnTo=${to.path}`);
+    return navigateTo(`/auth/login?returnTo=${encodeURIComponent(to.path)}`);
   }
 });
 ```
@@ -49,7 +49,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const user = useUser();
 
   if (!user.value) {
-    return navigateTo(`/auth/login?returnTo=${to.path}`);
+    return navigateTo(`/auth/login?returnTo=${encodeURIComponent(to.path)}`);
   }
 
   // Check for admin role
@@ -77,7 +77,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const user = useUser();
 
   if (!user.value) {
-    return navigateTo(`/auth/login?returnTo=${to.path}`);
+    return navigateTo(`/auth/login?returnTo=${encodeURIComponent(to.path)}`);
   }
 
   // Check for specific permission
@@ -130,7 +130,7 @@ export default defineEventHandler(async (event) => {
     const session = await auth0Client.getSession();
 
     if (!session) {
-      return sendRedirect(event, `/auth/login?returnTo=${url.pathname}`);
+      return sendRedirect(event, `/auth/login?returnTo=${encodeURIComponent(url.pathname)}`);
     }
   }
 });
@@ -154,7 +154,7 @@ export default defineEventHandler(async (event) => {
     const session = await auth0Client.getSession();
 
     if (!session) {
-      return sendRedirect(event, `/auth/login?returnTo=${url.pathname}`);
+      return sendRedirect(event, `/auth/login?returnTo=${encodeURIComponent(url.pathname)}`);
     }
   }
 });
@@ -172,7 +172,7 @@ export default defineEventHandler(async (event) => {
     const session = await auth0Client.getSession();
 
     if (!session) {
-      return sendRedirect(event, `/auth/login?returnTo=${url.pathname}`);
+      return sendRedirect(event, `/auth/login?returnTo=${encodeURIComponent(url.pathname)}`);
     }
 
     const user = await auth0Client.getUser();
@@ -322,7 +322,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
   const user = useUser();
   if (!user.value) {
-    return navigateTo(`/auth/login?returnTo=${to.path}`);
+    return navigateTo(`/auth/login?returnTo=${encodeURIComponent(to.path)}`);
   }
 });
 ```
@@ -335,7 +335,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const user = useUser();
 
   if (!user.value) {
-    return navigateTo(`/auth/login?returnTo=${to.path}`);
+    return navigateTo(`/auth/login?returnTo=${encodeURIComponent(to.path)}`);
   }
 
   const subscription = user.value['https://my-app.com/subscription'];
@@ -390,7 +390,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   const user = useUser();
 
   if (!user.value) {
-    return navigateTo(`/auth/login?returnTo=${to.path}`);
+    return navigateTo(`/auth/login?returnTo=${encodeURIComponent(to.path)}`);
   }
 
   if (!user.value.email_verified) {
@@ -409,7 +409,7 @@ export default defineNuxtRouteMiddleware((to, from) => {
   <div>
     <h1>Unauthorized</h1>
     <p>You need to log in to access this page.</p>
-    <a :href="`/auth/login?returnTo=${$route.query.returnTo || '/'}`">
+    <a :href="`/auth/login?returnTo=${encodeURIComponent($route.query.returnTo || '/')}`">
       Log In
     </a>
   </div>
