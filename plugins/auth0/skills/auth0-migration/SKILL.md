@@ -106,11 +106,13 @@ Update your application code to use Auth0 SDKs.
 - [React Migration](references/code-patterns.md#react-migration)
 - [Next.js Migration](references/code-patterns.md#nextjs-migration)
 - [Vue.js Migration](references/code-patterns.md#vuejs-migration)
+- [Nuxt Migration](references/code-patterns.md#nuxt-migration)
 - [Angular Migration](references/code-patterns.md#angular-migration)
 - [React Native Migration](references/code-patterns.md#react-native-migration)
 
 **Backend:**
 - [Express.js Migration](references/code-patterns.md#expressjs-migration)
+- [Fastify Migration](references/code-patterns.md#fastify-migration)
 - [API JWT Validation](references/code-patterns.md#backend-api-jwt-validation)
 
 **Provider-Specific:**
@@ -122,8 +124,11 @@ Update your application code to use Auth0 SDKs.
 - `auth0-react` for React applications
 - `auth0-nextjs` for Next.js applications
 - `auth0-vue` for Vue.js applications
+- `auth0-nuxt` for Nuxt 3/4 applications
 - `auth0-angular` for Angular applications
 - `auth0-express` for Express.js applications
+- `auth0-fastify` for Fastify web applications
+- `auth0-fastify-api` for Fastify API applications
 - `auth0-react-native` for React Native/Expo applications
 
 ---
@@ -211,9 +216,11 @@ Complete guide to exporting and importing users:
 Before/after examples for all major frameworks:
 - [React Patterns](references/code-patterns.md#react-migration)
 - [Next.js Patterns](references/code-patterns.md#nextjs-migration)
-- [Express Patterns](references/code-patterns.md#expressjs-migration)
 - [Vue.js Patterns](references/code-patterns.md#vuejs-migration)
+- [Nuxt Patterns](references/code-patterns.md#nuxt-migration)
 - [Angular Patterns](references/code-patterns.md#angular-migration)
+- [Express Patterns](references/code-patterns.md#expressjs-migration)
+- [Fastify Patterns](references/code-patterns.md#fastify-migration)
 - [React Native Patterns](references/code-patterns.md#react-native-migration)
 - [API JWT Validation](references/code-patterns.md#backend-api-jwt-validation)
 
@@ -228,8 +235,11 @@ Before/after examples for all major frameworks:
 - `auth0-react` - React SPA integration
 - `auth0-nextjs` - Next.js integration
 - `auth0-vue` - Vue.js integration
+- `auth0-nuxt` - Nuxt 3/4 integration
 - `auth0-angular` - Angular integration
 - `auth0-express` - Express.js integration
+- `auth0-fastify` - Fastify web app integration
+- `auth0-fastify-api` - Fastify API integration
 - `auth0-react-native` - React Native/Expo integration
 
 ---
