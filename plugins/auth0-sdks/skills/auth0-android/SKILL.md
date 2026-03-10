@@ -41,7 +41,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
    > - **Automatic setup (Recommended)** — runs a bootstrap script that creates the Auth0 app, database connection, callback URLs, and populates `strings.xml`
    > - **Manual setup** — the user will provide their Auth0 Client ID and Domain, and the agent configures `strings.xml`
    >
-   > **If automatic:** Run the bootstrap script from `auth0-android/scripts/`. The script handles everything — do NOT extract or handle client_id/domain manually. See [Setup Guide](references/setup.md#quick-setup-automated) for full details.
+   > **If automatic:** Run the bootstrap script from `auth0-android/scripts/`. The script handles everything — do NOT extract or handle client_id/domain manually. See [Setup Guide](references/setup.md#automatic-setup) for full details.
    > ```bash
    > cd <path-to-skill>/auth0-android/scripts
    > npm install && node bootstrap.mjs <path-to-android-project>

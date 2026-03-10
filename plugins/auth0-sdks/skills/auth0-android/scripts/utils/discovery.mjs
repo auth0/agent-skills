@@ -11,9 +11,15 @@ export async function discoverExistingConnections() {
     const connections = (await auth0ApiCall("get", "connections")) || []
     spinner.succeed("Discovered existing connections")
     return connections
-  } catch {
-    spinner.succeed("No existing connections found")
-    return []
+  } catch (e) {
+    const msg = e.message || String(e)
+    // Only treat "no results" or empty response as non-fatal
+    if (msg.includes("404") || msg.includes("Not Found")) {
+      spinner.succeed("No existing connections found")
+      return []
+    }
+    spinner.fail("Failed to discover connections")
+    throw e
   }
 }
 

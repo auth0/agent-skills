@@ -6,13 +6,9 @@
 
 ## Setup Overview
 
-To get started quickly with Auth0 Android:
-
 1. Add SDK dependency to `build.gradle`
-2. Create a Native application in Auth0 Dashboard
-3. Configure `strings.xml` with credentials
-4. Add manifest placeholders to `build.gradle`
-5. Set callback URLs in your Auth0 application
+2. Configure Auth0 (automatic bootstrap script or manual credentials)
+3. Add manifest placeholders and INTERNET permission (post-setup)
 
 ## Auth0 Configuration
 
@@ -89,9 +85,7 @@ To get started quickly with Auth0 Android:
 >    ./gradlew assembleDebug
 >    ```
 
-## Manual Setup
-
-### Step 1: Install SDK
+## SDK Installation
 
 Add the dependency to your module's `build.gradle`:
 
@@ -114,117 +108,6 @@ android {
         jvmTarget = '1.8'
     }
 }
-```
-
-### Step 2: Create Auth0 Native Application
-
-#### Using Auth0 CLI (Recommended)
-
-If you have the [Auth0 CLI](https://github.com/auth0/auth0-cli) installed:
-
-```bash
-auth0 apps create \
-  --name "My Android App" \
-  --type native \
-  --callbacks "https://YOUR_DOMAIN/android/YOUR_PACKAGE/callback" \
-  --logout-urls "https://YOUR_DOMAIN/android/YOUR_PACKAGE/callback"
-```
-
-#### Manual Dashboard Setup
-
-1. Log in to your [Auth0 Dashboard](https://manage.auth0.com)
-2. Go to Applications → Create Application
-3. Select **Native** application type
-4. Name your application (e.g., "My Android App")
-5. Go to the **Settings** tab
-6. Note your **Client ID** and **Domain**
-7. Configure your callback and logout URLs (see Step 5 below)
-8. Save
-
-### Step 3: Configure strings.xml
-
-Create or update `res/values/strings.xml`:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">My Auth0 App</string>
-    <string name="com_auth0_client_id">YOUR_CLIENT_ID</string>
-    <string name="com_auth0_domain">YOUR_DOMAIN</string>
-    <string name="com_auth0_scheme">demo</string>
-</resources>
-```
-
-Replace:
-- `YOUR_CLIENT_ID` with your Auth0 application's Client ID
-- `YOUR_DOMAIN` with your Auth0 domain (e.g., `example.auth0.com`)
-
-### Step 4: Configure Manifest Placeholders
-
-Update your module's `build.gradle` to include manifest placeholders:
-
-```gradle
-android {
-    defaultConfig {
-        applicationId "com.example.myapp"
-        minSdkVersion 21
-        targetSdkVersion 34
-
-        manifestPlaceholders = [
-            auth0Domain: "@string/com_auth0_domain",
-            auth0Scheme: "@string/com_auth0_scheme"
-        ]
-    }
-}
-```
-
-The placeholders inject your Auth0 domain and scheme into the AndroidManifest.xml at build time.
-
-### Step 5: Configure Callback URLs
-
-In your [Auth0 Dashboard](https://manage.auth0.com):
-
-1. Go to Applications → Your App → Settings
-2. Scroll to **Allowed Callback URLs**
-3. Add your callback URL:
-   ```
-   https://{YOUR_AUTH0_DOMAIN}/android/{YOUR_APP_PACKAGE_NAME}/callback
-   ```
-
-   For example: `https://example.auth0.com/android/com.example.myapp/callback`
-
-4. Scroll to **Allowed Logout URLs**
-5. Add your logout URL using the same format
-6. Save changes
-
-The callback URL format is: `https://{YOUR_AUTH0_DOMAIN}/android/{YOUR_APP_PACKAGE_NAME}/callback`
-
-You can find your package name in your `build.gradle`:
-```gradle
-android {
-    defaultConfig {
-        applicationId "com.example.myapp"  // This is your package name
-    }
-}
-```
-
-### Step 6: Add INTERNET Permission
-
-Update your `AndroidManifest.xml`:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <uses-permission android:name="android.permission.INTERNET" />
-
-    <application
-        android:label="@string/app_name"
-        ...>
-        <!-- Activities here -->
-    </application>
-
-</manifest>
 ```
 
 ## Android App Links (Recommended)

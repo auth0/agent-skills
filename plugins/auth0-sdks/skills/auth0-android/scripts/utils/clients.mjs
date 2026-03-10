@@ -4,7 +4,7 @@ import ora from "ora"
 import { auth0ApiCall } from "./auth0-api.mjs"
 import { ChangeAction, createChangeItem } from "./change-plan.mjs"
 
-const DEFAULT_SCHEME = "demo"
+export const DEFAULT_SCHEME = "demo"
 
 export function checkNativeClientChanges(domain, androidConfig) {
   const { packageName } = androidConfig

@@ -13,8 +13,8 @@ import {
   buildChangePlan,
   displayChangePlan,
 } from "./utils/discovery.mjs"
-import { applyNativeClientChanges } from "./utils/clients.mjs"
-import { applyDatabaseConnectionChanges } from "./utils/connections.mjs"
+import { applyNativeClientChanges, DEFAULT_SCHEME } from "./utils/clients.mjs"
+import { applyDatabaseConnectionChanges, checkDatabaseConnectionChanges } from "./utils/connections.mjs"
 import { writeStringsFile } from "./utils/strings-writer.mjs"
 import { confirmWithUser } from "./utils/helpers.mjs"
 
@@ -59,20 +59,19 @@ async function main() {
   const client = await applyNativeClientChanges(plan.client)
 
   // 10. Set up database connection with the real client_id
-  const { checkDatabaseConnectionChanges } = await import("./utils/connections.mjs")
   plan.connection = checkDatabaseConnectionChanges(connections, client.client_id)
   await applyDatabaseConnectionChanges(plan.connection, client.client_id)
 
   // 10. Write strings.xml
-  await writeStringsFile(domain, client.client_id, "demo", androidConfig.stringsXmlPath)
+  await writeStringsFile(domain, client.client_id, DEFAULT_SCHEME, androidConfig.stringsXmlPath)
 
   // 11. Summary
   console.log("\n✅ Auth0 Android Setup Complete\n")
   console.log(`  Domain:        ${domain}`)
   console.log(`  Client ID:     ${client.client_id}`)
   console.log(`  Package:       ${androidConfig.packageName}`)
-  console.log(`  Scheme:        demo`)
-  console.log(`  Callback URL:  demo://${domain}/android/${androidConfig.packageName}/callback`)
+  console.log(`  Scheme:        ${DEFAULT_SCHEME}`)
+  console.log(`  Callback URL:  ${DEFAULT_SCHEME}://${domain}/android/${androidConfig.packageName}/callback`)
   console.log("")
   console.log("  Remaining manual steps:")
   console.log("  1. Verify manifest placeholders in app/build.gradle:")

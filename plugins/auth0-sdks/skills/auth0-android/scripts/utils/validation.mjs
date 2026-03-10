@@ -63,7 +63,7 @@ export function validateAndroidProject(projectPath) {
     .find((f) => fs.existsSync(f))
 
   if (!gradleFile) {
-    spinner.fail(`No app/build.gradle found in ${projectPath}`)
+    spinner.fail(`No app/build.gradle or app/build.gradle.kts found in ${projectPath}`)
     process.exit(1)
   }
 
