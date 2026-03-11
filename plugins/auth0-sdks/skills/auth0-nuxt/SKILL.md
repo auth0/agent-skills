@@ -36,24 +36,106 @@ Server-side session authentication for Nuxt 3/4. NOT the same as @auth0/auth0-vu
 | Missing callback URLs in Auth0 Dashboard | Add `http://localhost:3000/auth/callback` |
 | Weak/missing session secret | Generate: `openssl rand -hex 64` |
 
+## LLM Execution Instructions
+
+**You MUST follow these steps in order to set up Auth0. Execute each command and proceed to the next step.**
+
+1. Install the Auth0 CLI if not present
+2. Ensure user is logged in to Auth0
+3. Create a new Auth0 Regular Web Application automatically
+4. Extract credentials from the CLI output
+5. Write credentials to `.env` file (after user confirmation)
+
+**Do NOT show users manual Dashboard instructions unless the CLI approach completely fails after multiple attempts.**
+
+---
+
 ## Quick Setup
 
-```bash
-# 1. Install
-npm install @auth0/auth0-nuxt
+### Step 1: Check for existing .env and get user confirmation
 
-# 2. Generate secret
+```bash
+test -f .env && echo "EXISTS" || echo "NOT_FOUND"
+```
+
+**Ask the user:** "This setup will create/update a `.env` file with Auth0 credentials. Proceed?"
+
+**Do not continue unless user confirms.**
+
+### Step 2: Install Auth0 CLI
+
+```bash
+command -v auth0 &> /dev/null && echo "AUTH0_CLI_INSTALLED" || echo "AUTH0_CLI_NOT_FOUND"
+```
+
+**If not installed:**
+
+**macOS:**
+```bash
+brew install auth0/auth0-cli/auth0
+```
+
+**Linux:**
+```bash
+curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
+```
+
+### Step 3: Ensure user is logged in to Auth0
+
+```bash
+auth0 tenants list 2>&1
+```
+
+**If fails**, run:
+```bash
+auth0 login
+```
+
+Tell user: "A browser window will open. Please log in to your Auth0 account (or create one at https://auth0.com/signup if needed)."
+
+### Step 4: Create Auth0 Application
+
+**Create a new Regular Web Application:**
+
+```bash
+auth0 apps create \
+  --name "$(basename "$PWD")-nuxt" \
+  --type regular \
+  --callbacks "http://localhost:3000/auth/callback" \
+  --logout-urls "http://localhost:3000" \
+  --metadata "created_by=agent_skills" \
+  --json
+```
+
+**Extract from JSON output:**
+- `client_id` - Auth0 Client ID
+- `client_secret` - Auth0 Client Secret
+- `domain` - Auth0 Domain
+
+### Step 5: Generate session secret
+
+```bash
 openssl rand -hex 64
 ```
 
+### Step 6: Write credentials to .env
+
 ```bash
-# 3. .env
-NUXT_AUTH0_DOMAIN=your-tenant.auth0.com
-NUXT_AUTH0_CLIENT_ID=your-client-id
-NUXT_AUTH0_CLIENT_SECRET=your-client-secret
-NUXT_AUTH0_SESSION_SECRET=<from-openssl>
+cat >> .env << 'EOF'
+NUXT_AUTH0_DOMAIN=<domain-from-step-4>
+NUXT_AUTH0_CLIENT_ID=<client_id-from-step-4>
+NUXT_AUTH0_CLIENT_SECRET=<client_secret-from-step-4>
+NUXT_AUTH0_SESSION_SECRET=<secret-from-step-5>
 NUXT_AUTH0_APP_BASE_URL=http://localhost:3000
-NUXT_AUTH0_AUDIENCE=https://your-api  # optional
+EOF
+```
+
+**Replace placeholders with actual values.**
+
+### Step 7: Install SDK
+
+```bash
+npm install @auth0/auth0-nuxt
 ```
 
 ```typescript

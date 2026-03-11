@@ -1,160 +1,212 @@
 # Auth0 Next.js Setup Guide
 
-Setup instructions for Next.js with App Router or Pages Router.
+---
+
+## LLM Execution Instructions
+
+**You MUST follow these steps in order to set up Auth0. Execute each command and proceed to the next step.**
+
+1. Install the Auth0 CLI if not present
+2. Ensure user is logged in to Auth0
+3. Create a new Auth0 Regular Web Application automatically
+4. Extract credentials from the CLI output
+5. Write credentials to `.env.local` file (after user confirmation)
+
+**Do NOT show users manual Dashboard instructions unless the CLI approach completely fails after multiple attempts.**
 
 ---
 
-## Quick Setup (Automated)
+## Step 1: Check for existing env file and get user confirmation
 
-**Never read the contents of `.env.local` or `.env` at any point during setup.** The file may contain sensitive secrets that should not be exposed in the LLM context. If you determine you need to read the file for any reason, ask the user for explicit permission before doing so — do not proceed until the user confirms.
-
-**Before running any part of this setup that writes to an env file, you MUST ask the user for explicit confirmation.** Follow the steps below precisely.
-
-### Step 1: Check for existing env files and confirm with user
-
-Before writing credentials, check which env files exist:
+Before doing anything, check if env files exist and ask user for permission:
 
 ```bash
 test -f .env.local && echo "ENV_LOCAL_EXISTS" || echo "ENV_LOCAL_NOT_FOUND"
 test -f .env && echo "ENV_EXISTS" || echo "ENV_NOT_FOUND"
 ```
 
-Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
+**Then ask the user:**
+- If no env file exists: "This setup will create a `.env.local` file with Auth0 credentials. Proceed?"
+- If `.env.local` exists: "A `.env.local` file exists. This will append Auth0 credentials without modifying existing content. Proceed?"
+- If only `.env` exists: "A `.env` file exists. This will append Auth0 credentials to it. Proceed?"
 
-- If `.env.local` exists, ask:
-  - Question: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env.local" / "No, I'll update it manually"
-
-- If `.env.local` does **not** exist but `.env` exists, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
-
-- If neither exists, ask:
-  - Question: "This setup will create a `.env.local` file containing Auth0 credentials (AUTH0_CLIENT_ID, AUTH0_ISSUER_BASE_URL, AUTH0_SECRET) and a placeholder for AUTH0_CLIENT_SECRET that you will need to fill in manually. Do you want to proceed?"
-  - Options: "Yes, create .env.local" / "No, I'll configure it manually"
-
-**Do not proceed with writing to any env file unless the user selects the confirmation option.**
-
-### Step 2: Run automated setup (only after confirmation)
-
-```bash
-#!/bin/bash
-
-# Install Auth0 CLI
-if ! command -v auth0 &> /dev/null; then
-  [[ "$OSTYPE" == "darwin"* ]] && brew install auth0/auth0-cli/auth0 || \
-  curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
-fi
-
-# Login
-if ! auth0 tenants list &> /dev/null; then
-  echo "Visit https://auth0.com/signup if you need an account"
-  auth0 login
-fi
-
-# Create/select app
-auth0 apps list
-read -p "Enter app ID (or Enter to create new): " APP_ID
-
-if [ -z "$APP_ID" ]; then
-  APP_ID=$(auth0 apps create \
-    --name "${PWD##*/}-nextjs" \
-    --type regular \
-    --callbacks "http://localhost:3000/api/auth/callback" \
-    --logout-urls "http://localhost:3000" \
-    --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-fi
-
-# Get credentials
-AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-
-# Generate secret
-AUTH0_SECRET=$(openssl rand -hex 32)
-
-# Determine target env file
-if [ -f .env.local ]; then
-  TARGET_FILE=".env.local"
-elif [ -f .env ]; then
-  TARGET_FILE=".env"
-else
-  TARGET_FILE=".env.local"
-fi
-
-# Append Auth0 credentials
-cat >> "$TARGET_FILE" << ENVEOF
-AUTH0_SECRET=$AUTH0_SECRET
-AUTH0_BASE_URL=http://localhost:3000
-AUTH0_ISSUER_BASE_URL=https://$AUTH0_DOMAIN
-AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
-AUTH0_CLIENT_SECRET='YOUR_CLIENT_SECRET'
-ENVEOF
-
-echo "✅ Auth0 credentials written to $TARGET_FILE"
-```
-
-After the script runs, remind the user to:
-1. Open the env file that was written and replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0.
-2. Ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.
+**Do not continue unless user confirms.**
 
 ---
 
-## Manual Setup
+## Step 2: Install Auth0 CLI
 
-### Step 1: Install SDK
+Check if Auth0 CLI is installed, install if needed:
+
+```bash
+command -v auth0 &> /dev/null && echo "AUTH0_CLI_INSTALLED" || echo "AUTH0_CLI_NOT_FOUND"
+```
+
+**If not installed, run the appropriate command for the user's OS:**
+
+**macOS:**
+```bash
+brew install auth0/auth0-cli/auth0
+```
+
+**Linux:**
+```bash
+curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
+```
+
+**Windows (PowerShell):**
+```powershell
+scoop install auth0
+```
+
+---
+
+## Step 3: Ensure user is logged in to Auth0
+
+Check login status:
+
+```bash
+auth0 tenants list 2>&1
+```
+
+**If the command fails or shows an error**, the user needs to log in:
+
+```bash
+auth0 login
+```
+
+Tell the user: "A browser window will open. Please log in to your Auth0 account (or create one at https://auth0.com/signup if needed)."
+
+**Wait for user to complete login, then verify:**
+
+```bash
+auth0 tenants list
+```
+
+---
+
+## Step 4: Create Auth0 Application
+
+**Create a new Regular Web Application - run this single command:**
+
+```bash
+auth0 apps create \
+  --name "$(basename "$PWD")-nextjs" \
+  --type regular \
+  --callbacks "http://localhost:3000/api/auth/callback" \
+  --logout-urls "http://localhost:3000" \
+  --metadata "created_by=agent_skills" \
+  --json
+```
+
+**This outputs JSON. Extract these values from the response:**
+- `client_id` - This is your Auth0 Client ID
+- `client_secret` - This is your Auth0 Client Secret
+- `domain` - This is your Auth0 Domain (in the format `xxx.auth0.com` or `xxx.us.auth0.com`)
+
+**Example output parsing:**
+```bash
+# The command above outputs JSON like:
+# {"client_id":"abc123","client_secret":"xyz789","domain":"dev-example.us.auth0.com",...}
+# Extract client_id, client_secret, and domain from this output
+```
+
+---
+
+## Step 5: Generate AUTH0_SECRET
+
+Generate a random secret for session encryption:
+
+```bash
+openssl rand -hex 32
+```
+
+Save this output - you'll need it for the `.env.local` file.
+
+---
+
+## Step 6: Write credentials to .env.local
+
+Determine target file (prefer `.env.local`, fall back to `.env` if it exists):
+
+**Write the following to the env file:**
+
+```bash
+cat >> .env.local << 'EOF'
+AUTH0_SECRET=<generated-secret-from-step-5>
+AUTH0_BASE_URL=http://localhost:3000
+AUTH0_ISSUER_BASE_URL=https://<domain-from-step-4>
+AUTH0_CLIENT_ID=<client_id-from-step-4>
+AUTH0_CLIENT_SECRET=<client_secret-from-step-4>
+EOF
+```
+
+**Replace the placeholders with actual values from previous steps.**
+
+---
+
+## Step 7: Install SDK
 
 ```bash
 npm install @auth0/nextjs-auth0
 ```
 
-### Step 2: Create .env.local
+---
 
-```bash
-AUTH0_SECRET=<openssl-rand-hex-32>
-AUTH0_BASE_URL=http://localhost:3000
-AUTH0_ISSUER_BASE_URL=https://your-tenant.auth0.com
-AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
-```
+## Verification
 
-Generate `AUTH0_SECRET`:
-```bash
-openssl rand -hex 32
-```
+After setup, confirm to the user:
+- Auth0 application created successfully
+- Credentials written to `.env.local`
+- SDK installed
 
-### Step 3: Configure Auth0 Application
-
-Via CLI:
-```bash
-auth0 login
-auth0 apps create --name "My Next.js App" --type regular \
-  --callbacks "http://localhost:3000/api/auth/callback" \
-  --logout-urls "http://localhost:3000"
-```
-
-Via Dashboard:
-1. Create **Regular Web Application**
-2. Configure:
-   - Allowed Callback URLs: `http://localhost:3000/api/auth/callback`
-   - Allowed Logout URLs: `http://localhost:3000`
-3. Copy credentials to `.env.local`
+Tell them to restart their dev server to load the new environment variables.
 
 ---
 
 ## Troubleshooting
 
-**"Invalid state" error:**
-- Regenerate `AUTH0_SECRET`
-- Clear cookies and restart dev server
+### CLI Installation Issues
 
-**Client secret not working:**
-- Next.js uses Regular Web Application (not SPA)
-- Verify client secret copied correctly
+**macOS - Homebrew not found:**
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
 
-**Callback URL mismatch:**
-- Ensure `/api/auth/callback` is in Allowed Callback URLs
-- Check `AUTH0_BASE_URL` matches your domain
+### Login Issues
+
+**Browser doesn't open:**
+```bash
+auth0 login --no-browser
+```
+
+**"Not logged in" error:**
+```bash
+auth0 login --force
+```
+
+### Common Errors
+
+**"Invalid state" error:** Regenerate `AUTH0_SECRET` with `openssl rand -hex 32`
+
+**Client secret not working:** Ensure you're using a Regular Web Application (not SPA)
+
+**Callback URL mismatch:** Ensure `/api/auth/callback` is in Allowed Callback URLs
+
+---
+
+## Fallback: Manual Dashboard Setup
+
+**Only use this if the CLI approach fails completely after troubleshooting.**
+
+1. Go to [Auth0 Dashboard](https://manage.auth0.com)
+2. Navigate to **Applications** → **Applications**
+3. Click **Create Application**
+4. Choose **Regular Web Applications**
+5. Configure:
+   - **Allowed Callback URLs**: `http://localhost:3000/api/auth/callback`
+   - **Allowed Logout URLs**: `http://localhost:3000`
+6. Copy **Domain**, **Client ID**, and **Client Secret** to `.env.local` file
 
 ---
 
