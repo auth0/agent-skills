@@ -159,18 +159,137 @@ app.get('/user', requiresAuth(), (req, res) => {
 
 ### Refresh Tokens
 
+Request refresh tokens by including `offline_access` scope:
+
 ```javascript
 app.use(auth({
   authorizationParams: {
     scope: 'openid profile email offline_access'
   }
 }));
+```
 
-// Access refresh token
-app.get('/refresh', requiresAuth(), (req, res) => {
-  const refreshToken = req.oidc.refreshToken;
-  // Use refresh token
+**Automatic Token Refresh:**
+
+The `req.oidc.accessToken` object includes methods to check expiration and refresh:
+
+```javascript
+app.get('/api', requiresAuth(), async (req, res) => {
+  let { access_token, isExpired, refresh } = req.oidc.accessToken;
+
+  // Check if token is expired
+  if (isExpired()) {
+    // Automatically refresh and get new token
+    const result = await refresh());
+    access_token = result.access_token;
+  }
+
+  // Use fresh access token
+  const response = await fetch('https://api.example.com/data', {
+    headers: { Authorization: `Bearer ${access_token}` }
+  });
+
+  res.json(await response.json());
 });
+```
+
+**Manual Refresh Token Access:**
+
+```javascript
+app.get('/refresh-info', requiresAuth(), (req, res) => {
+  const refreshToken = req.oidc.refreshToken;
+  res.json({ hasRefreshToken: !!refreshToken });
+});
+```
+
+---
+
+## Claim-Based Authorization
+
+Require specific claim values for route access.
+
+### Require Specific Claim Value
+
+```javascript
+const { claimEquals } = require('express-openid-connect');
+
+// Only users with specific role
+app.get('/admin', claimEquals('role', 'admin'), (req, res) => {
+  res.send('Admin dashboard');
+});
+
+// Only users from specific organization
+app.get('/org', claimEquals('org_id', 'org_123'), (req, res) => {
+  res.send('Organization page');
+});
+```
+
+### Require Multiple Claim Values
+
+```javascript
+const { claimIncludes } = require('express-openid-connect');
+
+// Require specific permissions (space-separated string or array)
+app.get('/api/write', claimIncludes('permissions', 'read:data', 'write:data'), (req, res) => {
+  res.send('Write access granted');
+});
+
+// Require specific scopes
+app.get('/api/data', claimIncludes('scope', 'read:data'), (req, res) => {
+  res.json({ data: 'sensitive information' });
+});
+```
+
+### Custom Claim Validation
+
+```javascript
+const { claimCheck } = require('express-openid-connect');
+
+// Custom validation logic
+app.get('/premium', claimCheck((req, claims) => {
+  // Return true to allow access, false to deny
+  return claims.subscription === 'premium' && claims.age >= 18;
+}), (req, res) => {
+  res.send('Premium content for adults');
+});
+
+// Complex validation
+app.get('/feature', claimCheck((req, claims) => {
+  const hasPermission = claims.permissions?.includes('feature:access');
+  const isVerified = claims.email_verified === true;
+  return hasPermission && isVerified;
+}), (req, res) => {
+  res.send('Feature access');
+});
+```
+
+---
+
+## Fetching Additional User Info
+
+Fetch additional user information from the `/userinfo` endpoint:
+
+```javascript
+app.get('/userinfo', requiresAuth(), async (req, res) => {
+  try {
+    // Fetch additional user info from Auth0
+    const userInfo = await req.oidc.fetchUserInfo();
+    res.json(userInfo);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+```
+
+**Note:** This requires an access token. Ensure your auth configuration includes:
+
+```javascript
+app.use(auth({
+  authorizationParams: {
+    response_type: 'code',  // Code flow provides access token
+    scope: 'openid profile email'
+  }
+}));
 ```
 
 ---
@@ -195,7 +314,8 @@ app.use((err, req, res, next) => {
 |-------|----------|
 | "Invalid state" | Regenerate SECRET |
 | Session not persisting | Check cookie settings, use HTTPS in production |
-| Redirect loop | Verify callback URL matches Auth0 config |
+| Redirect loop | Set `authRequired: false` - default is `true` |
+| Callback URL mismatch | Verify callback URL matches Auth0 config |
 
 ---
 
