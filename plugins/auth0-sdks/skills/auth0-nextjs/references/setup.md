@@ -30,7 +30,7 @@ Then ask the user for explicit confirmation before proceeding — do not continu
   - Options: "Yes, append to existing .env" / "No, I'll update it manually"
 
 - If neither exists, ask:
-  - Question: "This setup will create a `.env.local` file containing Auth0 credentials (AUTH0_CLIENT_ID, AUTH0_ISSUER_BASE_URL, AUTH0_SECRET) and a placeholder for AUTH0_CLIENT_SECRET that you will need to fill in manually. Do you want to proceed?"
+  - Question: "This setup will create a `.env.local` file containing Auth0 credentials (AUTH0_CLIENT_ID, AUTH0_DOMAIN, AUTH0_SECRET) and a placeholder for AUTH0_CLIENT_SECRET that you will need to fill in manually. Do you want to proceed?"
   - Options: "Yes, create .env.local" / "No, I'll configure it manually"
 
 **Do not proceed with writing to any env file unless the user selects the confirmation option.**
@@ -60,7 +60,7 @@ if [ -z "$APP_ID" ]; then
   APP_ID=$(auth0 apps create \
     --name "${PWD##*/}-nextjs" \
     --type regular \
-    --callbacks "http://localhost:3000/api/auth/callback" \
+    --callbacks "http://localhost:3000/auth/callback" \
     --logout-urls "http://localhost:3000" \
     --metadata "created_by=agent_skills" \
     --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
@@ -85,8 +85,8 @@ fi
 # Append Auth0 credentials
 cat >> "$TARGET_FILE" << ENVEOF
 AUTH0_SECRET=$AUTH0_SECRET
-AUTH0_BASE_URL=http://localhost:3000
-AUTH0_ISSUER_BASE_URL=https://$AUTH0_DOMAIN
+APP_BASE_URL=http://localhost:3000
+AUTH0_DOMAIN=$AUTH0_DOMAIN
 AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
 AUTH0_CLIENT_SECRET='YOUR_CLIENT_SECRET'
 ENVEOF
@@ -112,8 +112,8 @@ npm install @auth0/nextjs-auth0
 
 ```bash
 AUTH0_SECRET=<openssl-rand-hex-32>
-AUTH0_BASE_URL=http://localhost:3000
-AUTH0_ISSUER_BASE_URL=https://your-tenant.auth0.com
+APP_BASE_URL=http://localhost:3000
+AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 ```
@@ -129,14 +129,14 @@ Via CLI:
 ```bash
 auth0 login
 auth0 apps create --name "My Next.js App" --type regular \
-  --callbacks "http://localhost:3000/api/auth/callback" \
+  --callbacks "http://localhost:3000/auth/callback" \
   --logout-urls "http://localhost:3000"
 ```
 
 Via Dashboard:
 1. Create **Regular Web Application**
 2. Configure:
-   - Allowed Callback URLs: `http://localhost:3000/api/auth/callback`
+   - Allowed Callback URLs: `http://localhost:3000/auth/callback`
    - Allowed Logout URLs: `http://localhost:3000`
 3. Copy credentials to `.env.local`
 
@@ -153,8 +153,8 @@ Via Dashboard:
 - Verify client secret copied correctly
 
 **Callback URL mismatch:**
-- Ensure `/api/auth/callback` is in Allowed Callback URLs
-- Check `AUTH0_BASE_URL` matches your domain
+- Ensure `/auth/callback` is in Allowed Callback URLs
+- Check `APP_BASE_URL` matches your domain
 
 ---
 
