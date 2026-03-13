@@ -223,6 +223,7 @@ Before/after examples for all major frameworks:
 
 ### Core Integration
 - `auth0-quickstart` - Initial Auth0 setup after migration
+- `auth0-cli` - CLI commands for managing Auth0 resources
 
 ### SDK Skills
 - `auth0-react` - React SPA integration

@@ -173,6 +173,7 @@ ng serve
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-migration` - Migrate from another auth provider
 - `auth0-mfa` - Add Multi-Factor Authentication
+- `auth0-cli` - CLI commands for managing Auth0 resources
 
 ---
 

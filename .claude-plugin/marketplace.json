@@ -8,7 +8,7 @@
     {
       "name": "auth0",
       "source": "./plugins/auth0",
-      "description": "Essential Auth0 skills including quickstarts, migration from other providers, and Multi-Factor Authentication (MFA).",
+      "description": "Essential Auth0 skills including quickstarts, CLI management, migration from other providers, and Multi-Factor Authentication (MFA).",
       "version": "1.0.0",
       "repository": "https://github.com/auth0/agent-skills.git",
       "license": "Apache-2.0",
@@ -16,7 +16,7 @@
         "name": "Auth0",
         "email": "support@auth0.com"
       },
-      "keywords": ["auth0", "quickstart", "migration", "mfa", "security"],
+      "keywords": ["auth0", "quickstart", "cli", "migration", "mfa", "security"],
       "category": "authentication"
     },
     {
