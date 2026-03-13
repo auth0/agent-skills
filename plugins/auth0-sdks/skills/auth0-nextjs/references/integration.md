@@ -106,12 +106,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 Protect multiple routes with middleware.
 
-**Next.js 15** - Use `middleware.ts`:
+**File placement:** If the project uses a `src/` directory (i.e. `src/app/` exists), place `middleware.ts` or `proxy.ts` inside `src/`. Otherwise, place at the project root.
+
+**Next.js 15** - Use `middleware.ts` (or `src/middleware.ts`):
 
 ```typescript
 // middleware.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { auth0 } from './lib/auth0';
+import { auth0 } from '@/lib/auth0';
 
 export async function middleware(request: NextRequest) {
   const authRes = await auth0.middleware(request);
@@ -144,12 +146,12 @@ export const config = {
 };
 ```
 
-**Next.js 16** - Use either `middleware.ts` (same as above) or `proxy.ts`:
+**Next.js 16** - Use either `middleware.ts` (same as above) or `proxy.ts` (same `src/` placement rules):
 
 ```typescript
 // proxy.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { auth0 } from './lib/auth0';
+import { auth0 } from '@/lib/auth0';
 
 export async function proxy(request: NextRequest) {
   const authRes = await auth0.middleware(request);
