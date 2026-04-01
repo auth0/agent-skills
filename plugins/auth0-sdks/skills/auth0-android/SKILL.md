@@ -37,23 +37,37 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 2. **Configure Auth0**:
 
-   > **Agent instruction:** Ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this project?"_
+   > **Agent instruction:** First, check if the user's prompt already contains an Auth0 **Client ID** and **Domain**. If both are present, skip directly to the **manual path** below and use those values — do NOT ask the user how they want to configure Auth0.
+   >
+   > If credentials were NOT provided, ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this project?"_
    > - **Automatic setup (Recommended)** — runs a bootstrap script that creates the Auth0 app, database connection, callback URLs, and populates `strings.xml`
    > - **Manual setup** — the user will provide their Auth0 Client ID and Domain, and the agent configures `strings.xml`
    >
-   > **If automatic:** Run the bootstrap script from `auth0-android/scripts/`. The script handles everything — do NOT extract or handle client_id/domain manually. See [Setup Guide](references/setup.md#automatic-setup) for full details.
+   > **If automatic:** Run these pre-flight checks before the bootstrap script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+   >
+   > 1. **Check Node.js**: `node --version`. If missing or below 20, ask the user to install (`brew install node`) or switch to manual setup.
+   > 2. **Check Auth0 CLI**: `command -v auth0`. If missing, ask the user to install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
+   > 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
+   >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
+   >    - Wait for the user to confirm, then re-run the check to verify.
+   > 4. **Confirm active tenant**: Parse the `→` line from the output to find the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
+   >    - If yes, proceed.
+   >    - If no, ask the user to run `auth0 tenants use <tenant-domain>` in their terminal, then re-run step 3 to confirm the new active tenant.
+   >
+   > Once confirmed, run the bootstrap script from `auth0-android/scripts/`. The script handles everything — do NOT extract or handle client_id/domain manually.
    > ```bash
    > cd <path-to-skill>/auth0-android/scripts
    > npm install && node bootstrap.mjs <path-to-android-project>
    > ```
    >
-   > **If manual:** Ask the user for their Auth0 **Client ID** and **Domain**. Then update `strings.xml` with the values they provide:
+   > **If manual:** Ask the user for their Auth0 **Client ID** and **Domain** (if not already provided in the prompt). Then update `strings.xml`:
    > ```xml
    > <string name="com_auth0_client_id">USER_PROVIDED_CLIENT_ID</string>
    > <string name="com_auth0_domain">USER_PROVIDED_DOMAIN</string>
    > <string name="com_auth0_scheme">demo</string>
    > ```
    > Remind the user to configure callback URLs in the Auth0 Dashboard: `demo://{DOMAIN}/android/{APPLICATION_ID}/callback`
+   > (add to both **Allowed Callback URLs** and **Allowed Logout URLs**).
    >
    > **After either path**, the agent MUST add the following to the project:
    >
@@ -172,7 +186,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 | Mistake | Fix |
 |---------|-----|
 | App type not set to Native in Auth0 Dashboard | Create a Native application type in your Auth0 tenant. The Android SDK requires Native app configuration, not Machine-to-Machine or other types. |
-| Missing callback URL in Allowed Callback URLs | Add `https://{YOUR_AUTH0_DOMAIN}/android/{YOUR_APP_PACKAGE_NAME}/callback` to your Auth0 application's Allowed Callback URLs setting. |
+| Missing callback URL in Allowed Callback URLs | Add `{SCHEME}://{YOUR_AUTH0_DOMAIN}/android/{YOUR_APP_PACKAGE_NAME}/callback` to your Auth0 application's Allowed Callback URLs setting, where `{SCHEME}` matches `com_auth0_scheme` in `strings.xml` (e.g., `demo` by default). |
 | Missing `<uses-permission android:name="android.permission.INTERNET" />` | Add the INTERNET permission to `AndroidManifest.xml`. The SDK requires network access for authentication. |
 | Custom scheme in lowercase | Android requires scheme names to be lowercase. Use `https` (recommended) or lowercase custom scheme like `myapp://callback`. |
 | Forgetting `.validateClaims()` on direct auth calls | Always call `.validateClaims()` when using `AuthenticationAPIClient` directly (for database, passwordless, or API login). Web Auth validates automatically. |
