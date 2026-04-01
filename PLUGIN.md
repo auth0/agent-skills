@@ -39,7 +39,8 @@ One `marketplace.json` at the root level lists both plugins:
 - `auth0-vue` - Vue.js 3
 - `auth0-angular` - Angular 12+
 - `auth0-express` - Express.js
-- `auth0-react-native` - React Native & Expo
+- `auth0-react-native` - React Native CLI (bare workflow)
+- `auth0-expo` - Expo (managed workflow)
 
 ---
 
@@ -66,7 +67,8 @@ auth0/agent-skills/
 │           ├── auth0-vue/
 │           ├── auth0-angular/
 │           ├── auth0-express/
-│           └── auth0-react-native/
+│           ├── auth0-react-native/
+│           └── auth0-expo/
 ├── PLUGIN.md
 ├── README.md
 └── LICENSE
