@@ -110,9 +110,11 @@ android {
 }
 ```
 
-## Android App Links (Recommended)
+## Android App Links (Recommended for Production)
 
-For the recommended `https://` scheme, Android uses App Links for deeper integration:
+> **Note:** The bootstrap script and manual setup default to a custom scheme (`demo://`) for simplicity. App Links with `https://` are recommended for production apps. To switch, update `com_auth0_scheme` to `https` in `strings.xml` and update your callback URL in the Auth0 Dashboard to `https://YOUR_AUTH0_DOMAIN/android/YOUR_APP_PACKAGE_NAME/callback`.
+
+For the `https://` scheme, Android uses App Links for deeper integration:
 
 1. **Digital Asset Links**: Create a `assetlinks.json` file on your Auth0 domain
    - Auth0 manages this automatically for you
