@@ -6,31 +6,9 @@ Setup instructions for ASP.NET Core Web API applications.
 
 ## Quick Setup (Automated)
 
-Below automates the setup using the Auth0 CLI. The approach creates an Auth0 API resource and writes the configuration to your `appsettings.json`.
+Below uses the Auth0 CLI to create an Auth0 API resource and retrieve your credentials.
 
-**Before running any part of this setup that writes to config files, you MUST ask the user for explicit confirmation.** Follow the steps below precisely.
-
-### Step 1: Check for existing configuration and confirm with user
-
-Before writing credentials, check if Auth0 config already exists:
-
-```bash
-grep -l "Auth0" appsettings.json appsettings.Development.json 2>/dev/null || echo "NO_AUTH0_CONFIG"
-```
-
-Then ask the user for explicit confirmation before proceeding:
-
-- If Auth0 config already exists, ask:
-  - Question: "Auth0 configuration already exists in appsettings.json. This setup will overwrite the Auth0 section. Do you want to proceed?"
-  - Options: "Yes, update existing config" / "No, I'll update it manually"
-
-- If no Auth0 config exists, ask:
-  - Question: "This setup will add Auth0 configuration (Domain, Audience) to appsettings.json. Do you want to proceed?"
-  - Options: "Yes, add Auth0 config" / "No, I'll configure it manually"
-
-**Do not proceed with writing to any config file unless the user selects the confirmation option.**
-
-### Step 2: Install Auth0 CLI and create API resource
+### Step 1: Install Auth0 CLI and create API resource
 
 ```bash
 # Install Auth0 CLI (macOS)
@@ -48,30 +26,20 @@ auth0 apis create \
 
 Note the `identifier` value - this is your Audience.
 
-### Step 3: Write configuration (only after confirmation)
+### Step 2: Add configuration
 
-```bash
-#!/bin/bash
+Once you have your Domain and Audience, add the following to `appsettings.json`:
 
-# Get domain from Auth0 CLI (requires jq: https://jqlang.org/download/)
-DOMAIN=$(auth0 tenants list --json | jq -r '.[0].name')
-
-# The audience you used when creating the API
-AUDIENCE="https://my-api.example.com"
-
-# Write to appsettings.json (merge with existing content)
-node -e "
-  const fs = require('fs');
-  const config = JSON.parse(fs.readFileSync('appsettings.json', 'utf8'));
-  config.Auth0 = { Domain: '$DOMAIN', Audience: '$AUDIENCE' };
-  fs.writeFileSync('appsettings.json', JSON.stringify(config, null, 2));
-  console.log('Auth0 config written to appsettings.json');
-"
+```json
+{
+  "Auth0": {
+    "Domain": "your-tenant.auth0.com",
+    "Audience": "https://my-api.example.com"
+  }
+}
 ```
 
-After the script runs, remind the user to:
-1. Verify `appsettings.json` contains the correct Domain and Audience.
-2. Never commit secrets to source control (appsettings.json with domain/audience is typically safe, but use User Secrets or environment variables for sensitive values in production).
+Replace `your-tenant.auth0.com` with your Auth0 tenant domain and `https://my-api.example.com` with the identifier you used when creating the API resource.
 
 ---
 
@@ -103,20 +71,10 @@ dotnet add package Auth0.AspNetCore.Authentication.Api
 
 **Important:** Domain format is `your-tenant.auth0.com` - do NOT include `https://`.
 
-### Get Auth0 Credentials
+### Get Auth0 Configuration
 
 - **Domain:** Auth0 Dashboard → Settings → Domain (or `auth0 tenants list`)
 - **Audience:** The identifier you set when creating the API resource
-
-### Using User Secrets for Local Development
-
-For local development, use .NET User Secrets instead of modifying appsettings.json:
-
-```bash
-dotnet user-secrets init
-dotnet user-secrets set "Auth0:Domain" "your-tenant.auth0.com"
-dotnet user-secrets set "Auth0:Audience" "https://my-api.example.com"
-```
 
 ### Using Environment Variables
 
@@ -145,8 +103,7 @@ Note the double underscore `__` separator for nested config in environment varia
 ```bash
 # Get access token for testing
 auth0 test token \
-  --audience https://my-api.example.com \
-  --scopes "read:messages"
+  --audience https://my-api.example.com
 ```
 
 ### Via curl (Client Credentials Flow)

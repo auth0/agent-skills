@@ -11,17 +11,6 @@ Complete reference for Auth0.AspNetCore.Authentication.Api configuration options
 Registers Auth0 JWT Bearer authentication with the dependency injection container.
 
 ```csharp
-IServiceCollection AddAuth0ApiAuthentication(
-    this IServiceCollection services,
-    Action<Auth0ApiAuthenticationOptions> configureOptions
-)
-```
-
-**Returns:** `Auth0ApiAuthenticationBuilder` (fluent builder for chaining `.WithDPoP()`)
-
-**Example:**
-
-```csharp
 builder.Services.AddAuth0ApiAuthentication(options =>
 {
     options.Domain = "your-tenant.auth0.com";
@@ -69,7 +58,7 @@ Key sub-properties:
 
 ## Auth0ApiAuthenticationBuilder
 
-Returned by `AddAuth0ApiAuthentication`. Enables chaining DPoP configuration.
+Returned by `AddAuth0ApiAuthentication`. Fluent builder for additional configuration.
 
 ### `.WithDPoP()`
 
@@ -189,44 +178,10 @@ options.JwtBearerOptions = new JwtBearerOptions
 };
 ```
 
-**Example - Extract token from cookie (non-standard):**
-
-```csharp
-Events = new JwtBearerEvents
-{
-    OnMessageReceived = context =>
-    {
-        context.Token = context.Request.Cookies["access_token"];
-        return Task.CompletedTask;
-    }
-}
-```
-
----
-
-## Middleware Pipeline Order
-
-The order of middleware in `Program.cs` is critical:
-
-```csharp
-var app = builder.Build();
-
-app.UseHttpsRedirection();  // Optional but recommended
-app.UseRouting();           // Required before auth when using controllers
-
-app.UseAuthentication();    // Must come before UseAuthorization
-app.UseAuthorization();     // Must come after UseAuthentication
-
-app.MapControllers();       // Or app.MapGet(...)
-app.Run();
-```
-
 ---
 
 ## References
 
-- [Integration Guide](integration.md)
-- [Setup Guide](setup.md)
-- [Main Skill](../SKILL.md)
-- [Microsoft JWT Bearer Documentation](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/jwtbearer)
 - [Auth0 ASP.NET Core Web API Quickstart](https://auth0.com/docs/quickstart/backend/aspnet-core-webapi)
+- [SDK GitHub Repository](https://github.com/auth0/aspnetcore-api)
+- [Microsoft JWT Bearer Documentation](https://learn.microsoft.com/en-us/aspnet/core/security/authentication/jwtbearer)

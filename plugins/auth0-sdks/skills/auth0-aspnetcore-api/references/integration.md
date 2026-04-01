@@ -18,6 +18,12 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("write:messages", policy =>
         policy.RequireClaim("scope", "write:messages"));
+
+    options.AddPolicy("manage:orders", policy =>
+    {
+        policy.RequireClaim("scope", "read:orders");
+        policy.RequireClaim("scope", "write:orders");
+    });
 });
 ```
 
@@ -108,6 +114,15 @@ To reject standard Bearer tokens and accept only DPoP-bound tokens:
 .WithDPoP(dpopOptions =>
 {
     dpopOptions.Mode = DPoPModes.Required;
+});
+```
+
+Optionally configure clock skew tolerance:
+
+```csharp
+.WithDPoP(dpopOptions =>
+{
+    dpopOptions.Mode = DPoPModes.Required;
     dpopOptions.IatOffset = 300;  // Allow 5-minute clock skew for iat claim
     dpopOptions.Leeway = 30;      // 30-second leeway for token validation
 });
@@ -152,7 +167,7 @@ app.MapGet("/api/profile", (HttpContext ctx) =>
 public IActionResult GetProfile()
 {
     var userId = User.FindFirst("sub")?.Value;
-    var scopes = User.FindAll("scope").Select(c => c.Value);
+    var scopes = User.FindFirst("scope")?.Value?.Split(' ') ?? [];
 
     return Ok(new { userId, scopes });
 }
@@ -259,8 +274,7 @@ builder.Services.AddAuth0ApiAuthentication(options =>
         Audience = builder.Configuration["Auth0:Audience"],
         TokenValidationParameters = new TokenValidationParameters
         {
-            // Additional validation rules
-            ValidateLifetime = true,
+            NameClaimType = "sub",  // Map sub claim to User.Identity.Name
             ClockSkew = TimeSpan.FromSeconds(30)
         }
     };
@@ -334,7 +348,6 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
 
 - **Never hardcode Domain or Audience** - Always use configuration (appsettings, User Secrets, environment variables)
 - **Use HTTPS in production** - Auth0 requires HTTPS for token validation
-- **Validate audience** - Always set Audience to prevent tokens issued for other APIs from being accepted
 - **Use minimal scopes** - Only request and enforce scopes your API actually needs
 - **Keep packages updated** - Regularly update `Auth0.AspNetCore.Authentication.Api` for security patches
 
