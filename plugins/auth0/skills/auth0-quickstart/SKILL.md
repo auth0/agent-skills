@@ -1,6 +1,9 @@
 ---
 name: auth0-quickstart
 description: Use when adding authentication or login to any app - detects your stack (React, Next.js, Vue, Nuxt, Angular, Express, Fastify, React Native), sets up an Auth0 account if needed, and routes to the correct SDK setup workflow.
+license: Apache-2.0
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Auth0 Quickstart
