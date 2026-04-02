@@ -12,7 +12,9 @@
 
 ## Auth0 Configuration
 
-> **Agent instruction:** Ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this project?"_
+> **Agent instruction:** First, check whether the user prompt already includes both Auth0 **Client ID** and **Domain**.
+> - If both are provided, skip the setup-choice question and proceed directly to **Manual Setup (User-Provided Credentials)** using those values.
+> - If either value is missing, ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this project?"_
 > - **Automatic setup (Recommended)** — runs a bootstrap script that creates the Auth0 app, database connection, callback URLs, and populates `strings.xml`
 > - **Manual setup** — the user provides their Auth0 Client ID and Domain
 >

@@ -40,58 +40,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 2. **Configure Auth0**:
 
-   > **Agent instruction:** First, check if the user's prompt already contains an Auth0 **Client ID** and **Domain**. If both are present, skip directly to the **manual path** below and use those values — do NOT ask the user how they want to configure Auth0.
-   >
-   > If credentials were NOT provided, ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this project?"_
-   > - **Automatic setup (Recommended)** — runs a bootstrap script that creates the Auth0 app, database connection, callback URLs, and populates `strings.xml`
-   > - **Manual setup** — the user will provide their Auth0 Client ID and Domain, and the agent configures `strings.xml`
-   >
-   > **If automatic:** Run these pre-flight checks before the bootstrap script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
-   >
-   > 1. **Check Node.js**: `node --version`. If missing or below 20, ask the user to install (`brew install node`) or switch to manual setup.
-   > 2. **Check Auth0 CLI**: `command -v auth0`. If missing, ask the user to install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
-   > 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
-   >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
-   >    - Wait for the user to confirm, then re-run the check to verify.
-   > 4. **Confirm active tenant**: Parse the `→` line from the output to find the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
-   >    - If yes, proceed.
-   >    - If no, ask the user to run `auth0 tenants use <tenant-domain>` in their terminal, then re-run step 3 to confirm the new active tenant.
-   >
-   > Once confirmed, run the bootstrap script from `auth0-android/scripts/`. The script handles everything — do NOT extract or handle client_id/domain manually.
-   > ```bash
-   > cd <path-to-skill>/auth0-android/scripts
-   > npm install && node bootstrap.mjs <path-to-android-project>
-   > ```
-   >
-   > **If manual:** Ask the user for their Auth0 **Client ID** and **Domain** (if not already provided in the prompt). Then update `strings.xml`:
-   > ```xml
-   > <string name="com_auth0_client_id">USER_PROVIDED_CLIENT_ID</string>
-   > <string name="com_auth0_domain">USER_PROVIDED_DOMAIN</string>
-   > <string name="com_auth0_scheme">demo</string>
-   > ```
-   > Remind the user to configure callback URLs in the Auth0 Dashboard: `demo://{DOMAIN}/android/{APPLICATION_ID}/callback`
-   > (add to both **Allowed Callback URLs** and **Allowed Logout URLs**).
-   >
-   > **After either path**, the agent MUST add the following to the project:
-   >
-   > 1. Add manifest placeholders to `app/build.gradle` (or `app/build.gradle.kts`) inside `defaultConfig`:
-   >    ```gradle
-   >    manifestPlaceholders = [
-   >        auth0Domain: "@string/com_auth0_domain",
-   >        auth0Scheme: "@string/com_auth0_scheme"
-   >    ]
-   >    ```
-   >    For Kotlin DSL (`build.gradle.kts`):
-   >    ```kotlin
-   >    manifestPlaceholders += mapOf(
-   >        "auth0Domain" to "@string/com_auth0_domain",
-   >        "auth0Scheme" to "@string/com_auth0_scheme"
-   >    )
-   >    ```
-   > 2. Add INTERNET permission to `AndroidManifest.xml` if not already present:
-   >    ```xml
-   >    <uses-permission android:name="android.permission.INTERNET" />
-   >    ```
+    See [**Setup Guide**](references/setup.md) for automatic/manual setup, post-setup required project changes, and callback URL configuration.
 
 3. **Initialize**: Create an Auth0 account instance:
    ```kotlin
