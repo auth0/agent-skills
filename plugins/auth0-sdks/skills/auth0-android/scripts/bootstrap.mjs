@@ -62,10 +62,10 @@ async function main() {
   plan.connection = checkDatabaseConnectionChanges(connections, client.client_id)
   await applyDatabaseConnectionChanges(plan.connection, client.client_id)
 
-  // 10. Write strings.xml
+  // 11. Write strings.xml
   await writeStringsFile(domain, client.client_id, DEFAULT_SCHEME, androidConfig.stringsXmlPath)
 
-  // 11. Summary
+  // 12. Summary
   console.log("\n✅ Auth0 Android Setup Complete\n")
   console.log(`  Domain:        ${domain}`)
   console.log(`  Client ID:     ${client.client_id}`)
