@@ -22,11 +22,7 @@
     {
       "name": "auth0-sdks",
       "source": "./plugins/auth0-sdks",
-<<<<<<< HEAD
       "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, Android and React Native with complete implementation guides.",
-=======
-      "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, and React Native with complete implementation guides.",
->>>>>>> fbcbfb16f50e2ea9154285ee2e656e6076249326
       "version": "1.0.0",
       "repository": "https://github.com/auth0/agent-skills.git",
       "license": "Apache-2.0",
@@ -45,10 +41,7 @@
         "express",
         "fastify",
         "fastify-api",
-<<<<<<< HEAD
         "android",
-=======
->>>>>>> fbcbfb16f50e2ea9154285ee2e656e6076249326
         "react-native"
       ],
       "category": "sdk"
