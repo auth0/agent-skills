@@ -32,6 +32,7 @@ One `marketplace.json` at the root level lists both plugins:
 - `auth0-quickstart` - Framework detection
 - `auth0-migration` - Migrate from other providers
 - `auth0-mfa` - Multi-Factor Authentication
+- `auth0-cli` - Auth0 CLI management
 
 **Plugin 2: auth0-sdks** (SDK Skills)
 - `auth0-react` - React SPAs
@@ -56,7 +57,8 @@ auth0/agent-skills/
 │   │   └── skills/               # Skills directory
 │   │       ├── auth0-quickstart/
 │   │       ├── auth0-migration/
-│   │       └── auth0-mfa/
+│   │       ├── auth0-mfa/
+│   │       └── auth0-cli/
 │   └── auth0-sdks/               # SDK Plugin
 │       ├── .claude-plugin/
 │       │   └── plugin.json       # Plugin config
@@ -101,7 +103,7 @@ auth0/agent-skills/
     {
       "name": "auth0",
       "source": "plugins/auth0",
-      "description": "Essential Auth0 skills including quickstarts, migration from other providers, and Multi-Factor Authentication (MFA).",
+      "description": "Essential Auth0 skills including quickstarts, migration from other providers, Multi-Factor Authentication (MFA), and Auth0 CLI management.",
       "version": "1.0.0",
       "keywords": ["auth0", "quickstart", "migration", "mfa", "security"],
       "category": "authentication"
@@ -137,7 +139,7 @@ auth0/agent-skills/
   "name": "auth0",
   "displayName": "Auth0 Skills",
   "version": "1.0.0",
-  "description": "Essential Auth0 skills including quickstarts, migration from other providers, and Multi-Factor Authentication (MFA)."
+  "description": "Essential Auth0 skills including quickstarts, migration from other providers, Multi-Factor Authentication (MFA), and Auth0 CLI management."
 }
 ```
 

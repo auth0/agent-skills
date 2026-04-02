@@ -154,6 +154,7 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 | [auth0-quickstart](./plugins/auth0/skills/auth0-quickstart/SKILL.md) | Framework detector and router | v1.0.0 |
 | [auth0-migration](./plugins/auth0/skills/auth0-migration/SKILL.md) | Migrate from other auth providers | v1.0.0 |
 | [auth0-mfa](./plugins/auth0/skills/auth0-mfa/SKILL.md) | Multi-Factor Authentication | v1.0.0 |
+| [auth0-cli](./plugins/auth0/skills/auth0-cli/SKILL.md) | Auth0 CLI management | v0.1 |
 
 ### Frontend Framework Skills (auth0-sdks plugin)
 
@@ -216,6 +217,16 @@ The MFA skill covers:
 - Adaptive/risk-based MFA
 - MFA enrollment flows
 - Multiple factors (TOTP, SMS, Email, Push, WebAuthn)
+
+### auth0-cli
+
+The CLI skill wraps the `auth0` command-line tool for AI agent use:
+- Manage tenants, applications, APIs, users, actions, organizations, roles
+- Test login flows and get tokens
+- Tail tenant logs in real-time
+- Generate Terraform configuration
+- Make raw Management API requests
+- Manage attack protection, custom domains, email, and Universal Login
 
 ### Supported Frameworks
 
@@ -288,13 +299,17 @@ auth0/agent-skills/
 │   │       │   └── reference/
 │   │       │       ├── code-patterns.md
 │   │       │       └── user-import.md
-│   │       └── auth0-mfa/
+│   │       ├── auth0-mfa/
+│   │       │   ├── SKILL.md
+│   │       │   └── reference/
+│   │       │       ├── advanced.md
+│   │       │       ├── api.md
+│   │       │       ├── backend.md
+│   │       │       └── examples.md
+│   │       └── auth0-cli/
 │   │           ├── SKILL.md
-│   │           └── reference/
-│   │               ├── advanced.md
-│   │               ├── api.md
-│   │               ├── backend.md
-│   │               └── examples.md
+│   │           └── references/
+│   │               └── commands.md
 │   └── auth0-sdks/               # SDK Plugin
 │       ├── .claude-plugin/
 │       │   └── plugin.json       # Plugin configuration
