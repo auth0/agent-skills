@@ -1,6 +1,9 @@
 ---
 name: auth0-fastify
 description: Use when adding authentication (login, logout, protected routes) to Fastify web applications - integrates @auth0/auth0-fastify for session-based auth. For stateless Fastify APIs use auth0-fastify-api instead.
+license: Apache-2.0
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Auth0 Fastify Integration

@@ -1,6 +1,9 @@
 ---
 name: auth0-nextjs
 description: Use when adding authentication to Next.js applications (login, logout, protected pages, middleware, server components) - supports App Router and Pages Router with @auth0/nextjs-auth0 SDK.
+license: Apache-2.0
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Auth0 Next.js Integration
@@ -54,7 +57,11 @@ Generate secret: `openssl rand -hex 32`
 
 ### 3. Create Auth0 Client and Middleware
 
-Create `lib/auth0.ts`:
+**Detect project structure first:** Check whether the project uses a `src/` directory (i.e. `src/app/` or `src/pages/` exists). This determines where to place files:
+- **With `src/`:** `src/lib/auth0.ts`, `src/middleware.ts` (or `src/proxy.ts` for Next.js 16)
+- **Without `src/`:** `lib/auth0.ts`, `middleware.ts` (or `proxy.ts` for Next.js 16)
+
+Create `lib/auth0.ts` (or `src/lib/auth0.ts` if using the `src/` convention):
 
 ```typescript
 import { Auth0Client } from '@auth0/nextjs-auth0/server';
@@ -70,11 +77,11 @@ export const auth0 = new Auth0Client({
 
 **Middleware Configuration (Next.js 15 vs 16):**
 
-**Next.js 15** - Create `middleware.ts` at project root:
+**Next.js 15** - Create `middleware.ts` (at project root, or `src/middleware.ts` if using `src/`):
 
 ```typescript
 import { NextRequest } from 'next/server';
-import { auth0 } from './lib/auth0';
+import { auth0 } from '@/lib/auth0';
 
 export async function middleware(request: NextRequest) {
   return await auth0.middleware(request);
@@ -89,11 +96,11 @@ export const config = {
 
 **Next.js 16** - You have two options:
 
-**Option 1:** Use `middleware.ts` (same as Next.js 15):
+**Option 1:** Use `middleware.ts` (same as Next.js 15, same `src/` placement rules):
 
 ```typescript
 import { NextRequest } from 'next/server';
-import { auth0 } from './lib/auth0';
+import { auth0 } from '@/lib/auth0';
 
 export async function middleware(request: NextRequest) {
   return await auth0.middleware(request);
@@ -106,11 +113,11 @@ export const config = {
 };
 ```
 
-**Option 2:** Use `proxy.ts` at project root:
+**Option 2:** Use `proxy.ts` (at project root, or `src/proxy.ts` if using `src/`):
 
 ```typescript
 import { NextRequest } from 'next/server';
-import { auth0 } from './lib/auth0';
+import { auth0 } from '@/lib/auth0';
 
 export async function proxy(request: NextRequest) {
   return await auth0.middleware(request);
@@ -137,7 +144,7 @@ This automatically creates endpoints:
 
 ```typescript
 import { Auth0Provider } from '@auth0/nextjs-auth0/client';
-import { auth0 } from './lib/auth0';
+import { auth0 } from '@/lib/auth0';
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const session = await auth0.getSession();
@@ -244,10 +251,11 @@ Visit `http://localhost:3000` and test the login flow.
 ## Quick Reference
 
 **V4 Setup:**
-- Create `lib/auth0.ts` with `Auth0Client` instance
+- Detect `src/` convention: check if `src/app/` or `src/pages/` exists — place all files inside `src/` if so
+- Create `lib/auth0.ts` (or `src/lib/auth0.ts`) with `Auth0Client` instance
 - Create middleware configuration (required):
-  - Next.js 15: `middleware.ts` with `middleware()` function
-  - Next.js 16: `middleware.ts` with `middleware()` OR `proxy.ts` with `proxy()` function
+  - Next.js 15: `middleware.ts` (or `src/middleware.ts`) with `middleware()` function
+  - Next.js 16: `middleware.ts` with `middleware()` OR `proxy.ts` with `proxy()` function (same `src/` rules)
 - Optional: Wrap with `<Auth0Provider>` for SSR user
 
 **Client-Side Hooks:**
