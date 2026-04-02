@@ -19,7 +19,7 @@
         "Does not use localhost callback in native Android app",
         "No client secret in Android app (native apps use PKCE, not client secrets)",
         "Correctly integrates Auth0 into Android native app with login, logout, and credential storage",
-        "Uses current SDK version (3.14.0) in Gradle dependency declaration",
+        "Uses a current Auth0 Android SDK version in Gradle dependency declaration",
         "Configures manifestPlaceholders with auth0Domain and auth0Scheme in build.gradle.kts",
         "Requests offline_access scope for refresh token support",
         "Does not use deprecated WebAuthProvider.init()",
