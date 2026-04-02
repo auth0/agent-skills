@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: claudelint-${{ github.event.pull_request.number }}
+  group: claudelint-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -39,7 +39,7 @@ jobs:
       id: claudelint
       continue-on-error: true
       run: |
-        set +e
+        set +e  # Don't exit on error; we capture the exit code manually below
         # -q suppresses uv's download/install noise on stderr
         # sed strips hardcoded ANSI escape codes (claudelint doesn't support NO_COLOR)
         uvx -q "claudelint==${CLAUDELINT_VERSION}" --strict \
@@ -55,7 +55,7 @@ jobs:
           echo "EOF"
         } >> $GITHUB_OUTPUT
 
-        exit 0
+        exit 0  # Always succeed so the PR comment step runs before we fail the job
 
     - name: Prepare claudelint results
       if: always()
@@ -64,10 +64,10 @@ jobs:
         EXIT_CODE="${{ steps.claudelint.outputs.exit_code }}"
         if [ "$EXIT_CODE" = "0" ]; then
           echo "header=✅ claudelint — All checks passed" >> $GITHUB_OUTPUT
-          echo "details_open=" >> $GITHUB_OUTPUT
+          echo "details_open=" >> $GITHUB_OUTPUT  # Empty = <details> closed by default
         else
           echo "header=❌ claudelint — Issues found" >> $GITHUB_OUTPUT
-          echo "details_open= open" >> $GITHUB_OUTPUT
+          echo "details_open= open" >> $GITHUB_OUTPUT  # Leading space + "open" renders as <details open>
         fi
 
     - name: Post claudelint results as PR comment

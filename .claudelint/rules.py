@@ -213,7 +213,7 @@ class SkillReadmeDocumentationRule(Rule):
             # Read README content
             try:
                 readme_content = readme_path.read_text()
-            except Exception as e:
+            except OSError as e:
                 violations.append(
                     self.violation(
                         f"Could not read README.md: {e}",
@@ -402,9 +402,18 @@ class SkillRequiredMetadataRule(Rule):
                 if not skill_md.exists():
                     continue
 
-                frontmatter = self._parse_frontmatter(skill_md)
+                try:
+                    frontmatter = self._parse_frontmatter(skill_md)
+                except yaml.YAMLError as e:
+                    violations.append(
+                        self.violation(
+                            f"SKILL.md has malformed YAML frontmatter: {e}",
+                            file_path=skill_md
+                        )
+                    )
+                    continue
                 if frontmatter is None:
-                    continue  # Built-in skill-frontmatter rule handles parse errors
+                    continue  # Built-in skill-frontmatter rule handles missing frontmatter
 
                 if not frontmatter.get('license'):
                     violations.append(
@@ -424,7 +433,7 @@ class SkillRequiredMetadataRule(Rule):
                             file_path=skill_md
                         )
                     )
-                elif isinstance(metadata, dict) and metadata.get('author'):
+                else:
                     author_violation = self._validate_author_format(metadata['author'])
                     if author_violation:
                         violations.append(
@@ -464,10 +473,14 @@ class SkillRequiredMetadataRule(Rule):
 
     @staticmethod
     def _parse_frontmatter(skill_md: Path) -> Optional[Dict[str, Any]]:
-        """Extract YAML frontmatter from a SKILL.md file."""
+        """Extract YAML frontmatter from a SKILL.md file.
+
+        Returns None if the file has no frontmatter.
+        Raises yaml.YAMLError if frontmatter exists but is malformed.
+        """
         try:
             content = skill_md.read_text()
-        except Exception:
+        except OSError:
             return None
 
         if not content.startswith('---'):
@@ -478,7 +491,5 @@ class SkillRequiredMetadataRule(Rule):
         if end == -1:
             return None
 
-        try:
-            return yaml.safe_load(content[3:end])
-        except yaml.YAMLError:
-            return None
+        # Let yaml.YAMLError propagate so the caller can report it as a violation
+        return yaml.safe_load(content[3:end])
