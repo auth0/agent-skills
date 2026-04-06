@@ -103,6 +103,7 @@ Framework-specific implementation guides:
 - `auth0-fastapi-api` - FastAPI API authentication
 - `auth0-react-native` - React Native & Expo
 - `auth0-android` - Android
+- `auth0-swift` - Native iOS/macOS applications (Swift)
 
 ```bash
 /plugin install auth0-sdks@auth0-agent-skills
@@ -182,6 +183,7 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 |-------|-------------|---------|
 | [auth0-react-native](./plugins/auth0-sdks/skills/auth0-react-native/SKILL.md) | React Native & Expo | v1.0.0 |
 | [auth0-android](./plugins/auth0-sdks/skills/auth0-android/SKILL.md) | Android | v1.0.0 |
+| [auth0-swift](./plugins/auth0-sdks/skills/auth0-swift/SKILL.md) | Native iOS/macOS (Swift) | v1.0.0 |
 
 ---
 
@@ -268,8 +270,8 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 | Fastify API | [@auth0/auth0-fastify-api](https://github.com/auth0/auth0-fastify) | auth0-fastify-api |
 | FastAPI | [auth0-fastapi-api](https://github.com/auth0/auth0-fastapi-api) | auth0-fastapi-api |
 | React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-react-native |
-| iOS/macOS | [Auth0.swift](https://github.com/auth0/Auth0.swift) | Coming soon |
 | Android | [Auth0.Android](https://github.com/auth0/Auth0.Android) | auth0-android |
+| iOS/macOS | [Auth0.swift](https://github.com/auth0/Auth0.swift) | auth0-swift |
 
 ## Project Structure
 
@@ -378,6 +380,12 @@ auth0/agent-skills/
 │                   ├── evals.json
 │                   ├── graders.json
 │                   └── prompt.md
+│           └── auth0-swift/
+│               ├── SKILL.md
+│               └── references/
+│                   ├── setup.md
+│                   ├── api.md
+│                   └── integration.md
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
