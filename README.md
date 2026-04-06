@@ -101,6 +101,7 @@ Framework-specific implementation guides:
 - `auth0-fastify` - Fastify web applications
 - `auth0-fastify-api` - Fastify API authentication
 - `auth0-react-native` - React Native & Expo
+- `auth0-android` - Android
 
 ```bash
 /plugin install auth0-sdks@auth0-agent-skills
@@ -178,6 +179,7 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 | Skill | Description | Version |
 |-------|-------------|---------|
 | [auth0-react-native](./plugins/auth0-sdks/skills/auth0-react-native/SKILL.md) | React Native & Expo | v1.0.0 |
+| [auth0-android](./plugins/auth0-sdks/skills/auth0-android/SKILL.md) | Android | v1.0.0 |
 
 ---
 
@@ -264,7 +266,7 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 | Fastify API | [@auth0/auth0-fastify-api](https://github.com/auth0/auth0-fastify) | auth0-fastify-api |
 | React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-react-native |
 | iOS/macOS | [Auth0.swift](https://github.com/auth0/Auth0.swift) | Coming soon |
-| Android | [Auth0.Android](https://github.com/auth0/Auth0.Android) | Coming soon |
+| Android | [Auth0.Android](https://github.com/auth0/Auth0.Android) | auth0-android |
 
 ## Project Structure
 
@@ -339,12 +341,34 @@ auth0/agent-skills/
 │           │   └── SKILL.md
 │           ├── auth0-fastify-api/
 │           │   └── SKILL.md
-│           └── auth0-react-native/
+│           ├── auth0-react-native/
+│           │   ├── SKILL.md
+│           │   └── reference/
+│           │       ├── api.md
+│           │       ├── patterns.md
+│           │       └── setup.md
+│           └── auth0-android/
 │               ├── SKILL.md
-│               └── reference/
-│                   ├── api.md
-│                   ├── patterns.md
-│                   └── setup.md
+│               ├── references/
+│               │   ├── api.md
+│               │   ├── integration.md
+│               │   └── setup.md
+│               ├── scripts/
+│               │   ├── bootstrap.mjs
+│               │   ├── package.json
+│               │   └── utils/
+│               │       ├── auth0-api.mjs
+│               │       ├── change-plan.mjs
+│               │       ├── clients.mjs
+│               │       ├── connections.mjs
+│               │       ├── discovery.mjs
+│               │       ├── helpers.mjs
+│               │       ├── strings-writer.mjs
+│               │       └── validation.mjs
+│               └── tests/
+│                   ├── evals.json
+│                   ├── graders.json
+│                   └── prompt.md
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
