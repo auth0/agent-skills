@@ -341,12 +341,34 @@ auth0/agent-skills/
 │           │   └── SKILL.md
 │           ├── auth0-fastify-api/
 │           │   └── SKILL.md
-│           └── auth0-react-native/
+│           ├── auth0-react-native/
+│           │   ├── SKILL.md
+│           │   └── reference/
+│           │       ├── api.md
+│           │       ├── patterns.md
+│           │       └── setup.md
+│           └── auth0-android/
 │               ├── SKILL.md
-│               └── reference/
-│                   ├── api.md
-│                   ├── patterns.md
-│                   └── setup.md
+│               ├── references/
+│               │   ├── api.md
+│               │   ├── integration.md
+│               │   └── setup.md
+│               ├── scripts/
+│               │   ├── bootstrap.mjs
+│               │   ├── package.json
+│               │   └── utils/
+│               │       ├── auth0-api.mjs
+│               │       ├── change-plan.mjs
+│               │       ├── clients.mjs
+│               │       ├── connections.mjs
+│               │       ├── discovery.mjs
+│               │       ├── helpers.mjs
+│               │       ├── strings-writer.mjs
+│               │       └── validation.mjs
+│               └── tests/
+│                   ├── evals.json
+│                   ├── graders.json
+│                   └── prompt.md
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
