@@ -8,22 +8,29 @@
 
 ### Option A: Automatic Setup (Bootstrap Script)
 
-**Prerequisites:**
-```bash
-# Verify Node.js 20+
-node --version
-
-# Install Auth0 CLI (macOS)
-brew install auth0/auth0-cli/auth0
-
-# Log in to Auth0
-auth0 login
-```
-
-**Run the bootstrap script:**
-```bash
-cd scripts && npm install && node bootstrap.mjs /path/to/your/xcode/project
-```
+> **Agent instruction:** Run these quick checks before the bootstrap script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+>
+> 1. **Check Node.js**: `node --version`. If missing or below 20, ask user: install (`brew install node`) or switch to manual setup.
+> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, ask user: install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
+> 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
+>    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
+>    - Wait for the user to confirm, then re-run the check to verify.
+> 4. **Confirm active tenant**: Parse the `→` line from the CSV output to identify the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
+>    - If yes, proceed.
+>    - If no, ask the user to run `auth0 tenants use <tenant-domain>` in their terminal, then re-run step 3 to confirm the new active tenant.
+>
+> Once confirmed, run the bootstrap script:
+> ```bash
+> cd <path-to-skill>/auth0-swift/scripts
+> npm install
+> node bootstrap.mjs <path-to-xcode-project>
+> ```
+>
+> The script handles Auth0 app creation, database connection, callback URLs, and `Auth0.plist`. The agent should NOT handle client_id or domain manually.
+>
+> If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run the script. For other failures, fall back to **Option B** below.
+>
+> After the script completes, proceed to **Post-Setup Steps** below.
 
 The script will:
 1. Detect your bundle identifier from `project.pbxproj` (`PRODUCT_BUNDLE_IDENTIFIER`)
@@ -80,6 +87,31 @@ In Xcode, select your app target → **Info** tab → expand **URL Types** → c
 
 This allows the Auth0 browser to redirect back to your app using the `{bundle}://` scheme.
 
+### Associated Domains Setup (HTTPS Universal Links)
+
+> **Agent instruction:** Only follow this section if the user chose HTTPS Universal Links as their callback scheme. If they chose a custom scheme (`{bundle}://`), skip this section entirely.
+>
+> 1. Find the app's `.entitlements` file (commonly `<AppName>.entitlements`). Search for `*.entitlements` in the project directory.
+> 2. If the file exists, add `com.apple.developer.associated-domains` to it. If it does not exist, create it at the project root alongside the `.xcodeproj`.
+> 3. Add both entries using the actual Auth0 domain:
+
+```xml
+<key>com.apple.developer.associated-domains</key>
+<array>
+    <string>webcredentials:YOUR_AUTH0_DOMAIN</string>
+    <string>applinks:YOUR_AUTH0_DOMAIN</string>
+</array>
+```
+
+> 4. If `com.apple.developer.associated-domains` already exists in the file, append the two `<string>` entries to the existing array.
+> 5. If the file was newly created, check that `CODE_SIGN_ENTITLEMENTS` in the target's build settings points to it. If not, inform the user to set it in Xcode under target → Build Settings → Code Signing Entitlements.
+> 6. Ensure `.useHTTPS()` is called on the `webAuth()` builder:
+>    ```swift
+>    Auth0.webAuth().useHTTPS()
+>    ```
+>
+> **Note:** Auth0 automatically hosts the Apple App Site Association file at `https://YOUR_AUTH0_DOMAIN/.well-known/apple-app-site-association` — no manual hosting needed. `webcredentials` enables Password AutoFill and credential handoff; `applinks` routes the Universal Link callback back to your app.
+
 ### Verify Auth0.plist Target Membership
 
 In Xcode Project Navigator:
@@ -101,6 +133,13 @@ For macOS targets, also:
 ---
 
 ## SDK Installation
+
+> **Agent instruction:** Before proceeding, check the project directory for signs of an existing package manager:
+> - `Podfile` present → use **CocoaPods**
+> - `Cartfile` present → use **Carthage**
+> - `Package.swift` present → use **Swift Package Manager**
+>
+> If none are found, ask the user via `AskUserQuestion`: _"Which dependency manager does your project use — Swift Package Manager, CocoaPods, or Carthage?"_ Then follow only the matching section below.
 
 ### Swift Package Manager (Recommended)
 
