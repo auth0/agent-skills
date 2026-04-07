@@ -1,22 +1,6 @@
 # Auth0 Expo Setup Guide
 
-Setup instructions for Expo mobile applications using react-native-auth0.
-
----
-
-## Quick Setup
-
-```bash
-# Create new Expo app (if starting from scratch)
-npx create-expo-app MyApp --template blank
-cd MyApp
-
-# Install SDK
-npx expo install react-native-auth0
-
-# Regenerate native projects
-npx expo prebuild --clean
-```
+Detailed setup instructions for Expo mobile applications using react-native-auth0. For the basic install and plugin configuration, see the [Quick Start in SKILL.md](../SKILL.md#quick-start-workflow).
 
 ---
 
@@ -67,36 +51,7 @@ Copy the `domain` and `client_id` from the output.
 
 ## Expo Plugin Configuration
 
-Update `app.json`:
-
-```json
-{
-  "expo": {
-    "name": "MyApp",
-    "slug": "myapp",
-    "ios": {
-      "bundleIdentifier": "com.yourcompany.myapp",
-      "supportsTablet": true
-    },
-    "android": {
-      "package": "com.yourcompany.myapp",
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
-    },
-    "plugins": [
-      [
-        "react-native-auth0",
-        {
-          "domain": "YOUR_AUTH0_DOMAIN",
-          "customScheme": "myappscheme"
-        }
-      ]
-    ]
-  }
-}
-```
+The basic plugin setup is in SKILL.md Step 2. Below are the plugin options and advanced configurations.
 
 ### Plugin Options
 

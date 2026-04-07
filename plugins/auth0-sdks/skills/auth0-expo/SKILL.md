@@ -1,6 +1,6 @@
 ---
 name: auth0-expo
-description: Use when adding Auth0 authentication to Expo (React Native) mobile apps - integrates react-native-auth0 SDK with Expo config plugin for iOS/Android deep linking
+description: Use when adding authentication to Expo (React Native) mobile apps — login, logout, user sessions, protected routes, biometrics, or token management. Integrates react-native-auth0 SDK with Expo config plugin for automatic iOS/Android deep linking and callback handling. Trigger for any Expo managed workflow needing Auth0, including custom scheme setup, universal login integration, Expo Go incompatibility issues, EAS Build configuration, or mobile OAuth with PKCE. Do NOT use for React Native CLI bare workflow (use auth0-react-native instead).
 ---
 
 # Auth0 Expo Integration
@@ -177,8 +177,8 @@ npx expo run:android
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 CLI automation, manual setup, native config, deep linking
-- **[Integration Patterns](./references/integration.md)** — Protected screens, API calls, biometrics, token management, error handling
+- **[Setup Guide](./references/setup.md)** — Auth0 CLI automation, manual setup, plugin options, env vars, EAS Build, troubleshooting
+- **[Integration Patterns](./references/integration.md)** — Protected screens, API calls, biometrics, organizations, DPoP, error handling
 - **[API Reference](./references/api.md)** — Complete SDK API, configuration options, testing checklist
 
 ---
