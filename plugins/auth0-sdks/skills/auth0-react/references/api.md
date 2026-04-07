@@ -33,6 +33,9 @@ import { Auth0Provider } from '@auth0/auth0-react';
   useRefreshTokensFallback={false} // Fall back to iframe if refresh token exchange fails (default: false)
   useMrrt={false} // Enable Multi-Refresh-Token for multi-tenant apps (default: false)
 
+  // MFA / Step-up
+  interactiveErrorHandler="popup" // Automatically handle MFA via popup (requires useRefreshTokens)
+
   // Advanced options
   skipRedirectCallback={false} // Skip automatic callback handling
   context={Auth0Context} // Custom React context
@@ -63,6 +66,7 @@ import { Auth0Provider } from '@auth0/auth0-react';
 | `useMrrt` | boolean | `false` | Enable Multi-Refresh-Token support for multi-tenant apps. Requires `useRefreshTokens` and `useRefreshTokensFallback` to be `true` |
 | `workerUrl` | string | - | Custom worker script URL for token calls. Useful for CSP compliance when using `useRefreshTokens: true` with `cacheLocation: 'memory'` |
 | `context` | React.Context | - | Custom React context for nested Auth0Providers. Allows multiple Auth0Providers in same app |
+| `interactiveErrorHandler` | `'popup'` | - | Automatically handle MFA via popup when `getAccessTokenSilently` encounters `mfa_required`. Requires `useRefreshTokens={true}` |
 | `skipRedirectCallback` | boolean | `false` | Skip automatic callback handling |
 | `onRedirectCallback` | function | - | Callback after successful login |
 
@@ -103,6 +107,9 @@ const {
   getAccessTokenWithPopup,
   getIdTokenClaims,
   handleRedirectCallback,
+
+  // MFA API
+  mfa,
 } = useAuth0();
 ```
 
@@ -359,6 +366,95 @@ interface RedirectLoginResult {
 }
 ```
 
+#### mfa
+
+The `mfa` property provides access to the MFA API client for in-app Multi-Factor Authentication flows.
+
+**Methods:**
+
+| Method | Description |
+|--------|-------------|
+| `mfa.getAuthenticators(mfaToken)` | List enrolled authenticators for the user |
+| `mfa.getEnrollmentFactors(mfaToken)` | Get available enrollment factors (when user needs to enroll) |
+| `mfa.enroll(params)` | Enroll a new authenticator (OTP, SMS, Email, Voice, Push) |
+| `mfa.challenge(params)` | Initiate an MFA challenge for an enrolled authenticator |
+| `mfa.verify(params)` | Verify an MFA challenge and complete authentication |
+
+**Enroll params:**
+
+```typescript
+// OTP enrollment
+await mfa.enroll({ mfaToken, factorType: 'otp' });
+// Returns: { barcodeUri, recoveryCodes, ... }
+
+// SMS enrollment
+await mfa.enroll({ mfaToken, factorType: 'sms', phoneNumber: '+12025551234' });
+
+// Email enrollment
+await mfa.enroll({ mfaToken, factorType: 'email', email: 'user@example.com' });
+
+// Voice enrollment
+await mfa.enroll({ mfaToken, factorType: 'voice', phoneNumber: '+12025551234' });
+
+// Push enrollment
+await mfa.enroll({ mfaToken, factorType: 'push' });
+```
+
+**Challenge params:**
+
+```typescript
+// OTP challenge (optional — code is already in authenticator app)
+await mfa.challenge({ mfaToken, challengeType: 'otp', authenticatorId });
+
+// SMS/Voice/Email/Push challenge (required — sends code to user)
+await mfa.challenge({ mfaToken, challengeType: 'oob', authenticatorId });
+// Returns: { oobCode }
+```
+
+**Verify params:**
+
+```typescript
+// Verify with OTP code
+const tokens = await mfa.verify({ mfaToken, otp: '123456' });
+
+// Verify with OOB code (SMS/Voice/Email)
+const tokens = await mfa.verify({ mfaToken, oobCode, bindingCode: '123456' });
+
+// Verify with recovery code
+const tokens = await mfa.verify({ mfaToken, recoveryCode: 'recovery-code-here' });
+```
+
+---
+
+### MFA Error Types
+
+All MFA error types are importable from `@auth0/auth0-react`.
+
+| Error | When thrown | Key properties |
+|-------|-----------|----------------|
+| `MfaRequiredError` | `getAccessTokenSilently()` encounters an MFA requirement | `mfa_token`, `mfa_requirements` |
+| `MfaEnrollmentError` | `mfa.enroll()` fails | `error_description` |
+| `MfaChallengeError` | `mfa.challenge()` fails | `error_description` |
+| `MfaVerifyError` | `mfa.verify()` fails (e.g., invalid OTP code) | `error_description` |
+| `MfaListAuthenticatorsError` | `mfa.getAuthenticators()` fails | `error_description` |
+| `MfaEnrollmentFactorsError` | `mfa.getEnrollmentFactors()` fails | `error_description` |
+
+**MfaRequiredError properties:**
+- `mfa_token` — Token used for all subsequent MFA operations
+- `mfa_requirements.enroll` — Array of factor types the user can enroll in (present when user needs to set up MFA)
+- `mfa_requirements.challenge` — Array of factor types the user can challenge (present when user has enrolled authenticators)
+
+**Import:**
+
+```typescript
+import {
+  MfaRequiredError,
+  MfaEnrollmentError,
+  MfaChallengeError,
+  MfaVerifyError,
+} from '@auth0/auth0-react';
+```
+
 ---
 
 ## Custom Hooks
@@ -476,6 +572,20 @@ import type {
   PopupLoginOptions,
   LogoutOptions,
   GetTokenSilentlyOptions,
+  MfaApiClient,
+  Authenticator,
+  EnrollParams,
+  ChallengeResponse,
+  VerifyParams,
+  EnrollmentFactor,
+} from '@auth0/auth0-react';
+
+// MFA error types (value imports, not type-only)
+import {
+  MfaRequiredError,
+  MfaEnrollmentError,
+  MfaChallengeError,
+  MfaVerifyError,
 } from '@auth0/auth0-react';
 ```
 
