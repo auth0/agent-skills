@@ -1,0 +1,29 @@
+[
+  {"type": "matches", "pattern": "auth0-python|pip install.*auth0", "description": "Auth0 SDK installed via any valid method"},
+  {"type": "matches", "pattern": "from auth0|import auth0", "description": "Has correct import statement"},
+  {"type": "contains_any", "values": ["oauth.register", "server_metadata_url"], "description": "Auth0 SDK initialized (OAuth client registered or configured)"},
+  {"type": "matches", "pattern": "OAuth\\(|oauth\\.register|authlib", "description": "Registers authentication middleware (Authlib OAuth integration)"},
+  {"type": "matches", "pattern": "authorize_redirect|authorize_url|/login", "description": "Implements login route/action"},
+  {"type": "matches", "pattern": "authorize_access_token|/callback", "description": "Implements callback handling"},
+  {"type": "matches", "pattern": "session\\.clear|/logout|v2/logout", "description": "Implements logout route/action"},
+  {"type": "matches", "pattern": "session\\[|app\\.secret_key|SECRET_KEY", "description": "Has session/cookie configuration"},
+  {"type": "matches", "pattern": "login_required|@wraps|if.*user.*not in.*session", "description": "Has protected route/page pattern"},
+
+  {"type": "file_contains", "file_pattern": "**/.env*", "value": "dev-example.auth0.com", "description": "Auth0 domain written to correct config file (.env)"},
+  {"type": "file_contains", "file_pattern": "**/.env*", "value": "abc123def456ghi789jkl012", "description": "Client ID written to correct config file (.env)"},
+
+  {"type": "contains", "value": "authlib", "description": "Uses Authlib for OAuth2 integration"},
+
+  {"type": "not_contains_any", "values": ["@auth0/auth0-react", "@auth0/auth0-spa-js"], "description": "Does not use SPA SDK or hallucinated package in server-rendered app"},
+  {"type": "not_contains", "value": "localStorage", "description": "Does not store tokens in localStorage"},
+
+  {"type": "judge", "question": "Does the solution correctly integrate Auth0 into a Flask web application with OAuth2 authentication via Authlib, server-side session management, and protected routes?", "examples": "PASS: Uses Authlib OAuth for login/logout routes, stores user info in Flask session, protects routes with login check.\nFAIL: Uses SPA-style token flow instead of server-side sessions.\nFAIL: Stores client secret in source code instead of .env.", "framework": "flask", "description": "Correctness: solution correctly integrates Auth0 with Flask"},
+
+  {"type": "file_contains", "file_pattern": "**/requirements*.txt", "value": "auth0-python", "description": "Uses auth0-python in dependency declaration (requirements.txt)"},
+  {"type": "matches", "pattern": "load_dotenv|python-dotenv|from dotenv", "description": "Uses python-dotenv for environment variable loading"},
+  {"type": "matches", "pattern": "AUTH0_CLIENT_SECRET|AUTH0_SECRET", "description": "Uses .env-based secret management (AUTH0_CLIENT_SECRET in .env, not hardcoded)"},
+  {"type": "matches", "pattern": "/callback", "description": "Uses correct callback path (/callback)"},
+  {"type": "not_contains_any", "values": ["from auth0.management import Auth0", "from auth0.v3"], "description": "Does not use deprecated v4 imports (uses current v5 API)"},
+
+  {"type": "judge", "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like OAuth, session, login, logout). Look for at least 2 of: (1) SDK version 5.2.0 in a dependency declaration (requirements.txt or pip install), (2) python-dotenv usage with load_dotenv() call, (3) openid-configuration server_metadata_url pattern, (4) proper Flask session secret via AUTH0_SECRET env var. These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.", "examples": "PASS: Uses version 5.2.0 in requirements.txt AND python-dotenv with load_dotenv() AND server_metadata_url.\nFAIL: Only uses basic Flask routes with no advanced configuration.", "framework": "flask", "description": "Skill attribution: advanced patterns beyond basic SDK usage"}
+]

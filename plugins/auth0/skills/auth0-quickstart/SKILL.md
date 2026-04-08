@@ -17,8 +17,11 @@ Detect your framework and get started with Auth0 authentication.
 **Run this command to identify your framework:**
 
 ```bash
-# Check package.json dependencies
+# Check package.json dependencies (Node.js projects)
 cat package.json | grep -E "react|next|vue|nuxt|angular|express|fastify|@nestjs"
+
+# Check Python project files
+ls -la | grep -E "requirements.txt|Pipfile|pyproject.toml|manage.py|app.py"
 
 # Or check project files
 ls -la | grep -E "angular.json|vue.config.js|next.config"
@@ -37,6 +40,8 @@ ls -la | grep -E "angular.json|vue.config.js|next.config"
 | Fastify (web app) | `"fastify"` in package.json, has `@fastify/view` | `auth0-fastify` |
 | Fastify (API) | `"fastify"` in package.json, no view engine | `auth0-fastify-api` |
 | React Native | `"react-native"` or `"expo"` in package.json | `auth0-react-native` |
+| Flask (Python) | `requirements.txt` with `flask` or `app.py` with Flask imports | `auth0-python` |
+| Django (Python) | `manage.py` exists or `requirements.txt` with `django` | `auth0-python` |
 
 **Don't see your framework?** See Tier 2 Frameworks below.
 
@@ -81,7 +86,7 @@ auth0 apps create --name "My App" --type spa \
   --metadata "created_by=agent_skills"
 ```
 
-**Regular Web Apps (Next.js, Nuxt, Express, Fastify):**
+**Regular Web Apps (Next.js, Nuxt, Express, Fastify, Flask, Django):**
 ```bash
 auth0 apps create --name "My App" --type regular \
   --callbacks "http://localhost:3000/api/auth/callback" \
@@ -124,6 +129,7 @@ Based on your framework detection, use the appropriate skill:
 - **`auth0-express`** - Express.js web applications
 - **`auth0-fastify`** - Fastify web applications
 - **`auth0-fastify-api`** - Fastify API authentication
+- **`auth0-python`** - Python web applications (Flask, Django)
 
 **Mobile:**
 - **`auth0-react-native`** - React Native and Expo (iOS/Android)
@@ -137,9 +143,7 @@ Not yet available as separate skills. Use Auth0 documentation:
 - [Remix](https://auth0.com/docs/quickstart/webapp/remix)
 
 **Backend:**
-- [Flask (Python)](https://auth0.com/docs/quickstart/webapp/python)
 - [FastAPI (Python)](https://auth0.com/docs/quickstart/backend/python)
-- [Django (Python)](https://auth0.com/docs/quickstart/webapp/django)
 - [Rails (Ruby)](https://auth0.com/docs/quickstart/webapp/rails)
 - [Laravel (PHP)](https://auth0.com/docs/quickstart/webapp/laravel)
 - [Go](https://auth0.com/docs/quickstart/webapp/golang)
@@ -219,6 +223,7 @@ Complete Auth0 CLI reference:
 - `auth0-express` - Express.js integration
 - `auth0-fastify` - Fastify web app integration
 - `auth0-fastify-api` - Fastify API integration
+- `auth0-python` - Python web applications (Flask, Django)
 - `auth0-react-native` - React Native/Expo integration
 
 ### Advanced Features

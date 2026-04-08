@@ -1,0 +1,33 @@
+{
+  "skill_name": "auth0-python",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Auth0 authentication to a Flask application using the auth0-python SDK.\n\n**Auth0 Credentials:**\n- Domain: `dev-example.auth0.com`\n- Client ID: `abc123def456ghi789jkl012`\n- Client Secret: `sample_secret_def456uvw789`",
+      "expected_output": "Working Flask web app with Auth0 middleware, session management, login/logout, and protected routes",
+      "expectations": [
+        "Auth0 SDK installed via any valid method",
+        "Has correct import statement",
+        "Auth0 SDK initialized (OAuth client registered or configured)",
+        "Registers authentication middleware (Authlib OAuth integration)",
+        "Implements login route/action",
+        "Implements callback handling",
+        "Implements logout route/action",
+        "Has session/cookie configuration",
+        "Has protected route/page pattern",
+        "Auth0 domain dev-example.auth0.com written to .env config file",
+        "Client ID abc123def456ghi789jkl012 written to .env config file",
+        "Uses Authlib for OAuth2 integration",
+        "Does not use SPA SDK or hallucinated package in server-rendered app",
+        "Does not store tokens in localStorage",
+        "Correctness: solution correctly integrates Auth0 with Flask",
+        "Uses auth0-python in dependency declaration (requirements.txt)",
+        "Uses python-dotenv for environment variable loading",
+        "Uses .env-based secret management",
+        "Uses correct callback path (/callback)",
+        "Does not use deprecated v4 imports (uses current v5 API)",
+        "Skill attribution: advanced patterns beyond basic SDK usage"
+      ]
+    }
+  ]
+}

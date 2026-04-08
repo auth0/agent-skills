@@ -100,6 +100,7 @@ Framework-specific implementation guides:
 - `auth0-express` - Express.js
 - `auth0-fastify` - Fastify web applications
 - `auth0-fastify-api` - Fastify API authentication
+- `auth0-python` - Python web applications (Flask, Django)
 - `auth0-react-native` - React Native & Expo
 - `auth0-android` - Android
 
@@ -173,6 +174,7 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 | [auth0-express](./plugins/auth0-sdks/skills/auth0-express/SKILL.md) | Express.js web applications | v1.0.0 |
 | [auth0-fastify](./plugins/auth0-sdks/skills/auth0-fastify/SKILL.md) | Fastify web applications | v1.0.0 |
 | [auth0-fastify-api](./plugins/auth0-sdks/skills/auth0-fastify-api/SKILL.md) | Fastify API authentication | v1.0.0 |
+| [auth0-python](./plugins/auth0-sdks/skills/auth0-python/SKILL.md) | Python web applications (Flask, Django) | v1.0.0 |
 
 ### Mobile Skills (auth0-sdks plugin)
 
@@ -225,12 +227,13 @@ The MFA skill covers:
 |---------------|------------------|--------|------|
 | React | Next.js | React Native | Express.js |
 | Vue.js | SvelteKit | Expo | Fastify |
-| Angular | Nuxt.js | Android (Kotlin) | Flask |
-| | Remix | iOS (Swift) | FastAPI |
-| | Fastify | | Django REST |
-| | Ruby on Rails | | Go |
-| | PHP/Laravel | | Spring Boot |
-| | | | ASP.NET Core |
+| Angular | Nuxt.js | Android (Kotlin) | FastAPI |
+| | Remix | iOS (Swift) | Django REST |
+| | Fastify | | Go |
+| | Flask (Python) | | Spring Boot |
+| | Django (Python) | | ASP.NET Core |
+| | Ruby on Rails | | |
+| | PHP/Laravel | | |
 
 ### Coming Soon
 
@@ -264,6 +267,7 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 | Express | [express-openid-connect](https://github.com/auth0/express-openid-connect) | auth0-express, auth0-mfa |
 | Fastify | [@auth0/auth0-fastify](https://github.com/auth0/auth0-fastify) | auth0-fastify, auth0-mfa |
 | Fastify API | [@auth0/auth0-fastify-api](https://github.com/auth0/auth0-fastify) | auth0-fastify-api |
+| Python (Flask/Django) | [auth0-python](https://github.com/auth0/auth0-python) | auth0-python |
 | React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-react-native |
 | iOS/macOS | [Auth0.swift](https://github.com/auth0/Auth0.swift) | Coming soon |
 | Android | [Auth0.Android](https://github.com/auth0/Auth0.Android) | auth0-android |
@@ -347,6 +351,24 @@ auth0/agent-skills/
 │           │       ├── api.md
 │           │       ├── patterns.md
 │           │       └── setup.md
+│           ├── auth0-python/
+│           │   ├── SKILL.md
+│           │   ├── references/
+│           │   │   ├── api.md
+│           │   │   ├── integration.md
+│           │   │   └── setup.md
+│           │   ├── tests/
+│           │   │   ├── evals.json
+│           │   │   ├── graders.json
+│           │   │   ├── graders.ts
+│           │   │   ├── benchmark-config.json
+│           │   │   ├── prompt.md
+│           │   │   ├── run-evals.mjs
+│           │   │   └── package.json
+│           │   └── scripts/
+│           │       ├── bootstrap.mjs
+│           │       ├── package.json
+│           │       └── utils/
 │           └── auth0-android/
 │               ├── SKILL.md
 │               ├── references/
