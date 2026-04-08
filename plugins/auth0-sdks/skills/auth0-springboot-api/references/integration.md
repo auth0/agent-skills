@@ -158,15 +158,17 @@ auth0:
   dpop-mode: DISABLED
 ```
 
-### Advanced DPoP Configuration
+### Fine-Tuning DPoP Time Validation (Optional)
+
+The defaults work for most use cases. Only adjust these if you need to handle clock skew or network delays:
 
 ```yaml
 auth0:
   domain: "your-tenant.auth0.com"
   audience: "https://my-springboot-api"
   dpop-mode: ALLOWED
-  dpop-iat-offset-seconds: 300  # DPoP proof time window (default: 300)
-  dpop-iat-leeway-seconds: 30   # DPoP proof time leeway (default: 30)
+  dpop-iat-offset-seconds: 300  # Optional: max age of DPoP proof (default: 300)
+  dpop-iat-leeway-seconds: 30   # Optional: additional time leeway (default: 30)
 ```
 
 ### How DPoP Works in Controllers

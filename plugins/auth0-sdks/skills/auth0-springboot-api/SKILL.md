@@ -1,6 +1,9 @@
 ---
 name: auth0-springboot-api
 description: Use when securing Spring Boot API endpoints with JWT Bearer token validation, scope-based authorization, or DPoP proof-of-possession - integrates com.auth0:auth0-springboot-api SDK for REST APIs receiving access tokens from frontends or mobile apps. Triggers on Auth0AuthenticationFilter, Spring Boot API auth, JWT validation, SecurityFilterChain, hasAuthority SCOPE.
+license: Apache-2.0
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Auth0 Spring Boot API Integration
