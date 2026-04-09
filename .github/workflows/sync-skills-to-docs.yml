@@ -17,11 +17,20 @@ jobs:
       - name: Checkout agent-skills
         uses: actions/checkout@v4
 
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.SYNC_APP_ID }}
+          private-key: ${{ secrets.SYNC_APP_PRIVATE_KEY }}
+          owner: auth0
+          repositories: docs-v2
+
       - name: Checkout docs-v2
         uses: actions/checkout@v4
         with:
           repository: auth0/docs-v2
-          token: ${{ secrets.DOCS_V2_PAT }}
+          token: ${{ steps.app-token.outputs.token }}
           path: docs-v2
 
       - name: Sync SKILL.md files
@@ -42,7 +51,7 @@ jobs:
 
       - name: Create PR to docs-v2
         env:
-          GH_TOKEN: ${{ secrets.DOCS_V2_PAT }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
           COMMIT_SHA: ${{ github.sha }}
         run: |
           cd docs-v2
