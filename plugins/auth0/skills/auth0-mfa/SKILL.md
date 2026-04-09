@@ -161,6 +161,7 @@ Common patterns and troubleshooting:
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-passkeys` - WebAuthn/passkey implementation
 - `auth0-actions` - Custom authentication logic
+- `auth0-cli` - CLI commands for managing Auth0 resources
 
 ---
 

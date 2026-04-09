@@ -209,6 +209,7 @@ Complete Auth0 CLI reference:
 
 ### Core Integration
 - `auth0-migration` - Migrate from other auth providers
+- `auth0-cli` - CLI commands for managing Auth0 resources
 
 ### SDK Skills
 - `auth0-react` - React SPA integration

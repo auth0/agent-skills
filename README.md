@@ -84,6 +84,7 @@ Essential skills for getting started and advanced security:
 - `auth0-quickstart` - Framework detection and routing
 - `auth0-migration` - Migrate from other auth providers
 - `auth0-mfa` - Multi-Factor Authentication
+- `auth0-cli` - Auth0 CLI management
 
 ```bash
 /plugin install auth0@auth0-agent-skills
@@ -155,6 +156,7 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 | [auth0-quickstart](./plugins/auth0/skills/auth0-quickstart/SKILL.md) | Framework detector and router | v1.0.0 |
 | [auth0-migration](./plugins/auth0/skills/auth0-migration/SKILL.md) | Migrate from other auth providers | v1.0.0 |
 | [auth0-mfa](./plugins/auth0/skills/auth0-mfa/SKILL.md) | Multi-Factor Authentication | v1.0.0 |
+| [auth0-cli](./plugins/auth0/skills/auth0-cli/SKILL.md) | Auth0 CLI management | v1.0.0 |
 
 ### Frontend Framework Skills (auth0-sdks plugin)
 
@@ -285,6 +287,12 @@ auth0/agent-skills/
 │   │       │       ├── cli.md
 │   │       │       ├── concepts.md
 │   │       │       └── environments.md
+│   │       ├── auth0-cli/
+│   │       │   ├── SKILL.md
+│   │       │   └── references/
+│   │       │       ├── commands.md
+│   │       │       ├── workflows.md
+│   │       │       └── advanced.md
 │   │       ├── auth0-migration/
 │   │       │   ├── SKILL.md
 │   │       │   └── reference/
