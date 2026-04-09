@@ -1,6 +1,9 @@
 ---
 name: auth0-express-api
 description: Use when adding Auth0 token validation to Express APIs - integrates express-oauth2-jwt-bearer SDK to protect Express endpoints with JWT Bearer authentication, scope-based authorization, and DPoP support
+license: Apache-2.0
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Express OAuth2 JWT Bearer Integration
