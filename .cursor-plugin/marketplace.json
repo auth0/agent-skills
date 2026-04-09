@@ -1,0 +1,57 @@
+{
+  "name": "auth0-agent-skills",
+  "owner": {
+    "name": "Auth0",
+    "email": "support@auth0.com"
+  },
+  "metadata": {
+    "description": "Auth0 agent skills for authentication, SDK integration, migration, and MFA.",
+    "version": "1.0.0",
+    "pluginRoot": "plugins"
+  },
+  "plugins": [
+    {
+      "name": "auth0",
+      "source": "auth0",
+      "description": "Essential Auth0 skills including quickstarts, migration from other providers, and Multi-Factor Authentication (MFA).",
+      "version": "1.0.0",
+      "repository": "https://github.com/auth0/agent-skills.git",
+      "license": "Apache-2.0",
+      "author": {
+        "name": "Auth0",
+        "email": "support@auth0.com"
+      },
+      "keywords": ["auth0", "quickstart", "migration", "mfa", "security"],
+      "category": "authentication"
+    },
+    {
+      "name": "auth0-sdks",
+      "source": "auth0-sdks",
+      "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, Android, ASP.NET Core, and React Native with complete implementation guides.",
+      "version": "1.0.0",
+      "repository": "https://github.com/auth0/agent-skills.git",
+      "license": "Apache-2.0",
+      "author": {
+        "name": "Auth0",
+        "email": "support@auth0.com"
+      },
+      "keywords": [
+        "auth0",
+        "sdk",
+        "react",
+        "nextjs",
+        "vue",
+        "nuxt",
+        "angular",
+        "express",
+        "fastify",
+        "fastify-api",
+        "android",
+        "aspnetcore",
+        "dotnet",
+        "react-native"
+      ],
+      "category": "sdk"
+    }
+  ]
+}
