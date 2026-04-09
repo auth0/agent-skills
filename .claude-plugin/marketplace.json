@@ -55,7 +55,11 @@
         "android",
         "aspnetcore",
         "dotnet",
-        "react-native"
+        "react-native",
+        "node",
+        "jwt",
+        "node-oauth2-jwt-bearer",
+        "express-jwt"
       ],
       "category": "sdk"
     }
