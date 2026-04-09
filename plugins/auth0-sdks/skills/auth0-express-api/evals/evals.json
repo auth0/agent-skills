@@ -1,0 +1,30 @@
+{
+  "skill_name": "auth0-express-api",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Auth0 authentication to an Express API using the express-oauth2-jwt-bearer SDK.\n\n**Auth0 Credentials:**\n- Domain: `dev-example.auth0.com`\n- Client ID: `abc123def456ghi789jkl012`\n- API Audience: `https://api.example.com`",
+      "expected_output": "Working Express API with Auth0 JWT validation, protected endpoints, and RBAC permissions",
+      "expectations": [
+        "Auth0 SDK installed via any valid method (npm, yarn, or pnpm)",
+        "Has correct SDK package name in source (express-oauth2-jwt-bearer)",
+        "Auth0 SDK initialized (JWT middleware configured with auth())",
+        "Configures issuer base URL for JWT validation",
+        "Configures API audience for token validation",
+        "Has protected API endpoint with auth middleware",
+        "Configures CORS middleware",
+        "Auth0 domain dev-example.auth0.com written to .env config file",
+        "API audience https://api.example.com written to .env config file",
+        "No login UI methods in stateless API",
+        "No client secret in API config (uses JWKS)",
+        "Correctness: solution correctly integrates Auth0 JWT validation into Express API",
+        "Uses current SDK version (1.7.x) in dependency declaration",
+        "Uses advanced authorization middleware (scope/claim validation)",
+        "Accesses permissions claim for RBAC authorization",
+        "Uses dotenv for environment variable management",
+        "Does not use wrong SDK (SPA/mobile SDK in API project)",
+        "Skill attribution: uses advanced skill-specific patterns beyond basic SDK usage"
+      ]
+    }
+  ]
+}

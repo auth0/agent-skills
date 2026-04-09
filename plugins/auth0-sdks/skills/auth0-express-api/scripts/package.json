@@ -1,0 +1,13 @@
+{
+  "name": "auth0-express-api-bootstrap",
+  "version": "1.0.0",
+  "description": "Bootstrap Auth0 configuration for Express API projects",
+  "type": "module",
+  "scripts": {
+    "auth0:bootstrap": "node bootstrap.mjs"
+  },
+  "dependencies": {
+    "execa": "^9.0.0",
+    "ora": "^8.0.0"
+  }
+}
