@@ -100,6 +100,7 @@ Framework-specific implementation guides:
 - `auth0-express` - Express.js
 - `auth0-fastify` - Fastify web applications
 - `auth0-fastify-api` - Fastify API authentication
+- `auth0-fastapi-api` - FastAPI API authentication
 - `auth0-react-native` - React Native & Expo
 - `auth0-android` - Android
 
@@ -173,6 +174,7 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 | [auth0-express](./plugins/auth0-sdks/skills/auth0-express/SKILL.md) | Express.js web applications | v1.0.0 |
 | [auth0-fastify](./plugins/auth0-sdks/skills/auth0-fastify/SKILL.md) | Fastify web applications | v1.0.0 |
 | [auth0-fastify-api](./plugins/auth0-sdks/skills/auth0-fastify-api/SKILL.md) | Fastify API authentication | v1.0.0 |
+| [auth0-fastapi-api](./plugins/auth0-sdks/skills/auth0-fastapi-api/SKILL.md) | FastAPI API authentication | v1.0.0 |
 
 ### Mobile Skills (auth0-sdks plugin)
 
@@ -264,6 +266,7 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 | Express | [express-openid-connect](https://github.com/auth0/express-openid-connect) | auth0-express, auth0-mfa |
 | Fastify | [@auth0/auth0-fastify](https://github.com/auth0/auth0-fastify) | auth0-fastify, auth0-mfa |
 | Fastify API | [@auth0/auth0-fastify-api](https://github.com/auth0/auth0-fastify) | auth0-fastify-api |
+| FastAPI | [auth0-fastapi-api](https://github.com/auth0/auth0-fastapi-api) | auth0-fastapi-api |
 | React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-react-native |
 | iOS/macOS | [Auth0.swift](https://github.com/auth0/Auth0.swift) | Coming soon |
 | Android | [Auth0.Android](https://github.com/auth0/Auth0.Android) | auth0-android |
@@ -341,6 +344,12 @@ auth0/agent-skills/
 │           │   └── SKILL.md
 │           ├── auth0-fastify-api/
 │           │   └── SKILL.md
+│           ├── auth0-fastapi-api/
+│           │   ├── SKILL.md
+│           │   └── references/
+│           │       ├── api.md
+│           │       ├── integration.md
+│           │       └── setup.md
 │           ├── auth0-react-native/
 │           │   ├── SKILL.md
 │           │   └── reference/
