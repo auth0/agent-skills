@@ -180,3 +180,13 @@ if let claims = try? IDTokenClaimsValidation().validate(credentials.idToken) {
 - **Biometric storage**: When using `enableBiometrics()`, the Keychain entry uses `kSecAccessControlBiometryCurrentSet` which invalidates the entry if new biometrics are enrolled — protecting against biometric spoofing.
 - **Certificate pinning**: For extra security, use a custom `URLSession` with certificate pinning when calling your API with the access token.
 - **App Transport Security**: Ensure `NSAllowsArbitraryLoads` is not set to `true` in production builds.
+
+---
+
+## Related Skills
+
+- [auth0-android](/auth0-android) — Auth0 authentication for Android/Kotlin apps
+- [auth0-flutter](/auth0-flutter) — Cross-platform iOS + Android authentication with Flutter
+- [auth0-react-native](/auth0-react-native) — Cross-platform iOS + Android authentication with React Native
+- [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
+- [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
