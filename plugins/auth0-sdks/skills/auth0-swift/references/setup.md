@@ -3,34 +3,30 @@
 ## Auth0 Configuration
 
 > **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt.
-> - **If credentials are provided:** Write `Auth0.plist` directly with those values and proceed to "Post-Setup Steps". Skip the options below.
-> - **If credentials are NOT provided:** Ask via `AskUserQuestion` whether to use automatic setup (bootstrap script) or manual setup.
+> - **If credentials are provided:** Write `Auth0.plist` directly with those values and proceed to "Post-Setup Steps".
+> - **If no credentials are provided:** Run the bootstrap script below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
 
-### Option A: Automatic Setup (Bootstrap Script)
+### Bootstrap Script
 
-> **Agent instruction:** Run these quick checks before the bootstrap script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+> **Agent instruction:** Run these checks before the script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
-> 1. **Check Node.js**: `node --version`. If missing or below 20, ask user: install (`brew install node`) or switch to manual setup.
-> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, ask user: install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
+> 1. **Check Node.js**: `node --version`. If missing or below 20, install it: `brew install node`.
+> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
 > 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
->    - Wait for the user to confirm, then re-run the check to verify.
-> 4. **Confirm active tenant**: Parse the `→` line from the CSV output to identify the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
->    - If yes, proceed.
->    - If no, ask the user to run `auth0 tenants use <tenant-domain>` in their terminal, then re-run step 3 to confirm the new active tenant.
+>    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
+> 4. **Confirm active tenant**: Parse the `→` line from the CSV output. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
+>    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 3.
 >
-> Once confirmed, run the bootstrap script:
+> Once confirmed, run:
 > ```bash
 > cd <path-to-skill>/auth0-swift/scripts
 > npm install
 > node bootstrap.mjs <path-to-xcode-project>
 > ```
 >
-> The script handles Auth0 app creation, database connection, callback URLs, and `Auth0.plist`. The agent should NOT handle client_id or domain manually.
->
-> If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run the script. For other failures, fall back to **Option B** below.
->
-> After the script completes, proceed to **Post-Setup Steps** below.
+> If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run. Retry up to 3 times.
+> Only if the script keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID, then write `Auth0.plist` with those values.
 
 The script will:
 1. Detect your bundle identifier from `project.pbxproj` (`PRODUCT_BUNDLE_IDENTIFIER`)
@@ -39,13 +35,9 @@ The script will:
 4. Set up a database connection (Username-Password-Authentication)
 5. Write `Auth0.plist` to your project directory
 
-### Option B: Manual Setup
+### Writing Auth0.plist (credentials already known)
 
-Ask the user for:
-1. **Auth0 Domain** — from Auth0 Dashboard → Applications → your app → Settings tab
-2. **Auth0 Client ID** — same location
-
-Create `Auth0.plist` in your Xcode project directory:
+Use this only when credentials are explicitly provided by the user or obtained after bootstrap script failure.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -60,20 +52,10 @@ Create `Auth0.plist` in your Xcode project directory:
 </plist>
 ```
 
-Add the file to your Xcode project:
+Add the file to the Xcode project:
 1. Right-click on the project in Navigator → **Add Files to "YourProject"**
 2. Select `Auth0.plist`
 3. Ensure your app target is checked in the "Add to targets" list
-
-**Auth0 Dashboard settings** (Applications → your app → Settings):
-
-| Setting | Value |
-|---------|-------|
-| **Application Type** | Native |
-| **Token Endpoint Auth Method** | None |
-| **Allowed Callback URLs** | `https://YOUR_DOMAIN/ios/YOUR_BUNDLE_ID/callback, YOUR_BUNDLE_ID://YOUR_DOMAIN/ios/YOUR_BUNDLE_ID/callback` |
-| **Allowed Logout URLs** | Same as callback URLs |
-| **Allowed Web Origins** | Not required for native apps |
 
 ---
 

@@ -12,9 +12,14 @@ import {
   buildChangePlan,
   displayChangePlan,
 } from "./utils/discovery.mjs"
-import { applyNativeClientChanges } from "./utils/clients.mjs"
+import {
+  applyNativeClientChanges,
+  applyDeviceSettings,
+} from "./utils/clients.mjs"
 import { applyDatabaseConnectionChanges, checkDatabaseConnectionChanges } from "./utils/connections.mjs"
 import { writeAuth0Plist } from "./utils/plist-writer.mjs"
+import { writeEntitlementsFile } from "./utils/entitlements.mjs"
+import { configureXcodeProject } from "./utils/xcode-project.mjs"
 import { confirmWithUser } from "./utils/helpers.mjs"
 
 async function main() {
@@ -27,7 +32,7 @@ async function main() {
   await checkAuth0CLI()
   const domain = await getActiveTenant()
 
-  // Validate Xcode project and detect bundle identifier
+  // Validate Xcode project and detect bundle identifier + team ID
   const config = validateSwiftProject(projectPath)
 
   // Discover existing connections + build change plan
@@ -42,14 +47,30 @@ async function main() {
     process.exit(0)
   }
 
-  // Execute: create Native app, setup connection, write config
   console.log("")
+
+  // 1. Create Native app (registers HTTPS + custom scheme callback URLs)
   const client = await applyNativeClientChanges(plan.client)
 
+  // 2. Set up database connection
   plan.connection = checkDatabaseConnectionChanges(connections, client.client_id)
   await applyDatabaseConnectionChanges(plan.connection, client.client_id)
 
+  // 3. Configure Device Settings so Auth0 hosts apple-app-site-association
+  await applyDeviceSettings(client.client_id, config.teamId, config.bundleId)
+
+  // 4. Write Auth0.plist
   await writeAuth0Plist(domain, client.client_id, config.auth0PlistPath)
+
+  // 5. Write / merge entitlements file with Associated Domains entries
+  writeEntitlementsFile(config.entitlementsPath, domain)
+
+  // 6. Add Auth0.plist to Xcode target + set CODE_SIGN_ENTITLEMENTS
+  const xcodeConfigured = await configureXcodeProject(
+    config.xcodeprojPath,
+    config.auth0PlistPath,
+    path.basename(config.entitlementsPath)
+  )
 
   // Summary
   console.log("\n  Auth0 Swift Setup Complete\n")
@@ -57,16 +78,38 @@ async function main() {
   console.log(`  Client ID:   ${client.client_id}`)
   console.log(`  Bundle ID:   ${config.bundleId}`)
   console.log(`  Auth0.plist: ${config.auth0PlistPath}`)
+  console.log(`  Entitlements: ${config.entitlementsPath}`)
   console.log("")
-  console.log("  Next steps:")
-  console.log("  1. Open your Xcode project and add Auth0.plist to the app target")
-  console.log("     (Right-click → Add Files → check your app target)")
-  console.log("  2. Register URL scheme in Xcode: target → Info tab → URL Types")
-  console.log("     Identifier: auth0   |   URL Schemes: $(PRODUCT_BUNDLE_IDENTIFIER)")
-  console.log("  3. Verify callback URLs in Auth0 Dashboard match your bundle ID:")
-  console.log(`     https://${domain}/ios/${config.bundleId}/callback`)
-  console.log(`     ${config.bundleId}://${domain}/ios/${config.bundleId}/callback`)
-  console.log("")
+
+  const remainingSteps = []
+
+  remainingSteps.push(
+    "1. Register URL scheme in Xcode: target → Info tab → URL Types → +\n" +
+    "     Identifier: auth0   |   URL Schemes: $(PRODUCT_BUNDLE_IDENTIFIER)"
+  )
+
+  if (!config.teamId) {
+    remainingSteps.push(
+      "2. Apple Team ID was not detected — verify Device Settings in Auth0 Dashboard:\n" +
+      "     App Settings → Advanced → Device Settings → Team ID + Bundle ID"
+    )
+  }
+
+  if (!xcodeConfigured) {
+    remainingSteps.push(
+      "3. xcodeproj gem unavailable — complete manually in Xcode:\n" +
+      `     a. Add Auth0.plist to target: right-click → Add Files → check ${config.appName}\n` +
+      `     b. Set CODE_SIGN_ENTITLEMENTS = "${path.basename(config.entitlementsPath)}" in target Build Settings`
+    )
+  }
+
+  if (remainingSteps.length > 0) {
+    console.log("  Remaining manual steps:")
+    for (const step of remainingSteps) {
+      console.log(`  ${step}`)
+    }
+    console.log("")
+  }
 }
 
 main().catch((e) => {

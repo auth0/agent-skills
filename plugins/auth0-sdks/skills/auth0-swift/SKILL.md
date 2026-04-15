@@ -57,44 +57,55 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 
 ### Step 2 — Configure Auth0
 
-> **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt. If yes, write `Auth0.plist` directly with those values. If not, ask via `AskUserQuestion`: _"How would you like to configure Auth0 for this project?"_
-> - **Automatic setup (Recommended)** — runs a bootstrap script that creates the Auth0 app, database connection, callback URLs, and writes `Auth0.plist`
-> - **Manual setup** — the user provides their Auth0 Client ID and Domain
+> **Agent instruction:**
+> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write `Auth0.plist` directly with those values and proceed to Step 3.
+> - **If no credentials are provided:** Run the bootstrap script — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
 >
-> Follow the matching section in [Setup Guide](./references/setup.md#auth0-configuration) based on their choice.
+> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and the script command.
 
 ### Step 3 — Configure Callback URLs
 
-> **Agent instruction:** Ask the user via `AskUserQuestion`: _"Which callback URL scheme would you like to use?"_
-> - **Custom scheme** (`{bundle}://`) — simpler, works on all Apple platforms
-> - **HTTPS Universal Links** — recommended for production; prevents URL scheme hijacking
+> **Agent instruction:**
+> 1. Read `Auth0.plist` to obtain `ClientId` and `Domain`.
+> 2. Extract the bundle identifier from `project.pbxproj`: search for `PRODUCT_BUNDLE_IDENTIFIER`, skip values containing `$(` or `Tests`.
+> 3. Ask the user via `AskUserQuestion`: _"Which callback URL scheme would you like to use?"_
+>    - **Custom scheme** (`{bundle}://`) — simpler, works on all Apple platforms
+>    - **HTTPS Universal Links** — recommended for production; prevents URL scheme hijacking
 >
 > Then follow **only** the matching path below.
 
 #### Path A — Custom Scheme
 
-> **Agent instruction:** In Auth0 Dashboard → **Applications** → your app → **Settings**, add to both **Allowed Callback URLs** and **Allowed Logout URLs**:
-> - iOS: `YOUR_BUNDLE_ID://YOUR_AUTH0_DOMAIN/ios/YOUR_BUNDLE_ID/callback`
-> - macOS: `YOUR_BUNDLE_ID://YOUR_AUTH0_DOMAIN/macos/YOUR_BUNDLE_ID/callback`
->
+> **Agent instruction:** Register the callback URLs using the Auth0 CLI (substitute real values for `CLIENT_ID`, `BUNDLE_ID`, `DOMAIN`):
+> ```bash
+> auth0 apps update CLIENT_ID \
+>   --callbacks "BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>   --logout-urls "BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>   --no-input
+> ```
 > Then follow the [URL scheme registration steps in Setup Guide](./references/setup.md#register-url-scheme-required-for-custom-scheme-callbacks) to register `$(PRODUCT_BUNDLE_IDENTIFIER)` as a URL type in Xcode.
 
 #### Path B — HTTPS Universal Links
 
 > **Agent instruction:** All four steps below are required — skipping any one will cause the callback redirect to fail silently after login.
 >
-> **Step B1 — Register HTTPS callback URLs in Auth0 Dashboard:**
-> Dashboard → Applications → your app → Settings → add to **Allowed Callback URLs** and **Allowed Logout URLs**:
-> - iOS: `https://YOUR_AUTH0_DOMAIN/ios/YOUR_BUNDLE_ID/callback`
-> - macOS: `https://YOUR_AUTH0_DOMAIN/macos/YOUR_BUNDLE_ID/callback`
+> **Step B1 — Register callback URLs via Auth0 CLI:**
+> Register both HTTPS and custom scheme so the app works in all scenarios:
+> ```bash
+> auth0 apps update CLIENT_ID \
+>   --callbacks "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>   --logout-urls "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>   --no-input
+> ```
 >
-> **Step B2 — Configure Device Settings in Auth0 Dashboard:**
-> Dashboard → Applications → your app → Settings → scroll to bottom → **Show Advanced Settings** → **Device Settings** tab:
-> 1. Enter the user's **Apple Team ID** (found at [developer.apple.com/account](https://developer.apple.com/account) under Membership)
-> 2. Enter the **App Bundle Identifier**
-> 3. Save changes
->
-> Auth0 will now host `https://YOUR_AUTH0_DOMAIN/.well-known/apple-app-site-association` automatically. This file must exist and list your app's Team ID + Bundle ID before Universal Links will work on device.
+> **Step B2 — Configure Device Settings via Auth0 CLI:**
+> Extract `DEVELOPMENT_TEAM` from `project.pbxproj` (10-character value, e.g. `ABC12DE34F`). If not found, ask via `AskUserQuestion`: _"What is your Apple Team ID? (developer.apple.com → Account → Membership Details)"_
+> ```bash
+> auth0 api patch applications/CLIENT_ID \
+>   --data '{"mobile":{"ios":{"team_id":"TEAM_ID","app_bundle_identifier":"BUNDLE_ID"}}}' \
+>   --no-input
+> ```
+> Auth0 will now host `https://DOMAIN/.well-known/apple-app-site-association` automatically — required for Universal Links to work on device.
 >
 > **Step B3 — Add Associated Domains entitlement in Xcode:**
 > Add `com.apple.developer.associated-domains` to the app's `.entitlements` file with both `applinks:` and `webcredentials:` entries for the Auth0 domain. See [Setup Guide — Associated Domains](./references/setup.md#associated-domains-setup-https-universal-links) for the complete entitlements XML, Xcode capability steps, and build settings verification.
@@ -238,12 +249,6 @@ private let auth = AuthenticationService()
 | Opening `.xcodeproj` instead of `.xcworkspace` (CocoaPods) | Always open the `.xcworkspace` file after `pod install` |
 | Not calling `clearSession()` on logout | Always call `clearSession()` to remove the Auth0 session cookie from the browser |
 | Build error "No such module 'Auth0'" | Verify the package is added to the correct target; for CocoaPods, open `.xcworkspace` |
-
-## Related Skills
-
-- **[auth0-android](/auth0-android)** — NATIVE_MOBILE for Android/Kotlin
-- **[auth0-flutter](/auth0-flutter)** — Cross-platform iOS + Android with Dart
-- **[auth0-aspnetcore-authentication](/auth0-aspnetcore-authentication)** — WEB_REGULAR for ASP.NET Core
 
 ## References
 

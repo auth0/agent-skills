@@ -56,6 +56,7 @@ export function displayChangePlan(plan) {
 
     let detail = ""
     if (item.summary) detail = ` (${item.summary})`
+    else if (item.httpsCallback) detail = ` (callbacks: ${item.httpsCallback}, ${item.customCallback})`
     else if (item.callbackUrl) detail = ` (callback: ${item.callbackUrl})`
 
     console.log(`  ${icon} [${label}] ${item.name || item.resource}${detail}`)

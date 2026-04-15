@@ -104,7 +104,15 @@ export function validateSwiftProject(projectPath) {
     process.exit(1)
   }
 
+  // Extract Team ID (DEVELOPMENT_TEAM) — may be absent if project is not yet signed
+  const teamIdMatch = content.match(/DEVELOPMENT_TEAM\s*=\s*([A-Z0-9]{10})\s*;/)
+  const teamId = teamIdMatch?.[1] || null
+
+  const appName = xcodeproj.replace(".xcodeproj", "")
+  const xcodeprojPath = path.join(projectPath, xcodeproj)
   const auth0PlistPath = path.join(projectPath, "Auth0.plist")
+  const entitlementsPath = path.join(projectPath, `${appName}.entitlements`)
+
   spinner.succeed(`Swift project: ${bundleId} (${xcodeproj || xcworkspace})`)
-  return { bundleId, auth0PlistPath }
+  return { bundleId, teamId, appName, xcodeprojPath, auth0PlistPath, entitlementsPath }
 }
