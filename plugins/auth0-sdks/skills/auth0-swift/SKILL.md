@@ -46,7 +46,14 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > If none are found, ask via `AskUserQuestion`: _"Which dependency manager does your project use — Swift Package Manager, CocoaPods, or Carthage?"_
 >
-> Follow the matching installation steps in [Setup Guide](./references/setup.md#sdk-installation). Do not just show the instructions — perform the file edits and run the commands.
+> **Swift Package Manager — `Package.swift` project:** Run this command in the project root to add the dependency automatically, then add `"Auth0"` to the target's `dependencies` array in `Package.swift`:
+> ```bash
+> swift package add-dependency https://github.com/auth0/Auth0.swift --from 2.18.0
+> ```
+>
+> **Swift Package Manager — Xcode project (`.xcodeproj`, no `Package.swift`):** The CLI command does not apply. Instruct the user to add the package via Xcode: File → Add Package Dependencies → `https://github.com/auth0/Auth0.swift` → Up to Next Major Version from `2.18.0`.
+>
+> **CocoaPods or Carthage:** Follow the matching installation steps in [Setup Guide](./references/setup.md#sdk-installation). Do not just show the instructions — perform the file edits and run the commands.
 
 ### Step 2 — Configure Auth0
 
@@ -99,12 +106,22 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 
 ### Step 4 — Implement Authentication
 
+> **Agent instruction:** Search the project for `@main struct` (SwiftUI) or `AppDelegate`/`UIViewController` (UIKit) to detect the UI framework. If ambiguous, ask via `AskUserQuestion`: _"Does your app use SwiftUI or UIKit?"_ Then follow **only** the matching path below.
+
+#### SwiftUI
+
+> **Agent instruction:** Create `AuthenticationService.swift` as an `ObservableObject`, then wire it into the app entry point and root view. Search for the `@main` struct and `ContentView` (or equivalent root view) and update them as shown.
+
 ```swift
+// AuthenticationService.swift
 import Auth0
+import Combine
 
 class AuthenticationService: ObservableObject {
     @Published var isAuthenticated = false
     private let credentialsManager = CredentialsManager(authentication: Auth0.authentication())
+
+    init() { isAuthenticated = credentialsManager.canRenew() }
 
     func login() async {
         do {
@@ -115,29 +132,84 @@ class AuthenticationService: ObservableObject {
                 .start()
             _ = credentialsManager.store(credentials: credentials)
             await MainActor.run { isAuthenticated = true }
-        } catch {
-            print("Login failed: \(error)")
-        }
+        } catch WebAuthError.userCancelled { }
+        catch { print("Login failed: \(error)") }
     }
 
     func logout() async {
-        do {
-            try await Auth0
-                .webAuth()
-                .useHTTPS()
-                .clearSession()
-            _ = credentialsManager.clear()
-            await MainActor.run { isAuthenticated = false }
-        } catch {
-            print("Logout failed: \(error)")
-        }
-    }
-
-    func checkSession() {
-        isAuthenticated = credentialsManager.canRenew()
+        do { try await Auth0.webAuth().useHTTPS().clearSession() }
+        catch { print("Logout failed: \(error)") }
+        _ = credentialsManager.clear()
+        await MainActor.run { isAuthenticated = false }
     }
 }
 ```
+
+```swift
+// @main App struct — inject AuthenticationService as environment object
+@StateObject private var auth = AuthenticationService()
+// In body: ContentView().environmentObject(auth)
+
+// Root ContentView — branch on authentication state
+@EnvironmentObject var auth: AuthenticationService
+// In body: if auth.isAuthenticated { HomeView() } else { LoginView() }
+```
+
+For complete SwiftUI app lifecycle wiring, see [Integration Patterns](./references/integration.md#swiftui-app-lifecycle-recommended).
+
+#### UIKit
+
+> **Agent instruction:** Create `AuthenticationService.swift` as a plain class, then add login/logout calls to the relevant `UIViewController`. Also check whether the app uses `SFSafariViewController` — if so, add `WebAuthentication.resume(with:)` to `AppDelegate`/`SceneDelegate` (see note below).
+
+```swift
+// AuthenticationService.swift
+import Auth0
+
+class AuthenticationService {
+    private let credentialsManager = CredentialsManager(authentication: Auth0.authentication())
+
+    var isAuthenticated: Bool { credentialsManager.canRenew() }
+
+    func login() async throws {
+        let credentials = try await Auth0
+            .webAuth()
+            .useHTTPS()
+            .scope("openid profile email offline_access")
+            .start()
+        _ = credentialsManager.store(credentials: credentials)
+    }
+
+    func logout() async throws {
+        try await Auth0.webAuth().useHTTPS().clearSession()
+        _ = credentialsManager.clear()
+    }
+}
+```
+
+```swift
+// In your UIViewController
+private let auth = AuthenticationService()
+
+@IBAction func loginTapped(_ sender: UIButton) {
+    Task {
+        do {
+            try await auth.login()
+            await MainActor.run { navigateToHome() }
+        } catch WebAuthError.userCancelled { }
+        catch { print("Login failed: \(error)") }
+    }
+}
+
+@IBAction func logoutTapped(_ sender: UIButton) {
+    Task {
+        do { try await auth.logout() }
+        catch { print("Logout failed: \(error)") }
+        await MainActor.run { navigateToLogin() }
+    }
+}
+```
+
+> **Note — SFSafariViewController only:** If the app uses `.provider(WebAuthentication.safariProvider())` instead of the default `ASWebAuthenticationSession`, add `WebAuthentication.resume(with: url)` to `AppDelegate.application(_:open:url:options:)` and `SceneDelegate.scene(_:openURLContexts:)`. See [Integration Patterns](./references/integration.md#uikit-app-lifecycle) for the exact code.
 
 ### Step 5 — Verify Build
 

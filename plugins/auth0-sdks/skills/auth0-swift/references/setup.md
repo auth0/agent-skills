@@ -165,7 +165,28 @@ For macOS targets, also:
 
 ### Swift Package Manager (Recommended)
 
-1. In Xcode: **File → Add Package Dependencies**
+#### Package.swift project
+
+Run in the project root:
+
+```bash
+swift package add-dependency https://github.com/auth0/Auth0.swift --from 2.18.0
+```
+
+Then add `"Auth0"` to the target's `dependencies` array in `Package.swift`:
+
+```swift
+.target(
+    name: "YourTarget",
+    dependencies: ["Auth0"]
+)
+```
+
+#### Xcode project (`.xcodeproj`, no `Package.swift`)
+
+The `swift package add-dependency` command does not apply to Xcode projects. Add the package via the Xcode GUI:
+
+1. **File → Add Package Dependencies**
 2. Enter package URL: `https://github.com/auth0/Auth0.swift`
 3. Select **Up to Next Major Version** starting from `2.18.0`
 4. Click **Add Package**
