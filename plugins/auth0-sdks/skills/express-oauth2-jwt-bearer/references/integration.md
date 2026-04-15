@@ -84,7 +84,7 @@ app.get('/api/messages', checkJwt, requiredScopes('read:messages'), (req, res) =
 });
 
 // Multiple scopes required
-app.post('/api/messages', checkJwt, requiredScopes('write:messages'), (req, res) => {
+app.post('/api/messages', checkJwt, requiredScopes('read:messages write:messages'), (req, res) => {
   res.json({ created: true });
 });
 ```
@@ -155,7 +155,7 @@ import { auth } from 'express-oauth2-jwt-bearer';
 // 1. CORS first (handles OPTIONS preflight)
 app.use(cors({
   origin: 'http://localhost:5173',  // Your frontend URL
-  allowedHeaders: ['Authorization', 'Content-Type'],
+  allowedHeaders: ['Authorization', 'Content-Type', 'DPoP'],
   exposedHeaders: ['WWW-Authenticate'],
 }));
 

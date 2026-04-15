@@ -83,7 +83,7 @@ const app = express();
 // 1. CORS before auth (required for preflight requests)
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
-  allowedHeaders: ['Authorization'],
+  allowedHeaders: ['Authorization', 'Content-Type', 'DPoP'],
 }));
 
 app.use(express.json());
