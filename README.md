@@ -98,6 +98,7 @@ Framework-specific implementation guides:
 - `auth0-vue` - Vue.js 3
 - `auth0-angular` - Angular 12+
 - `auth0-express` - Express.js
+- `auth0-flask` - Flask web applications
 - `auth0-fastify` - Fastify web applications
 - `auth0-fastify-api` - Fastify API authentication
 - `auth0-react-native` - React Native & Expo
@@ -171,6 +172,7 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 | [auth0-nextjs](./plugins/auth0-sdks/skills/auth0-nextjs/SKILL.md) | Next.js App Router & Pages Router | v1.0.0 |
 | [auth0-nuxt](./plugins/auth0-sdks/skills/auth0-nuxt/SKILL.md) | Nuxt 3/4 applications | v1.0.0 |
 | [auth0-express](./plugins/auth0-sdks/skills/auth0-express/SKILL.md) | Express.js web applications | v1.0.0 |
+| [auth0-flask](./plugins/auth0-sdks/skills/auth0-flask/SKILL.md) | Flask web applications | v1.0.0 |
 | [auth0-fastify](./plugins/auth0-sdks/skills/auth0-fastify/SKILL.md) | Fastify web applications | v1.0.0 |
 | [auth0-fastify-api](./plugins/auth0-sdks/skills/auth0-fastify-api/SKILL.md) | Fastify API authentication | v1.0.0 |
 
@@ -225,12 +227,12 @@ The MFA skill covers:
 |---------------|------------------|--------|------|
 | React | Next.js | React Native | Express.js |
 | Vue.js | SvelteKit | Expo | Fastify |
-| Angular | Nuxt.js | Android (Kotlin) | Flask |
-| | Remix | iOS (Swift) | FastAPI |
-| | Fastify | | Django REST |
-| | Ruby on Rails | | Go |
-| | PHP/Laravel | | Spring Boot |
-| | | | ASP.NET Core |
+| Angular | Nuxt.js | Android (Kotlin) | FastAPI |
+| | Remix | iOS (Swift) | Django REST |
+| | Fastify | | Go |
+| | Flask | | Spring Boot |
+| | Ruby on Rails | | ASP.NET Core |
+| | PHP/Laravel | | |
 
 ### Coming Soon
 
@@ -262,6 +264,7 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 | Next.js | [@auth0/nextjs-auth0](https://github.com/auth0/nextjs-auth0) | auth0-nextjs, auth0-mfa |
 | Nuxt.js | [@auth0/auth0-nuxt](https://github.com/auth0/auth0-nuxt) | auth0-nuxt |
 | Express | [express-openid-connect](https://github.com/auth0/express-openid-connect) | auth0-express, auth0-mfa |
+| Flask | [auth0-server-python](https://github.com/auth0/auth0-server-python) | auth0-flask |
 | Fastify | [@auth0/auth0-fastify](https://github.com/auth0/auth0-fastify) | auth0-fastify, auth0-mfa |
 | Fastify API | [@auth0/auth0-fastify-api](https://github.com/auth0/auth0-fastify) | auth0-fastify-api |
 | React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-react-native |
@@ -334,6 +337,12 @@ auth0/agent-skills/
 │           ├── auth0-express/
 │           │   ├── SKILL.md
 │           │   └── reference/
+│           │       ├── api.md
+│           │       ├── integration.md
+│           │       └── setup.md
+│           ├── auth0-flask/
+│           │   ├── SKILL.md
+│           │   └── references/
 │           │       ├── api.md
 │           │       ├── integration.md
 │           │       └── setup.md

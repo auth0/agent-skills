@@ -84,7 +84,7 @@ class FlaskSessionStateStore(StateStore):
         if data is None:
             return None
         decrypted = self.decrypt(identifier, data)
-        # Ensure to not return a dict, as the underlying SDK expectys a TransactionData instance, not a dict
+        # Ensure to not return a dict, as the underlying SDK expects a StateData instance, not a dict
         return StateData(**decrypted) if isinstance(decrypted, dict) else decrypted
 
     async def delete(self, identifier, options=None):
@@ -109,7 +109,7 @@ class FlaskSessionTransactionStore(TransactionStore):
         if data is None:
             return None
         decrypted = self.decrypt(identifier, data)
-        # Ensure to not return a dict, as the underlying SDK expectys a TransactionData instance, not a dict
+        # Ensure to not return a dict, as the underlying SDK expects a TransactionData instance, not a dict
         return TransactionData(**decrypted) if isinstance(decrypted, dict) else decrypted
 
     async def delete(self, identifier, options=None):
@@ -153,13 +153,15 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv("AUTH0_SECRET")
 app.config.update(
-    SESSION_COOKIE_SECURE=False,
+    SESSION_COOKIE_SECURE=False,  # Set to True in production (requires HTTPS)
     SESSION_COOKIE_HTTPONLY=True,
     SESSION_COOKIE_SAMESITE="Lax",
 )
 ```
 
 **Critical:** `app.secret_key` must be set for Flask session management. Without it, sessions won't work.
+
+**For production:** Set `SESSION_COOKIE_SECURE=True` when deploying with HTTPS. Leaving it as `False` in production allows session cookies to be sent over unencrypted connections.
 
 ### 6. Add Login Route
 
@@ -282,6 +284,8 @@ The same `FlaskSessionStateStore` and `FlaskSessionTransactionStore` from `auth.
 | Not handling errors in `/callback` | `complete_interactive_login()` can fail — always wrap in try/except |
 | Calling SDK methods without `await` | All SDK methods are async — forgetting `await` returns a coroutine instead of the result |
 | Passing options positionally to `logout()` | Use `logout(store_options=...)` — the first positional parameter is `LogoutOptions`, not store options |
+| Expecting backchannel logout to work | Not supported with cookie-based sessions — `delete_by_logout_token` is a no-op. Use standard `/logout` route |
+| Deploying with `SESSION_COOKIE_SECURE=False` | Must set to `True` in production — cookies are sent over HTTP otherwise |
 
 ---
 
@@ -294,6 +298,7 @@ All methods are async:
 | `start_interactive_login` | `await auth0.start_interactive_login()` | Returns authorization URL string — wrap in `redirect()` |
 | `complete_interactive_login` | `await auth0.complete_interactive_login(str(request.url))` | Processes the callback URL, exchanges code for tokens |
 | `get_user` | `await auth0.get_user()` | Returns current session user dict or `None` |
+| `get_access_token` | `await auth0.get_access_token()` | Returns the access token for calling external APIs |
 | `logout` | `await auth0.logout()` | Returns Auth0 logout URL string |
 
 ---
@@ -335,6 +340,14 @@ if user is None:
 - `AUTH0_CLIENT_SECRET` — your Application's client secret
 - `AUTH0_SECRET` — encryption and session secret key
 - `AUTH0_REDIRECT_URI` — callback URL (e.g. `http://localhost:5000/callback`)
+
+---
+
+## Detailed Documentation
+
+- **[Setup Guide](references/setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
+- **[Integration Guide](references/integration.md)** - Protected routes, calling APIs, session management, error handling
+- **[API Reference](references/api.md)** - Complete ServerClient API, configuration options, store implementation, security
 
 ---
 
