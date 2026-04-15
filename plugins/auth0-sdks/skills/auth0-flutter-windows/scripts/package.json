@@ -1,0 +1,14 @@
+{
+  "name": "auth0-flutter-windows-bootstrap",
+  "version": "1.0.0",
+  "description": "Bootstrap script for auth0-flutter-windows Auth0 setup",
+  "type": "module",
+  "scripts": {
+    "bootstrap": "node bootstrap.mjs"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^7.0.0",
+    "execa": "^9.0.0",
+    "ora": "^8.0.0"
+  }
+}

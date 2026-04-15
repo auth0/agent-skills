@@ -1,0 +1,101 @@
+[
+  {
+    "type": "matches",
+    "pattern": "auth0_flutter|flutter pub add auth0_flutter",
+    "description": "Auth0 Flutter SDK installed (auth0_flutter in pubspec or flutter pub add)"
+  },
+  {
+    "type": "matches",
+    "pattern": "package:auth0_flutter",
+    "description": "Has correct import statement (package:auth0_flutter)"
+  },
+  {
+    "type": "contains_any",
+    "values": ["Auth0(", "windowsWebAuthentication"],
+    "description": "Auth0 SDK initialized (Auth0() client created and/or windowsWebAuthentication used)"
+  },
+  {
+    "type": "matches",
+    "pattern": "windowsWebAuthentication\\s*\\(\\s*\\)\\.login|windowsWebAuthentication\\(\\)\\.login",
+    "description": "Implements login via windowsWebAuthentication().login()"
+  },
+  {
+    "type": "matches",
+    "pattern": "windowsWebAuthentication\\s*\\(\\s*\\)\\.logout|windowsWebAuthentication\\(\\)\\.logout",
+    "description": "Implements logout via windowsWebAuthentication().logout()"
+  },
+  {
+    "type": "contains_any",
+    "values": ["shared_preferences", "flutter_secure_storage", "storeCredentials", "saveCredentials"],
+    "description": "Stores credentials manually after login (no auto-storage on Windows)"
+  },
+  {
+    "type": "file_contains",
+    "file_pattern": "**/auth0_config.dart",
+    "value": "dev-example.auth0.com",
+    "description": "Auth0 domain written to auth0_config.dart config file"
+  },
+  {
+    "type": "file_contains",
+    "file_pattern": "**/auth0_config.dart",
+    "value": "abc123def456ghi789jkl012",
+    "description": "Client ID written to auth0_config.dart config file"
+  },
+  {
+    "type": "not_contains_any",
+    "values": ["@auth0/auth0-react", "@auth0/auth0-spa-js", "@auth0/auth0-angular"],
+    "description": "Does not use SPA SDK in Flutter Windows native app"
+  },
+  {
+    "type": "not_contains",
+    "value": "localhost",
+    "description": "Does not use localhost callback URL in native app"
+  },
+  {
+    "type": "not_contains",
+    "value": "client_secret",
+    "description": "No client_secret in native Flutter app (Native app type does not use client secret)"
+  },
+  {
+    "type": "judge",
+    "question": "Does the solution correctly integrate Auth0 into a Flutter Windows Desktop application using windowsWebAuthentication() for login and logout, passing appCustomURL as a required parameter, and manually storing the returned credentials?",
+    "examples": "PASS: Uses auth0.windowsWebAuthentication().login(appCustomURL: 'myapp://callback') and stores credentials with shared_preferences or similar.\nPASS: Creates Auth0 client, calls windowsWebAuthentication().login() with appCustomURL, handles WebAuthenticationException, stores credentials.\nFAIL: Uses webAuthentication().login() instead of windowsWebAuthentication() — wrong API for Windows.\nFAIL: Uses windowsWebAuthentication() but does not pass appCustomURL (required parameter on Windows).\nFAIL: Calls login() without handling credential storage — credentials silently lost on Windows (no auto-storage).",
+    "framework": "flutter-windows"
+  },
+  {
+    "type": "matches",
+    "pattern": "auth0_flutter.*2\\.1\\.|\\^2\\.1\\.0|2\\.1\\.0-beta",
+    "description": "Uses current SDK version (2.1.0-beta.1) in pubspec.yaml dependency"
+  },
+  {
+    "type": "matches",
+    "pattern": "appCustomURL\\s*:",
+    "description": "Passes appCustomURL required parameter to login/logout (Windows-specific, not present on mobile)"
+  },
+  {
+    "type": "matches",
+    "pattern": "windowsWebAuthentication\\s*\\(\\s*\\)",
+    "description": "Uses windowsWebAuthentication() method (not webAuthentication()) — Windows Desktop-specific API"
+  },
+  {
+    "type": "matches",
+    "pattern": "PLUGIN_STARTUP_URL|CreateMutexW|StartPipeServer|ConnectNamedPipe|kCallbackPrefix",
+    "description": "main.cpp updated with PLUGIN_STARTUP_URL, single-instance mutex, or named pipe server (required for callback delivery)"
+  },
+  {
+    "type": "matches",
+    "pattern": "CMAKE_TOOLCHAIN_FILE.*vcpkg|vcpkg\\.cmake|cpprestsdk",
+    "description": "windows/CMakeLists.txt configured with vcpkg toolchain (required for native C++ dependencies)"
+  },
+  {
+    "type": "matches",
+    "pattern": "HKEY_CURRENT_USER|URL Protocol|register_scheme\\.reg|RegCreateKey",
+    "description": "Windows Registry protocol handler configured (custom URL scheme registration)"
+  },
+  {
+    "type": "judge",
+    "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like Auth0(), login, logout, credentials, auth0_flutter). Look for at least 2 of: (1) Uses windowsWebAuthentication() instead of webAuthentication() for the login/logout calls, (2) Passes appCustomURL as a named parameter to login() or logout(), (3) References PLUGIN_STARTUP_URL, CreateMutexW, StartPipeServer, or ConnectNamedPipe in main.cpp, (4) Configures CMAKE_TOOLCHAIN_FILE or vcpkg.cmake in CMakeLists.txt for native dependencies, (5) Registers a Windows protocol handler via HKEY_CURRENT_USER or similar registry keys. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
+    "examples": "PASS: Code uses windowsWebAuthentication().login(appCustomURL: 'myapp://callback') AND has PLUGIN_STARTUP_URL in main.cpp.\nPASS: Code configures CMAKE_TOOLCHAIN_FILE for vcpkg AND uses appCustomURL parameter in login/logout calls.\nPASS: Code registers HKEY_CURRENT_USER registry key for protocol handler AND uses windowsWebAuthentication() method.\nFAIL: Code only uses basic Auth0() initialization and flutter pub add auth0_flutter, with generic webAuthentication().login() — no Windows-specific patterns.\nFAIL: Code has correct imports and Auth0 client but uses webAuthentication() instead of windowsWebAuthentication() with no appCustomURL.",
+    "framework": "flutter-windows"
+  }
+]

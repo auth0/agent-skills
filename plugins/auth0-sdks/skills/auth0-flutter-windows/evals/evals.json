@@ -1,0 +1,31 @@
+{
+  "skill_name": "auth0-flutter-windows",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Auth0 authentication to a Flutter Windows Desktop application using the auth0_flutter SDK.\n\n**Auth0 Credentials:**\n- Domain: `dev-example.auth0.com`\n- Client ID: `abc123def456ghi789jkl012`",
+      "expected_output": "Working Flutter Windows Desktop app with Auth0 Web Auth login using windowsWebAuthentication(), appCustomURL configuration, manual credential storage, and proper Windows-specific setup (vcpkg, CMakeLists.txt, protocol handler, main.cpp runner integration)",
+      "expectations": [
+        "Auth0 Flutter SDK installed (auth0_flutter in pubspec or flutter pub add)",
+        "Has correct import statement (package:auth0_flutter)",
+        "Auth0 SDK initialized (Auth0() client created and/or windowsWebAuthentication used)",
+        "Implements login via windowsWebAuthentication().login()",
+        "Implements logout via windowsWebAuthentication().logout()",
+        "Stores credentials manually after login (no auto-storage on Windows)",
+        "Auth0 domain dev-example.auth0.com written to auth0_config.dart config file",
+        "Client ID abc123def456ghi789jkl012 written to auth0_config.dart config file",
+        "Does not use SPA SDK in Flutter Windows native app",
+        "Does not use localhost callback URL in native app",
+        "No client_secret in native Flutter app",
+        "Solution correctly integrates Auth0 into Flutter Windows Desktop app with windowsWebAuthentication(), appCustomURL, and manual credential storage",
+        "Uses current SDK version (2.1.0-beta.1) in pubspec.yaml dependency",
+        "Passes appCustomURL required parameter to login/logout",
+        "Uses windowsWebAuthentication() method (not webAuthentication())",
+        "main.cpp updated with PLUGIN_STARTUP_URL, single-instance mutex, or named pipe server",
+        "windows/CMakeLists.txt configured with vcpkg toolchain",
+        "Windows Registry protocol handler configured",
+        "Solution demonstrates at least 2 Windows-specific advanced patterns taught by the skill"
+      ]
+    }
+  ]
+}
