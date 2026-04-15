@@ -1,4 +1,4 @@
-# node-oauth2-jwt-bearer Setup Guide
+# express-oauth2-jwt-bearer Setup Guide
 
 ## Auth0 Configuration
 

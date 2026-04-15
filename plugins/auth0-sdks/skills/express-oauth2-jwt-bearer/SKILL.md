@@ -1,7 +1,7 @@
 ---
-name: node-oauth2-jwt-bearer
+name: express-oauth2-jwt-bearer
 description: Use when adding Auth0 token validation to Express or Node.js APIs - integrates express-oauth2-jwt-bearer SDK to protect Node.js API endpoints with JWT Bearer authentication, scope-based RBAC, claim validation, and optional DPoP support
-license: Proprietary
+license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
 ---
@@ -12,7 +12,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
-> gh api repos/auth0/node-oauth2-jwt-bearer/releases/latest --jq '.tag_name'
+> gh api repos/auth0/express-oauth2-jwt-bearer/releases/latest --jq '.tag_name'
 > ```
 > Use the returned version in all `package.json` dependency lines instead of any hardcoded version below.
 
@@ -81,6 +81,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 >      res.json({ messages: [] });
 >    });
 >    ```
+>    > **Important:** `requiredScopes` accepts a single argument — a space-separated string or an array. Do NOT pass multiple string arguments: `requiredScopes('read:msg', 'write:msg')` silently ignores everything after the first. Use `requiredScopes('read:msg write:msg')` or `requiredScopes(['read:msg', 'write:msg'])` instead.
 >
 > 7. **Verify the integration** — build and test:
 >    ```bash
@@ -138,7 +139,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 | `audience` | `string` | API Identifier from Auth0 Dashboard (required unless using env vars) |
 | `tokenSigningAlg` | `string` | Signing algorithm (default: `RS256`; use `HS256` for symmetric) |
 | `authRequired` | `boolean` | Set `false` to make authentication optional (default: `true`) |
-| `clockTolerance` | `number` | Clock skew tolerance in seconds (default: `5`) |
+| `clockTolerance` | `number` | Clock skew tolerance in seconds (no default; undefined unless set) |
 | `dpop` | `DPoPOptions` | DPoP configuration (see integration.md) |
 
 ### Environment Variables
@@ -159,7 +160,7 @@ req.auth.token      // Raw JWT string
 
 ## SDK Architecture
 
-The `node-oauth2-jwt-bearer` monorepo contains three packages:
+The `express-oauth2-jwt-bearer` monorepo contains three packages:
 
 | Package | Purpose |
 |---------|---------|
@@ -201,7 +202,7 @@ curl -v -X OPTIONS http://localhost:3000/api/private \
 ## References
 
 - [express-oauth2-jwt-bearer on npm](https://www.npmjs.com/package/express-oauth2-jwt-bearer)
-- [GitHub: auth0/node-oauth2-jwt-bearer](https://github.com/auth0/node-oauth2-jwt-bearer)
+- [GitHub: auth0/express-oauth2-jwt-bearer](https://github.com/auth0/express-oauth2-jwt-bearer)
 - [Auth0 Node.js API Quickstart](https://auth0.com/docs/quickstart/backend/nodejs/interactive)
 - [Auth0 APIs Dashboard](https://manage.auth0.com/#/apis)
 - [RFC 6750 — Bearer Token Usage](https://datatracker.ietf.org/doc/html/rfc6750)

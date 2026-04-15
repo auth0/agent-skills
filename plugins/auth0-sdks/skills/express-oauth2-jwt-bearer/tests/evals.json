@@ -1,5 +1,5 @@
 {
-  "skill_name": "node-oauth2-jwt-bearer",
+  "skill_name": "express-oauth2-jwt-bearer",
   "evals": [
     {
       "id": 1,

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "skill_name": "node-oauth2-jwt-bearer",
+    "skill_name": "express-oauth2-jwt-bearer",
     "sdk_type": "BACKEND_API",
     "framework": "Express",
     "language": "TypeScript",

@@ -1,7 +1,7 @@
 {
-  "name": "node-oauth2-jwt-bearer-evals",
+  "name": "express-oauth2-jwt-bearer-evals",
   "version": "1.0.0",
-  "description": "Eval runner for node-oauth2-jwt-bearer skill",
+  "description": "Eval runner for express-oauth2-jwt-bearer skill",
   "type": "module",
   "scripts": {
     "eval": "node run-evals.mjs",

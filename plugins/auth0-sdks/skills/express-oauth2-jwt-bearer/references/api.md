@@ -1,4 +1,4 @@
-# node-oauth2-jwt-bearer API Reference & Testing
+# express-oauth2-jwt-bearer API Reference & Testing
 
 ## Configuration Reference
 
@@ -15,9 +15,7 @@ All options are passed to the `auth()` function or set via environment variables
 | `issuer` | `string` | No (alternative to `issuerBaseURL`) | — | Issuer claim value — use with `jwksUri` for non-standard setups |
 | `jwksUri` | `string` | No | Derived from `issuerBaseURL` | Custom JWKS endpoint URL |
 | `authRequired` | `boolean` | No | `true` | Set `false` to allow unauthenticated requests through (attach auth info if present) |
-| `clockTolerance` | `number` | No | `5` | Clock skew tolerance in seconds |
-| `iatOffset` | `number` | No | — | Max age of a DPoP proof in seconds |
-| `iatLeeway` | `number` | No | — | Leeway for `iat` claim in DPoP proofs |
+| `clockTolerance` | `number` | No | `(none)` | Clock skew tolerance in seconds (undefined unless explicitly set) |
 | `validators` | `Validators` | No | — | Custom validator overrides. Set `{ iss: false }` to skip issuer validation. |
 | `dpop` | `DPoPOptions` | No | — | DPoP configuration (see below) |
 
@@ -27,6 +25,8 @@ All options are passed to the `auth()` function or set via environment variables
 |--------|------|-------------|
 | `enabled` | `boolean` | Enable DPoP token binding. Default is `true` (hybrid Bearer+DPoP mode). |
 | `required` | `boolean` | Set `true` to reject plain Bearer tokens (DPoP-only mode). Default: `false`. |
+| `iatOffset` | `number` | Max age of a DPoP proof in seconds. |
+| `iatLeeway` | `number` | Leeway for `iat` claim in DPoP proofs. |
 
 ### Environment Variables (auto-detected)
 
@@ -146,15 +146,10 @@ CORS_ORIGIN=http://localhost:5173
 ```typescript
 import 'dotenv/config';
 import express, { Request, Response, NextFunction } from 'express';
-import { auth, requiredScopes, AuthResult } from 'express-oauth2-jwt-bearer';
+import { auth, requiredScopes } from 'express-oauth2-jwt-bearer';
 
-declare global {
-  namespace Express {
-    interface Request {
-      auth?: AuthResult;
-    }
-  }
-}
+// Note: express-oauth2-jwt-bearer already declares req.auth on the Express
+// Request interface in its own .d.ts — no need to redeclare it here.
 
 const app = express();
 

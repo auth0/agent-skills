@@ -4,7 +4,7 @@ import { ChangeAction, createChangeItem } from "./change-plan.mjs"
 
 export function checkApiChanges(domain, apiConfig) {
   const { framework } = apiConfig
-  const identifier = `https://api.${domain.split(".")[0]}.example.com`
+  const identifier = `https://${domain}/api/${framework}`
 
   return createChangeItem(ChangeAction.CREATE, {
     resource: "API",
@@ -20,6 +20,7 @@ export async function applyApiChanges(changePlan) {
       "apis", "create",
       "--name", changePlan.name,
       "--identifier", changePlan.identifier,
+      "--signing-alg", "RS256",
       "--json",
       "--no-input",
     ]

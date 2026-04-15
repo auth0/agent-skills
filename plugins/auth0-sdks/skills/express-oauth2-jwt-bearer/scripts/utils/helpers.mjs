@@ -1,5 +1,4 @@
 import readline from "node:readline/promises"
-import { select } from "@inquirer/prompts"
 
 export async function confirmWithUser(message) {
   const rl = readline.createInterface({
@@ -25,7 +24,3 @@ export async function getInputFromUser(message) {
   return answer.trim()
 }
 
-export async function selectOptionFromList(message, options) {
-  const answer = await select({ message, choices: options })
-  return answer
-}

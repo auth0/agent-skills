@@ -206,33 +206,6 @@ const checkJwt = auth({
 });
 ```
 
-### DPoP jti replay prevention (production)
-
-For multi-instance APIs, prevent DPoP proof reuse with a Redis-backed nonce store:
-
-```javascript
-import { createClient } from 'redis';
-
-const redis = createClient({ url: process.env.REDIS_URL });
-await redis.connect();
-
-const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
-  dpop: {
-    enabled: true,
-    required: true,
-    // Custom jti store to prevent replay across instances
-    validateJti: async (jti) => {
-      const key = `dpop:jti:${jti}`;
-      const exists = await redis.get(key);
-      if (exists) return false; // replay detected
-      await redis.set(key, '1', { EX: 300 }); // 5 min TTL
-      return true;
-    },
-  },
-});
-```
 
 ## Error Handling
 
@@ -340,7 +313,12 @@ export function mockAuth(payload = { sub: 'test-user' }) {
       req.auth = { payload };
       next();
     },
-    requiredScopes: () => (req, res, next) => next(),
+    requiredScopes: (scopes) => (req, res, next) => {
+      const tokenScopes = req.auth?.payload?.scope?.split(' ') || [];
+      const missing = [scopes].flat().filter(s => !tokenScopes.includes(s));
+      if (missing.length) return res.status(403).json({ error: 'insufficient_scope' });
+      next();
+    },
     claimIncludes: () => (req, res, next) => next(),
   }));
 }

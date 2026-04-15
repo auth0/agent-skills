@@ -1,5 +1,5 @@
 ---
-skills: node-oauth2-jwt-bearer
+skills: express-oauth2-jwt-bearer
 ---
 
 ## Agent System
