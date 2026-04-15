@@ -1,221 +1,197 @@
-# API Reference & Testing
+# auth0-expo API Reference & Testing
 
-Complete API reference for react-native-auth0 in Expo applications.
+## Table of Contents
 
----
+- [Configuration Reference](#configuration-reference) — Auth0Provider props, authorize/clearSession/getCredentials options
+- [Expo Config Plugin Reference](#expo-config-plugin-reference) — app.json plugin fields and auto-configuration
+- [User Profile Claims](#user-profile-claims) — Standard OIDC claims
+- [Credentials Object](#credentials-object) — Token properties
+- [Testing Checklist](#testing-checklist) — Dev build, platform-specific, Auth0 config, EAS
+- [Common Issues](#common-issues) — Error table with causes and solutions
+- [Security Considerations](#security-considerations) — PKCE, secure storage, custom scheme, tokens, network
 
-## Auth0Provider Props
+## Configuration Reference
+
+### Auth0Provider Props
 
 | Prop | Type | Required | Description |
 |------|------|----------|-------------|
 | `domain` | `string` | Yes | Auth0 tenant domain (e.g., `your-tenant.auth0.com`) |
 | `clientId` | `string` | Yes | Auth0 application Client ID |
-| `headers` | `Record<string, string>` | No | Custom headers included in all API requests |
-| `localAuthenticationOptions` | `LocalAuthenticationOptions` | No | Biometric authentication config |
+| `localAuthenticationOptions` | `LocalAuthenticationOptions` | No | Biometric authentication configuration |
 | `maxRetries` | `number` | No | Credential renewal retry count (iOS only, default: 0) |
-| `useDPoP` | `boolean` | No | Enable DPoP token binding (default: true in v5.x) |
-| `useMrrt` | `boolean` | No | Enable Multi-Resource Refresh Tokens (web only) |
+| `useDPoP` | `boolean` | No | Enable DPoP token binding (default: true) |
+| `headers` | `Record<string, string>` | No | Custom headers for all API requests |
 
----
+### authorize() Options
 
-## useAuth0() Hook
+**First argument (parameters):**
 
-Returns authentication state and methods:
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `user` | `Auth0User \| null` | Authenticated user profile |
-| `isLoading` | `boolean` | `true` until auth state is determined |
-| `error` | `Error \| null` | Authentication error, if any |
-| `authorize` | `(options?, authOptions?) => Promise<Credentials>` | Initiate login |
-| `clearSession` | `(options?) => Promise<void>` | Logout and clear session |
-| `getCredentials` | `(scope?, minTtl?, parameters?, forceRefresh?) => Promise<Credentials>` | Get stored tokens |
-| `hasValidCredentials` | `(minTtl?) => Promise<boolean>` | Check for valid stored credentials |
-| `getDPoPHeaders` | `(options) => Promise<Record<string, string>>` | Generate DPoP proof headers |
-| `getApiCredentials` | `(audience, scope?) => Promise<ApiCredentials>` | Get tokens for specific API (MRRT) |
-| `clearApiCredentials` | `(audience, scope?) => Promise<void>` | Clear cached API tokens |
-| `getSSOCredentials` | `() => Promise<SSOCredentials>` | Get session transfer token |
-| `customTokenExchange` | `(options) => Promise<Credentials>` | Exchange external token for Auth0 tokens |
-
----
-
-## authorize() Options
-
-### First argument (AuthorizeOptions):
-
-| Option | Type | Description |
-|--------|------|-------------|
+| Parameter | Type | Description |
+|-----------|------|-------------|
 | `scope` | `string` | OAuth scopes (default: `openid profile email`) |
-| `audience` | `string` | API identifier for access token audience |
-| `connection` | `string` | Force specific identity provider |
-| `organization` | `string` | Organization ID for B2B login |
+| `audience` | `string` | API identifier for access token |
+| `organization` | `string` | Organization ID for enterprise login |
 | `invitationUrl` | `string` | Organization invitation URL |
-| `prompt` | `string` | `login` (force re-auth), `consent`, `none` |
-| `screen_hint` | `string` | `signup` to show signup page |
-| `max_age` | `number` | Max auth age in seconds before re-auth |
-| `additionalParameters` | `Record<string, string>` | Additional query parameters |
+| `connection` | `string` | Force a specific connection (e.g., `google-oauth2`) |
+| `additionalParameters` | `object` | Extra parameters for the /authorize endpoint |
 
-### Second argument (WebAuthOptions):
+**Second argument (options):**
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `customScheme` | `string` | **Required for Expo** — matches `app.json` plugin `customScheme` |
-| `ephemeralSession` | `boolean` | Skip SSO consent dialog (iOS only) |
-| `safariViewControllerPresentationStyle` | `number` | iOS Safari presentation style |
-| `leeway` | `number` | Clock skew tolerance in seconds for ID token validation |
+| `customScheme` | `string` | **Required for Expo.** URL scheme matching app.json plugin config. |
 
----
-
-## clearSession() Options
+### clearSession() Options
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `customScheme` | `string` | **Required for Expo** — must match authorize's customScheme |
-| `federated` | `boolean` | Also log out from identity provider |
+| `customScheme` | `string` | **Required for Expo.** Must match the scheme used in authorize(). |
+| `federated` | `boolean` | If true, also logs out from the identity provider |
 
----
+### getCredentials() Parameters
 
-## Credentials Object
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `scope` | `string` | Minimum required scope |
+| `minTtl` | `number` | Minimum time-to-live in seconds for the access token |
+| `parameters` | `object` | Additional parameters |
+| `forceRefresh` | `boolean` | Force token refresh even if not expired |
 
-Returned by `authorize()` and `getCredentials()`:
+## Expo Config Plugin Reference
 
-| Field | Type | Description |
+### app.json Plugin Configuration
+
+```json
+["react-native-auth0", {
+  "domain": "your-tenant.auth0.com",
+  "customScheme": "auth0sample"
+}]
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `domain` | `string` | Yes | Auth0 tenant domain |
+| `customScheme` | `string` | No | Custom URL scheme (lowercase, no special chars). If `"https"`, enables Android App Links with `autoVerify`. |
+
+**What the plugin configures automatically:**
+- **iOS**: Adds URL scheme to Info.plist (`CFBundleURLSchemes`), adds deep linking handler to AppDelegate
+- **Android**: Sets `manifestPlaceholders` (`auth0Domain`, `auth0Scheme`) in build.gradle
+
+## User Profile Claims
+
+| Claim | Type | Description |
 |-------|------|-------------|
-| `accessToken` | `string` | Access token for API calls |
-| `idToken` | `string` | ID token (JWT) with user claims |
-| `refreshToken` | `string \| undefined` | Refresh token (requires `offline_access` scope) |
-| `tokenType` | `string` | `DPoP` or `Bearer` |
-| `expiresAt` | `number` | Token expiration timestamp |
-| `scope` | `string` | Granted scopes |
-
----
-
-## Auth0User Object
-
-Available via `useAuth0().user`:
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `sub` | `string` | Auth0 user ID (e.g., `auth0\|123`) |
+| `sub` | `string` | Unique user identifier |
 | `name` | `string` | Full name |
+| `nickname` | `string` | Display name |
 | `email` | `string` | Email address |
 | `email_verified` | `boolean` | Whether email is verified |
 | `picture` | `string` | Profile picture URL |
-| `nickname` | `string` | Nickname |
-| `given_name` | `string` | First name |
-| `family_name` | `string` | Last name |
-| `updated_at` | `string` | Last profile update |
+| `updated_at` | `string` | Last profile update timestamp |
+| `org_id` | `string` | Organization ID (if using Organizations) |
 
----
+## Credentials Object
 
-## Auth0 Class (Non-Hook API)
-
-For use outside React components or with class components:
-
-```tsx
-import Auth0 from 'react-native-auth0';
-
-const auth0 = new Auth0({
-  domain: 'YOUR_AUTH0_DOMAIN',
-  clientId: 'YOUR_AUTH0_CLIENT_ID',
-});
-
-// Login
-const credentials = await auth0.webAuth.authorize(
-  { scope: 'openid profile email' },
-  { customScheme: 'yourappscheme' }
-);
-
-// Logout
-await auth0.webAuth.clearSession({}, { customScheme: 'yourappscheme' });
-
-// Check credentials
-const hasValid = await auth0.credentialsManager.hasValidCredentials();
-
-// Get credentials (auto-refreshes if expired)
-const creds = await auth0.credentialsManager.getCredentials();
-
-// User info
-const userInfo = await auth0.auth.userInfo({ token: creds.accessToken });
-```
-
----
-
-## LocalAuthenticationOptions
-
-| Property | Type | Platform | Description |
-|----------|------|----------|-------------|
-| `title` | `string` | Both | Authentication prompt title |
-| `subtitle` | `string` | Android | Prompt subtitle |
-| `description` | `string` | Android | Prompt description |
-| `cancelTitle` | `string` | Both | Cancel button title |
-| `evaluationPolicy` | `LocalAuthenticationStrategy` | iOS | `deviceOwnerWithBiometrics` (default) or `deviceOwner` |
-| `fallbackTitle` | `string` | iOS | Fallback button title |
-| `authenticationLevel` | `LocalAuthenticationLevel` | Android | `strong` (default) or `weak` |
-| `deviceCredentialFallback` | `boolean` | Android | Allow PIN/pattern fallback (default: false) |
-| `biometricPolicy` | `BiometricPolicy` | Both | `default`, `always`, `session`, or `appLifecycle` |
-| `biometricTimeout` | `number` | Both | Session timeout in seconds (for `session`/`appLifecycle`) |
-
----
+| Property | Type | Description |
+|----------|------|-------------|
+| `accessToken` | `string` | Access token for API calls |
+| `idToken` | `string` | ID token with user claims |
+| `refreshToken` | `string` | Refresh token (if `offline_access` requested) |
+| `tokenType` | `string` | Token type (`Bearer` or `DPoP`) |
+| `expiresAt` | `number` | Token expiration timestamp |
+| `scope` | `string` | Granted scopes |
 
 ## Testing Checklist
 
-### iOS Testing
+### Development Build Testing
 
-1. Run: `npx expo run:ios`
-2. Tap "Login" — Safari/ASWebAuthenticationSession opens Auth0 Universal Login
-3. Complete authentication
-4. App receives callback via custom scheme and shows user profile
-5. Tap "Logout" — session cleared, login screen shows
-6. Force-close and reopen app — check `getCredentials()` restores session
+- [ ] Login flow: Tap login → browser opens → complete login → app shows user info
+- [ ] Logout flow: Tap logout → session cleared → app shows login button
+- [ ] Credential persistence: Close app → reopen → user remains logged in
+- [ ] Token refresh: Wait for token expiry → `getCredentials()` returns fresh token
+- [ ] Error handling: Cancel login → app handles USER_CANCELLED gracefully
+- [ ] Loading state: `isLoading` is true until auth state is determined
 
-### Android Testing
+### Platform-Specific Testing
 
-1. Run: `npx expo run:android`
-2. Tap "Login" — Chrome Custom Tabs opens Auth0 Universal Login
-3. Complete authentication
-4. App receives callback via intent filter and shows user profile
-5. Tap "Logout" — session cleared
-6. Check deep link handling: `adb shell am start -a android.intent.action.VIEW -d "yourappscheme://YOUR_DOMAIN/android/yourappscheme/callback"`
+- [ ] **iOS Simulator**: Login/logout works, URL scheme redirects correctly
+- [ ] **Android Emulator**: Login/logout works, custom scheme callback received
+- [ ] **Physical iOS Device**: Test on a real physical device — Face ID / Touch ID prompts work (if biometrics enabled). Note: biometric authentication is not available on simulators.
+- [ ] **Physical Android Device**: Test on a real physical device — fingerprint / PIN prompts work (if biometrics enabled). Test deep link redirection from browser back to app.
 
-### Token Refresh Testing
+### Auth0 Configuration Testing
 
-1. Login with `offline_access` scope
-2. Wait for access token expiration (or mock short TTL)
-3. Call `getCredentials()` — should silently refresh
-4. Verify new access token is returned
+- [ ] Callback URL matches exactly (lowercase, no trailing slash)
+- [ ] Application type is **Native** in Auth0 Dashboard
+- [ ] Allowed Callback URLs include both iOS and Android URLs
+- [ ] Allowed Logout URLs include both iOS and Android URLs
+- [ ] OIDC Conformant toggle is enabled in Advanced OAuth settings
 
----
+### EAS Build Testing
+
+- [ ] Development build: `eas build --profile development` succeeds
+- [ ] Config plugin applied: Native files contain Auth0 configuration after prebuild
+- [ ] Production build: `eas build --profile production` succeeds
 
 ## Common Issues
 
-| Issue | Solution |
-|-------|----------|
-| "a0.session.user_cancelled" | User closed the browser — handle gracefully, not as error |
-| "a0.browser_not_available" | No browser app installed — show instructions to user |
-| "PKCE not allowed" | Set application type to **Native** in Auth0 Dashboard |
-| "Invalid state" | Clear app data and retry. Check callback URLs match exactly |
-| Login works but logout doesn't redirect | Ensure logout URLs are configured in Auth0 Dashboard |
-| Token refresh fails silently | Include `offline_access` in scope during initial login |
-| iOS SSO alert appears every login | Use `ephemeralSession: true` to skip, or accept SSO behavior |
-
----
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| "Invariant Violation: Native module cannot be null" | Using Expo Go instead of development build | Run `npx expo run:ios` or `npx expo run:android`, or create a development build with EAS |
+| App hangs after login | Callback URL mismatch | Verify callback URL is lowercase, no trailing slash, and matches Auth0 Dashboard exactly |
+| Login opens but redirects fail | Missing customScheme in authorize call | Pass `{ customScheme: 'your-scheme' }` as second argument to `authorize()` |
+| "PKCE not allowed" error | App type is not Native | Change application type to **Native** in Auth0 Dashboard |
+| Blank screen after authentication | React Navigation interference | Ensure Auth0Provider wraps the entire navigation container |
+| Android build fails with manifest errors | Conflicting auth0Domain placeholders | Remove manual manifest changes — let the Expo config plugin handle it |
+| iOS build fails with pod errors | Stale native projects | Run `npx expo prebuild --clean` to regenerate native code |
+| Token refresh fails silently | Missing `offline_access` scope | Include `offline_access` in the scope parameter during login |
+| Biometric prompt not showing | Simulator limitation | Test biometrics on a physical device — simulators have limited biometric support |
 
 ## Security Considerations
 
-- **PKCE** — Enabled by default. Never disable for mobile apps.
-- **Secure storage** — Credentials stored in Keychain (iOS) and encrypted SharedPreferences (Android) automatically.
-- **No client secret** — Native apps are public clients. Never include `clientSecret` in mobile code.
-- **HTTPS callbacks** — Use App Links / Universal Links in production instead of custom schemes.
-- **Token validation** — Validate tokens on your backend, not in client code.
-- **DPoP** — Enabled by default in v5.x for proof-of-possession tokens. Use `getDPoPHeaders()` for API calls.
-- **Refresh tokens** — Request `offline_access` scope and handle `RENEW_FAILED` errors by re-authenticating.
+### PKCE (Proof Key for Code Exchange)
 
----
+The SDK uses PKCE by default for all Web Auth flows. PKCE protects against authorization code interception attacks. No additional configuration is needed.
+
+### Secure Credential Storage
+
+Credentials are stored securely:
+- **iOS**: Encrypted in the Keychain
+- **Android**: Encrypted in SharedPreferences via SecureCredentialsManager
+
+Never store tokens manually in AsyncStorage, MMKV, or other unencrypted storage.
+
+### Custom Scheme Security
+
+Custom URL schemes can be subject to [client impersonation attacks](https://datatracker.ietf.org/doc/html/rfc8252#section-8.6). For production apps, consider using:
+- **Android App Links** (`customScheme: "https"`) — requires SHA256 fingerprint configuration
+- **iOS Universal Links** — requires Associated Domains and Apple Developer account
+
+### Token Handling Best Practices
+
+- Never log tokens to the console in production builds
+- Use `getCredentials()` to access tokens — it auto-refreshes expired tokens
+- Request `offline_access` scope for refresh token support
+- Do not store tokens in React state — use `getCredentials()` on demand
+- Enable DPoP for enhanced token security (enabled by default)
+
+### Network Security
+
+- All Auth0 API communication uses HTTPS
+- The SDK validates ID token signatures, issuer, audience, and nonce
+- Enable certificate pinning for additional security in high-security environments
+
+## Related Skills
+
+- [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
+- [auth0-react-native](/auth0-react-native) — Bare React Native CLI projects
+- [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
 
 ## References
 
+- [react-native-auth0 API Docs](https://auth0.github.io/react-native-auth0/)
 - [Auth0 Expo Quickstart](https://auth0.com/docs/quickstart/native/react-native-expo/interactive)
-- [SDK API Documentation](https://auth0.github.io/react-native-auth0/)
-- [SDK GitHub Repository](https://github.com/auth0/react-native-auth0)
-- [Expo Sample App](https://github.com/auth0-samples/auth0-react-native-sample/tree/master/00-Login-Expo)
+- [Expo Config Plugins Guide](https://docs.expo.dev/guides/config-plugins/)
+- [Auth0 Universal Login](https://auth0.com/docs/authenticate/login/auth0-universal-login)
+- [PKCE RFC 7636](https://datatracker.ietf.org/doc/html/rfc7636)

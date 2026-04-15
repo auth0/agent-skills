@@ -1,125 +1,136 @@
 ---
 name: auth0-expo
-description: Use when adding authentication to Expo (React Native) mobile apps — login, logout, user sessions, protected routes, biometrics, or token management. Integrates react-native-auth0 SDK with Expo config plugin for automatic iOS/Android deep linking and callback handling. Trigger for any Expo managed workflow needing Auth0, including custom scheme setup, universal login integration, Expo Go incompatibility issues, EAS Build configuration, or mobile OAuth with PKCE. Do NOT use for React Native CLI bare workflow (use auth0-react-native instead).
+description: Use when adding authentication to Expo (React Native) mobile apps — login, logout, user sessions, protected routes, biometrics, or token management. Integrates react-native-auth0 SDK with Expo Config Plugin for native iOS/Android builds. Trigger for any Expo project needing Auth0, including app.json plugin config, custom scheme setup, or credential management. Do NOT use for bare React Native CLI projects (use auth0-react-native), React web apps (use auth0-react), Next.js (use auth0-nextjs), or backend APIs.
+license: Proprietary
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Auth0 Expo Integration
 
-Add authentication to Expo mobile applications using the `react-native-auth0` SDK with the Expo config plugin for automatic native configuration.
+Add authentication to Expo (React Native) applications using `react-native-auth0` with the Expo Config Plugin.
 
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
 > gh api repos/auth0/react-native-auth0/releases/latest --jq '.tag_name'
 > ```
-> Use the returned version in all dependency lines instead of any hardcoded version below.
-
----
+> Use the returned version in all dependency lines instead of any hardcoded version below. If the command fails, fall back to checking https://github.com/auth0/react-native-auth0/releases.
 
 ## Prerequisites
 
 - Expo SDK 53 or higher (react-native-auth0 v5.x requires Expo 53+)
-- React Native 0.78.0 or higher, React 19
-- Node.js 20+ (for Auth0 CLI automation)
-- Auth0 account with application configured as **Native** type
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
-
-> **Not compatible with Expo Go.** This SDK requires custom native code. Use development builds (`npx expo run:ios` / `npx expo run:android`) or EAS Build.
+- React 19 and React Native 0.78.0 or higher
+- Node.js 20+ (for bootstrap script automation)
+- Auth0 account with a **Native** application configured
+- If Auth0 is not set up yet, use the `auth0-quickstart` skill first
+- **Not compatible with Expo Go** — requires custom development client or EAS Build
 
 ## When NOT to Use
 
 | Use Case | Recommended Skill |
 |----------|------------------|
-| React Native CLI (bare workflow) | `auth0-react-native` — handles Info.plist and AndroidManifest.xml directly |
-| React web SPA (Vite/CRA) | `auth0-react` — browser-based Auth Code + PKCE |
-| Next.js web application | `auth0-nextjs` — server-side session management |
-| Angular SPA | `auth0-angular` — Angular-specific provider and guards |
-| Vue SPA | `auth0-vue` — Vue composables and plugin |
-| Backend API (JWT validation) | Use JWT validation for your server language |
-
----
+| Bare React Native CLI project (no Expo) | `auth0-react-native` |
+| React web SPA (Vite/CRA) | `auth0-react` |
+| Next.js application | `auth0-nextjs` |
+| Vue.js SPA | `auth0-vue` |
+| Angular SPA | `auth0-angular` |
+| Express.js backend | `auth0-express` |
+| Native Android (Kotlin/Java) | `auth0-android` |
+| Backend API (JWT validation) | `auth0-fastify-api` or `auth0-express` |
 
 ## Quick Start Workflow
 
-> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID), use them directly — skip the bootstrap script and `AskUserQuestion`. Only ask for credentials or offer automated setup when they are missing.
+> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID), use them directly and skip the AskUserQuestion. If credentials are NOT provided, use `AskUserQuestion` with the following message:
+>
+> "I need your Auth0 credentials to set up authentication. Please provide:
+>
+> 1. **Auth0 Domain** (e.g., `your-tenant.us.auth0.com`)
+> 2. **Client ID** (a 32-character alphanumeric string)
+>
+> You can find both in the [Auth0 Dashboard](https://manage.auth0.com/) under **Applications > Applications > your app > Settings**. If you don't have an Auth0 app yet, create one with type **Native** and copy the domain and client ID from the settings page."
 
-### 1. Install SDK
+### 1. Verify Expo Dev Client
+
+> **Agent instruction:** Before installing the Auth0 SDK, check if the project has `expo-dev-client` installed. Read the project's `package.json` and look for `expo-dev-client` in `dependencies` or `devDependencies`.
+>
+> - **If `expo-dev-client` is found:** Proceed to step 2.
+> - **If `expo-dev-client` is NOT found:** Use `AskUserQuestion` with the following message:
+>
+>   "The `react-native-auth0` SDK requires a custom Expo development client — it does **not** work with Expo Go. Your project does not have `expo-dev-client` installed.
+>
+>   How would you like to proceed?
+>   1. **Install it for me** — I'll run `npx expo install expo-dev-client` and continue setup
+>   2. **I'll set it up myself** — skip this step and continue to Auth0 SDK installation"
+>
+>   If the user picks option 1, run:
+>   ```bash
+>   npx expo install expo-dev-client
+>   ```
+>   Then proceed to step 2. If option 2, proceed to step 2 directly.
+
+### 2. Install SDK
 
 ```bash
 npx expo install react-native-auth0
 ```
 
-### 2. Configure Expo Plugin
+### 3. Configure Expo Config Plugin
 
-Update `app.json` (or `app.config.js`):
+Add the react-native-auth0 plugin to `app.json` (or `app.config.js`) with your Auth0 domain and a custom scheme. Also ensure `bundleIdentifier` (iOS) and `package` (Android) are set:
 
 ```json
 {
   "expo": {
-    "ios": {
-      "bundleIdentifier": "com.yourcompany.yourapp"
-    },
-    "android": {
-      "package": "com.yourcompany.yourapp"
-    },
+    "ios": { "bundleIdentifier": "com.yourcompany.yourapp" },
+    "android": { "package": "com.yourcompany.yourapp" },
     "plugins": [
-      [
-        "react-native-auth0",
-        {
-          "domain": "YOUR_AUTH0_DOMAIN",
-          "customScheme": "yourappscheme"
-        }
-      ]
+      ["react-native-auth0", {
+        "domain": "YOUR_AUTH0_DOMAIN",
+        "customScheme": "YOUR_CUSTOM_SCHEME"
+      }]
     ]
   }
 }
 ```
 
-> **Important:** `customScheme` must be a unique, all lowercase value with no special characters. If omitted, the SDK uses the bundle identifier as the scheme.
+The `customScheme` must be all lowercase with no special characters (e.g., `auth0sample`). See [**Setup Guide**](./references/setup.md) for HTTPS callbacks, multiple domains, EAS Build, and secret management.
 
-### 3. Configure Auth0 Dashboard
+> **Agent instruction (CLI automation):** For automated Auth0 setup, run the bootstrap script:
+> ```bash
+> cd <skill-dir>/scripts && npm install && node bootstrap.mjs <project-path>
+> ```
+> The script validates the Expo project, creates a Native Auth0 application, sets up a database connection, and writes the plugin config to app.json. Only offer this when the user has not already provided credentials.
 
-Set these in your Auth0 application's **Allowed Callback URLs** and **Allowed Logout URLs**:
+### 4. Configure Callback URLs
+
+Add to **Allowed Callback URLs** and **Allowed Logout URLs** in the [Auth0 Dashboard](https://manage.auth0.com/):
 
 ```text
-yourappscheme://YOUR_AUTH0_DOMAIN/ios/yourappscheme/callback,
-yourappscheme://YOUR_AUTH0_DOMAIN/android/yourappscheme/callback
+YOUR_CUSTOM_SCHEME://YOUR_AUTH0_DOMAIN/ios/YOUR_BUNDLE_ID/callback,
+YOUR_CUSTOM_SCHEME://YOUR_AUTH0_DOMAIN/android/YOUR_PACKAGE/callback
 ```
 
-> **Agent instruction:** Replace `yourappscheme` with the actual `customScheme` value, and `YOUR_AUTH0_DOMAIN` with the tenant domain. All URLs must be **lowercase** with **no trailing slash**.
+All values must be **lowercase** with **no trailing slash**. For HTTPS callback URLs (App Links / Universal Links), see [Setup Guide](./references/setup.md#using-https-callback-urls-android-app-links).
 
-### 4. Add Auth0Provider
+### 5. Add Authentication with Auth0Provider
 
-Wrap your app with `Auth0Provider`:
+Wrap your app with `Auth0Provider` and use the `useAuth0` hook:
 
-```tsx
-import { Auth0Provider } from 'react-native-auth0';
+> **Agent instruction:** Before adding new UI elements, search the project for existing click handlers for login, logout, sign-in, or sign-out buttons. If existing handlers are found, hook the Auth0 code into them. Only create new buttons if no existing handlers are found.
 
-export default function App() {
-  return (
-    <Auth0Provider
-      domain="YOUR_AUTH0_DOMAIN"
-      clientId="YOUR_AUTH0_CLIENT_ID"
-    >
-      {/* Your app content */}
-    </Auth0Provider>
-  );
-}
-```
-
-### 5. Implement Login/Logout
-
-```tsx
-import { useAuth0 } from 'react-native-auth0';
+```typescript
+import React from 'react';
+import { Auth0Provider, useAuth0 } from 'react-native-auth0';
 import { View, Button, Text, ActivityIndicator } from 'react-native';
 
-export default function HomeScreen() {
+function HomeScreen() {
   const { authorize, clearSession, user, isLoading, error } = useAuth0();
 
   const login = async () => {
     try {
       await authorize(
         { scope: 'openid profile email' },
-        { customScheme: 'yourappscheme' }
+        { customScheme: 'YOUR_CUSTOM_SCHEME' }
       );
     } catch (e) {
       console.error('Login error:', e);
@@ -128,13 +139,15 @@ export default function HomeScreen() {
 
   const logout = async () => {
     try {
-      await clearSession({ customScheme: 'yourappscheme' });
+      await clearSession({ customScheme: 'YOUR_CUSTOM_SCHEME' });
     } catch (e) {
       console.error('Logout error:', e);
     }
   };
 
-  if (isLoading) return <ActivityIndicator />;
+  if (isLoading) {
+    return <ActivityIndicator size="large" />;
+  }
 
   return (
     <View>
@@ -151,84 +164,71 @@ export default function HomeScreen() {
     </View>
   );
 }
+
+export default function App() {
+  return (
+    <Auth0Provider
+      domain="YOUR_AUTH0_DOMAIN"
+      clientId="YOUR_AUTH0_CLIENT_ID"
+    >
+      <HomeScreen />
+    </Auth0Provider>
+  );
+}
 ```
 
-### 6. Build and Test
+### 6. Build & Verify
 
-```bash
-# Regenerate native projects after plugin config changes
-npx expo prebuild --clean
-
-# Run on device/simulator
-npx expo run:ios
-npx expo run:android
-```
-
-> **Agent instruction:** After integration, verify:
-> 1. `npx expo prebuild --clean` succeeds
-> 2. App builds without errors on target platform
-> 3. Login redirects to Auth0 Universal Login and returns to the app
-> 4. User profile data is accessible after login
-> 5. Logout clears the session
+> **Agent instruction:** After completing the integration, build the project to verify it compiles:
+> ```bash
+> npx expo prebuild --clean
+> npx expo run:ios
+> # or
+> npx expo run:android
+> ```
+> If the build fails, analyze the error output. Common integration build failures include:
+> - **"Invariant Violation: Native module cannot be null"**: Using Expo Go instead of a development build — run `npx expo run:ios` or `npx expo run:android` instead of `npx expo start`
+> - **Plugin not applied**: Missing `react-native-auth0` in app.json plugins array — verify the plugin configuration
+> - **Pod install fails (iOS)**: Run `npx expo prebuild --clean` to regenerate native projects
+> - **Manifest merge failure (Android)**: Conflicting auth0Domain placeholder — ensure only the config plugin sets the domain
 >
-> If build or auth flow fails after 5-6 iterations, use `AskUserQuestion` to ask the user for help.
-
----
+> Re-run the build after each fix. Track the number of build-fix iterations.
+>
+> **Failcheck:** If the build still fails after 5–6 fix attempts, stop and ask the user using `AskUserQuestion`:
+> _"The build is still failing after several fix attempts. How would you like to proceed?"_
+> - **Let the skill continue fixing iteratively**
+> - **Fix it manually** — show the remaining errors
+> - **Skip build verification** — proceed without a successful build
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 CLI automation, manual setup, plugin options, env vars, EAS Build, troubleshooting
-- **[Integration Patterns](./references/integration.md)** — Protected screens, API calls, biometrics, organizations, DPoP, error handling
-- **[API Reference](./references/api.md)** — Complete SDK API, configuration options, testing checklist
-
----
+- **[Setup Guide](./references/setup.md)** — Dev client requirement, automated setup, Expo config plugin, callback URLs, EAS Build, secret management
+- **[Integration Patterns](./references/integration.md)** — Login/logout, credential management, biometric auth, token refresh, organizations, DPoP, error handling
+- **[API Reference & Testing](./references/api.md)** — Configuration options, useAuth0 hook API, testing checklist, common issues, security
 
 ## Common Mistakes
 
 | Mistake | Fix |
 |---------|-----|
-| Using Expo Go instead of dev build | SDK requires native code — use `npx expo run:ios/android` or EAS Build |
-| `customScheme` mismatch | Must match exactly across `app.json` plugin, `authorize()`, `clearSession()`, and Auth0 Dashboard URLs |
-| `customScheme` has uppercase or special chars | Must be all lowercase, no special characters |
-| Callback URL not lowercase | Auth0 callback URLs are case-sensitive — ensure all lowercase |
-| App type set to SPA in Auth0 Dashboard | Must be **Native** application type |
-| Missing `npx expo prebuild --clean` after config | Always rebuild native projects after changing `app.json` plugin config |
-| Not passing `customScheme` to authorize/clearSession | Required when using a custom scheme — omit only if using bundle identifier as scheme |
-| Forgot to add both callback and logout URLs | Both must be set in Auth0 Dashboard for login and logout to work |
-
----
+| Using Expo Go instead of development build | react-native-auth0 requires native code. Use `npx expo run:ios` / `npx expo run:android` or create a development build with EAS. |
+| Missing `customScheme` in authorize/clearSession calls | Pass `{ customScheme: 'your-scheme' }` as the second argument to `authorize()` and `clearSession()`. Must match the value in app.json plugin config. |
+| Callback URL mismatch | Ensure callback URL is all lowercase, no trailing slash, and matches Auth0 Dashboard exactly: `{customScheme}://{domain}/ios/{bundleId}/callback` |
+| App type not set to Native | The Auth0 application must be type **Native** in the Dashboard, not SPA or Regular Web. |
+| Missing bundleIdentifier or package in app.json | Both `expo.ios.bundleIdentifier` and `expo.android.package` must be set in app.json for callback URLs to work. |
+| Forgot to wrap app with Auth0Provider | All components using `useAuth0()` must be children of `Auth0Provider`. |
+| Using react-native-auth0 v5.x with Expo < 53 | Version 5.x requires Expo 53+. Use v4.x for older Expo versions. |
+| Not testing on physical device | Biometric authentication (Face ID, fingerprint) only works on a physical device, not simulators. Always test the full auth flow on a real device before release. |
 
 ## Related Skills
 
-- `auth0-quickstart` — Initial Auth0 account and application setup
-- `auth0-react-native` — React Native CLI (bare workflow) integration
-- `auth0-migration` — Migrate from another auth provider
-- `auth0-mfa` — Add Multi-Factor Authentication
-
----
-
-## Quick Reference
-
-**Core Hook API:**
-- `useAuth0()` — Main hook for authentication state and methods
-- `authorize(options?, authOptions?)` — Initiate login via Universal Login
-- `clearSession(options?)` — Logout and clear session
-- `user` — Authenticated user profile (`null` if not logged in)
-- `getCredentials()` — Retrieve stored access/refresh tokens
-- `isLoading` — `true` until authentication state is determined
-- `error` — Error object if authentication failed
-
-**Expo-Specific:**
-- Config plugin: `["react-native-auth0", { "domain": "...", "customScheme": "..." }]`
-- Always pass `{ customScheme: "yourscheme" }` to `authorize()` and `clearSession()`
-- Rebuild after config changes: `npx expo prebuild --clean`
-
----
+- [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
+- [auth0-react-native](/auth0-react-native) — Bare React Native CLI projects
+- [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
 
 ## References
 
 - [Auth0 Expo Quickstart](https://auth0.com/docs/quickstart/native/react-native-expo/interactive)
-- [React Native Auth0 SDK Documentation](https://auth0.github.io/react-native-auth0/)
-- [SDK GitHub Repository](https://github.com/auth0/react-native-auth0)
+- [react-native-auth0 GitHub Repository](https://github.com/auth0/react-native-auth0)
+- [react-native-auth0 API Documentation](https://auth0.github.io/react-native-auth0/)
 - [Expo Sample App](https://github.com/auth0-samples/auth0-react-native-sample/tree/master/00-Login-Expo)
-- [Expo Config Plugins](https://docs.expo.dev/guides/config-plugins/)
+- [EXAMPLES.md](https://github.com/auth0/react-native-auth0/blob/master/EXAMPLES.md)

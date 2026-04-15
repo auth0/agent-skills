@@ -100,7 +100,8 @@ Framework-specific implementation guides:
 - `auth0-express` - Express.js
 - `auth0-fastify` - Fastify web applications
 - `auth0-fastify-api` - Fastify API authentication
-- `auth0-react-native` - React Native & Expo
+- `auth0-react-native` - React Native CLI (bare workflow)
+- `auth0-expo` - Expo (managed workflow)
 - `auth0-android` - Android
 
 ```bash
@@ -178,7 +179,8 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 
 | Skill | Description | Version |
 |-------|-------------|---------|
-| [auth0-react-native](./plugins/auth0-sdks/skills/auth0-react-native/SKILL.md) | React Native & Expo | v1.0.0 |
+| [auth0-react-native](./plugins/auth0-sdks/skills/auth0-react-native/SKILL.md) | React Native CLI (bare workflow) | v1.0.0 |
+| [auth0-expo](./plugins/auth0-sdks/skills/auth0-expo/SKILL.md) | Expo (managed workflow) | v1.0.0 |
 | [auth0-android](./plugins/auth0-sdks/skills/auth0-android/SKILL.md) | Android | v1.0.0 |
 
 ---
@@ -265,6 +267,7 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 | Fastify | [@auth0/auth0-fastify](https://github.com/auth0/auth0-fastify) | auth0-fastify, auth0-mfa |
 | Fastify API | [@auth0/auth0-fastify-api](https://github.com/auth0/auth0-fastify) | auth0-fastify-api |
 | React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-react-native |
+| Expo | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-expo |
 | iOS/macOS | [Auth0.swift](https://github.com/auth0/Auth0.swift) | Coming soon |
 | Android | [Auth0.Android](https://github.com/auth0/Auth0.Android) | auth0-android |
 
@@ -347,7 +350,7 @@ auth0/agent-skills/
 │           │       ├── api.md
 │           │       ├── patterns.md
 │           │       └── setup.md
-│           └── auth0-android/
+│           ├── auth0-android/
 │               ├── SKILL.md
 │               ├── references/
 │               │   ├── api.md
@@ -364,6 +367,28 @@ auth0/agent-skills/
 │               │       ├── discovery.mjs
 │               │       ├── helpers.mjs
 │               │       ├── strings-writer.mjs
+│               │       └── validation.mjs
+│               └── tests/
+│                   ├── evals.json
+│                   ├── graders.json
+│                   └── prompt.md
+│           └── auth0-expo/
+│               ├── SKILL.md
+│               ├── references/
+│               │   ├── api.md
+│               │   ├── integration.md
+│               │   └── setup.md
+│               ├── scripts/
+│               │   ├── bootstrap.mjs
+│               │   ├── package.json
+│               │   └── utils/
+│               │       ├── auth0-api.mjs
+│               │       ├── change-plan.mjs
+│               │       ├── clients.mjs
+│               │       ├── connections.mjs
+│               │       ├── discovery.mjs
+│               │       ├── expo-config-writer.mjs
+│               │       ├── helpers.mjs
 │               │       └── validation.mjs
 │               └── tests/
 │                   ├── evals.json

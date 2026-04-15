@@ -1,177 +1,276 @@
-# Auth0 Expo Setup Guide
+# auth0-expo Setup Guide
 
-Detailed setup instructions for Expo mobile applications using react-native-auth0. For the basic install and plugin configuration, see the [Quick Start in SKILL.md](../SKILL.md#quick-start-workflow).
+## Table of Contents
 
----
+- [Auth0 Configuration](#auth0-configuration) — Credential check, automatic vs manual setup
+- [Expo Dev Client Requirement](#expo-dev-client-requirement) — Why Expo Go doesn't work, install steps
+- [Post-Setup Steps](#post-setup-steps) — Verify plugin config, callback URLs, regenerate native projects
+- [SDK Installation](#sdk-installation) — Version compatibility
+- [Using HTTPS Callback URLs](#using-https-callback-urls-android-app-links) — Android App Links
+- [Multiple Domain Support](#multiple-domain-support) — Staging/production configs
+- [Secret Management](#secret-management) — What to store, what not to store, dynamic config
+- [EAS Build Configuration](#eas-build-configuration) — Development and production builds
+- [Verification](#verification) — Plugin, build, and auth flow checks
 
 ## Auth0 Configuration
 
 > **Agent instruction:**
 >
-> **If the user's prompt already provides Auth0 credentials** (domain and client ID), use them directly — skip to writing the config and proceed with integration.
+> **Credential check (always first):**
+> If the user's prompt already provides Auth0 credentials (domain, client ID), use them directly — skip the bootstrap script and do NOT call `AskUserQuestion` to re-confirm. Go straight to writing the app.json config and proceeding with integration.
 >
-> **If credentials are NOT provided**, use `AskUserQuestion`:
+> **If credentials are NOT provided**, use `AskUserQuestion` to ask:
 > "How would you like to configure Auth0 for this Expo project?"
-> - Option A: "Automatic setup (recommended)" — uses the Auth0 CLI
+> - Option A: "Automatic setup (recommended)" — uses the bootstrap script
 > - Option B: "Manual setup" — provide Auth0 credentials manually
+>
+> **If Automatic Setup (Option A):**
+>
+> 1. **Pre-flight checks:**
+>    - Verify Node.js 20+ is installed: `node --version`
+>    - Verify Auth0 CLI is installed: `auth0 --version`
+>    - Verify logged in: `auth0 tenants list --csv --no-input`
+>    - If any check fails, guide user to install/login, or fall back to manual setup
+>
+> 2. **Run bootstrap script:**
+>    ```bash
+>    cd <skill-dir>/scripts && npm install && node bootstrap.mjs <project-path>
+>    ```
+>    The script will:
+>    - Validate the Expo project structure (detect app.json with expo config)
+>    - Discover existing Auth0 apps and connections
+>    - Show a change plan and ask for confirmation
+>    - Create a Native Auth0 application
+>    - Set up a database connection
+>    - Write the Auth0 plugin config to app.json
+>    - Print a summary with remaining manual steps
+>
+> **If Manual Setup (Option B):**
+>
+> Ask the user for their Auth0 credentials:
+> - Auth0 Domain (e.g., `your-tenant.auth0.com`)
+> - Client ID (32-character alphanumeric string)
+>
+> Then write the configuration to app.json and proceed with integration.
 
-### Option A: Automatic Setup (Auth0 CLI)
+## Expo Dev Client Requirement
 
-**Pre-flight checks:**
+The `react-native-auth0` SDK uses native modules and **does not work with Expo Go**. A custom Expo development client is required.
+
+> **Agent instruction:** Before proceeding with Auth0 SDK installation, check the project's `package.json` for `expo-dev-client` in `dependencies` or `devDependencies`. If not found, ask the user how they'd like to proceed (install automatically or set it up themselves). See SKILL.md step 1 for the full agent instruction.
+
+### Check for expo-dev-client
+
 ```bash
-node --version        # Must be 20+
-auth0 --version       # Auth0 CLI installed
-auth0 tenants list --csv --no-input  # Active tenant
+# Check if expo-dev-client is in the project
+cat package.json | grep expo-dev-client
 ```
 
-**Create Native Application:**
+### Install expo-dev-client (if missing)
+
 ```bash
-auth0 apps create \
-  --name "My Expo App" \
-  --type native \
-  --callbacks "yourappscheme://YOUR_DOMAIN/ios/yourappscheme/callback,yourappscheme://YOUR_DOMAIN/android/yourappscheme/callback" \
-  --logout-urls "yourappscheme://YOUR_DOMAIN/ios/yourappscheme/callback,yourappscheme://YOUR_DOMAIN/android/yourappscheme/callback" \
-  --metadata "created_by=agent_skills"
+npx expo install expo-dev-client
 ```
 
-Copy the `domain` and `client_id` from the output.
+After installing, the development workflow changes from `npx expo start` (Expo Go) to:
 
-### Option B: Manual Setup (Auth0 Dashboard)
-
-1. Go to [Auth0 Dashboard > Applications](https://manage.auth0.com/#/applications)
-2. Create a new **Native** application
-3. In Settings, set **Allowed Callback URLs** and **Allowed Logout URLs**:
-   ```
-   yourappscheme://YOUR_DOMAIN/ios/yourappscheme/callback,
-   yourappscheme://YOUR_DOMAIN/android/yourappscheme/callback
-   ```
-4. Copy the **Domain** and **Client ID**
-
----
-
-## Expo Plugin Configuration
-
-The basic plugin setup is in SKILL.md Step 2. Below are the plugin options and advanced configurations.
-
-### Plugin Options
-
-| Option | Required | Description |
-|--------|----------|-------------|
-| `domain` | Yes | Auth0 tenant domain (e.g., `your-tenant.auth0.com`) |
-| `customScheme` | No | Custom URL scheme for callbacks. Must be lowercase, no special characters. If omitted, uses bundle identifier. |
-
-### Using `customScheme: "https"` for App Links
-
-Set `customScheme` to `"https"` to use Android App Links (recommended for production):
-
-```json
-["react-native-auth0", { "domain": "YOUR_DOMAIN", "customScheme": "https" }]
+```bash
+npx expo run:ios
+# or
+npx expo run:android
 ```
 
-This automatically adds `android:autoVerify="true"` to the intent-filter. Callback URLs become:
+For cloud builds, use EAS Build with a development profile:
 
-```text
-https://YOUR_DOMAIN/ios/{bundleId}/callback
-https://YOUR_DOMAIN/android/{package}/callback
+```bash
+eas build --profile development --platform ios
+eas build --profile development --platform android
 ```
-
-### Multiple Domains
-
-Pass an array of domain objects to support domain switching:
-
-```json
-"plugins": [
-  ["react-native-auth0", [
-    { "domain": "tenant1.auth0.com", "customScheme": "scheme1" },
-    { "domain": "tenant2.auth0.com", "customScheme": "scheme2" }
-  ]]
-]
-```
-
----
 
 ## Post-Setup Steps
 
-After configuring `app.json`, always regenerate native projects:
+After Auth0 is configured (via bootstrap or manual setup), complete these steps:
 
-```bash
-npx expo prebuild --clean
-```
+### 1. Verify app.json Plugin Configuration
 
-### Verify Configuration
+Ensure `app.json` contains the react-native-auth0 plugin:
 
-**iOS:** Check that `ios/{AppName}/Info.plist` contains the URL scheme entry:
-```xml
-<key>CFBundleURLSchemes</key>
-<array>
-  <string>myappscheme</string>
-</array>
-```
-
-**Android:** Check that `android/app/src/main/AndroidManifest.xml` contains the RedirectActivity with the correct scheme and domain.
-
----
-
-## Environment Variables (Optional)
-
-For keeping credentials out of source control, use environment variables with `app.config.js`:
-
-```js
-export default {
-  expo: {
-    // ...
-    plugins: [
+```json
+{
+  "expo": {
+    "ios": {
+      "bundleIdentifier": "com.yourcompany.yourapp"
+    },
+    "android": {
+      "package": "com.yourcompany.yourapp"
+    },
+    "plugins": [
       [
         "react-native-auth0",
         {
-          domain: process.env.AUTH0_DOMAIN,
-          customScheme: "myappscheme"
+          "domain": "your-tenant.auth0.com",
+          "customScheme": "auth0sample"
         }
       ]
     ]
   }
-};
+}
 ```
 
-Create `.env` (add to `.gitignore`):
-```bash
-AUTH0_DOMAIN=your-tenant.auth0.com
-AUTH0_CLIENT_ID=your-client-id
+The `customScheme` must be:
+- All lowercase
+- No special characters
+- Unique to your application
+- Passed to `authorize()` and `clearSession()` calls
+
+### 2. Configure Callback URLs in Auth0 Dashboard
+
+Go to [Auth0 Dashboard > Applications](https://manage.auth0.com/#/applications), select your application, and add the following:
+
+**Allowed Callback URLs:**
+```text
+auth0sample://your-tenant.auth0.com/ios/com.yourcompany.yourapp/callback,
+auth0sample://your-tenant.auth0.com/android/com.yourcompany.yourapp/callback
 ```
 
-> **Note:** Expo does not load `.env` files by default. Use a package like `dotenv` in `app.config.js` or pass values via EAS Build secrets.
+**Allowed Logout URLs:**
+```text
+auth0sample://your-tenant.auth0.com/ios/com.yourcompany.yourapp/callback,
+auth0sample://your-tenant.auth0.com/android/com.yourcompany.yourapp/callback
+```
 
----
+Replace `auth0sample` with your `customScheme`, `your-tenant.auth0.com` with your domain, and `com.yourcompany.yourapp` with your bundle ID / package name.
 
-## Troubleshooting
+All values must be **lowercase** with **no trailing slash**.
 
-**App hangs after login redirect:**
-- Verify callback URLs are all lowercase and match Auth0 Dashboard exactly
-- Ensure `customScheme` matches between `app.json`, `authorize()`, and `clearSession()` calls
-- Run `npx expo prebuild --clean` after any config change
+### 3. Regenerate Native Projects
 
-**Build fails after install:**
+After modifying app.json, regenerate the native projects:
+
 ```bash
 npx expo prebuild --clean
-cd ios && pod install --repo-update && cd ..
 ```
 
-**Expo Go shows error:**
-- This SDK is not compatible with Expo Go — use `npx expo run:ios` or `npx expo run:android`
+This applies the Auth0 config plugin, which configures:
+- **iOS**: URL scheme in Info.plist and AppDelegate linking handler
+- **Android**: manifest placeholders for auth0Domain and auth0Scheme in build.gradle
 
-**Android redirect not working:**
-- Check that `android:exported="true"` is set on the RedirectActivity in the generated manifest
+## SDK Installation
 
----
+```bash
+npx expo install react-native-auth0
+```
 
-## EAS Build (Production)
+This installs the SDK with the correct version for your Expo SDK.
 
-Configure `eas.json`:
+For older Expo versions:
+- Expo 53+: Use react-native-auth0 v5.x
+- Expo < 53: Use react-native-auth0 v4.x (`npx expo install react-native-auth0@4`)
+
+## Using HTTPS Callback URLs (Android App Links)
+
+For enhanced security, you can use HTTPS callback URLs with Android App Links:
+
 ```json
 {
+  "expo": {
+    "plugins": [
+      [
+        "react-native-auth0",
+        {
+          "domain": "your-tenant.auth0.com",
+          "customScheme": "https"
+        }
+      ]
+    ]
+  }
+}
+```
+
+When using `customScheme: "https"`, the plugin automatically adds `android:autoVerify="true"` to the Android manifest intent-filter.
+
+You must also configure Android App Links in the Auth0 Dashboard:
+1. Go to **Applications > your app > Show Advanced Settings > Device Settings**
+2. Add your Android Package Name and SHA256 fingerprint
+
+## Multiple Domain Support
+
+To support multiple Auth0 domains (e.g., for staging/production), pass an array to the plugin:
+
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "react-native-auth0",
+        [
+          {
+            "domain": "staging.auth0.com",
+            "customScheme": "auth0staging"
+          },
+          {
+            "domain": "production.auth0.com",
+            "customScheme": "auth0prod"
+          }
+        ]
+      ]
+    ]
+  }
+}
+```
+
+## Secret Management
+
+Expo / React Native mobile apps do **not** use a Client Secret. The Auth0 Native application type uses PKCE (Proof Key for Code Exchange) for secure authentication without exposing secrets.
+
+**What to store in code / config:**
+- Auth0 Domain — in `app.json` plugin config and `Auth0Provider` props
+- Auth0 Client ID — in `Auth0Provider` props only (not in app.json)
+- Custom Scheme — in `app.json` plugin config and `authorize`/`clearSession` options
+
+**What NOT to store:**
+- Never include Client Secret in mobile apps
+- Never commit sensitive tokens to source control
+
+For environment-specific configuration, use `app.config.js` (dynamic config):
+
+```javascript
+export default ({ config }) => ({
+  ...config,
+  plugins: [
+    [
+      'react-native-auth0',
+      {
+        domain: process.env.AUTH0_DOMAIN || 'dev.auth0.com',
+        customScheme: process.env.AUTH0_SCHEME || 'auth0dev',
+      },
+    ],
+  ],
+});
+```
+
+## EAS Build Configuration
+
+For production builds with EAS:
+
+```bash
+npm install -g eas-cli
+eas build --platform all
+```
+
+Create `eas.json` if it doesn't exist:
+
+```json
+{
+  "cli": {
+    "version": ">= 3.0.0"
+  },
   "build": {
     "development": {
       "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
       "distribution": "internal"
     },
     "production": {}
@@ -179,21 +278,31 @@ Configure `eas.json`:
 }
 ```
 
-For production, use HTTPS callback URLs (App Links / Universal Links):
-```text
-https://YOUR_DOMAIN/ios/{bundleId}/callback
-https://YOUR_DOMAIN/android/{package}/callback
-```
+For development builds (used instead of Expo Go):
 
-Build:
 ```bash
-eas build --platform all
+eas build --profile development --platform ios
+eas build --profile development --platform android
 ```
 
----
+## Verification
 
-## Next Steps
+After setup, verify the integration:
 
-- [Integration Patterns](integration.md) — Login/logout flows, protected screens, API calls
-- [API Reference](api.md) — Complete SDK API and testing
-- [Main Skill](../SKILL.md) — Quick start workflow
+1. **Plugin applied correctly:**
+   ```bash
+   npx expo prebuild --clean
+   ```
+   Check that `ios/{AppName}/Info.plist` contains the URL scheme and `android/app/build.gradle` contains `manifestPlaceholders`.
+
+2. **Build succeeds:**
+   ```bash
+   npx expo run:ios
+   # or
+   npx expo run:android
+   ```
+
+3. **Auth flow works:**
+   - Tap Login — browser opens with Auth0 Universal Login
+   - Complete login — app receives credentials and shows user info
+   - Tap Logout — session is cleared
