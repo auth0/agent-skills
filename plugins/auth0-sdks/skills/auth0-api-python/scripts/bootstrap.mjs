@@ -1,0 +1,74 @@
+#!/usr/bin/env node
+import path from "node:path"
+
+import {
+  checkNodeVersion,
+  checkAuth0CLI,
+  getActiveTenant,
+  validateApiProject,
+} from "./utils/validation.mjs"
+import {
+  discoverExistingApis,
+  buildChangePlan,
+  displayChangePlan,
+} from "./utils/discovery.mjs"
+import { applyApiChanges } from "./utils/apis.mjs"
+import { writeEnvFile } from "./utils/env-writer.mjs"
+import { confirmWithUser } from "./utils/helpers.mjs"
+
+async function main() {
+  console.log("\n  Auth0 Python API Bootstrap\n")
+
+  const projectPath = path.resolve(process.argv[2] || process.cwd())
+
+  // Pre-flight
+  checkNodeVersion()
+  await checkAuth0CLI()
+  const domain = await getActiveTenant()
+
+  // Validate project
+  const config = validateApiProject(projectPath)
+
+  // Discover + plan
+  const apis = await discoverExistingApis()
+  const plan = buildChangePlan(apis, domain, config)
+  displayChangePlan(plan)
+
+  // Confirm
+  const confirmed = await confirmWithUser("Apply these changes?")
+  if (!confirmed) {
+    console.log("\n  Aborted by user.\n")
+    process.exit(0)
+  }
+
+  // Execute
+  console.log("")
+  const api = await applyApiChanges(plan.api)
+
+  const envPath = path.join(projectPath, ".env")
+  await writeEnvFile(
+    {
+      AUTH0_DOMAIN: domain,
+      AUTH0_AUDIENCE: api.identifier,
+    },
+    envPath
+  )
+
+  // Summary
+  console.log("\n  Auth0 Python API Setup Complete\n")
+  console.log(`  Domain:        ${domain}`)
+  console.log(`  Audience:      ${api.identifier}`)
+  console.log(`  Config file:   ${envPath}`)
+  console.log("")
+  console.log("  Next steps:")
+  console.log("    1. Install SDK: pip install auth0-api-python python-dotenv")
+  console.log("    2. Initialize ApiClient with domain + audience from .env")
+  console.log("    3. Add require_auth decorator to protected endpoints")
+  console.log("    4. Test with: curl -H 'Authorization: Bearer <token>' http://localhost:5000/api/private")
+  console.log("")
+}
+
+main().catch((e) => {
+  console.error(`\n  Bootstrap failed: ${e.message}\n`)
+  process.exit(1)
+})
