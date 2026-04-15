@@ -91,6 +91,27 @@ This allows the Auth0 browser to redirect back to your app using the `{bundle}:/
 
 > **Agent instruction:** Only follow this section if the user chose HTTPS Universal Links as their callback scheme. If they chose a custom scheme (`{bundle}://`), skip this section entirely.
 >
+> **Prerequisites:** Before configuring Xcode, Auth0 must be told your Apple Team ID and Bundle ID so it can host the `apple-app-site-association` file. Without this, Universal Links will not work even if the entitlements are correct.
+
+#### Step 1 — Configure Device Settings in Auth0 Dashboard
+
+> **Agent instruction:**
+> 1. In Auth0 Dashboard → **Applications** → your app → **Settings**, scroll to the bottom and click **Show Advanced Settings**
+> 2. Select the **Device Settings** tab
+> 3. Enter the **Apple Team ID** — found at [developer.apple.com/account](https://developer.apple.com/account) under Membership Details
+> 4. Enter the **App Bundle Identifier** (e.g. `com.example.myapp`)
+> 5. Click **Save Changes**
+>
+> Auth0 will now automatically host the Apple App Site Association file at:
+> `https://YOUR_AUTH0_DOMAIN/.well-known/apple-app-site-association`
+>
+> Verify it lists your app by opening that URL — the response should contain `applinks` with your `appID` in the format `TEAMID.com.example.myapp`.
+>
+> Reference: [Enable Universal Links Support in Apple Xcode](https://auth0.com/docs/get-started/applications/enable-universal-links-support-in-apple-xcode)
+
+#### Step 2 — Add Associated Domains Entitlement in Xcode
+
+> **Agent instruction:**
 > 1. Find the app's `.entitlements` file (commonly `<AppName>.entitlements`). Search for `*.entitlements` in the project directory.
 > 2. If the file exists, add `com.apple.developer.associated-domains` to it. If it does not exist, create it at the project root alongside the `.xcodeproj`.
 > 3. Add both entries using the actual Auth0 domain:
@@ -98,19 +119,20 @@ This allows the Auth0 browser to redirect back to your app using the `{bundle}:/
 ```xml
 <key>com.apple.developer.associated-domains</key>
 <array>
-    <string>webcredentials:YOUR_AUTH0_DOMAIN</string>
     <string>applinks:YOUR_AUTH0_DOMAIN</string>
+    <string>webcredentials:YOUR_AUTH0_DOMAIN</string>
 </array>
 ```
 
-> 4. If `com.apple.developer.associated-domains` already exists in the file, append the two `<string>` entries to the existing array.
+> - `applinks:` — routes the Universal Link callback back to your app after login
+> - `webcredentials:` — enables Password AutoFill and credential handoff with Auth0
+>
+> 4. If `com.apple.developer.associated-domains` already exists in the file, append the two `<string>` entries to the existing array rather than replacing it.
 > 5. If the file was newly created, check that `CODE_SIGN_ENTITLEMENTS` in the target's build settings points to it. If not, inform the user to set it in Xcode under target → Build Settings → Code Signing Entitlements.
 > 6. Ensure `.useHTTPS()` is called on the `webAuth()` builder:
 >    ```swift
 >    Auth0.webAuth().useHTTPS()
 >    ```
->
-> **Note:** Auth0 automatically hosts the Apple App Site Association file at `https://YOUR_AUTH0_DOMAIN/.well-known/apple-app-site-association` — no manual hosting needed. `webcredentials` enables Password AutoFill and credential handoff; `applinks` routes the Universal Link callback back to your app.
 
 ### Verify Auth0.plist Target Membership
 

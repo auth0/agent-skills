@@ -16,6 +16,14 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below. Current known version: `2.18.0`.
 
+## When NOT to Use
+
+- **Android apps**: Use [auth0-android](/auth0-android)
+- **React Native apps**: Use [auth0-react-native](/auth0-react-native)
+- **Flutter apps**: Use the native Flutter Auth0 SDK
+- **Web SPAs** (React, Angular, Vue): Use [auth0-react](/auth0-react), [auth0-angular](/auth0-angular), or [auth0-vue](/auth0-vue)
+- **Node.js/Express servers**: Use [auth0-express](/auth0-express)
+
 ## Prerequisites
 
 - **iOS** 14.0+ / **macOS** 11.0+ / tvOS 14.0+ / watchOS 7.0+ / visionOS 1.0+
@@ -25,167 +33,69 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 - Node.js 20+ (for bootstrap script automation)
 - Auth0 CLI — `brew install auth0/auth0-cli/auth0` (for bootstrap script)
 
-## When NOT to Use
-
-| Use Case | Recommended Skill |
-|----------|------------------|
-| Android / Kotlin app | auth0-android |
-| Flutter (iOS + Android cross-platform) | auth0-flutter |
-| React Native app | auth0-react-native |
-| React / Vue / Angular SPA | auth0-spa-js |
-| Next.js / Express web app | auth0-nextjs |
-| ASP.NET Core web app | auth0-aspnetcore-authentication |
-| ASP.NET Core API (JWT validation only) | auth0-aspnetcore-api |
-| Protecting a REST API (no login UI) | Use a BACKEND_API skill for your language |
-| Auth0 Management API calls | Use Auth0 Management API skill |
-
 ## Quick Start Workflow
 
 > **Agent instruction:** Follow these steps in order. If you encounter an error at any step, attempt to fix it up to 5 times before calling `AskUserQuestion` to ask the user for guidance. Always search existing code first — if there are existing login/logout handlers, hook into them rather than creating new ones.
 
 ### Step 1 — Install SDK
 
-> **Agent instruction:** First check the project directory for an existing package manager file:
-> - `Podfile` present → use **CocoaPods**
-> - `Cartfile` present → use **Carthage**
-> - `Package.swift` present → use **Swift Package Manager**
+> **Agent instruction:** Check the project directory for an existing package manager file:
+> - `Podfile` present → **CocoaPods**
+> - `Cartfile` present → **Carthage**
+> - `Package.swift` present → **Swift Package Manager**
 >
 > If none are found, ask via `AskUserQuestion`: _"Which dependency manager does your project use — Swift Package Manager, CocoaPods, or Carthage?"_
 >
-> Then **execute** the steps for the chosen manager below. Do not just show the instructions — perform the file edits and run the commands.
-
-**Swift Package Manager:**
-
-> **Agent instruction:** Check if the project has a `Package.swift` (a Swift package). If yes, add Auth0.swift as a dependency by editing `Package.swift`:
-> 1. Add to the `dependencies` array: `.package(url: "https://github.com/auth0/Auth0.swift", .upToNextMajor(from: "2.18.0"))`
-> 2. Add `"Auth0"` to the target's `dependencies` array
->
-> If the project is an Xcode project (`.xcodeproj`) using SPM — not a `Package.swift` manifest — SPM packages must be added via the Xcode GUI. Instruct the user:
-> _"Please add the Auth0.swift package in Xcode: File → Add Package Dependencies → enter `https://github.com/auth0/Auth0.swift` → select Up to Next Major Version from `2.18.0` → click Add Package and confirm your app target is selected."_
-> Then ask the user to confirm when done before continuing.
-
-**CocoaPods:**
-
-> **Agent instruction:**
-> 1. If a `Podfile` already exists, open it and add `pod 'Auth0', '~> 2.18'` inside the correct target block. If no `Podfile` exists, create one at the project root with the correct target name.
-> 2. Run `pod install` in the project directory.
-> 3. From this point on, remind the user to always open the `.xcworkspace` file instead of `.xcodeproj`.
-
-```ruby
-# Podfile
-target 'YourApp' do
-  use_frameworks!
-  pod 'Auth0', '~> 2.18'
-end
-```
-
-**Carthage:**
-
-> **Agent instruction:**
-> 1. If a `Cartfile` already exists, open it and add the Auth0.swift entry. If no `Cartfile` exists, create one at the project root.
-> 2. Run `carthage update --use-xcframeworks --platform iOS` (adjust `--platform` for macOS/tvOS/watchOS as needed).
-> 3. After the command completes, instruct the user to link the built framework: _"In Xcode, go to your target → General → Frameworks, Libraries, and Embedded Content → click + → Add Other → Add Files → select `Carthage/Build/Auth0.xcframework`."_ Ask the user to confirm when done.
-
-```text
-github "auth0/Auth0.swift" ~> 2.18
-```
+> Follow the matching installation steps in [Setup Guide](./references/setup.md#sdk-installation). Do not just show the instructions — perform the file edits and run the commands.
 
 ### Step 2 — Configure Auth0
 
-> **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt. If yes, write `Auth0.plist` directly with those values and skip the options below. If no credentials are provided, ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this project?"_
+> **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt. If yes, write `Auth0.plist` directly with those values. If not, ask via `AskUserQuestion`: _"How would you like to configure Auth0 for this project?"_
 > - **Automatic setup (Recommended)** — runs a bootstrap script that creates the Auth0 app, database connection, callback URLs, and writes `Auth0.plist`
 > - **Manual setup** — the user provides their Auth0 Client ID and Domain
 >
-> Follow the matching section in [Setup Guide](./references/setup.md) based on their choice.
-
-**Option A — Automatic Setup (Bootstrap Script):**
-
-> **Agent instruction:** Before running the script, do NOT run `auth0 login` — it is interactive and will hang. Instead:
-> 1. Check Node.js: `node --version` (need 20+)
-> 2. Check Auth0 CLI: `command -v auth0` (install via `brew install auth0/auth0-cli/auth0` if missing)
-> 3. Check login status: `auth0 tenants list --csv --no-input 2>&1`. If it fails, tell the user to run `auth0 login` in their terminal and wait for confirmation before proceeding.
-> 4. Confirm active tenant: parse the `→` line and ask the user _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_ If not, ask them to run `auth0 tenants use <tenant-domain>` and re-check.
-
-```bash
-cd scripts && npm install && node bootstrap.mjs /path/to/your/xcode/project
-```
-The script detects your bundle identifier, creates a Native app in Auth0, registers callback URLs, and writes `Auth0.plist`.
-
-**Option B — Manual Setup:**
-Ask the user for their Auth0 Domain and Client ID, then create `Auth0.plist`:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>ClientId</key>
-    <string>YOUR_AUTH0_CLIENT_ID</string>
-    <key>Domain</key>
-    <string>YOUR_AUTH0_DOMAIN</string>
-</dict>
-</plist>
-```
-Add this file to your Xcode project and confirm it is a member of your app target.
+> Follow the matching section in [Setup Guide](./references/setup.md#auth0-configuration) based on their choice.
 
 ### Step 3 — Configure Callback URLs
 
 > **Agent instruction:** Ask the user via `AskUserQuestion`: _"Which callback URL scheme would you like to use?"_
-> - **Custom scheme** (`{bundle}://`) — simpler, works on all Apple platforms, no extra Xcode configuration needed
-> - **HTTPS Universal Links** — recommended for production; prevents URL scheme hijacking but requires Associated Domains setup in Xcode
+> - **Custom scheme** (`{bundle}://`) — simpler, works on all Apple platforms
+> - **HTTPS Universal Links** — recommended for production; prevents URL scheme hijacking
 >
 > Then follow **only** the matching path below.
 
 #### Path A — Custom Scheme
 
-In Auth0 Dashboard → **Applications** → your app → **Settings**, add to both **Allowed Callback URLs** and **Allowed Logout URLs**:
-
-**iOS:** `YOUR_BUNDLE_IDENTIFIER://YOUR_AUTH0_DOMAIN/ios/YOUR_BUNDLE_IDENTIFIER/callback`
-
-**macOS:** `YOUR_BUNDLE_IDENTIFIER://YOUR_AUTH0_DOMAIN/macos/YOUR_BUNDLE_IDENTIFIER/callback`
+> **Agent instruction:** In Auth0 Dashboard → **Applications** → your app → **Settings**, add to both **Allowed Callback URLs** and **Allowed Logout URLs**:
+> - iOS: `YOUR_BUNDLE_ID://YOUR_AUTH0_DOMAIN/ios/YOUR_BUNDLE_ID/callback`
+> - macOS: `YOUR_BUNDLE_ID://YOUR_AUTH0_DOMAIN/macos/YOUR_BUNDLE_ID/callback`
+>
+> Then follow the [URL scheme registration steps in Setup Guide](./references/setup.md#register-url-scheme-required-for-custom-scheme-callbacks) to register `$(PRODUCT_BUNDLE_IDENTIFIER)` as a URL type in Xcode.
 
 #### Path B — HTTPS Universal Links
 
-**Step B1 — Register HTTPS URLs in Auth0 Dashboard:**
-
-In Auth0 Dashboard → **Applications** → your app → **Settings**, add to both **Allowed Callback URLs** and **Allowed Logout URLs**:
-
-**iOS:** `https://YOUR_AUTH0_DOMAIN/ios/YOUR_BUNDLE_IDENTIFIER/callback`
-
-**macOS:** `https://YOUR_AUTH0_DOMAIN/macos/YOUR_BUNDLE_IDENTIFIER/callback`
-
-**Step B2 — Add Associated Domains to the entitlements file:**
-
-> **Agent instruction:** You MUST complete this step — without Associated Domains, the HTTPS callback redirect will not work and the app will not return from the browser after login.
+> **Agent instruction:** All four steps below are required — skipping any one will cause the callback redirect to fail silently after login.
 >
-> 1. Find the app's `.entitlements` file in the project directory (commonly named `<AppName>.entitlements` or `<AppName>Debug.entitlements`). Search for files matching `*.entitlements`.
-> 2. If the file exists, add `com.apple.developer.associated-domains` to it. If it does not exist, create it at the project root alongside the `.xcodeproj`.
-> 3. Write the following entries using the actual Auth0 domain (e.g. `example.us.auth0.com`):
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>com.apple.developer.associated-domains</key>
-    <array>
-        <string>webcredentials:YOUR_AUTH0_DOMAIN</string>
-        <string>applinks:YOUR_AUTH0_DOMAIN</string>
-    </array>
-</dict>
-</plist>
-```
-
-> 4. If the `.entitlements` file already contains a `com.apple.developer.associated-domains` array, append the two `<string>` entries to the existing array rather than replacing it.
-> 5. If the `.entitlements` file was newly created, verify it is referenced in the Xcode project by checking that the target's build settings have `CODE_SIGN_ENTITLEMENTS` pointing to this file. If not set, inform the user: _"A new entitlements file was created at `<path>`. Please set it in Xcode under your target → Build Settings → Code Signing Entitlements."_
+> **Step B1 — Register HTTPS callback URLs in Auth0 Dashboard:**
+> Dashboard → Applications → your app → Settings → add to **Allowed Callback URLs** and **Allowed Logout URLs**:
+> - iOS: `https://YOUR_AUTH0_DOMAIN/ios/YOUR_BUNDLE_ID/callback`
+> - macOS: `https://YOUR_AUTH0_DOMAIN/macos/YOUR_BUNDLE_ID/callback`
 >
-> **Note:** Auth0 automatically hosts the Apple App Site Association file at `https://YOUR_AUTH0_DOMAIN/.well-known/apple-app-site-association` — no manual hosting needed. The `webcredentials` entry enables Password AutoFill and credential handoff; `applinks` routes the Universal Link callback back to your app.
-
-**Step B3 — Use `.useHTTPS()` in the SDK:**
-
-Ensure `.useHTTPS()` is called on the `webAuth()` builder so the SDK sends the `https://` callback URL:
-```swift
-Auth0.webAuth().useHTTPS()
-```
+> **Step B2 — Configure Device Settings in Auth0 Dashboard:**
+> Dashboard → Applications → your app → Settings → scroll to bottom → **Show Advanced Settings** → **Device Settings** tab:
+> 1. Enter the user's **Apple Team ID** (found at [developer.apple.com/account](https://developer.apple.com/account) under Membership)
+> 2. Enter the **App Bundle Identifier**
+> 3. Save changes
+>
+> Auth0 will now host `https://YOUR_AUTH0_DOMAIN/.well-known/apple-app-site-association` automatically. This file must exist and list your app's Team ID + Bundle ID before Universal Links will work on device.
+>
+> **Step B3 — Add Associated Domains entitlement in Xcode:**
+> Add `com.apple.developer.associated-domains` to the app's `.entitlements` file with both `applinks:` and `webcredentials:` entries for the Auth0 domain. See [Setup Guide — Associated Domains](./references/setup.md#associated-domains-setup-https-universal-links) for the complete entitlements XML, Xcode capability steps, and build settings verification.
+>
+> **Step B4 — Use `.useHTTPS()` in the SDK:**
+> ```swift
+> Auth0.webAuth().useHTTPS()
+> ```
 
 ### Step 4 — Implement Authentication
 
@@ -262,48 +172,6 @@ class AuthenticationService: ObservableObject {
 - **[auth0-android](/auth0-android)** — NATIVE_MOBILE for Android/Kotlin
 - **[auth0-flutter](/auth0-flutter)** — Cross-platform iOS + Android with Dart
 - **[auth0-aspnetcore-authentication](/auth0-aspnetcore-authentication)** — WEB_REGULAR for ASP.NET Core
-
-## Quick Reference
-
-### Core Classes & Methods
-
-| Class / Method | Returns | Purpose |
-|----------------|---------|---------|
-| `Auth0.webAuth()` | `WebAuth` | Web Auth builder for login/logout |
-| `.useHTTPS()` | `WebAuth` | Use Universal Links (HTTPS) callback |
-| `.scope(_ scope: String)` | `WebAuth` | Set requested scopes |
-| `.audience(_ audience: String)` | `WebAuth` | Set API audience |
-| `.start()` | `Credentials` (async) | Initiate login flow |
-| `.clearSession()` | `Void` (async) | Clear Auth0 session cookie |
-| `CredentialsManager(authentication:)` | — | Keychain credential storage |
-| `.store(credentials:)` | `Bool` | Save credentials to Keychain |
-| `.credentials()` | `Credentials` (async) | Retrieve / auto-refresh credentials |
-| `.clear()` | `Bool` | Delete all stored credentials |
-| `.canRenew()` | `Bool` | Check if refresh token exists |
-| `.hasValid(minTTL:)` | `Bool` | Check if access token is still valid |
-| `.enableBiometrics(withTitle:)` | `Void` | Require biometric to access credentials |
-| `Auth0.authentication()` | `Authentication` | Database / social auth builder |
-
-### Error Types
-
-| Error | Case | Description |
-|-------|------|-------------|
-| `WebAuthError` | `.userCancelled` | User dismissed login browser |
-| `WebAuthError` | `.noCredentialsAvailable` | No credentials in storage |
-| `WebAuthError` | `.pkceNotAllowed` | PKCE not enabled on the application |
-| `CredentialsManagerError` | `.noCredentialsAvailable` | No stored credentials |
-| `CredentialsManagerError` | `.failedToRenewCredentials(let e)` | Token refresh failed |
-| `CredentialsManagerError` | `.biometricsFailed` | Biometric authentication failed |
-| `CredentialsManagerError` | `.cannotAccessKeychainItem` | Keychain access error |
-| `AuthenticationError` | `.isMultifactorRequired` | MFA challenge required |
-| `AuthenticationError` | `.isNetworkError` | Network connectivity issue |
-
-### Callback URL Formats
-
-| Platform | Universal Link | Custom Scheme |
-|----------|---------------|---------------|
-| iOS | `https://{domain}/ios/{bundle}/callback` | `{bundle}://{domain}/ios/{bundle}/callback` |
-| macOS | `https://{domain}/macos/{bundle}/callback` | `{bundle}://{domain}/macos/{bundle}/callback` |
 
 ## References
 

@@ -4,8 +4,6 @@ import { auth0ApiCall } from "./auth0-api.mjs"
 import { ChangeAction, createChangeItem } from "./change-plan.mjs"
 
 export const DEFAULT_CONNECTION_NAME = "Username-Password-Authentication"
-// eslint-disable-next-line no-unused-vars — used in template literals below
-const connName = DEFAULT_CONNECTION_NAME
 
 export function checkDatabaseConnectionChanges(existingConnections, clientId) {
   const existing = existingConnections.find((c) => c.name === DEFAULT_CONNECTION_NAME)
@@ -43,7 +41,7 @@ export async function applyDatabaseConnectionChanges(changePlan, clientId) {
   }
 
   if (changePlan.action === ChangeAction.CREATE) {
-    const spinner = ora(`Creating Database Connection: ${connName}`).start()
+    const spinner = ora(`Creating Database Connection: ${DEFAULT_CONNECTION_NAME}`).start()
     try {
       const connectionData = {
         strategy: "auth0",
@@ -51,7 +49,7 @@ export async function applyDatabaseConnectionChanges(changePlan, clientId) {
         enabled_clients: [clientId],
       }
       const connection = await auth0ApiCall("post", "connections", connectionData)
-      spinner.succeed(`Created Database Connection: ${connName}`)
+      spinner.succeed(`Created Database Connection: ${DEFAULT_CONNECTION_NAME}`)
       return connection
     } catch (e) {
       spinner.fail("Failed to create Database Connection")
@@ -60,14 +58,14 @@ export async function applyDatabaseConnectionChanges(changePlan, clientId) {
   }
 
   if (changePlan.action === ChangeAction.UPDATE) {
-    const spinner = ora(`Updating Database Connection: ${connName}`).start()
+    const spinner = ora(`Updating Database Connection: ${DEFAULT_CONNECTION_NAME}`).start()
     try {
       const existing = changePlan.existing
       const updatedClients = [...(existing.enabled_clients || []), clientId]
       await auth0ApiCall("patch", `connections/${existing.id}`, {
         enabled_clients: updatedClients,
       })
-      spinner.succeed(`Updated ${connName}: enabled client ${clientId}`)
+      spinner.succeed(`Updated ${DEFAULT_CONNECTION_NAME}: enabled client ${clientId}`)
       return { ...existing, enabled_clients: updatedClients }
     } catch (e) {
       spinner.fail("Failed to update Database Connection")
