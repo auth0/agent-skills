@@ -101,6 +101,7 @@ Framework-specific implementation guides:
 - `auth0-fastify` - Fastify web applications
 - `auth0-fastify-api` - Fastify API authentication
 - `auth0-fastapi-api` - FastAPI API authentication
+- `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
 - `auth0-react-native` - React Native & Expo
 - `auth0-android` - Android
 - `auth0-swift` - Native iOS/macOS applications (Swift)
@@ -176,6 +177,7 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 | [auth0-fastify](./plugins/auth0-sdks/skills/auth0-fastify/SKILL.md) | Fastify web applications | v1.0.0 |
 | [auth0-fastify-api](./plugins/auth0-sdks/skills/auth0-fastify-api/SKILL.md) | Fastify API authentication | v1.0.0 |
 | [auth0-fastapi-api](./plugins/auth0-sdks/skills/auth0-fastapi-api/SKILL.md) | FastAPI API authentication | v1.0.0 |
+| [express-oauth2-jwt-bearer](./plugins/auth0-sdks/skills/express-oauth2-jwt-bearer/SKILL.md) | Node.js/Express API JWT Bearer validation | v1.0.0 |
 
 ### Mobile Skills (auth0-sdks plugin)
 
@@ -235,6 +237,7 @@ The MFA skill covers:
 | | Ruby on Rails | | Go |
 | | PHP/Laravel | | Spring Boot |
 | | | | ASP.NET Core |
+| | | | Node.js (express-oauth2-jwt-bearer) |
 
 ### Coming Soon
 
@@ -271,6 +274,7 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 | FastAPI | [auth0-fastapi-api](https://github.com/auth0/auth0-fastapi-api) | auth0-fastapi-api |
 | React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-react-native |
 | Android | [Auth0.Android](https://github.com/auth0/Auth0.Android) | auth0-android |
+| Node.js API | [express-oauth2-jwt-bearer](https://github.com/auth0/express-oauth2-jwt-bearer) | express-oauth2-jwt-bearer |
 | iOS/macOS | [Auth0.swift](https://github.com/auth0/Auth0.swift) | auth0-swift |
 
 ## Project Structure
@@ -358,7 +362,7 @@ auth0/agent-skills/
 │           │       ├── api.md
 │           │       ├── patterns.md
 │           │       └── setup.md
-│           └── auth0-android/
+│           ├── auth0-android/
 │               ├── SKILL.md
 │               ├── references/
 │               │   ├── api.md
@@ -380,6 +384,24 @@ auth0/agent-skills/
 │                   ├── evals.json
 │                   ├── graders.json
 │                   └── prompt.md
+│           └── express-oauth2-jwt-bearer/
+│               ├── SKILL.md
+│               ├── references/
+│               │   ├── api.md
+│               │   ├── integration.md
+│               │   └── setup.md
+│               ├── scripts/
+│               │   ├── bootstrap.mjs
+│               │   ├── package.json
+│               │   └── utils/
+│               └── tests/
+│                   ├── benchmark-config.json
+│                   ├── evals.json
+│                   ├── graders.json
+│                   ├── graders.ts
+│                   ├── package.json
+│                   ├── prompt.md
+│                   └── run-evals.mjs
 │           └── auth0-swift/
 │               ├── SKILL.md
 │               └── references/
