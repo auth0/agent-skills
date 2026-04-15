@@ -74,6 +74,7 @@ app.register_blueprint(admin)
 ### Get Access Token
 
 ```python
+import requests
 from flask import jsonify, redirect
 from auth import auth0
 
@@ -124,6 +125,9 @@ auth0 = ServerClient(
 ### Custom Login with Connection
 
 ```python
+from auth0_server_python.auth_server.server_client import StartInteractiveLoginOptions
+
+
 @app.route("/login-google")
 async def login_google():
     authorization_url = await auth0.start_interactive_login(
@@ -137,6 +141,9 @@ async def login_google():
 ### Custom Logout with Return URL
 
 ```python
+from auth0_server_python.auth_server.server_client import LogoutOptions
+
+
 @app.route("/logout")
 async def logout():
     url = await auth0.logout(
@@ -187,7 +194,7 @@ async def callback():
 
 ### Template Context Processor
 
-Make user available in all templates:
+Make user available in all templates. Requires `flask[async]` (already a prerequisite):
 
 ```python
 @app.context_processor

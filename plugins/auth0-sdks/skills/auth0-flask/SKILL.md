@@ -20,7 +20,7 @@ Add login, logout, and user profile to a Flask web application using `auth0-serv
 
 ## When NOT to Use
 
-- **APIs / microservices** — Use the `auth0-api-python` SDK for JWT Bearer token validation
+- **APIs / microservices** — `auth0-server-python` is a webapp SDK for session-based login flows, not for protecting APIs. For Python API protection with JWT Bearer validation, see the [FastAPI quickstart](https://auth0.com/docs/quickstart/backend/python) or the [Django REST Framework quickstart](https://auth0.com/docs/quickstart/backend/django)
 
 ---
 
@@ -305,9 +305,9 @@ All methods are async:
 
 ## Related Skills
 
-- `auth0-fastapi-api` — For protecting FastAPI API endpoints with JWT Bearer tokens
-- `express-oauth2-jwt-bearer` — Same JWT Bearer pattern for Express APIs
 - `auth0-express` — For server-rendered Express web apps with login/logout sessions
+- `auth0-fastify` — For Fastify web applications with session-based auth
+- `auth0-fastify-api` — For Fastify API authentication with JWT Bearer tokens
 
 ---
 

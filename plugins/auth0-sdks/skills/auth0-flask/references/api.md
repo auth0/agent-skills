@@ -305,37 +305,6 @@ Stateless cookie sessions are limited to ~4KB by browsers. The SDK encrypts toke
 5. Visit protected route (e.g., `/profile`)
 6. Click logout and verify session cleared
 
-### Mocking auth0 in Tests
-
-```python
-from unittest.mock import AsyncMock
-import pytest
-
-
-@pytest.fixture
-def mock_auth0(monkeypatch):
-    mock = AsyncMock()
-    mock.get_user.return_value = {
-        "sub": "google-oauth2|123456",
-        "email": "user@example.com",
-        "name": "Test User",
-    }
-    mock.get_access_token.return_value = "mock-access-token"
-    monkeypatch.setattr("auth.auth0", mock)
-    return mock
-
-
-def test_profile_requires_auth(client):
-    response = client.get("/profile")
-    assert response.status_code == 302  # Redirect to login
-
-
-def test_profile_authenticated(client, mock_auth0):
-    response = client.get("/profile")
-    assert response.status_code == 200
-    assert b"Test User" in response.data
-```
-
 ---
 
 ## Known Limitations
