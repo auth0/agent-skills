@@ -10,7 +10,7 @@ metadata:
 
 Protect FastAPI API endpoints with JWT access token validation using `auth0-fastapi-api`.
 
-> **Note:** This SDK is currently in beta (1.0.0b7). The API surface may change before the stable 1.0 release. Requires Python >= 3.9 and FastAPI >= 0.115.11.
+> **Note:** This SDK is currently in beta. The API surface may change before the stable 1.0 release. Check [PyPI](https://pypi.org/project/auth0-fastapi-api/) for the latest version. Requires Python >= 3.9 and FastAPI >= 0.115.11.
 
 ---
 

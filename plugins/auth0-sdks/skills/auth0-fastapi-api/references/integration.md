@@ -16,9 +16,6 @@ Advanced integration patterns for FastAPI API applications.
 ### Protect Routes with Scopes
 
 ```python
-from fastapi import FastAPI, Depends
-from auth0_fastapi_api import Auth0FastAPI
-
 auth0 = Auth0FastAPI(
     domain=os.getenv("AUTH0_DOMAIN"),
     audience=os.getenv("AUTH0_AUDIENCE"),
@@ -356,7 +353,7 @@ app.add_middleware(
     allow_origins=["https://your-spa-domain.com"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "DPoP"],
 )
 ```
 
