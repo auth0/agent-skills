@@ -1,20 +1,18 @@
 {
   "name": "auth0-agent-skills",
-  "metadata": {
-    "description": "Agent skills for integrating Auth0 authentication into any application, framework, or platform."
-  },
   "owner": {
     "name": "Auth0",
     "email": "support@auth0.com"
   },
+  "metadata": {
+    "description": "Auth0 agent skills for authentication, SDK integration, migration, and MFA.",
+    "version": "1.0.0",
+    "pluginRoot": "plugins"
+  },
   "plugins": [
     {
       "name": "auth0",
-      "source": {
-        "source": "git-subdir",
-        "url": "https://github.com/auth0/agent-skills.git",
-        "path": "plugins/auth0"
-      },
+      "source": "auth0",
       "description": "Essential Auth0 skills including quickstarts, migration from other providers, and Multi-Factor Authentication (MFA).",
       "version": "1.0.0",
       "repository": "https://github.com/auth0/agent-skills.git",
@@ -28,12 +26,8 @@
     },
     {
       "name": "auth0-sdks",
-      "source": {
-        "source": "git-subdir",
-        "url": "https://github.com/auth0/agent-skills.git",
-        "path": "plugins/auth0-sdks"
-      },
-      "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, Swift, Android, ASP.NET Core, React Native, and Expo with complete implementation guides.",
+      "source": "auth0-sdks",
+      "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Swift, Android, ASP.NET Core, React Native, and Expo with complete implementation guides.",
       "version": "1.0.0",
       "repository": "https://github.com/auth0/agent-skills.git",
       "license": "Apache-2.0",
@@ -51,17 +45,14 @@
         "angular",
         "express",
         "fastify",
-        "swift",
         "fastify-api",
+        "fastapi",
         "android",
+        "swift",
         "aspnetcore",
         "dotnet",
         "react-native",
-        "expo",
-        "node",
-        "jwt",
-        "express-oauth2-jwt-bearer",
-        "express-jwt"
+        "expo"
       ],
       "category": "sdk"
     }

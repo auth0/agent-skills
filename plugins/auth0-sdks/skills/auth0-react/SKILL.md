@@ -137,6 +137,10 @@ npm start    # CRA
 | Missing Auth0Provider wrapper | Entire app must be wrapped in `<Auth0Provider>` |
 | Provider not at root level | Auth0Provider must wrap all components that use auth hooks |
 | Wrong import path for env vars | Vite uses `import.meta.env.VITE_*`, CRA uses `process.env.REACT_APP_*` |
+| Using `acr_values` redirect for in-app MFA | Use `useAuth0().mfa` API for in-app enrollment/challenge/verify flows |
+| Not catching `MfaRequiredError` | Wrap `getAccessTokenSilently` in try/catch and check `instanceof MfaRequiredError` |
+| Making direct HTTP calls to MFA endpoints | Use the `mfa` property from `useAuth0()` — it handles token management automatically |
+| Forgetting refresh tokens for step-up MFA | Set `useRefreshTokens={true}` on Auth0Provider when using `interactiveErrorHandler="popup"` |
 
 ---
 
@@ -157,12 +161,23 @@ npm start    # CRA
 - `loginWithRedirect()` - Initiate login
 - `logout()` - Log out user
 - `getAccessTokenSilently()` - Get access token for API calls
+- `mfa` - MFA API client for enrollment, challenge, and verification
+  - `mfa.getAuthenticators(mfaToken)` - List enrolled authenticators
+  - `mfa.getEnrollmentFactors(mfaToken)` - Get available enrollment factors
+  - `mfa.enroll(params)` - Enroll new authenticator (OTP, SMS, Email, Voice, Push)
+  - `mfa.challenge(params)` - Initiate MFA challenge
+  - `mfa.verify(params)` - Verify MFA challenge and complete authentication
+
+**MFA Error Types (import from `@auth0/auth0-react`):**
+- `MfaRequiredError` - Thrown by `getAccessTokenSilently` when MFA is needed (has `mfa_token` and `mfa_requirements`)
+- `MfaEnrollmentError`, `MfaChallengeError`, `MfaVerifyError` - Thrown by respective `mfa.*` methods
 
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
 - Protected routes → [Integration Guide](references/integration.md#protected-routes)
 - API calls with tokens → [Integration Guide](references/integration.md#calling-apis)
 - Error handling → [Integration Guide](references/integration.md#error-handling)
+- MFA handling → [Integration Guide](references/integration.md#mfa-handling)
 
 ---
 
