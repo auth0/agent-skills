@@ -87,8 +87,8 @@ async def api_call():
 
     try:
         access_token = await auth0.get_access_token()
-    except Exception:
-        return "No access token available", 401
+    except Exception as e:
+        return f"Access token error: {e}", 401
 
     async with httpx.AsyncClient() as client:
         response = await client.get(
