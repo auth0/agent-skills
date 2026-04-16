@@ -13,9 +13,12 @@ Complete guide to installing, configuring, and using the Auth0 CLI.
 brew install auth0/auth0-cli/auth0
 ```
 
-**Via curl:**
+**Via curl (review script before executing):**
 ```bash
-curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh
+curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh
+# Review the script before running: cat /tmp/auth0-install.sh
+sh /tmp/auth0-install.sh
+rm /tmp/auth0-install.sh
 ```
 
 ### Windows
