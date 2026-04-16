@@ -83,6 +83,11 @@ rules:
     enabled: true
     severity: error
 
+  # Custom: Enforce openclaw metadata (emoji, homepage) in SKILL.md frontmatter
+  skill-openclaw-metadata:
+    enabled: true
+    severity: error
+
 # Custom rules for marketplace-specific validation
 custom-rules:
   - ./.claudelint/rules.py
