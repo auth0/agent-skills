@@ -850,11 +850,11 @@ async function main() {
 
   // 1. Load eval files
   const skillMdPath = path.join(SKILL_DIR, "SKILL.md")
-  const promptMdPath = path.join(EVAL_DIR, "PROMPT.md")
+  const promptMdPath = path.join(EVAL_DIR, "prompt.md")
   const gradersPath = path.join(EVAL_DIR, "graders.json")
   const configPath = path.join(EVAL_DIR, "benchmark-config.json")
 
-  for (const [name, p] of [["SKILL.md", skillMdPath], ["PROMPT.md", promptMdPath], ["graders.json", gradersPath], ["benchmark-config.json", configPath]]) {
+  for (const [name, p] of [["SKILL.md", skillMdPath], ["prompt.md", promptMdPath], ["graders.json", gradersPath], ["benchmark-config.json", configPath]]) {
     if (!fs.existsSync(p)) {
       console.error(`  Missing required file: ${name} (${p})`)
       process.exit(1)
