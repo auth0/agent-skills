@@ -40,7 +40,45 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 
 ## Quick Start Workflow
 
-> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID), use them directly and skip the AskUserQuestion. If credentials are NOT provided, use `AskUserQuestion` with the following message:
+> **Agent instruction:** First, check whether the user's prompt already includes both Auth0 **Client ID** and **Domain**.
+> - If both are provided, skip the setup-choice question and proceed directly to **Step 2 (Verify Expo Dev Client)** using those values.
+> - If either value is missing, ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this Expo project?"_
+>   - **Automatic setup (Recommended)** — runs a bootstrap script that creates the Auth0 app, database connection, callback URLs, and writes the plugin config to app.json
+>   - **Manual setup** — the user provides their Auth0 Client ID and Domain
+>
+> Follow the matching section below based on their choice.
+
+### 1. Configure Auth0
+
+#### Automatic Setup
+
+> **Agent instruction:** Run these quick checks before the bootstrap script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+>
+> 1. **Check Node.js**: `node --version`. If missing or below 20, ask user: install (`brew install node`) or switch to manual setup.
+> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, ask user: install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
+> 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
+>    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
+>    - Wait for the user to confirm, then re-run the check to verify.
+> 4. **Confirm active tenant**: Parse the `→` line from the CSV output to identify the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
+>    - If yes, proceed.
+>    - If no, ask the user to run `auth0 tenants use <tenant-domain>` in their terminal, then re-run step 3 to confirm the new active tenant.
+>
+> Once confirmed, run the bootstrap script:
+> ```bash
+> cd <path-to-skill>/auth0-expo/scripts
+> npm install
+> node bootstrap.mjs <path-to-expo-project>
+> ```
+>
+> The script validates the Expo project, creates a Native Auth0 application, sets up a database connection, and writes the plugin config to app.json. The agent should NOT handle client_id or domain manually.
+>
+> If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run the script. For other failures, fall back to **Manual Setup** below.
+>
+> After the script completes, proceed to **Step 2 (Verify Expo Dev Client)**.
+
+#### Manual Setup (User-Provided Credentials)
+
+> **Agent instruction:** Ask the user for their Auth0 credentials using `AskUserQuestion`:
 >
 > "I need your Auth0 credentials to set up authentication. Please provide:
 >
@@ -48,12 +86,14 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 > 2. **Client ID** (a 32-character alphanumeric string)
 >
 > You can find both in the [Auth0 Dashboard](https://manage.auth0.com/) under **Applications > Applications > your app > Settings**. If you don't have an Auth0 app yet, create one with type **Native** and copy the domain and client ID from the settings page."
+>
+> Then write the configuration to app.json and proceed to **Step 2**.
 
-### 1. Verify Expo Dev Client
+### 2. Verify Expo Dev Client
 
 > **Agent instruction:** Before installing the Auth0 SDK, check if the project has `expo-dev-client` installed. Read the project's `package.json` and look for `expo-dev-client` in `dependencies` or `devDependencies`.
 >
-> - **If `expo-dev-client` is found:** Proceed to step 2.
+> - **If `expo-dev-client` is found:** Proceed to step 3.
 > - **If `expo-dev-client` is NOT found:** Use `AskUserQuestion` with the following message:
 >
 >   "The `react-native-auth0` SDK requires a custom Expo development client — it does **not** work with Expo Go. Your project does not have `expo-dev-client` installed.
@@ -66,15 +106,15 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 >   ```bash
 >   npx expo install expo-dev-client
 >   ```
->   Then proceed to step 2. If option 2, proceed to step 2 directly.
+>   Then proceed to step 3. If option 2, proceed to step 3 directly.
 
-### 2. Install SDK
+### 3. Install SDK
 
 ```bash
 npx expo install react-native-auth0
 ```
 
-### 3. Configure Expo Config Plugin
+### 4. Configure Expo Config Plugin
 
 Add the react-native-auth0 plugin to `app.json` (or `app.config.js`) with your Auth0 domain and a custom scheme. Also ensure `bundleIdentifier` (iOS) and `package` (Android) are set:
 
@@ -95,13 +135,9 @@ Add the react-native-auth0 plugin to `app.json` (or `app.config.js`) with your A
 
 The `customScheme` must be all lowercase with no special characters (e.g., `auth0sample`). See [**Setup Guide**](./references/setup.md) for HTTPS callbacks, multiple domains, EAS Build, and secret management.
 
-> **Agent instruction (CLI automation):** For automated Auth0 setup, run the bootstrap script:
-> ```bash
-> cd <skill-dir>/scripts && npm install && node bootstrap.mjs <project-path>
-> ```
-> The script validates the Expo project, creates a Native Auth0 application, sets up a database connection, and writes the plugin config to app.json. Only offer this when the user has not already provided credentials.
+> **Agent instruction:** If you used automatic setup (Step 1), the bootstrap script already wrote the plugin config to app.json — verify it's correct but do not overwrite it. If you used manual setup, write the config now using the user-provided domain and a custom scheme.
 
-### 4. Configure Callback URLs
+### 5. Configure Callback URLs
 
 Add to **Allowed Callback URLs** and **Allowed Logout URLs** in the [Auth0 Dashboard](https://manage.auth0.com/):
 
@@ -112,7 +148,7 @@ YOUR_CUSTOM_SCHEME://YOUR_AUTH0_DOMAIN/android/YOUR_PACKAGE/callback
 
 All values must be **lowercase** with **no trailing slash**. For HTTPS callback URLs (App Links / Universal Links), see [Setup Guide](./references/setup.md#using-https-callback-urls-android-app-links).
 
-### 5. Add Authentication with Auth0Provider
+### 6. Add Authentication with Auth0Provider
 
 Wrap your app with `Auth0Provider` and use the `useAuth0` hook:
 
@@ -177,7 +213,7 @@ export default function App() {
 }
 ```
 
-### 6. Build & Verify
+### 7. Build & Verify
 
 > **Agent instruction:** After completing the integration, build the project to verify it compiles:
 > ```bash
