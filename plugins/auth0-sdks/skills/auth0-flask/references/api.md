@@ -127,7 +127,7 @@ await auth0.complete_interactive_login(str(request.url))
 **Parameters:**
 - `url` (string): Full callback URL including query parameters
 
-**Raises:** `ValueError` on state mismatch (CSRF), other exceptions on token exchange failures.
+**Raises:** Exception on state mismatch (CSRF), missing parameters, or token exchange failures.
 
 ### get_user()
 
@@ -154,7 +154,7 @@ Retrieves the access token for calling external APIs. Handles token refresh auto
 access_token = await auth0.get_access_token()
 ```
 
-**Returns:** Access token string or `None`.
+**Returns:** Access token string. **Raises** on failure (e.g. expired token without refresh token).
 
 **Requires:** `audience` parameter in `authorization_params` during ServerClient initialization.
 

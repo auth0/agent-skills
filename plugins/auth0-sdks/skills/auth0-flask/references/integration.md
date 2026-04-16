@@ -85,9 +85,9 @@ async def api_call():
     if user is None:
         return redirect("/login")
 
-    access_token = await auth0.get_access_token()
-
-    if access_token is None:
+    try:
+        access_token = await auth0.get_access_token()
+    except Exception:
         return "No access token available", 401
 
     async with httpx.AsyncClient() as client:
@@ -193,22 +193,21 @@ async def callback():
         return f"Authentication error: {str(e)}", 400
 ```
 
-### Template Context Processor
+### Inject User via before_request
 
-Make user available in all templates. Requires `flask[async]` (already a prerequisite):
+Make user available in all templates using a `before_request` hook (Flask supports async for `before_request` but not for `context_processor`):
 
 ```python
-@app.context_processor
-async def inject_user():
-    user = await auth0.get_user()
-    return {"user": user}
+@app.before_request
+async def load_user():
+    g.user = await auth0.get_user()
 ```
 
 Then in any template:
 
 ```html
-{% if user %}
-  <p>Welcome, {{ user.name }}!</p>
+{% if g.user %}
+  <p>Welcome, {{ g.user.name }}!</p>
   <a href="/logout">Logout</a>
 {% else %}
   <a href="/login">Login</a>
@@ -227,11 +226,8 @@ async def callback():
     try:
         await auth0.complete_interactive_login(str(request.url))
         return redirect("/")
-    except ValueError as e:
-        # CSRF or state validation error
-        return f"Security error: {str(e)}", 400
     except Exception as e:
-        # Token exchange or other errors
+        # State validation, token exchange, or other authentication errors
         return f"Authentication error: {str(e)}", 400
 ```
 
