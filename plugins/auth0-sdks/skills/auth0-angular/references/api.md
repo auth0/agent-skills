@@ -77,7 +77,9 @@ export class ProfileComponent {
 
 ---
 
-### Call Protected API
+### Call Protected API (Manual Token Approach)
+
+This example uses `getAccessTokenSilently()` to manually obtain and attach tokens. This is an alternative to using the built-in HTTP interceptor — see the [Integration Guide](integration.md#calling-a-protected-api) for both approaches.
 
 Create `src/app/api-test/api-test.component.ts`:
 
@@ -149,7 +151,9 @@ AuthModule.forRoot({
 
 ---
 
-### HTTP Interceptor for API Calls
+### Custom HTTP Interceptor for API Calls
+
+This shows how to build a custom interceptor from scratch. In most cases, you should use the SDK's built-in `authHttpInterceptorFn` instead — see the [Integration Guide](integration.md#calling-a-protected-api). A custom interceptor is only needed when you require logic beyond what `allowedList` provides.
 
 Create `src/app/auth.interceptor.ts`:
 
