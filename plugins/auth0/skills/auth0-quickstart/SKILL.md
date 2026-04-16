@@ -37,7 +37,7 @@ ls -la | grep -E "angular.json|vue.config.js|next.config|app.json|Package.swift|
 | Fastify (web app) | `"fastify"` in package.json, has `@fastify/view` | `auth0-fastify` |
 | Fastify (API) | `"fastify"` in package.json, no view engine | `auth0-fastify-api` |
 | React Native | `"react-native"` or `"expo"` in package.json | `auth0-react-native` |
-| Flask | `"flask"` in requirements.txt or Pipfile | `auth0-flask` |
+| Flask | `"flask"` in requirements.txt, Pipfile, or pyproject.toml | `auth0-flask` |
 | Node.js API | `"express-oauth2-jwt-bearer"` in package.json | `express-oauth2-jwt-bearer` |
 
 **Don't see your framework?** See Tier 2 Frameworks below.

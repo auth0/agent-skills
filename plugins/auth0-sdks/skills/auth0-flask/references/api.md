@@ -104,7 +104,7 @@ return redirect(authorization_url)
 **With options:**
 
 ```python
-from auth0_server_python.auth_server.server_client import StartInteractiveLoginOptions
+from auth0_server_python.auth_types import StartInteractiveLoginOptions
 
 authorization_url = await auth0.start_interactive_login(
     options=StartInteractiveLoginOptions(
@@ -172,7 +172,7 @@ return redirect(url)
 **With options:**
 
 ```python
-from auth0_server_python.auth_server.server_client import LogoutOptions
+from auth0_server_python.auth_types import LogoutOptions
 
 url = await auth0.logout(
     options=LogoutOptions(return_to="http://localhost:5000/goodbye")

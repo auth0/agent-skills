@@ -74,7 +74,7 @@ app.register_blueprint(admin)
 ### Get Access Token
 
 ```python
-import requests
+import httpx
 from flask import jsonify, redirect
 from auth import auth0
 
@@ -90,10 +90,11 @@ async def api_call():
     if access_token is None:
         return "No access token available", 401
 
-    response = requests.get(
-        "https://your-api.com/data",
-        headers={"Authorization": f"Bearer {access_token}"}
-    )
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            "https://your-api.com/data",
+            headers={"Authorization": f"Bearer {access_token}"}
+        )
 
     return jsonify(response.json())
 ```
@@ -125,7 +126,7 @@ auth0 = ServerClient(
 ### Custom Login with Connection
 
 ```python
-from auth0_server_python.auth_server.server_client import StartInteractiveLoginOptions
+from auth0_server_python.auth_types import StartInteractiveLoginOptions
 
 
 @app.route("/login-google")
@@ -141,7 +142,7 @@ async def login_google():
 ### Custom Logout with Return URL
 
 ```python
-from auth0_server_python.auth_server.server_client import LogoutOptions
+from auth0_server_python.auth_types import LogoutOptions
 
 
 @app.route("/logout")
