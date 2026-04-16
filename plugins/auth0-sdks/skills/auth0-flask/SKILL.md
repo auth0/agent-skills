@@ -70,7 +70,7 @@ from auth0_server_python.auth_types import StateData, TransactionData
 from auth0_server_python.store import StateStore, TransactionStore
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv()  # Uses .env by default; pass load_dotenv(".env.local") if credentials are in .env.local
 
 
 class FlaskSessionStateStore(StateStore):
