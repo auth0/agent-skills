@@ -1,6 +1,6 @@
 ---
 name: auth0-quickstart
-description: Use when adding authentication or login to any app - detects your stack (React, Next.js, Vue, Nuxt, Angular, Express, Fastify, React Native), sets up an Auth0 account if needed, and routes to the correct SDK setup workflow.
+description: Use when adding authentication or login to any app - detects your stack (React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, ASP.NET Core, React Native, Expo, Android, Swift), sets up an Auth0 account if needed, and routes to the correct SDK setup workflow.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -17,11 +17,11 @@ Detect your framework and get started with Auth0 authentication.
 **Run this command to identify your framework:**
 
 ```bash
-# Check package.json dependencies
-cat package.json | grep -E "react|next|vue|nuxt|angular|express|fastify|@nestjs"
+# Check package.json dependencies (Node.js projects)
+cat package.json | grep -E "react|next|vue|nuxt|angular|express|fastify|@nestjs|expo"
 
 # Or check project files
-ls -la | grep -E "angular.json|vue.config.js|next.config"
+ls -la | grep -E "angular.json|vue.config.js|next.config|app.json|Package.swift|build.gradle"
 ```
 
 **Framework Detection Table:**
@@ -37,6 +37,7 @@ ls -la | grep -E "angular.json|vue.config.js|next.config"
 | Fastify (web app) | `"fastify"` in package.json, has `@fastify/view` | `auth0-fastify` |
 | Fastify (API) | `"fastify"` in package.json, no view engine | `auth0-fastify-api` |
 | React Native | `"react-native"` or `"expo"` in package.json | `auth0-react-native` |
+| Node.js API | `"express-oauth2-jwt-bearer"` in package.json | `express-oauth2-jwt-bearer` |
 
 **Don't see your framework?** See Tier 2 Frameworks below.
 
@@ -124,6 +125,7 @@ Based on your framework detection, use the appropriate skill:
 - **`auth0-express`** - Express.js web applications
 - **`auth0-fastify`** - Fastify web applications
 - **`auth0-fastify-api`** - Fastify API authentication
+- **`express-oauth2-jwt-bearer`** - Node.js/Express API JWT Bearer validation
 
 **Mobile:**
 - **`auth0-react-native`** - React Native and Expo (iOS/Android)
@@ -219,7 +221,13 @@ Complete Auth0 CLI reference:
 - `auth0-express` - Express.js integration
 - `auth0-fastify` - Fastify web app integration
 - `auth0-fastify-api` - Fastify API integration
-- `auth0-react-native` - React Native/Expo integration
+- `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
+- `auth0-react-native` - React Native CLI (bare workflow) integration
+- `auth0-expo` - Expo (managed workflow) integration
+- `auth0-android` - Android (Kotlin/Java) integration
+- `auth0-swift` - iOS/macOS (Swift) integration
+- `auth0-fastapi-api` - FastAPI API authentication
+- `auth0-aspnetcore-api` - ASP.NET Core API authentication
 
 ### Advanced Features
 - `auth0-mfa` - Multi-Factor Authentication
