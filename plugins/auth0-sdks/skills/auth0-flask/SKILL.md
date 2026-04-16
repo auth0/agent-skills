@@ -148,7 +148,7 @@ In `app.py`, set up Flask with the secret key and session configuration:
 
 ```python
 import os
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, request
 from auth import auth0
 from dotenv import load_dotenv
 
@@ -167,7 +167,18 @@ app.config.update(
 
 **For production:** Set `SESSION_COOKIE_SECURE=True` when deploying with HTTPS. Leaving it as `False` in production allows session cookies to be sent over unencrypted connections.
 
-### 6. Add Login Route
+### 6. Add Home Route
+
+```python
+@app.route("/")
+async def home():
+    user = await auth0.get_user()
+    if user:
+        return f"Hello, {user['name']}! <a href='/profile'>Profile</a> | <a href='/logout'>Logout</a>"
+    return "Welcome! <a href='/login'>Login</a>"
+```
+
+### 7. Add Login Route
 
 ```python
 @app.route("/login")
@@ -178,7 +189,7 @@ async def login():
 
 `start_interactive_login()` returns a URL string pointing to Auth0's Universal Login page. You must wrap it in `redirect()`. Authorization params (scope, redirect_uri) are already configured on the `ServerClient`.
 
-### 7. Add Callback Route
+### 8. Add Callback Route
 
 ```python
 @app.route("/callback")
@@ -192,7 +203,7 @@ async def callback():
 
 Pass `str(request.url)` as the first argument — this is the full callback URL including the authorization code query parameters. Always wrap in try/except since the token exchange can fail (e.g. expired code, CSRF mismatch).
 
-### 8. Add Profile Route (Protected)
+### 9. Add Profile Route (Protected)
 
 ```python
 @app.route("/profile")
@@ -200,12 +211,17 @@ async def profile():
     user = await auth0.get_user()
     if user is None:
         return redirect("/login")
-    return render_template("profile.html", user=user)
+    return (
+        f"<h1>{user['name']}</h1>"
+        f"<p>Email: {user['email']}</p>"
+        f"<img src='{user['picture']}' alt='{user['name']}' width='100' />"
+        f"<p><a href='/logout'>Logout</a></p>"
+    )
 ```
 
 `get_user()` returns the user's profile from the session, or `None` if not logged in.
 
-### 9. Add Logout Route
+### 10. Add Logout Route
 
 ```python
 @app.route("/logout")
@@ -216,7 +232,7 @@ async def logout():
 
 `logout()` returns the Auth0 logout URL. Redirect the user to it.
 
-### 10. Test the App
+### 11. Test the App
 
 ```bash
 flask run
@@ -242,7 +258,7 @@ Update `app.py` to use Redis-backed sessions:
 
 ```python
 import os
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, redirect, request
 from flask_session import Session
 from auth import auth0
 from dotenv import load_dotenv

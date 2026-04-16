@@ -10,7 +10,7 @@ Server-side authentication patterns for Flask.
 
 ```python
 from functools import wraps
-from flask import redirect
+from flask import redirect, render_template
 from auth import auth0
 
 
