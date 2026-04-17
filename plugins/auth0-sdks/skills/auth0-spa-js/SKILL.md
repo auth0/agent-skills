@@ -41,9 +41,12 @@ Add authentication to any browser-based single-page application using `@auth0/au
 npm install @auth0/auth0-spa-js
 ```
 
-Or via CDN (no bundler):
+Or via CDN (no bundler). Run this to get the latest version, then use it in your HTML:
+```bash
+VERSION=$(npm view @auth0/auth0-spa-js version)
+```
 ```html
-<script src="https://cdn.auth0.com/js/auth0-spa-js/2.18/auth0-spa-js.production.js"></script>
+<script src="https://cdn.auth0.com/js/auth0-spa-js/$VERSION/auth0-spa-js.production.js"></script>
 ```
 
 ### 2. Configure Auth0
