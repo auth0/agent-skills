@@ -1,6 +1,9 @@
 ---
 name: acul-screen-generator
 description: Generates complete, branded Auth0 Advanced Custom Universal Login (ACUL) screen implementations using the React or Vanilla JS SDK. Use when a developer asks to create, add, or modify ACUL login screens with custom branding, social login, theming, or specific authentication flows. Triggers on requests like "generate a custom login screen", "add a signup screen to my ACUL project", "customize my Auth0 Universal Login with our brand colors", "apply our theme to all ACUL screens", or any task involving Auth0 Universal Login customization with @auth0/auth0-acul-react or @auth0/auth0-acul-js.
+license: Apache-2.0
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # ACUL Screen Generator

@@ -317,20 +317,20 @@ auth0/agent-skills/
 │   │       │       └── examples.md
 │   │       └── acul-screen-generator/
 │   │           ├── SKILL.md
-│   │           ├── README.md
-│   │           ├── evals/
-│   │           │   └── evals.json
 │   │           ├── assets/
 │   │           │   ├── react-templates/
 │   │           │   ├── js-templates/
 │   │           │   └── theme-templates/
-│   │           └── references/
-│   │               ├── screen-catalog.md
-│   │               ├── acul-react-sdk.md
-│   │               ├── acul-js-sdk.md
-│   │               ├── social-providers.md
-│   │               ├── theming-patterns.md
-│   │               └── cli-commands.md
+│   │           ├── references/
+│   │           │   ├── screen-catalog.md
+│   │           │   ├── acul-react-sdk.md
+│   │           │   ├── acul-js-sdk.md
+│   │           │   ├── social-providers.md
+│   │           │   ├── theming-patterns.md
+│   │           │   └── cli-commands.md
+│   │           └── tests/
+│   │               └── evals/
+│   │                   └── evals.json
 │   └── auth0-sdks/               # SDK Plugin
 │       ├── .claude-plugin/
 │       │   └── plugin.json       # Plugin configuration
