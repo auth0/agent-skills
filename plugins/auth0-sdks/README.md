@@ -28,6 +28,7 @@ npx skills add auth0/agent-skills/plugins/auth0-sdks
 
 | Skill | Description | Documentation |
 |-------|-------------|---------------|
+| [auth0-spa-js](skills/auth0-spa-js) | Integrates `@auth0/auth0-spa-js` into Vanilla JS, Svelte, SolidJS, and any framework-agnostic SPA. Covers client initialization, login/logout, token retrieval, refresh token rotation, and calling protected APIs without a framework-specific wrapper. | [SKILL.md](skills/auth0-spa-js/SKILL.md) |
 | [auth0-react](skills/auth0-react) | Integrates `@auth0/auth0-react` into React SPAs (Vite or Create React App). Covers provider setup, login/logout, protected routes, and API calls with access tokens using React hooks. | [SKILL.md](skills/auth0-react/SKILL.md) |
 | [auth0-vue](skills/auth0-vue) | Integrates `@auth0/auth0-vue` into Vue 3 SPAs (Vite or Vue CLI). Covers plugin installation, composables, navigation guards, and API calls with access tokens. | [SKILL.md](skills/auth0-vue/SKILL.md) |
 | [auth0-angular](skills/auth0-angular) | Integrates `@auth0/auth0-angular` into Angular 13+ applications. Covers module setup, route guards, HTTP interceptors for token attachment, and Angular service usage. | [SKILL.md](skills/auth0-angular/SKILL.md) |
