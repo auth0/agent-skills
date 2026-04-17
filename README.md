@@ -19,22 +19,25 @@ Learn more at [agentskills.io](https://agentskills.io) and [skills.sh](https://s
 Get Auth0 up running in your app in minutes:
 
 ### Prerequisites
+
 - An Auth0 account ([sign up free](https://auth0.com/signup))
 - An AI coding assistant (Claude Code, Cursor, or GitHub Copilot)
 
 ### Steps
 
 1. **Install the Auth0 skills** (choose one method):
-   *Option 1: Via Skills CLI (fastest)*
+   _Option 1: Via Skills CLI (fastest)_
+
    ```bash
    npx skills add auth0/agent-skills
    ```
 
-   *Option 2: Via Claude Code marketplace*
+   _Option 2: Via Claude Code marketplace_
+
    ```bash
    # Open Claude Code
    claude
-   
+
    # Add the Auth0 marketplace
    /plugin marketplace add auth0/agent-skills
 
@@ -49,7 +52,7 @@ Get Auth0 up running in your app in minutes:
     "Implement login with Auth0"
     "Add MFA to my application"
    ```
-  
+
 That's it! Your AI assistant will setup Auth0 on your app and you will have production-ready authentication powered by Auth0.
 
 ## Installation
@@ -81,6 +84,7 @@ Add the Auth0 agent skills marketplace to Claude Code:
 **Auth0 Core Skills Plugin**
 
 Essential skills for getting started and advanced security:
+
 - `auth0-quickstart` - Framework detection and routing
 - `auth0-migration` - Migrate from other auth providers
 - `auth0-mfa` - Multi-Factor Authentication
@@ -92,12 +96,14 @@ Essential skills for getting started and advanced security:
 **Auth0 SDK Skills Plugin**
 
 Framework-specific implementation guides:
+
 - `auth0-react` - React SPAs
 - `auth0-nextjs` - Next.js (App Router & Pages Router)
 - `auth0-nuxt` - Nuxt 3/4 applications
 - `auth0-vue` - Vue.js 3
 - `auth0-angular` - Angular 12+
 - `auth0-express` - Express.js
+- `auth0-flask` - Flask web applications
 - `auth0-fastify` - Fastify web applications
 - `auth0-fastify-api` - Fastify API authentication
 - `auth0-fastapi-api` - FastAPI API authentication
@@ -155,47 +161,49 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 
 ### Core Skills (auth0 plugin)
 
-| Skill | Description | Version |
-|-------|-------------|---------|
-| [auth0-quickstart](./plugins/auth0/skills/auth0-quickstart/SKILL.md) | Framework detector and router | v1.0.0 |
-| [auth0-migration](./plugins/auth0/skills/auth0-migration/SKILL.md) | Migrate from other auth providers | v1.0.0 |
-| [auth0-mfa](./plugins/auth0/skills/auth0-mfa/SKILL.md) | Multi-Factor Authentication | v1.0.0 |
+| Skill                                                                | Description                       | Version |
+| -------------------------------------------------------------------- | --------------------------------- | ------- |
+| [auth0-quickstart](./plugins/auth0/skills/auth0-quickstart/SKILL.md) | Framework detector and router     | v1.0.0  |
+| [auth0-migration](./plugins/auth0/skills/auth0-migration/SKILL.md)   | Migrate from other auth providers | v1.0.0  |
+| [auth0-mfa](./plugins/auth0/skills/auth0-mfa/SKILL.md)               | Multi-Factor Authentication       | v1.0.0  |
 
 ### Frontend Framework Skills (auth0-sdks plugin)
 
-| Skill | Description | Version |
-|-------|-------------|---------|
-| [auth0-react](./plugins/auth0-sdks/skills/auth0-react/SKILL.md) | React SPAs (Vite, CRA) | v1.0.0 |
-| [auth0-vue](./plugins/auth0-sdks/skills/auth0-vue/SKILL.md) | Vue.js 3 applications | v1.0.0 |
-| [auth0-angular](./plugins/auth0-sdks/skills/auth0-angular/SKILL.md) | Angular 12+ applications | v1.0.0 |
+| Skill                                                               | Description              | Version |
+| ------------------------------------------------------------------- | ------------------------ | ------- |
+| [auth0-react](./plugins/auth0-sdks/skills/auth0-react/SKILL.md)     | React SPAs (Vite, CRA)   | v1.0.0  |
+| [auth0-vue](./plugins/auth0-sdks/skills/auth0-vue/SKILL.md)         | Vue.js 3 applications    | v1.0.0  |
+| [auth0-angular](./plugins/auth0-sdks/skills/auth0-angular/SKILL.md) | Angular 12+ applications | v1.0.0  |
 
 ### Backend Framework Skills (auth0-sdks plugin)
 
-| Skill | Description | Version |
-|-------|-------------|---------|
-| [auth0-nextjs](./plugins/auth0-sdks/skills/auth0-nextjs/SKILL.md) | Next.js App Router & Pages Router | v1.0.0 |
-| [auth0-nuxt](./plugins/auth0-sdks/skills/auth0-nuxt/SKILL.md) | Nuxt 3/4 applications | v1.0.0 |
-| [auth0-express](./plugins/auth0-sdks/skills/auth0-express/SKILL.md) | Express.js web applications | v1.0.0 |
-| [auth0-fastify](./plugins/auth0-sdks/skills/auth0-fastify/SKILL.md) | Fastify web applications | v1.0.0 |
-| [auth0-fastify-api](./plugins/auth0-sdks/skills/auth0-fastify-api/SKILL.md) | Fastify API authentication | v1.0.0 |
-| [auth0-fastapi-api](./plugins/auth0-sdks/skills/auth0-fastapi-api/SKILL.md) | FastAPI API authentication | v1.0.0 |
-| [auth0-aspnetcore-api](./plugins/auth0-sdks/skills/auth0-aspnetcore-api/SKILL.md) | ASP.NET Core API authentication | v1.0.0 |
-| [express-oauth2-jwt-bearer](./plugins/auth0-sdks/skills/express-oauth2-jwt-bearer/SKILL.md) | Express API JWT Bearer validation | v1.0.0 |
+| Skill                                                                                       | Description                       | Version |
+| ------------------------------------------------------------------------------------------- | --------------------------------- | ------- |
+| [auth0-nextjs](./plugins/auth0-sdks/skills/auth0-nextjs/SKILL.md)                           | Next.js App Router & Pages Router | v1.0.0  |
+| [auth0-nuxt](./plugins/auth0-sdks/skills/auth0-nuxt/SKILL.md)                               | Nuxt 3/4 applications             | v1.0.0  |
+| [auth0-express](./plugins/auth0-sdks/skills/auth0-express/SKILL.md)                         | Express.js web applications       | v1.0.0  |
+| [auth0-flask](./plugins/auth0-sdks/skills/auth0-flask/SKILL.md)                             | Flask web applications            | v1.0.0  |
+| [auth0-fastify](./plugins/auth0-sdks/skills/auth0-fastify/SKILL.md)                         | Fastify web applications          | v1.0.0  |
+| [auth0-fastify-api](./plugins/auth0-sdks/skills/auth0-fastify-api/SKILL.md)                 | Fastify API authentication        | v1.0.0  |
+| [auth0-fastapi-api](./plugins/auth0-sdks/skills/auth0-fastapi-api/SKILL.md)                 | FastAPI API authentication        | v1.0.0  |
+| [auth0-aspnetcore-api](./plugins/auth0-sdks/skills/auth0-aspnetcore-api/SKILL.md)           | ASP.NET Core API authentication   | v1.0.0  |
+| [express-oauth2-jwt-bearer](./plugins/auth0-sdks/skills/express-oauth2-jwt-bearer/SKILL.md) | Express API JWT Bearer validation | v1.0.0  |
 
 ### Mobile Skills (auth0-sdks plugin)
 
-| Skill | Description | Version |
-|-------|-------------|---------|
-| [auth0-react-native](./plugins/auth0-sdks/skills/auth0-react-native/SKILL.md) | React Native CLI (bare workflow) | v1.0.0 |
-| [auth0-expo](./plugins/auth0-sdks/skills/auth0-expo/SKILL.md) | Expo (managed workflow) | v1.0.0 |
-| [auth0-android](./plugins/auth0-sdks/skills/auth0-android/SKILL.md) | Android | v1.0.0 |
-| [auth0-swift](./plugins/auth0-sdks/skills/auth0-swift/SKILL.md) | Native iOS/macOS (Swift) | v1.0.0 |
+| Skill                                                                         | Description                      | Version |
+| ----------------------------------------------------------------------------- | -------------------------------- | ------- |
+| [auth0-react-native](./plugins/auth0-sdks/skills/auth0-react-native/SKILL.md) | React Native CLI (bare workflow) | v1.0.0  |
+| [auth0-expo](./plugins/auth0-sdks/skills/auth0-expo/SKILL.md)                 | Expo (managed workflow)          | v1.0.0  |
+| [auth0-android](./plugins/auth0-sdks/skills/auth0-android/SKILL.md)           | Android                          | v1.0.0  |
+| [auth0-swift](./plugins/auth0-sdks/skills/auth0-swift/SKILL.md)               | Native iOS/macOS (Swift)         | v1.0.0  |
 
 ---
 
 ### auth0-quickstart
 
 The quickstart skill is now a **lightweight router** that:
+
 - Detects your framework automatically
 - Guides you to the right framework-specific skill
 - Sets up Auth0 CLI and creates applications
@@ -204,6 +212,7 @@ The quickstart skill is now a **lightweight router** that:
 ### Framework-Specific Skills
 
 Each framework has its own dedicated skill with:
+
 - Framework-specific installation and setup
 - Idiomatic code patterns and best practices
 - Protected routes and authentication flows
@@ -214,6 +223,7 @@ Each framework has its own dedicated skill with:
 ### auth0-migration
 
 The migration skill covers:
+
 - User export from existing providers (Firebase, Cognito, etc.)
 - Bulk import to Auth0
 - Code migration patterns (before/after examples)
@@ -223,6 +233,7 @@ The migration skill covers:
 ### auth0-mfa
 
 The MFA skill covers:
+
 - Step-up authentication with `acr_values`
 - `amr` claim validation
 - Adaptive/risk-based MFA
@@ -231,27 +242,26 @@ The MFA skill covers:
 
 ### Supported Frameworks
 
-| Frontend SPAs | Backend/Web Apps | Mobile | APIs |
-|---------------|------------------|--------|------|
-| React | Next.js | React Native | Express.js |
-| Vue.js | SvelteKit | Expo | Fastify |
-| Angular | Nuxt.js | Android (Kotlin) | Flask |
-| | Remix | iOS (Swift) | FastAPI |
-| | Fastify | | Django REST |
-| | Ruby on Rails | | Go |
-| | PHP/Laravel | | Spring Boot |
-| | | | ASP.NET Core |
+| Frontend SPAs | Backend/Web Apps | Mobile           | APIs         |
+| ------------- | ---------------- | ---------------- | ------------ |
+| React         | Next.js          | React Native     | Express.js   |
+| Vue.js        | SvelteKit        | Expo             | Fastify      |
+| Angular       | Nuxt.js          | Android (Kotlin) | FastAPI      |
+|               | Remix            | iOS (Swift)      | Django REST  |
+|               | Fastify          |                  | Go           |
+|               | Flask            |                  | Spring Boot  |
+|               | Ruby on Rails    |                  | ASP.NET Core |
+|               | PHP/Laravel      |                  |              |
 
 ### Coming Soon
 
-| Skill | Description |
-|-------|-------------|
-| auth0-passkeys | Passkeys and WebAuthn implementation |
-| auth0-organizations | Multi-tenancy and B2B organizations |
-| auth0-dpop | DPoP token binding |
-| auth0-token-exchange | Custom Token Exchange (RFC 8693) |
-| auth0-enterprise | PAR, CIBA, RAR, and enterprise features |
-
+| Skill                | Description                             |
+| -------------------- | --------------------------------------- |
+| auth0-passkeys       | Passkeys and WebAuthn implementation    |
+| auth0-organizations  | Multi-tenancy and B2B organizations     |
+| auth0-dpop           | DPoP token binding                      |
+| auth0-token-exchange | Custom Token Exchange (RFC 8693)        |
+| auth0-enterprise     | PAR, CIBA, RAR, and enterprise features |
 
 ## Migration Support
 
@@ -264,23 +274,24 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 
 ## SDK Coverage
 
-| Platform | SDK | Skill |
-|----------|-----|-------|
-| React | [@auth0/auth0-react](https://github.com/auth0/auth0-react) | auth0-react, auth0-mfa |
-| Vue.js | [@auth0/auth0-vue](https://github.com/auth0/auth0-vue) | auth0-vue, auth0-mfa |
-| Angular | [@auth0/auth0-angular](https://github.com/auth0/auth0-angular) | auth0-angular, auth0-mfa |
-| Next.js | [@auth0/nextjs-auth0](https://github.com/auth0/nextjs-auth0) | auth0-nextjs, auth0-mfa |
-| Nuxt.js | [@auth0/auth0-nuxt](https://github.com/auth0/auth0-nuxt) | auth0-nuxt |
-| Express | [express-openid-connect](https://github.com/auth0/express-openid-connect) | auth0-express, auth0-mfa |
-| Fastify | [@auth0/auth0-fastify](https://github.com/auth0/auth0-fastify) | auth0-fastify, auth0-mfa |
-| Fastify API | [@auth0/auth0-fastify-api](https://github.com/auth0/auth0-fastify) | auth0-fastify-api |
-| FastAPI | [auth0-fastapi-api](https://github.com/auth0/auth0-fastapi-api) | auth0-fastapi-api |
-| React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-react-native |
-| Expo | [react-native-auth0](https://github.com/auth0/react-native-auth0) | auth0-expo |
-| Android | [Auth0.Android](https://github.com/auth0/Auth0.Android) | auth0-android |
-| iOS/macOS | [Auth0.swift](https://github.com/auth0/Auth0.swift) | auth0-swift |
-| ASP.NET Core | [Auth0.AspNetCore.Authentication.Api](https://github.com/auth0/auth0-aspnetcore-authentication) | auth0-aspnetcore-api |
-| Express API | [express-oauth2-jwt-bearer](https://github.com/auth0/node-oauth2-jwt-bearer) | express-oauth2-jwt-bearer |
+| Platform     | SDK                                                                                             | Skill                     |
+| ------------ | ----------------------------------------------------------------------------------------------- | ------------------------- |
+| React        | [@auth0/auth0-react](https://github.com/auth0/auth0-react)                                      | auth0-react, auth0-mfa    |
+| Vue.js       | [@auth0/auth0-vue](https://github.com/auth0/auth0-vue)                                          | auth0-vue, auth0-mfa      |
+| Angular      | [@auth0/auth0-angular](https://github.com/auth0/auth0-angular)                                  | auth0-angular, auth0-mfa  |
+| Next.js      | [@auth0/nextjs-auth0](https://github.com/auth0/nextjs-auth0)                                    | auth0-nextjs, auth0-mfa   |
+| Nuxt.js      | [@auth0/auth0-nuxt](https://github.com/auth0/auth0-nuxt)                                        | auth0-nuxt                |
+| Express      | [express-openid-connect](https://github.com/auth0/express-openid-connect)                       | auth0-express, auth0-mfa  |
+| Flask        | [auth0-server-python](https://github.com/auth0/auth0-server-python)                             | auth0-flask               |
+| Fastify      | [@auth0/auth0-fastify](https://github.com/auth0/auth0-fastify)                                  | auth0-fastify, auth0-mfa  |
+| Fastify API  | [@auth0/auth0-fastify-api](https://github.com/auth0/auth0-fastify)                              | auth0-fastify-api         |
+| FastAPI      | [auth0-fastapi-api](https://github.com/auth0/auth0-fastapi-api)                                 | auth0-fastapi-api         |
+| React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0)                               | auth0-react-native        |
+| Expo         | [react-native-auth0](https://github.com/auth0/react-native-auth0)                               | auth0-expo                |
+| Android      | [Auth0.Android](https://github.com/auth0/Auth0.Android)                                         | auth0-android             |
+| iOS/macOS    | [Auth0.swift](https://github.com/auth0/Auth0.swift)                                             | auth0-swift               |
+| ASP.NET Core | [Auth0.AspNetCore.Authentication.Api](https://github.com/auth0/auth0-aspnetcore-authentication) | auth0-aspnetcore-api      |
+| Express API  | [express-oauth2-jwt-bearer](https://github.com/auth0/node-oauth2-jwt-bearer)                    | express-oauth2-jwt-bearer |
 
 ## Project Structure
 
@@ -348,6 +359,12 @@ auth0/agent-skills/
 │           ├── auth0-express/
 │           │   ├── SKILL.md
 │           │   └── reference/
+│           │       ├── api.md
+│           │       ├── integration.md
+│           │       └── setup.md
+│           ├── auth0-flask/
+│           │   ├── SKILL.md
+│           │   └── references/
 │           │       ├── api.md
 │           │       ├── integration.md
 │           │       └── setup.md

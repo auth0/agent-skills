@@ -37,6 +37,7 @@ ls -la | grep -E "angular.json|vue.config.js|next.config|app.json|Package.swift|
 | Fastify (web app) | `"fastify"` in package.json, has `@fastify/view` | `auth0-fastify` |
 | Fastify (API) | `"fastify"` in package.json, no view engine | `auth0-fastify-api` |
 | React Native | `"react-native"` or `"expo"` in package.json | `auth0-react-native` |
+| Flask | `"flask"` in requirements.txt, Pipfile, or pyproject.toml | `auth0-flask` |
 | Node.js API | `"express-oauth2-jwt-bearer"` in package.json | `express-oauth2-jwt-bearer` |
 
 **Don't see your framework?** See Tier 2 Frameworks below.
@@ -123,6 +124,7 @@ Based on your framework detection, use the appropriate skill:
 
 **Backend:**
 - **`auth0-express`** - Express.js web applications
+- **`auth0-flask`** - Flask web applications
 - **`auth0-fastify`** - Fastify web applications
 - **`auth0-fastify-api`** - Fastify API authentication
 - **`express-oauth2-jwt-bearer`** - Node.js/Express API JWT Bearer validation
@@ -139,7 +141,6 @@ Not yet available as separate skills. Use Auth0 documentation:
 - [Remix](https://auth0.com/docs/quickstart/webapp/remix)
 
 **Backend:**
-- [Flask (Python)](https://auth0.com/docs/quickstart/webapp/python)
 - [FastAPI (Python)](https://auth0.com/docs/quickstart/backend/python)
 - [Django (Python)](https://auth0.com/docs/quickstart/webapp/django)
 - [Rails (Ruby)](https://auth0.com/docs/quickstart/webapp/rails)
@@ -219,6 +220,7 @@ Complete Auth0 CLI reference:
 - `auth0-nuxt` - Nuxt 3/4 integration
 - `auth0-angular` - Angular integration
 - `auth0-express` - Express.js integration
+- `auth0-flask` - Flask web app integration
 - `auth0-fastify` - Fastify web app integration
 - `auth0-fastify-api` - Fastify API integration
 - `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
