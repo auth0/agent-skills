@@ -217,6 +217,193 @@ export function App() {
 
 ---
 
+## MFA Handling
+
+The `@auth0/auth0-react` SDK provides a built-in MFA API for handling Multi-Factor Authentication entirely within your app — no redirects to Universal Login required. Access it via the `mfa` property from `useAuth0()`.
+
+> **Note:** MFA support via SDKs is currently in Early Access. For a simpler approach that uses Universal Login to handle MFA automatically (no custom UI), see the [Step-Up via Popup](#step-up-via-popup-simpler-approach) section below.
+
+### Catching MfaRequiredError
+
+When `getAccessTokenSilently()` encounters an MFA requirement, it throws `MfaRequiredError`. Catch it and inspect `mfa_requirements` to determine the flow:
+
+```tsx
+import { useAuth0, MfaRequiredError } from '@auth0/auth0-react';
+import { useState } from 'react';
+
+export function ProtectedApiCall() {
+  const { getAccessTokenSilently, mfa } = useAuth0();
+  const [mfaToken, setMfaToken] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const callApi = async () => {
+    try {
+      const token = await getAccessTokenSilently();
+      // Use token to call API...
+    } catch (err) {
+      if (err instanceof MfaRequiredError) {
+        setMfaToken(err.mfa_token);
+
+        // Check if enrollment or challenge is needed
+        const factors = await mfa.getEnrollmentFactors(err.mfa_token);
+        if (factors.length > 0) {
+          // User needs to enroll — show enrollment UI
+        } else {
+          // User has authenticators — show challenge UI
+          const authenticators = await mfa.getAuthenticators(err.mfa_token);
+          // Let user pick authenticator and proceed with challenge
+        }
+      } else {
+        setError(err.message);
+      }
+    }
+  };
+
+  return <button onClick={callApi}>Call Protected API</button>;
+}
+```
+
+### OTP Enrollment
+
+When the user needs to set up MFA for the first time:
+
+```tsx
+import { useAuth0, MfaEnrollmentError } from '@auth0/auth0-react';
+import { useState } from 'react';
+
+export function OtpEnrollment({ mfaToken }: { mfaToken: string }) {
+  const { mfa } = useAuth0();
+  const [barcodeUri, setBarcodeUri] = useState<string | null>(null);
+  const [recoveryCodes, setRecoveryCodes] = useState<string[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const startEnrollment = async () => {
+    try {
+      const enrollment = await mfa.enroll({ mfaToken, factorType: 'otp' });
+      setBarcodeUri(enrollment.barcodeUri);
+      setRecoveryCodes(enrollment.recoveryCodes);
+    } catch (err) {
+      if (err instanceof MfaEnrollmentError) {
+        setError(err.error_description);
+      }
+    }
+  };
+
+  return (
+    <div>
+      <button onClick={startEnrollment}>Set up authenticator app</button>
+      {barcodeUri && (
+        <div>
+          <p>Scan this QR code with your authenticator app:</p>
+          {/* Render barcodeUri as QR code using a library like qrcode.react */}
+          <code>{barcodeUri}</code>
+        </div>
+      )}
+      {recoveryCodes && (
+        <div>
+          <p>Save these recovery codes:</p>
+          <ul>
+            {recoveryCodes.map((code, i) => <li key={i}>{code}</li>)}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+### Challenge and Verify
+
+When the user already has enrolled authenticators:
+
+```tsx
+import {
+  useAuth0,
+  MfaChallengeError,
+  MfaVerifyError,
+} from '@auth0/auth0-react';
+import { useState } from 'react';
+
+export function MfaChallenge({ mfaToken }: { mfaToken: string }) {
+  const { mfa } = useAuth0();
+  const [otp, setOtp] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleVerify = async () => {
+    try {
+      // For OTP authenticators, you can skip challenge() and go straight to verify()
+      const tokens = await mfa.verify({ mfaToken, otp });
+      // User is now authenticated — tokens are cached by the SDK
+      console.log('MFA complete, access token:', tokens.access_token);
+    } catch (err) {
+      if (err instanceof MfaVerifyError) {
+        setError('Invalid code. Please try again.');
+      } else if (err instanceof MfaChallengeError) {
+        setError('Challenge failed: ' + err.error_description);
+      }
+    }
+  };
+
+  return (
+    <div>
+      <h3>Enter your verification code</h3>
+      <input
+        type="text"
+        value={otp}
+        onChange={(e) => setOtp(e.target.value)}
+        placeholder="6-digit code"
+        maxLength={6}
+      />
+      <button onClick={handleVerify}>Verify</button>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+    </div>
+  );
+}
+```
+
+### SMS/Email Challenge (Out-of-Band)
+
+For SMS, Email, Voice, or Push authenticators, you must call `challenge()` first to send the code:
+
+```tsx
+// Initiate challenge to send code via SMS/Email
+const response = await mfa.challenge({
+  mfaToken,
+  challengeType: 'oob',
+  authenticatorId: authenticator.id,
+});
+
+// Verify with the OOB code and the binding code the user received
+const tokens = await mfa.verify({
+  mfaToken,
+  oobCode: response.oobCode,
+  bindingCode: userEnteredCode,
+});
+```
+
+### Step-Up via Popup (Simpler Approach)
+
+If you don't need a custom MFA UI, configure `interactiveErrorHandler` to let the SDK handle MFA automatically via a Universal Login popup:
+
+```tsx
+<Auth0Provider
+  domain={import.meta.env.VITE_AUTH0_DOMAIN}
+  clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+  authorizationParams={{
+    redirect_uri: window.location.origin,
+    audience: 'https://your-api-identifier',
+  }}
+  useRefreshTokens={true}
+  interactiveErrorHandler="popup"
+>
+  <App />
+</Auth0Provider>
+```
+
+With this setup, `getAccessTokenSilently()` automatically opens a popup when MFA is required. No error handling needed — the token is returned after the user completes MFA in the popup.
+
+---
+
 ## Security Considerations
 
 ### Client-Side Security

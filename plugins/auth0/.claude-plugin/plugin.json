@@ -1,5 +1,9 @@
 {
   "name": "auth0",
   "version": "1.0.0",
-  "description": "Essential Auth0 skills including quickstarts, migration from other providers, Multi-Factor Authentication (MFA), and Advanced Custom Universal Login (ACUL) screen generation."
+  "description": "Essential Auth0 skills including quickstarts, migration from other providers, Multi-Factor Authentication (MFA), and Advanced Custom Universal Login (ACUL) screen generation.",
+  "author": {
+    "name": "Auth0",
+    "email": "support@auth0.com"
+  }
 }

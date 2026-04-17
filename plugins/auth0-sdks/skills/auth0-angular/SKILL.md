@@ -1,6 +1,9 @@
 ---
 name: auth0-angular
 description: Use when adding authentication to Angular applications with route guards and HTTP interceptors - integrates @auth0/auth0-angular SDK for SPAs
+license: Apache-2.0
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Auth0 Angular Integration

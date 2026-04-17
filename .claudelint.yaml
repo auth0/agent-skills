@@ -1,0 +1,109 @@
+# claudelint configuration
+# See https://github.com/stbenjam/claudelint for more information
+
+# Enable/disable rules with configurable severity levels
+rules:
+  # Plugin Structure
+  plugin-json-required:
+    enabled: true
+    severity: error
+
+  plugin-json-valid:
+    enabled: true
+    severity: error
+
+  plugin-naming:
+    enabled: true
+    severity: warning
+
+  # Disabled for skills-only marketplace
+  commands-dir-required:
+    enabled: false
+    severity: warning
+
+  # Require at least one command file; start as info locally
+  commands-exist:
+    enabled: true
+    severity: info
+
+  plugin-readme:
+    enabled: true
+    severity: warning
+
+  # Command Format
+  command-naming:
+    enabled: true
+    severity: warning
+
+  command-frontmatter:
+    enabled: true
+    severity: error
+
+  # Checks for Name, Synopsis, Description, Implementation sections
+  command-sections:
+    enabled: true
+    severity: warning
+
+  # Enforce "plugin:command" format
+  command-name-format:
+    enabled: true
+    severity: warning
+
+  # Marketplace (auto on marketplace repos)
+  marketplace-json-valid:
+    enabled: auto
+    severity: error
+
+  marketplace-registration:
+    enabled: auto
+    severity: error
+
+  # Skills
+  skill-frontmatter:
+    enabled: true
+    severity: warning
+
+  # Custom: Enforce Agent Skills specification directory structure
+  skill-directory-structure:
+    enabled: true
+    severity: error
+
+  # Custom: Enforce that all skills are documented in plugin README.md
+  skill-readme-documentation:
+    enabled: true
+    severity: error
+
+  # Custom: Enforce kebab-case naming for markdown files in skills/
+  skill-markdown-naming:
+    enabled: true
+    severity: error
+
+  # Custom: Enforce license and metadata.author in SKILL.md frontmatter
+  skill-required-metadata:
+    enabled: true
+    severity: error
+
+# Custom rules for marketplace-specific validation
+custom-rules:
+  - ./.claudelint/rules.py
+
+# Exclusions
+exclude:
+- "**/node_modules/**"
+- "**/.git/**"
+- "**/dist/**"
+- "**/build/**"
+- "**/.venv/**"
+- "**/__pycache__/**"
+- "**/*.min.*"
+- "**/*.lock"
+- "**/.DS_Store"
+- "**/.idea/**"
+- "**/.vscode/**"
+- "**/coverage/**"
+- "**/tmp/**"
+- "**/tests/fixtures/**"    # allow test data to be messy
+- "**/examples/**"          # sample code often incomplete
+
+# Strict mode
+strict: true

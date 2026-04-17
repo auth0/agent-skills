@@ -1,5 +1,8 @@
 {
   "name": "auth0-agent-skills",
+  "metadata": {
+    "description": "Agent skills for integrating Auth0 authentication into any application, framework, or platform."
+  },
   "owner": {
     "name": "Auth0",
     "email": "support@auth0.com"
@@ -7,7 +10,11 @@
   "plugins": [
     {
       "name": "auth0",
-      "source": "./plugins/auth0",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/auth0/agent-skills.git",
+        "path": "plugins/auth0"
+      },
       "description": "Essential Auth0 skills including quickstarts, migration from other providers, Multi-Factor Authentication (MFA), and Advanced Custom Universal Login (ACUL) screen generation.",
       "version": "1.0.0",
       "repository": "https://github.com/auth0/agent-skills.git",
@@ -21,8 +28,12 @@
     },
     {
       "name": "auth0-sdks",
-      "source": "./plugins/auth0-sdks",
-      "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, and React Native with complete implementation guides.",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/auth0/agent-skills.git",
+        "path": "plugins/auth0-sdks"
+      },
+      "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, Swift, Android, ASP.NET Core, React Native, and Expo with complete implementation guides.",
       "version": "1.0.0",
       "repository": "https://github.com/auth0/agent-skills.git",
       "license": "Apache-2.0",
@@ -40,8 +51,17 @@
         "angular",
         "express",
         "fastify",
+        "swift",
         "fastify-api",
-        "react-native"
+        "android",
+        "aspnetcore",
+        "dotnet",
+        "react-native",
+        "expo",
+        "node",
+        "jwt",
+        "express-oauth2-jwt-bearer",
+        "express-jwt"
       ],
       "category": "sdk"
     }
