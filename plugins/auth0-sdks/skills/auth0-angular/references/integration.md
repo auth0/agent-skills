@@ -61,6 +61,7 @@ Configure HTTP interceptor in app config:
 // app.config.ts
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authHttpInterceptorFn } from '@auth0/auth0-angular';
+import { environment } from '../environments/environment'; // Adjust path as needed
 
 export const appConfig: ApplicationConfig = {
   providers: [
