@@ -1,6 +1,9 @@
 ---
 name: auth0-api-python
 description: Use when adding Auth0 token validation to Python APIs - integrates auth0-api-python SDK to protect Flask, FastAPI, and other Python framework endpoints with JWT Bearer and DPoP token validation.
+license: Apache-2.0
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Auth0 API Python Integration

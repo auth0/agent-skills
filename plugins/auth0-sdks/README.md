@@ -39,4 +39,5 @@ npx skills add auth0/agent-skills/plugins/auth0-sdks
 | [auth0-react-native](skills/auth0-react-native) | Integrates `react-native-auth0` into React Native and Expo applications (iOS and Android). Covers deep linking setup, login/logout flows, biometric authentication, and secure token storage. | [SKILL.md](skills/auth0-react-native/SKILL.md) |
 | [auth0-android](./skills/auth0-android/) | Integrates `com.auth0.android:auth0` into native Android applications (Kotlin/Java). Covers Web Auth login/logout, biometric-protected credential storage, and MFA. | [SKILL.md](skills/auth0-android/SKILL.md) |
 | [auth0-aspnetcore-api](skills/auth0-aspnetcore-api) | Secures ASP.NET Core Web API endpoints with JWT Bearer token validation using `Auth0.AspNetCore.Authentication.Api`. Covers scope/permission checks, DPoP proof-of-possession token binding, and stateless auth for REST APIs. | [SKILL.md](skills/auth0-aspnetcore-api/SKILL.md) |
+| [auth0-api-python](./skills/auth0-api-python/) | Integrates `auth0-api-python` SDK to protect Flask, FastAPI, and other Python framework endpoints with JWT Bearer and DPoP token validation. | [SKILL.md](skills/auth0-api-python/SKILL.md) |
 
