@@ -41,9 +41,8 @@ Get Auth0 up running in your app in minutes:
    # Add the Auth0 marketplace
    /plugin marketplace add auth0/agent-skills
 
-   # Install plugins
+   # Install the plugin
    /plugin install auth0@auth0-agent-skills
-   /plugin install auth0-sdks@auth0-agent-skills
    ```
 
 2. **Ask your AI assistant to add Auth0**:
@@ -58,8 +57,6 @@ That's it! Your AI assistant will setup Auth0 on your app and you will have prod
 ## Installation
 
 ### Option 1: Claude Code Marketplace (Recommended for Enterprise)
-
-We offer **two separate plugins** for flexible installation:
 
 #### Step 1: Open Claude Code
 
@@ -79,24 +76,13 @@ Add the Auth0 agent skills marketplace to Claude Code:
 /plugin marketplace add /path/to/agent-skills
 ```
 
-#### Step 3: Install Plugins
+#### Step 3: Install the Plugin
 
-**Auth0 Core Skills Plugin**
-
-Essential skills for getting started and advanced security:
+All Auth0 skills are included in a single plugin:
 
 - `auth0-quickstart` - Framework detection and routing
 - `auth0-migration` - Migrate from other auth providers
 - `auth0-mfa` - Multi-Factor Authentication
-
-```bash
-/plugin install auth0@auth0-agent-skills
-```
-
-**Auth0 SDK Skills Plugin**
-
-Framework-specific implementation guides:
-
 - `auth0-react` - React SPAs
 - `auth0-nextjs` - Next.js (App Router & Pages Router)
 - `auth0-nuxt` - Nuxt 3/4 applications
@@ -109,19 +95,14 @@ Framework-specific implementation guides:
 - `auth0-fastapi-api` - FastAPI API authentication
 - `auth0-aspnetcore-api` - ASP.NET Core API authentication
 - `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
+- `auth0-spa-js` - Vanilla JS SPAs (auth0-spa-js)
 - `auth0-react-native` - React Native CLI (bare workflow)
 - `auth0-expo` - Expo (managed workflow)
 - `auth0-android` - Android
 - `auth0-swift` - Native iOS/macOS applications (Swift)
 
 ```bash
-/plugin install auth0-sdks@auth0-agent-skills
-```
-
-**Recommendation**: Install both plugins for complete Auth0 integration coverage:
-
-```bash
-/plugin install auth0@auth0-agent-skills auth0-sdks@auth0-agent-skills
+/plugin install auth0@auth0-agent-skills
 ```
 
 ### Option 2: CLI Installation (Recommended for Developers)
@@ -129,16 +110,12 @@ Framework-specific implementation guides:
 Install all skills using the [Skills CLI](https://skills.sh):
 
 ```bash
-# Install all skills from both plugins
+# Install all skills
 npx skills add auth0/agent-skills
-
-# Install skills from a specific plugin
-npx skills add auth0/agent-skills/plugins/auth0
-npx skills add auth0/agent-skills/plugins/auth0-sdks
 
 # Install individual skills
 npx skills add auth0/agent-skills/plugins/auth0/skills/auth0-quickstart
-npx skills add auth0/agent-skills/plugins/auth0-sdks/skills/auth0-react
+npx skills add auth0/agent-skills/plugins/auth0/skills/auth0-react
 ```
 
 ### Option 3: Manual Installation
@@ -149,17 +126,16 @@ Clone the repository and copy skills to your Claude configuration:
 # Clone the repository
 git clone https://github.com/auth0/agent-skills.git
 
-# Copy all skills from both plugins
+# Copy all skills
 cp -r agent-skills/plugins/auth0/skills/* ~/.claude/skills/
-cp -r agent-skills/plugins/auth0-sdks/skills/* ~/.claude/skills/
 
 # Or copy to your project's Claude skills directory
-cp -r agent-skills/plugins/*/skills/* .claude/skills/
+cp -r agent-skills/plugins/auth0/skills/* .claude/skills/
 ```
 
 ## Available Skills
 
-### Core Skills (auth0 plugin)
+### Core Skills
 
 | Skill                                                                | Description                       | Version |
 | -------------------------------------------------------------------- | --------------------------------- | ------- |
@@ -167,36 +143,37 @@ cp -r agent-skills/plugins/*/skills/* .claude/skills/
 | [auth0-migration](./plugins/auth0/skills/auth0-migration/SKILL.md)   | Migrate from other auth providers | v1.0.0  |
 | [auth0-mfa](./plugins/auth0/skills/auth0-mfa/SKILL.md)               | Multi-Factor Authentication       | v1.0.0  |
 
-### Frontend Framework Skills (auth0-sdks plugin)
+### Frontend Framework Skills
 
-| Skill                                                               | Description              | Version |
-| ------------------------------------------------------------------- | ------------------------ | ------- |
-| [auth0-react](./plugins/auth0-sdks/skills/auth0-react/SKILL.md)     | React SPAs (Vite, CRA)   | v1.0.0  |
-| [auth0-vue](./plugins/auth0-sdks/skills/auth0-vue/SKILL.md)         | Vue.js 3 applications    | v1.0.0  |
-| [auth0-angular](./plugins/auth0-sdks/skills/auth0-angular/SKILL.md) | Angular 12+ applications | v1.0.0  |
+| Skill                                                                   | Description                    | Version |
+| ----------------------------------------------------------------------- | ------------------------------ | ------- |
+| [auth0-react](./plugins/auth0/skills/auth0-react/SKILL.md)              | React SPAs (Vite, CRA)         | v1.0.0  |
+| [auth0-vue](./plugins/auth0/skills/auth0-vue/SKILL.md)                  | Vue.js 3 applications          | v1.0.0  |
+| [auth0-angular](./plugins/auth0/skills/auth0-angular/SKILL.md)          | Angular 12+ applications       | v1.0.0  |
+| [auth0-spa-js](./plugins/auth0/skills/auth0-spa-js/SKILL.md)            | Vanilla JS SPAs (auth0-spa-js) | v1.0.0  |
 
-### Backend Framework Skills (auth0-sdks plugin)
+### Backend Framework Skills
 
-| Skill                                                                                       | Description                       | Version |
-| ------------------------------------------------------------------------------------------- | --------------------------------- | ------- |
-| [auth0-nextjs](./plugins/auth0-sdks/skills/auth0-nextjs/SKILL.md)                           | Next.js App Router & Pages Router | v1.0.0  |
-| [auth0-nuxt](./plugins/auth0-sdks/skills/auth0-nuxt/SKILL.md)                               | Nuxt 3/4 applications             | v1.0.0  |
-| [auth0-express](./plugins/auth0-sdks/skills/auth0-express/SKILL.md)                         | Express.js web applications       | v1.0.0  |
-| [auth0-flask](./plugins/auth0-sdks/skills/auth0-flask/SKILL.md)                             | Flask web applications            | v1.0.0  |
-| [auth0-fastify](./plugins/auth0-sdks/skills/auth0-fastify/SKILL.md)                         | Fastify web applications          | v1.0.0  |
-| [auth0-fastify-api](./plugins/auth0-sdks/skills/auth0-fastify-api/SKILL.md)                 | Fastify API authentication        | v1.0.0  |
-| [auth0-fastapi-api](./plugins/auth0-sdks/skills/auth0-fastapi-api/SKILL.md)                 | FastAPI API authentication        | v1.0.0  |
-| [auth0-aspnetcore-api](./plugins/auth0-sdks/skills/auth0-aspnetcore-api/SKILL.md)           | ASP.NET Core API authentication   | v1.0.0  |
-| [express-oauth2-jwt-bearer](./plugins/auth0-sdks/skills/express-oauth2-jwt-bearer/SKILL.md) | Express API JWT Bearer validation | v1.0.0  |
+| Skill                                                                                 | Description                       | Version |
+| ------------------------------------------------------------------------------------- | --------------------------------- | ------- |
+| [auth0-nextjs](./plugins/auth0/skills/auth0-nextjs/SKILL.md)                           | Next.js App Router & Pages Router | v1.0.0  |
+| [auth0-nuxt](./plugins/auth0/skills/auth0-nuxt/SKILL.md)                               | Nuxt 3/4 applications             | v1.0.0  |
+| [auth0-express](./plugins/auth0/skills/auth0-express/SKILL.md)                         | Express.js web applications       | v1.0.0  |
+| [auth0-flask](./plugins/auth0/skills/auth0-flask/SKILL.md)                             | Flask web applications            | v1.0.0  |
+| [auth0-fastify](./plugins/auth0/skills/auth0-fastify/SKILL.md)                         | Fastify web applications          | v1.0.0  |
+| [auth0-fastify-api](./plugins/auth0/skills/auth0-fastify-api/SKILL.md)                 | Fastify API authentication        | v1.0.0  |
+| [auth0-fastapi-api](./plugins/auth0/skills/auth0-fastapi-api/SKILL.md)                 | FastAPI API authentication        | v1.0.0  |
+| [auth0-aspnetcore-api](./plugins/auth0/skills/auth0-aspnetcore-api/SKILL.md)           | ASP.NET Core API authentication   | v1.0.0  |
+| [express-oauth2-jwt-bearer](./plugins/auth0/skills/express-oauth2-jwt-bearer/SKILL.md) | Express API JWT Bearer validation | v1.0.0  |
 
-### Mobile Skills (auth0-sdks plugin)
+### Mobile Skills
 
-| Skill                                                                         | Description                      | Version |
-| ----------------------------------------------------------------------------- | -------------------------------- | ------- |
-| [auth0-react-native](./plugins/auth0-sdks/skills/auth0-react-native/SKILL.md) | React Native CLI (bare workflow) | v1.0.0  |
-| [auth0-expo](./plugins/auth0-sdks/skills/auth0-expo/SKILL.md)                 | Expo (managed workflow)          | v1.0.0  |
-| [auth0-android](./plugins/auth0-sdks/skills/auth0-android/SKILL.md)           | Android                          | v1.0.0  |
-| [auth0-swift](./plugins/auth0-sdks/skills/auth0-swift/SKILL.md)               | Native iOS/macOS (Swift)         | v1.0.0  |
+| Skill                                                                   | Description                      | Version |
+| ----------------------------------------------------------------------- | -------------------------------- | ------- |
+| [auth0-react-native](./plugins/auth0/skills/auth0-react-native/SKILL.md) | React Native CLI (bare workflow) | v1.0.0  |
+| [auth0-expo](./plugins/auth0/skills/auth0-expo/SKILL.md)                 | Expo (managed workflow)          | v1.0.0  |
+| [auth0-android](./plugins/auth0/skills/auth0-android/SKILL.md)           | Android                          | v1.0.0  |
+| [auth0-swift](./plugins/auth0/skills/auth0-swift/SKILL.md)               | Native iOS/macOS (Swift)         | v1.0.0  |
 
 ---
 
@@ -298,58 +275,61 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 ```
 auth0/agent-skills/
 ├── .claude-plugin/
-│   └── marketplace.json          # Marketplace metadata (lists both plugins)
+│   └── marketplace.json          # Marketplace metadata
 ├── plugins/
-│   ├── auth0/                    # Core Plugin
-│   │   ├── .claude-plugin/
-│   │   │   └── plugin.json       # Plugin configuration
-│   │   └── skills/
-│   │       ├── auth0-quickstart/
-│   │       │   ├── SKILL.md
-│   │       │   └── reference/
-│   │       │       ├── cli.md
-│   │       │       ├── concepts.md
-│   │       │       └── environments.md
-│   │       ├── auth0-migration/
-│   │       │   ├── SKILL.md
-│   │       │   └── reference/
-│   │       │       ├── code-patterns.md
-│   │       │       └── user-import.md
-│   │       └── auth0-mfa/
-│   │           ├── SKILL.md
-│   │           └── reference/
-│   │               ├── advanced.md
-│   │               ├── api.md
-│   │               ├── backend.md
-│   │               └── examples.md
-│   └── auth0-sdks/               # SDK Plugin
+│   └── auth0/                    # Single unified plugin
 │       ├── .claude-plugin/
 │       │   └── plugin.json       # Plugin configuration
 │       └── skills/
+│           ├── auth0-quickstart/
+│           │   ├── SKILL.md
+│           │   └── references/
+│           │       ├── cli.md
+│           │       ├── concepts.md
+│           │       └── environments.md
+│           ├── auth0-migration/
+│           │   ├── SKILL.md
+│           │   └── references/
+│           │       ├── code-patterns.md
+│           │       └── user-import.md
+│           ├── auth0-mfa/
+│           │   ├── SKILL.md
+│           │   └── references/
+│           │       ├── advanced.md
+│           │       ├── api.md
+│           │       ├── backend.md
+│           │       └── examples.md
 │           ├── auth0-react/
 │           │   ├── SKILL.md
-│           │   └── reference/
+│           │   └── references/
 │           │       ├── api.md
 │           │       ├── integration.md
 │           │       └── setup.md
 │           ├── auth0-nextjs/
 │           │   ├── SKILL.md
-│           │   └── reference/
+│           │   └── references/
 │           │       ├── api.md
 │           │       ├── integration.md
 │           │       └── setup.md
 │           ├── auth0-vue/
 │           │   ├── SKILL.md
-│           │   └── reference/
+│           │   └── references/
 │           │       ├── api.md
 │           │       ├── integration.md
 │           │       └── setup.md
 │           ├── auth0-angular/
 │           │   ├── SKILL.md
-│           │   └── reference/
+│           │   └── references/
 │           │       ├── api.md
 │           │       ├── integration.md
 │           │       └── setup.md
+│           ├── auth0-spa-js/
+│           │   ├── SKILL.md
+│           │   ├── references/
+│           │   │   ├── api.md
+│           │   │   ├── integration.md
+│           │   │   └── setup.md
+│           │   └── scripts/
 │           ├── auth0-nuxt/
 │           │   ├── SKILL.md
 │           │   └── references/
@@ -358,7 +338,7 @@ auth0/agent-skills/
 │           │       └── session-stores.md
 │           ├── auth0-express/
 │           │   ├── SKILL.md
-│           │   └── reference/
+│           │   └── references/
 │           │       ├── api.md
 │           │       ├── integration.md
 │           │       └── setup.md
@@ -380,7 +360,7 @@ auth0/agent-skills/
 │           │       └── setup.md
 │           ├── auth0-react-native/
 │           │   ├── SKILL.md
-│           │   └── reference/
+│           │   └── references/
 │           │       ├── api.md
 │           │       ├── patterns.md
 │           │       └── setup.md
@@ -391,21 +371,7 @@ auth0/agent-skills/
 │           │   │   ├── integration.md
 │           │   │   └── setup.md
 │           │   ├── scripts/
-│           │   │   ├── bootstrap.mjs
-│           │   │   ├── package.json
-│           │   │   └── utils/
-│           │   │       ├── auth0-api.mjs
-│           │   │       ├── change-plan.mjs
-│           │   │       ├── clients.mjs
-│           │   │       ├── connections.mjs
-│           │   │       ├── discovery.mjs
-│           │   │       ├── helpers.mjs
-│           │   │       ├── strings-writer.mjs
-│           │   │       └── validation.mjs
 │           │   └── tests/
-│           │       ├── evals.json
-│           │       ├── graders.json
-│           │       └── prompt.md
 │           ├── auth0-expo/
 │           │   ├── SKILL.md
 │           │   ├── references/
@@ -413,21 +379,7 @@ auth0/agent-skills/
 │           │   │   ├── integration.md
 │           │   │   └── setup.md
 │           │   ├── scripts/
-│           │   │   ├── bootstrap.mjs
-│           │   │   ├── package.json
-│           │   │   └── utils/
-│           │   │       ├── app-json-writer.mjs
-│           │   │       ├── auth0-api.mjs
-│           │   │       ├── change-plan.mjs
-│           │   │       ├── clients.mjs
-│           │   │       ├── connections.mjs
-│           │   │       ├── discovery.mjs
-│           │   │       ├── helpers.mjs
-│           │   │       └── validation.mjs
 │           │   └── tests/
-│           │       ├── evals.json
-│           │       ├── graders.json
-│           │       └── prompt.md
 │           ├── auth0-swift/
 │           │   ├── SKILL.md
 │           │   ├── references/
@@ -435,27 +387,7 @@ auth0/agent-skills/
 │           │   │   ├── integration.md
 │           │   │   └── setup.md
 │           │   ├── scripts/
-│           │   │   ├── bootstrap.mjs
-│           │   │   ├── package.json
-│           │   │   └── utils/
-│           │   │       ├── auth0-api.mjs
-│           │   │       ├── change-plan.mjs
-│           │   │       ├── clients.mjs
-│           │   │       ├── connections.mjs
-│           │   │       ├── discovery.mjs
-│           │   │       ├── entitlements.mjs
-│           │   │       ├── helpers.mjs
-│           │   │       ├── plist-writer.mjs
-│           │   │       ├── validation.mjs
-│           │   │       ├── xcode-modify.rb
-│           │   │       └── xcode-project.mjs
 │           │   └── tests/
-│           │       ├── benchmark-config.json
-│           │       ├── evals.json
-│           │       ├── graders.json
-│           │       ├── graders.ts
-│           │       ├── package.json
-│           │       └── run-evals.mjs
 │           ├── auth0-aspnetcore-api/
 │           │   ├── SKILL.md
 │           │   └── references/
@@ -469,24 +401,7 @@ auth0/agent-skills/
 │               │   ├── integration.md
 │               │   └── setup.md
 │               ├── scripts/
-│               │   ├── bootstrap.mjs
-│               │   ├── package.json
-│               │   └── utils/
-│               │       ├── apis.mjs
-│               │       ├── auth0-api.mjs
-│               │       ├── change-plan.mjs
-│               │       ├── discovery.mjs
-│               │       ├── env-writer.mjs
-│               │       ├── helpers.mjs
-│               │       └── validation.mjs
 │               └── tests/
-│                   ├── benchmark-config.json
-│                   ├── evals.json
-│                   ├── graders.json
-│                   ├── graders.ts
-│                   ├── package.json
-│                   ├── prompt.md
-│                   └── run-evals.mjs
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
