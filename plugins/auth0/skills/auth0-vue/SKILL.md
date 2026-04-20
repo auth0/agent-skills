@@ -8,6 +8,10 @@ metadata:
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
+    requires:
+      env:
+        - VITE_AUTH0_DOMAIN
+        - VITE_AUTH0_CLIENT_ID
 ---
 
 # Auth0 Vue.js Integration

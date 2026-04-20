@@ -8,6 +8,13 @@ metadata:
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
+    requires:
+      env:
+        - SECRET
+        - ISSUER_BASE_URL
+        - CLIENT_ID
+        - CLIENT_SECRET
+        - BASE_URL
 ---
 
 # Auth0 Express Integration

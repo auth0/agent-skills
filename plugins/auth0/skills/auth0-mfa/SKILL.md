@@ -11,9 +11,6 @@ metadata:
     requires:
       bins:
         - auth0
-      env:
-        - AUTH0_DOMAIN
-        - AUTH0_AUDIENCE
     os:
       - darwin
       - linux
