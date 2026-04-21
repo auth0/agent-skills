@@ -1,0 +1,54 @@
+{
+  "name": "auth0-agent-skills",
+  "owner": {
+    "name": "Auth0",
+    "email": "support@auth0.com"
+  },
+  "metadata": {
+    "description": "Auth0 agent skills for authentication, SDK integration, migration, and MFA.",
+    "version": "1.0.0",
+    "pluginRoot": "plugins"
+  },
+  "plugins": [
+    {
+      "name": "auth0",
+      "source": "auth0",
+      "description": "Auth0 skills for quickstarts, migration, MFA, and framework-specific SDK integrations for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Swift, Android, ASP.NET Core, React Native, and Expo.",
+      "version": "1.0.0",
+      "repository": "https://github.com/auth0/agent-skills.git",
+      "license": "Apache-2.0",
+      "author": {
+        "name": "Auth0",
+        "email": "support@auth0.com"
+      },
+      "keywords": [
+        "auth0",
+        "quickstart",
+        "migration",
+        "mfa",
+        "security",
+        "sdk",
+        "react",
+        "nextjs",
+        "vue",
+        "nuxt",
+        "angular",
+        "express",
+        "fastify",
+        "fastify-api",
+        "fastapi",
+        "swift",
+        "android",
+        "aspnetcore",
+        "dotnet",
+        "react-native",
+        "expo",
+        "node",
+        "jwt",
+        "express-oauth2-jwt-bearer",
+        "express-jwt"
+      ],
+      "category": "authentication"
+    }
+  ]
+}
