@@ -1,9 +1,0 @@
-{
-  "name": "auth0-sdks",
-  "version": "1.0.0",
-  "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Swift, Android, React Native and Expo with complete implementation guides.",
-  "author": {
-    "name": "Auth0",
-    "email": "support@auth0.com"
-  }
-}
