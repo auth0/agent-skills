@@ -20,6 +20,7 @@ Add authentication to React Native and Expo mobile applications using react-nati
 
 ## When NOT to Use
 
+- **Expo managed workflow** - Use `auth0-expo` skill for Expo apps with config plugin
 - **React web applications** - Use `auth0-react` skill for SPAs (Vite/CRA)
 - **React Server Components** - Use `auth0-nextjs` for Next.js applications
 - **Non-React native apps** - Use platform-specific SDKs (Swift for iOS, Kotlin for Android)
