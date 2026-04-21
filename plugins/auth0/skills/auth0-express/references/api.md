@@ -110,7 +110,7 @@ app.get('/call-api', requiresAuth(), async (req, res) => {
 });
 ```
 
-**Note:** To call APIs, add `authorizationParams` to middleware config:
+**Note:** To call APIs, you need `response_type: 'code'` to receive access tokens:
 
 ```javascript
 app.use(auth({
@@ -120,10 +120,10 @@ app.use(auth({
   baseURL: process.env.BASE_URL,
   clientID: process.env.CLIENT_ID,
   issuerBaseURL: process.env.ISSUER_BASE_URL,
-  clientSecret: process.env.CLIENT_SECRET,
+  clientSecret: process.env.CLIENT_SECRET,  // Required for 'code' flow
   authorizationParams: {
-    response_type: 'code',
-    audience: 'https://your-api-identifier',  // Add this
+    response_type: 'code',                   // Required for access tokens
+    audience: 'https://your-api-identifier', // Your API identifier from Auth0
     scope: 'openid profile email'
   }
 }));
@@ -170,7 +170,7 @@ app.get('/home', (req, res) => {
 
 ```javascript
 app.use(auth({
-  authRequired: false,          // Don't require auth globally
+  authRequired: false,          // Default: true - set to false to not require auth globally
   auth0Logout: true,            // Enable logout route
   secret: process.env.SECRET,
   baseURL: process.env.BASE_URL,
@@ -180,7 +180,7 @@ app.use(auth({
 
   // Authorization parameters
   authorizationParams: {
-    response_type: 'code',
+    response_type: 'code',      // Default: 'id_token' - 'code' is needed to obtain access tokens for APIs
     audience: 'https://your-api-identifier',
     scope: 'openid profile email'
   },
@@ -204,6 +204,50 @@ app.use(auth({
 
 ---
 
+## Response Type Options
+
+The `response_type` parameter controls the authentication flow:
+
+### Authorization Code Flow
+
+```javascript
+app.use(auth({
+  authorizationParams: {
+    response_type: 'code'  // when needing access tokens for APIs, requires clientSecret.
+  },
+  clientSecret: process.env.CLIENT_SECRET
+}));
+```
+
+**Benefits:**
+- Most secure option for server-side applications that need access tokens
+- Access token never exposed to browser
+- Enables refresh tokens
+- Required for API access
+
+**Requirements:**
+- `clientSecret` must be configured
+
+### Implicit Flow (Default)
+
+```javascript
+app.use(auth({
+  authorizationParams: {
+    response_type: 'id_token'  // Default if not specified
+  }
+}));
+```
+
+**Characteristics:**
+- Default behavior if `response_type` not specified
+- No `clientSecret` required
+- ID token only (no access token for APIs)
+- Simpler for authentication-only use cases
+
+**Note:** For calling APIs, use `response_type: 'code'` to receive access tokens.
+
+---
+
 ## Testing
 
 1. Start your server: `node app.js` or `npm start`
@@ -222,9 +266,10 @@ app.use(auth({
 |-------|----------|
 | "Missing required parameter: state" | Ensure `SECRET` is set and at least 32 characters |
 | Session not persisting | Check cookies are enabled and `BASE_URL` is correct |
-| Infinite redirect loop | Check `authRequired: false` for middleware config |
+| Infinite redirect loop | Set `authRequired: false` - default is `true` which requires auth for all routes |
 | Callback URL mismatch | Verify `BASE_URL/callback` is in Auth0 allowed callback URLs |
 | "Invalid redirect URI" | Ensure callback URL in Auth0 matches `BASE_URL` exactly |
+| No access token for API | Set `response_type: 'code'` and include `clientSecret` |
 
 ---
 
