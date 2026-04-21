@@ -327,6 +327,7 @@ All methods are async:
 
 - `auth0-express` — For server-rendered Express web apps with login/logout sessions
 - `auth0-fastify` — For Fastify web applications with session-based auth
+- `auth0-cli` — Manage Auth0 resources from the terminal
 
 ---
 

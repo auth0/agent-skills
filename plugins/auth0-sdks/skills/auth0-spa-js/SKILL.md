@@ -167,6 +167,7 @@ const response = await fetch('https://your-api.example.com/data', {
 - [auth0-angular](/auth0-angular) — Auth0 for Angular SPAs
 - [auth0-vue](/auth0-vue) — Auth0 for Vue 3 SPAs
 - [auth0-mfa](/auth0-mfa) — Add Multi-Factor Authentication
+- [auth0-cli](/auth0-cli) — Manage Auth0 resources from the terminal
 
 ## Quick Reference
 

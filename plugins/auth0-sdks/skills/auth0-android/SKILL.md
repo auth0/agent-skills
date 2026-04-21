@@ -150,6 +150,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 - [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
 - [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
 - [auth0-swift](/auth0-swift) — iOS/macOS authentication
+- [auth0-cli](/auth0-cli) — Manage Auth0 resources from the terminal
 
 ## Quick Reference
 

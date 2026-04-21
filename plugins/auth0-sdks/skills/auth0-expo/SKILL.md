@@ -260,6 +260,7 @@ export default function App() {
 - [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
 - [auth0-react-native](/auth0-react-native) — Bare React Native CLI projects
 - [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
+- [auth0-cli](/auth0-cli) — Manage Auth0 resources from the terminal
 
 ## References
 
