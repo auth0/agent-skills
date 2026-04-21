@@ -1,7 +1,7 @@
 {
-  "name": "express-oauth2-jwt-bearer-evals",
+  "name": "auth0-flask-evals",
   "version": "1.0.0",
-  "description": "Eval runner for express-oauth2-jwt-bearer skill",
+  "description": "Eval runner for auth0-flask skill",
   "type": "module",
   "scripts": {
     "eval": "node run-evals.mjs",

@@ -1,12 +1,12 @@
 {
   "metadata": {
-    "skill_name": "express-oauth2-jwt-bearer",
-    "sdk_type": "BACKEND_API",
-    "framework": "Express",
-    "language": "TypeScript",
-    "package": "express-oauth2-jwt-bearer",
+    "skill_name": "auth0-flask",
+    "sdk_type": "BACKEND_WEBAPP",
+    "framework": "Flask",
+    "language": "Python",
+    "package": "auth0-server-python",
     "generated_by": "quickstart-skill-generator",
-    "generated_date": "2026-04-09T00:00:00.000Z"
+    "generated_date": "2026-04-16T00:00:00.000Z"
   },
   "configurations": {
     "baseline": {
@@ -29,15 +29,15 @@
     }
   },
   "scaffold": {
-    "sdk_type": "BACKEND_API",
-    "framework": "Express",
-    "language": "TypeScript"
+    "sdk_type": "BACKEND_WEBAPP",
+    "framework": "Flask",
+    "language": "Python"
   },
   "graders": {
     "source": "graders.json",
     "total_count": 18,
     "breakdown": {
-      "contains_matches": 11,
+      "contains_matches": 10,
       "file_contains": 2,
       "not_contains": 3,
       "judge": 2
