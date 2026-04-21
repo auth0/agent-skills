@@ -1,6 +1,9 @@
 ---
 name: auth0-quickstart
-description: Use when starting Auth0 integration in any framework - detects your stack (React, Next.js, Vue, Angular, Express, Fastify, React Native) and routes to correct SDK setup workflow
+description: Use when adding authentication or login to any app - detects your stack (React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, ASP.NET Core, React Native, Expo, Android, Swift), sets up an Auth0 account if needed, and routes to the correct SDK setup workflow.
+license: Apache-2.0
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Auth0 Quickstart
@@ -14,11 +17,11 @@ Detect your framework and get started with Auth0 authentication.
 **Run this command to identify your framework:**
 
 ```bash
-# Check package.json dependencies
-cat package.json | grep -E "react|next|vue|angular|express|fastify|@nestjs"
+# Check package.json dependencies (Node.js projects)
+cat package.json | grep -E "react|next|vue|nuxt|angular|express|fastify|@nestjs|expo"
 
 # Or check project files
-ls -la | grep -E "angular.json|vue.config.js|next.config"
+ls -la | grep -E "angular.json|vue.config.js|next.config|app.json|Package.swift|build.gradle"
 ```
 
 **Framework Detection Table:**
@@ -28,11 +31,14 @@ ls -la | grep -E "angular.json|vue.config.js|next.config"
 | React (Vite/CRA) | `"react"` in package.json, no Next.js | `auth0-react` |
 | Next.js | `"next"` in package.json | `auth0-nextjs` |
 | Vue.js | `"vue"` in package.json, no Nuxt | `auth0-vue` |
+| Nuxt | `"nuxt"` in package.json | `auth0-nuxt` |
 | Angular | `angular.json` exists or `"@angular/core"` | `auth0-angular` |
 | Express.js | `"express"` in package.json | `auth0-express` |
 | Fastify (web app) | `"fastify"` in package.json, has `@fastify/view` | `auth0-fastify` |
 | Fastify (API) | `"fastify"` in package.json, no view engine | `auth0-fastify-api` |
 | React Native | `"react-native"` or `"expo"` in package.json | `auth0-react-native` |
+| Flask | `"flask"` in requirements.txt, Pipfile, or pyproject.toml | `auth0-flask` |
+| Node.js API | `"express-oauth2-jwt-bearer"` in package.json | `express-oauth2-jwt-bearer` |
 
 **Don't see your framework?** See Tier 2 Frameworks below.
 
@@ -77,7 +83,7 @@ auth0 apps create --name "My App" --type spa \
   --metadata "created_by=agent_skills"
 ```
 
-**Regular Web Apps (Next.js, Express, Fastify):**
+**Regular Web Apps (Next.js, Nuxt, Express, Fastify):**
 ```bash
 auth0 apps create --name "My App" --type regular \
   --callbacks "http://localhost:3000/api/auth/callback" \
@@ -113,12 +119,15 @@ Based on your framework detection, use the appropriate skill:
 - **`auth0-react`** - React SPAs (Vite, Create React App)
 - **`auth0-nextjs`** - Next.js (App Router and Pages Router)
 - **`auth0-vue`** - Vue.js 3 applications
+- **`auth0-nuxt`** - Nuxt 3/4 applications
 - **`auth0-angular`** - Angular 12+ applications
 
 **Backend:**
 - **`auth0-express`** - Express.js web applications
+- **`auth0-flask`** - Flask web applications
 - **`auth0-fastify`** - Fastify web applications
 - **`auth0-fastify-api`** - Fastify API authentication
+- **`express-oauth2-jwt-bearer`** - Node.js/Express API JWT Bearer validation
 
 **Mobile:**
 - **`auth0-react-native`** - React Native and Expo (iOS/Android)
@@ -130,10 +139,8 @@ Not yet available as separate skills. Use Auth0 documentation:
 **Frontend:**
 - [SvelteKit](https://auth0.com/docs/quickstart/webapp/sveltekit)
 - [Remix](https://auth0.com/docs/quickstart/webapp/remix)
-- [Nuxt.js](https://auth0.com/docs/quickstart/webapp/nextjs)
 
 **Backend:**
-- [Flask (Python)](https://auth0.com/docs/quickstart/webapp/python)
 - [FastAPI (Python)](https://auth0.com/docs/quickstart/backend/python)
 - [Django (Python)](https://auth0.com/docs/quickstart/webapp/django)
 - [Rails (Ruby)](https://auth0.com/docs/quickstart/webapp/rails)
@@ -207,21 +214,26 @@ Complete Auth0 CLI reference:
 - `auth0-migration` - Migrate from other auth providers
 
 ### SDK Skills
+- `auth0-spa-js` - SPA integration
 - `auth0-react` - React SPA integration
 - `auth0-nextjs` - Next.js integration
 - `auth0-vue` - Vue.js integration
+- `auth0-nuxt` - Nuxt 3/4 integration
 - `auth0-angular` - Angular integration
 - `auth0-express` - Express.js integration
+- `auth0-flask` - Flask web app integration
 - `auth0-fastify` - Fastify web app integration
 - `auth0-fastify-api` - Fastify API integration
-- `auth0-react-native` - React Native/Expo integration
+- `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
+- `auth0-react-native` - React Native CLI (bare workflow) integration
+- `auth0-expo` - Expo (managed workflow) integration
+- `auth0-android` - Android (Kotlin/Java) integration
+- `auth0-swift` - iOS/macOS (Swift) integration
+- `auth0-fastapi-api` - FastAPI API authentication
+- `auth0-aspnetcore-api` - ASP.NET Core API authentication
 
 ### Advanced Features
 - `auth0-mfa` - Multi-Factor Authentication
-- `auth0-organizations` - B2B multi-tenancy
-- `auth0-passkeys` - Passwordless authentication
-- `auth0-flows` - Customize login flows
-- `auth0-enterprise` - SAML, OIDC connections
 
 ---
 

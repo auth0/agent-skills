@@ -39,7 +39,10 @@ One `marketplace.json` at the root level lists both plugins:
 - `auth0-vue` - Vue.js 3
 - `auth0-angular` - Angular 12+
 - `auth0-express` - Express.js
-- `auth0-react-native` - React Native & Expo
+- `auth0-android` - Android (Kotlin/Java)
+- `auth0-swift` - iOS/macOS (Swift)
+- `auth0-react-native` - React Native CLI (bare workflow)
+- `auth0-expo` - Expo (managed workflow)
 
 ---
 
@@ -66,7 +69,10 @@ auth0/agent-skills/
 │           ├── auth0-vue/
 │           ├── auth0-angular/
 │           ├── auth0-express/
-│           └── auth0-react-native/
+│           ├── auth0-react-native/
+│           ├── auth0-expo/
+│           ├── auth0-android/
+│           └── auth0-swift/
 ├── PLUGIN.md
 ├── README.md
 └── LICENSE
@@ -109,9 +115,9 @@ auth0/agent-skills/
     {
       "name": "auth0-sdks",
       "source": "plugins/auth0-sdks",
-      "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Angular, Express, and React Native with complete implementation guides.",
+      "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Swift, Android, ASP.NET Core, React Native, and Expo with complete implementation guides.",
       "version": "1.0.0",
-      "keywords": ["auth0", "sdk", "react", "nextjs", "vue", "angular", "express", "react-native"],
+      "keywords": ["auth0", "sdk", "react", "nextjs", "vue", "nuxt", "angular", "express", "fastify", "fastapi", "swift", "android", "react-native", "expo"],
       "category": "integration"
     }
   ]
@@ -269,13 +275,13 @@ git push origin main --tags
 ## Use Cases
 
 ### Install Everything (Most Common)
-User installs "Auth0 Agent Skills" from marketplace → gets both plugins with all 9 skills
+User installs "Auth0 Agent Skills" from marketplace → gets both plugins with all 17 skills
 
 ### Install Core Only
 User only needs framework detection and MFA → installs just `auth0` plugin (3 skills)
 
 ### Install SDKs Only
-User already has quickstart setup → installs just `auth0-sdks` plugin (6 skills)
+User already has quickstart setup → installs just `auth0-sdks` plugin (14 skills)
 Note: Will auto-install `auth0` due to dependency
 
 ### Install One Framework
