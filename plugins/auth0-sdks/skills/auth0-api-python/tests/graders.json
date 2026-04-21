@@ -1,0 +1,103 @@
+[
+  {
+    "type": "matches",
+    "pattern": "auth0-api-python|pip install.*auth0.*api.*python|auth0_api_python",
+    "description": "Auth0 SDK installed via any valid method (requirements.txt, pip install, or pyproject.toml)"
+  },
+  {
+    "type": "matches",
+    "pattern": "from auth0_api_python import|import auth0_api_python",
+    "description": "Has correct import statement from auth0_api_python"
+  },
+  {
+    "type": "contains_any",
+    "values": ["ApiClient(", "ApiClientOptions("],
+    "description": "Auth0 SDK initialized (ApiClient or ApiClientOptions created)"
+  },
+  {
+    "type": "matches",
+    "pattern": "verify_access_token|verify_request",
+    "description": "Configures JWT Bearer token validation using SDK methods"
+  },
+  {
+    "type": "matches",
+    "pattern": "audience=|AUTH0_AUDIENCE",
+    "description": "Configures API audience for token validation"
+  },
+  {
+    "type": "matches",
+    "pattern": "@require_auth|Depends\\(get_claims|def get_claims|require_auth\\(",
+    "description": "Has protected API endpoint with auth guard"
+  },
+  {
+    "type": "matches",
+    "pattern": "CORS\\(|CORSMiddleware|flask_cors|from flask_cors import",
+    "description": "Configures CORS middleware (required before auth)"
+  },
+  {
+    "type": "file_contains",
+    "file_pattern": "**/.env*",
+    "value": "dev-example.auth0.com",
+    "description": "Auth0 domain written to .env config file"
+  },
+  {
+    "type": "file_contains",
+    "file_pattern": "**/.env*",
+    "value": "https://api.example.com",
+    "description": "API audience written to .env config file"
+  },
+  {
+    "type": "not_contains_any",
+    "values": ["loginWithRedirect", "login_required", "/callback", "redirect.*authorize"],
+    "description": "No login UI methods or callback URLs in stateless API"
+  },
+  {
+    "type": "not_contains",
+    "value": "client_secret",
+    "description": "No client secret in API config (uses JWKS public key validation)"
+  },
+  {
+    "type": "judge",
+    "description": "Correctly integrates Auth0 JWT validation into Python API with protected endpoints and CORS",
+    "question": "Does the solution correctly integrate Auth0 JWT Bearer token validation, protect at least one endpoint with an authentication guard, and configure CORS in a Python (Flask or FastAPI) API?",
+    "examples": "PASS: Initializes ApiClient with domain and audience from env vars, creates require_auth decorator using verify_access_token, protects at least one route, and adds CORS middleware.\nPASS: Uses FastAPI Depends(get_claims) pattern with async await, protects /api/private endpoint.\nFAIL: Uses client secret for token validation instead of JWKS (domain+audience only).\nFAIL: Has login routes or callback URLs — APIs should be stateless JWT validation only.\nFAIL: Only shows ApiClient initialization but no protected endpoint.",
+    "framework": "python"
+  },
+  {
+    "type": "contains",
+    "value": "AUTH0_DOMAIN",
+    "description": "AUTH0_DOMAIN environment variable used in configuration"
+  },
+  {
+    "type": "matches",
+    "pattern": "auth0-api-python[>=~!<]{1,2}.*1\\.0|1\\.0\\.0b[0-9]+|pip install.*auth0-api-python.*1\\.0",
+    "description": "Uses current SDK version (1.0.0b8) in dependency declaration"
+  },
+  {
+    "type": "matches",
+    "pattern": "from auth0_api_python\\.errors import|BaseAuthError|ApiError",
+    "description": "Uses Auth0-specific error types from auth0_api_python.errors (not generic Exception)"
+  },
+  {
+    "type": "matches",
+    "pattern": "\\.get\\(.*['\"]permissions['\"]|permissions.*not in|['\"]permissions['\"].*in.*claims|claims\\[['\"]permissions['\"]\\]",
+    "description": "Accesses permissions claim for RBAC authorization (not scope claim)"
+  },
+  {
+    "type": "matches",
+    "pattern": "get_status_code\\(\\)|e\\.get_status_code|e\\.status_code",
+    "description": "Uses SDK error method to return correct HTTP status code (get_status_code())"
+  },
+  {
+    "type": "not_contains_any",
+    "values": ["jwt.decode(", "from jose import", "import PyJWT", "python-jose"],
+    "description": "Does not use manual JWT decoding (uses auth0-api-python SDK instead of PyJWT/jose)"
+  },
+  {
+    "type": "judge",
+    "description": "Applies skill-specific advanced patterns (error types, permissions claim, get_status_code)",
+    "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like verify_access_token, ApiClient, ApiClientOptions, require_auth, AUTH0_DOMAIN, AUTH0_AUDIENCE, asyncio.run). Look for at least 2 of: (1) SDK version 1.0.0b8 or similar in a dependency file (requirements.txt, pyproject.toml), (2) importing BaseAuthError or ApiError from auth0_api_python.errors specifically, (3) using .get_status_code() method on the caught exception to set HTTP status, (4) checking the 'permissions' claim (not 'scope') for RBAC with get('permissions', []) or similar. These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
+    "examples": "PASS: Imports BaseAuthError from auth0_api_python.errors AND uses e.get_status_code() in the except block.\nPASS: Checks claims.get('permissions', []) for RBAC AND imports specific error types from auth0_api_python.errors.\nFAIL: Only uses basic verify_access_token() with generic except Exception without using SDK-specific error types or methods.\nFAIL: Has auth setup but uses generic exception handling (except Exception as e: return 401) without get_status_code() or SDK-specific error import.",
+    "framework": "python"
+  }
+]
