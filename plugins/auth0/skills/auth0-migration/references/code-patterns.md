@@ -534,6 +534,158 @@ const logout = async () => {
 
 ---
 
+## Nuxt Migration
+
+### Route Protection
+
+**Before (typical pattern):**
+```typescript
+// Old provider middleware pattern
+export default defineNuxtRouteMiddleware((to) => {
+  const { isAuthenticated } = useCustomAuth();
+  if (!isAuthenticated.value) return navigateTo('/login');
+});
+```
+
+**After (Auth0):**
+```typescript
+// middleware/auth.ts
+export default defineNuxtRouteMiddleware((to) => {
+  if (!useUser().value) return navigateTo(`/auth/login?returnTo=${encodeURIComponent(to.path)}`);
+});
+```
+
+---
+
+### Server-Side Session Access
+
+**Before (typical pattern):**
+```typescript
+// server/api/profile.ts
+export default defineEventHandler(async (event) => {
+  const session = await getCustomSession(event);
+  if (!session) throw createError({ statusCode: 401 });
+  return session.user;
+});
+```
+
+**After (Auth0):**
+```typescript
+// server/api/profile.ts
+export default defineEventHandler(async (event) => {
+  const auth0Client = useAuth0(event);
+  const session = await auth0Client.getSession();
+  if (!session) throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
+  return session.user;
+});
+```
+
+---
+
+### Module Configuration
+
+**Before:**
+```typescript
+// nuxt.config.ts
+modules: ['@custom-auth/nuxt'],
+```
+
+**After (Auth0):**
+```typescript
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['@auth0/auth0-nuxt'],
+  runtimeConfig: {
+    auth0: {
+      domain: '',        // reads NUXT_AUTH0_DOMAIN
+      clientId: '',      // reads NUXT_AUTH0_CLIENT_ID
+      clientSecret: '',  // reads NUXT_AUTH0_CLIENT_SECRET
+      sessionSecret: '', // reads NUXT_AUTH0_SESSION_SECRET
+      appBaseUrl: '',    // reads NUXT_AUTH0_APP_BASE_URL
+    },
+  },
+});
+```
+
+---
+
+## Fastify Migration
+
+### Web App (Session-Based)
+
+**Before (typical pattern):**
+```typescript
+// Old provider pattern with manual session
+fastify.post('/login', async (request, reply) => {
+  const user = await validateCredentials(request.body);
+  request.session.user = user;
+  return reply.redirect('/dashboard');
+});
+
+fastify.get('/dashboard', async (request, reply) => {
+  if (!request.session.user) return reply.redirect('/login');
+  return reply.view('dashboard', { user: request.session.user });
+});
+```
+
+**After (Auth0):**
+```typescript
+import fastifyAuth0 from '@auth0/auth0-fastify';
+
+await fastify.register(fastifyAuth0, {
+  domain: process.env.AUTH0_DOMAIN,
+  clientId: process.env.AUTH0_CLIENT_ID,
+  clientSecret: process.env.AUTH0_CLIENT_SECRET,
+  appBaseUrl: process.env.APP_BASE_URL,
+  sessionSecret: process.env.SESSION_SECRET,
+});
+
+// Auth0 handles /auth/login, /auth/logout, /auth/callback automatically
+fastify.get('/dashboard', {
+  preHandler: async (request, reply) => {
+    const session = await fastify.auth0Client.getSession({ request, reply });
+    if (!session) return reply.redirect('/auth/login');
+  }
+}, async (request, reply) => {
+  const user = await fastify.auth0Client.getUser({ request, reply });
+  return reply.view('dashboard', { user });
+});
+```
+
+---
+
+### API (JWT-Based)
+
+**Before (typical pattern):**
+```typescript
+// Old provider pattern
+fastify.get('/api/data', async (request, reply) => {
+  const token = request.headers.authorization?.split(' ')[1];
+  const user = await verifyCustomToken(token);
+  if (!user) return reply.status(401).send({ error: 'Unauthorized' });
+  return { data: 'protected' };
+});
+```
+
+**After (Auth0):**
+```typescript
+import fastifyAuth0Api from '@auth0/auth0-fastify-api';
+
+await fastify.register(fastifyAuth0Api, {
+  domain: process.env.AUTH0_DOMAIN,
+  audience: process.env.AUTH0_AUDIENCE,
+});
+
+fastify.get('/api/data', {
+  preHandler: fastify.requireAuth()
+}, async (request, reply) => {
+  // request.user contains verified JWT claims
+  return { data: 'protected', userId: request.user.sub };
+});
+```
+
+---
+
 ## Backend API JWT Validation
 
 ### Node.js / Express
