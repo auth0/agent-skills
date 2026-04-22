@@ -73,6 +73,7 @@ auth0/agent-skills/
 │       │   └── plugin.json       # Cursor plugin config
 │       ├── .codex-plugin/
 │       │   └── plugin.json       # Codex plugin config
+│       ├── README.md
 │       └── skills/
 │           ├── auth0-quickstart/
 │           ├── auth0-migration/
