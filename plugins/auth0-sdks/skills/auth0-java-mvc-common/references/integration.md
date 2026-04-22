@@ -181,6 +181,8 @@ public class SubdomainDomainResolver implements DomainResolver {
 }
 ```
 
+> **Security warning:** When resolving domains from the request, always validate against a trusted allowlist of known domains. Never use the raw request `Host` header as a domain value — an attacker could manipulate it. For single-tenant deployments, return a hardcoded domain. If behind a reverse proxy, ensure `X-Forwarded-Host` is set by a trusted proxy only.
+
 ### Configure with DomainResolver
 
 ```java
@@ -341,6 +343,15 @@ try {
         case "a0.invalid_jwt_error":
             // JWT validation failed — check clock skew
             break;
+        case "a0.invalid_state":
+            // State mismatch between login and callback — session may have been lost
+            break;
+        case "a0.missing_id_token":
+            // No ID token returned — check scopes include "openid"
+            break;
+        case "a0.missing_access_token":
+            // No access token returned
+            break;
         default:
             // Other error
             break;
@@ -359,18 +370,21 @@ If a user denies consent on the Auth0 login page, the callback receives `error=a
 
 ## HTTP Logging (Debugging)
 
-Enable HTTP logging to debug Auth0 API calls:
+### SDK Built-in Logging
+
+The simplest way to enable debug logging:
 
 ```java
 AuthenticationController controller = AuthenticationController
     .newBuilder(domain, clientId, clientSecret)
     .build();
 
-// Set logging on the underlying HTTP client
-// Add SLF4J + Logback, then set com.auth0 to DEBUG level
+controller.setLoggingEnabled(true);
 ```
 
-In `logback.xml`:
+### SLF4J / Logback
+
+For more granular control, add SLF4J + Logback and configure in `logback.xml`:
 
 ```xml
 <logger name="com.auth0" level="DEBUG" />
@@ -378,23 +392,16 @@ In `logback.xml`:
 
 ---
 
-## Jakarta Servlet Migration
+## Servlet API Compatibility
 
-For Jakarta EE (Servlet 5+), the library supports both `javax.servlet` and `jakarta.servlet`. Ensure your dependency version supports your servlet API:
-
-| Library Version | Servlet API |
-|----------------|-------------|
-| 1.x | javax.servlet 3+ and jakarta.servlet |
-
-The code patterns are identical — only the import package changes:
+The SDK currently supports `javax.servlet` only. The code and README use `javax.servlet` imports:
 
 ```java
-// javax.servlet (traditional)
 import javax.servlet.http.HttpServletRequest;
-
-// jakarta.servlet (Jakarta EE 9+)
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 ```
+
+If your project uses `jakarta.servlet` (Jakarta EE 9+), this SDK is not compatible. Check for a Jakarta-specific version or consider an alternative like the Spring Boot Okta starter which supports Jakarta.
 
 ---
 

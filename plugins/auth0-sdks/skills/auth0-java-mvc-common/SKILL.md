@@ -1,7 +1,7 @@
 ---
 name: auth0-java-mvc-common
-description: Use when adding Auth0 login, logout, and callback handling to Java Servlet web applications - integrates com.auth0:mvc-auth-commons SDK for server-side Java apps using javax.servlet or jakarta.servlet with session-based authentication. Triggers on AuthenticationController, AuthorizeUrl, Tokens, IdentityVerificationException, Java MVC auth.
-license: Apache-2.0
+description: Use when adding Auth0 login, logout, and callback handling to Java Servlet web applications - integrates com.auth0:mvc-auth-commons SDK for server-side Java apps using javax.servlet with session-based authentication. Triggers on AuthenticationController, AuthorizeUrl, Tokens, IdentityVerificationException, Java MVC auth.
+license: MIT
 metadata:
   author: Auth0 <support@auth0.com>
 ---
@@ -21,7 +21,7 @@ Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-a
 ## Prerequisites
 
 - Java 8+ (Java 17+ recommended)
-- Servlet container (Tomcat, Jetty, etc.) with javax.servlet 3+ or jakarta.servlet
+- Servlet container (Tomcat, Jetty, etc.) with javax.servlet 3+
 - Maven 3.6+ or Gradle 7+
 - Auth0 Regular Web Application configured
 - If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
@@ -119,20 +119,26 @@ Create a singleton `AuthenticationController` instance:
 
 ```java
 import com.auth0.AuthenticationController;
+import com.auth0.jwk.JwkProviderBuilder;
+import com.auth0.jwk.JwkProvider;
 
 public class Auth0Config {
 
-    private static AuthenticationController controller;
+    private static final AuthenticationController controller = createController();
+
+    private static AuthenticationController createController() {
+        String domain = System.getenv("AUTH0_DOMAIN");
+        String clientId = System.getenv("AUTH0_CLIENT_ID");
+        String clientSecret = System.getenv("AUTH0_CLIENT_SECRET");
+
+        JwkProvider jwkProvider = new JwkProviderBuilder(domain).build();
+
+        return AuthenticationController.newBuilder(domain, clientId, clientSecret)
+            .withJwkProvider(jwkProvider)
+            .build();
+    }
 
     public static AuthenticationController getAuthController() {
-        if (controller == null) {
-            String domain = System.getenv("AUTH0_DOMAIN");
-            String clientId = System.getenv("AUTH0_CLIENT_ID");
-            String clientSecret = System.getenv("AUTH0_CLIENT_SECRET");
-
-            controller = AuthenticationController.newBuilder(domain, clientId, clientSecret)
-                .build();
-        }
         return controller;
     }
 }
@@ -309,6 +315,9 @@ Built-in support for routing users to the correct Auth0 domain via `DomainResolv
 - `tokens.getIdToken()` — ID token (JWT) string
 - `tokens.getRefreshToken()` — Refresh token (if `offline_access` scope requested)
 - `tokens.getExpiresIn()` — Token expiration in seconds
+- `tokens.getType()` — Token type (usually "Bearer")
+- `tokens.getDomain()` — Auth0 domain that issued the tokens
+- `tokens.getIssuer()` — Token issuer URL
 
 ---
 

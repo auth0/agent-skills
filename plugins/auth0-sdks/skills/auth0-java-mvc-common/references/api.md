@@ -39,7 +39,15 @@ AuthenticationController.newBuilder(DomainResolver resolver, String clientId, St
 | `.withResponseType("code")` | Set OAuth response_type (default: `code`) |
 | `.withJwkProvider(JwkProvider)` | Custom JWK provider for token verification |
 | `.withClockSkew(int)` | Clock skew tolerance in seconds for token validation (default: 60) |
+| `.withHttpOptions(HttpOptions)` | HTTP proxy/timeout configuration |
+| `.withCookiePath(String)` | Cookie path attribute |
+| `.withAuthenticationMaxAge(Integer)` | Validates `auth_time` claim in the ID token |
+| `.withLegacySameSiteCookie(boolean)` | Controls SameSite=None fallback cookie (default: `true`) |
+| `.withOrganization(String)` | Sends `organization` to `/authorize` **and** validates `org_id`/`org_name` claim in the returned ID token via `IdTokenVerifier`. If the value starts with `org_`, validates `org_id`; otherwise validates `org_name` (case-insensitive). Throws `TokenValidationException` on mismatch. |
+| `.withInvitation(String)` | Sends `invitation` to `/authorize` and validates invitation on callback |
 | `.build()` | Build the `AuthenticationController` instance |
+
+> **Note:** `Builder.withOrganization()` does two things: it passes the `organization` parameter to `/authorize` (via `AuthorizeUrl`) **and** validates the org claim in the returned token. `AuthorizeUrl.withOrganization()` only sends the parameter to `/authorize` without any token validation. When using `Builder.withOrganization()`, you do not need to also call `AuthorizeUrl.withOrganization()` — the Builder handles both automatically.
 
 ### Instance Methods
 
@@ -47,6 +55,8 @@ AuthenticationController.newBuilder(DomainResolver resolver, String clientId, St
 |--------|---------|-------------|
 | `buildAuthorizeUrl(request, response, redirectUrl)` | `AuthorizeUrl` | Build `/authorize` URL with CSRF state |
 | `handle(request, response)` | `Tokens` | Exchange authorization code for tokens |
+| `buildAuthorizeUrl(request, redirectUrl)` | `AuthorizeUrl` | **Deprecated** — use the 3-argument version with response |
+| `handle(request)` | `Tokens` | **Deprecated** — use the 2-argument version with response |
 
 ---
 
@@ -63,8 +73,9 @@ Fluent builder for constructing the Auth0 `/authorize` redirect URL.
 | `.withOrganization(String)` | `"org_xxx"` | Lock login to specific Organization |
 | `.withInvitation(String)` | `"invite_xxx"` | Accept Organization invitation |
 | `.withConnection(String)` | `"google-oauth2"` | Skip to specific identity provider |
-| `.withParameter(String, String)` | key, value | Add any custom `/authorize` parameter |
-| `.withResponseType(String)` | `"code"` | Override response type |
+| `.withParameter(String, String)` | key, value | Add any custom `/authorize` parameter. **Throws `IllegalArgumentException` for `state`, `nonce`, `response_type`, `redirect_uri` — use dedicated methods instead.** |
+| `.withNonce(String)` | nonce value | Set a custom nonce for ID token validation |
+| `.withSecureCookie(boolean)` | `true`/`false` | Set the Secure flag on state/nonce cookies |
 | `.withState(String)` | state value | Custom state parameter (overrides CSRF state) |
 | `.build()` | — | Returns the complete authorize URL string |
 
@@ -135,7 +146,8 @@ Thrown when authentication fails during callback handling.
 |--------|---------|-------------|
 | `getCode()` | `String` | Error code identifier |
 | `getMessage()` | `String` | Human-readable error message |
-| `isExpiredToken()` | `boolean` | Whether the token was expired |
+| `isAPIError()` | `boolean` | Whether the error came from the Auth0 API |
+| `isJWTError()` | `boolean` | Whether the error is a JWT validation failure |
 
 ### Error Codes
 
@@ -144,6 +156,22 @@ Thrown when authentication fails during callback handling.
 | `a0.api_error` | Auth0 API returned an error |
 | `a0.missing_jwt_public_key_error` | Could not retrieve JWKS public key |
 | `a0.invalid_jwt_error` | JWT validation failed (bad signature, expired, wrong audience) |
+
+---
+
+## InvalidRequestException
+
+Extends `IdentityVerificationException`. Thrown when the callback request itself is invalid (e.g., state mismatch, missing tokens).
+
+### Error Codes
+
+| Code | Description |
+|------|-------------|
+| `a0.invalid_state` | State parameter mismatch between login and callback |
+| `a0.missing_id_token` | No ID token returned |
+| `a0.missing_access_token` | No access token returned |
+
+Since `InvalidRequestException` extends `IdentityVerificationException`, it is caught by the same `catch` block. Use `getCode()` to distinguish specific error conditions.
 
 ---
 
