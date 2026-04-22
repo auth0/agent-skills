@@ -71,6 +71,8 @@ AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 ```
 
+> **Agent instruction:** Java does not auto-load `.env` files. If you generate a `.env` file, also add [dotenv-java](https://github.com/cdimascio/dotenv-java) and use `Dotenv.load().get("AUTH0_DOMAIN")`, or instruct the user to run `source .env` before starting the server.
+
 ---
 
 ## Secret Management
@@ -199,8 +201,10 @@ The callback URL must match **exactly** between your code and Auth0 Dashboard.
 **Build callback URL dynamically in the Login servlet:**
 
 ```java
-String redirectUrl = request.getScheme() + "://" + request.getServerName()
-    + ":" + request.getServerPort() + "/callback";
+String scheme = request.getScheme();
+int port = request.getServerPort();
+String redirectUrl = scheme + "://" + request.getServerName()
+    + ((port == 80 || port == 443) ? "" : ":" + port) + "/callback";
 ```
 
 ---

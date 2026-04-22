@@ -17,8 +17,10 @@ public class LoginServlet extends HttpServlet {
             throws Exception {
         AuthenticationController controller = Auth0Config.getAuthController();
 
-        String redirectUrl = request.getScheme() + "://" + request.getServerName()
-            + ":" + request.getServerPort() + "/callback";
+        String scheme = request.getScheme();
+        int port = request.getServerPort();
+        String redirectUrl = scheme + "://" + request.getServerName()
+            + ((port == 80 || port == 443) ? "" : ":" + port) + "/callback";
 
         String authorizeUrl = controller.buildAuthorizeUrl(request, response, redirectUrl)
             .withScope("openid profile email")
@@ -79,8 +81,10 @@ public class LogoutServlet extends HttpServlet {
         // Redirect to Auth0 logout endpoint
         String domain = System.getenv("AUTH0_DOMAIN");
         String clientId = System.getenv("AUTH0_CLIENT_ID");
-        String returnTo = request.getScheme() + "://" + request.getServerName()
-            + ":" + request.getServerPort();
+        String scheme = request.getScheme();
+        int port = request.getServerPort();
+        String returnTo = scheme + "://" + request.getServerName()
+            + ((port == 80 || port == 443) ? "" : ":" + port);
 
         String logoutUrl = String.format(
             "https://%s/v2/logout?client_id=%s&returnTo=%s",

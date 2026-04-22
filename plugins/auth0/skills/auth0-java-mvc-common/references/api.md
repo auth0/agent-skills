@@ -44,7 +44,7 @@ AuthenticationController.newBuilder(DomainResolver resolver, String clientId, St
 | `.withAuthenticationMaxAge(Integer)` | Validates `auth_time` claim in the ID token |
 | `.withLegacySameSiteCookie(boolean)` | Controls SameSite=None fallback cookie (default: `true`) |
 | `.withOrganization(String)` | Sends `organization` to `/authorize` **and** validates `org_id`/`org_name` claim in the returned ID token via `IdTokenVerifier`. If the value starts with `org_`, validates `org_id`; otherwise validates `org_name` (case-insensitive). Throws `TokenValidationException` on mismatch. |
-| `.withInvitation(String)` | Sends `invitation` to `/authorize` and validates invitation on callback |
+| `.withInvitation(String)` | Sends `invitation` parameter to `/authorize` (no callback validation) |
 | `.build()` | Build the `AuthenticationController` instance |
 
 > **Note:** `Builder.withOrganization()` does two things: it passes the `organization` parameter to `/authorize` (via `AuthorizeUrl`) **and** validates the org claim in the returned token. `AuthorizeUrl.withOrganization()` only sends the parameter to `/authorize` without any token validation. When using `Builder.withOrganization()`, you do not need to also call `AuthorizeUrl.withOrganization()` — the Builder handles both automatically.

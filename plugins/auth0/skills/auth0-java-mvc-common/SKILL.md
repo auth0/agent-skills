@@ -111,6 +111,8 @@ AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 ```
 
+> **Agent instruction:** Java does not auto-load `.env` files. `System.getenv()` only reads OS-level environment variables. If you generate a `.env` file, you must also either: (1) add [dotenv-java](https://github.com/cdimascio/dotenv-java) as a dependency and use `Dotenv.load().get("AUTH0_DOMAIN")` instead of `System.getenv()`, or (2) instruct the user to run `source .env` before starting the server. Do not generate code that uses both a `.env` file and `System.getenv()` without a loading mechanism — the values will be `null`.
+
 **Important:** Domain must NOT include `https://`. The library constructs the issuer URL automatically.
 
 ### 4. Initialize AuthenticationController
@@ -163,8 +165,12 @@ public class LoginServlet extends HttpServlet {
             throws Exception {
         AuthenticationController controller = Auth0Config.getAuthController();
 
-        String redirectUrl = request.getScheme() + "://" + request.getServerName()
-            + ":" + request.getServerPort() + "/callback";
+        // Build callback URL — omit port for standard ports (80/443) to avoid
+        // mismatch with the URL registered in Auth0 Dashboard, especially behind proxies.
+        String scheme = request.getScheme();
+        int port = request.getServerPort();
+        String redirectUrl = scheme + "://" + request.getServerName()
+            + ((port == 80 || port == 443) ? "" : ":" + port) + "/callback";
 
         AuthorizeUrl authorizeUrl = controller.buildAuthorizeUrl(request, response, redirectUrl)
             .withScope("openid profile email");
