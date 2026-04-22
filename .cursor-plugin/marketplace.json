@@ -1,21 +1,19 @@
 {
   "name": "auth0-agent-skills",
-  "metadata": {
-    "description": "Agent skills for integrating Auth0 authentication into any application, framework, or platform."
-  },
   "owner": {
     "name": "Auth0",
     "email": "support@auth0.com"
   },
+  "metadata": {
+    "description": "Auth0 agent skills for authentication, SDK integration, migration, and MFA.",
+    "version": "1.0.0",
+    "pluginRoot": "plugins"
+  },
   "plugins": [
     {
       "name": "auth0",
-      "source": {
-        "source": "git-subdir",
-        "url": "https://github.com/auth0/agent-skills.git",
-        "path": "plugins/auth0"
-      },
-      "description": "Auth0 skills for quickstarts, migration, MFA, and framework-specific SDK integrations for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Spring Boot, Swift, Android, ASP.NET Core, React Native, and Expo.",
+      "source": "auth0",
+      "description": "Auth0 skills for quickstarts, migration, MFA, and framework-specific SDK integrations for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Swift, Android, ASP.NET Core, React Native, and Expo.",
       "version": "1.0.0",
       "repository": "https://github.com/auth0/agent-skills.git",
       "license": "Apache-2.0",
@@ -43,8 +41,6 @@
         "android",
         "aspnetcore",
         "dotnet",
-        "springboot",
-        "java",
         "react-native",
         "expo",
         "node",
