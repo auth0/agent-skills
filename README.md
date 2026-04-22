@@ -93,6 +93,7 @@ All Auth0 skills are included in a single plugin:
 - `auth0-fastify` - Fastify web applications
 - `auth0-fastify-api` - Fastify API authentication
 - `auth0-fastapi-api` - FastAPI API authentication
+- `auth0-java-mvc-common` - Java Servlet web applications (mvc-auth-commons)
 - `auth0-aspnetcore-api` - ASP.NET Core API authentication
 - `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
 - `auth0-spa-js` - Vanilla JS SPAs (auth0-spa-js)
@@ -163,6 +164,7 @@ cp -r agent-skills/plugins/auth0/skills/* .claude/skills/
 | [auth0-fastify](./plugins/auth0/skills/auth0-fastify/SKILL.md)                         | Fastify web applications          | v1.0.0  |
 | [auth0-fastify-api](./plugins/auth0/skills/auth0-fastify-api/SKILL.md)                 | Fastify API authentication        | v1.0.0  |
 | [auth0-fastapi-api](./plugins/auth0/skills/auth0-fastapi-api/SKILL.md)                 | FastAPI API authentication        | v1.0.0  |
+| [auth0-java-mvc-common](./plugins/auth0/skills/auth0-java-mvc-common/SKILL.md)         | Java Servlet web applications     | v1.0.0  |
 | [auth0-aspnetcore-api](./plugins/auth0/skills/auth0-aspnetcore-api/SKILL.md)           | ASP.NET Core API authentication   | v1.0.0  |
 | [express-oauth2-jwt-bearer](./plugins/auth0/skills/express-oauth2-jwt-bearer/SKILL.md) | Express API JWT Bearer validation | v1.0.0  |
 
@@ -267,6 +269,7 @@ The quickstart skill includes comprehensive migration guidance for moving from o
 | Expo         | [react-native-auth0](https://github.com/auth0/react-native-auth0)                               | auth0-expo                |
 | Android      | [Auth0.Android](https://github.com/auth0/Auth0.Android)                                         | auth0-android             |
 | iOS/macOS    | [Auth0.swift](https://github.com/auth0/Auth0.swift)                                             | auth0-swift               |
+| Java Servlet | [mvc-auth-commons](https://github.com/auth0/auth0-java-mvc-common)                              | auth0-java-mvc-common     |
 | ASP.NET Core | [Auth0.AspNetCore.Authentication.Api](https://github.com/auth0/auth0-aspnetcore-authentication) | auth0-aspnetcore-api      |
 | Express API  | [express-oauth2-jwt-bearer](https://github.com/auth0/node-oauth2-jwt-bearer)                    | express-oauth2-jwt-bearer |
 
@@ -353,6 +356,12 @@ auth0/agent-skills/
 │           ├── auth0-fastify-api/
 │           │   └── SKILL.md
 │           ├── auth0-fastapi-api/
+│           │   ├── SKILL.md
+│           │   └── references/
+│           │       ├── api.md
+│           │       ├── integration.md
+│           │       └── setup.md
+│           ├── auth0-java-mvc-common/
 │           │   ├── SKILL.md
 │           │   └── references/
 │           │       ├── api.md
