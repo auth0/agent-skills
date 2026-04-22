@@ -24,15 +24,15 @@ import { auth0 } from '@/lib/auth0';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const { accessToken } = await auth0.getAccessToken();
+  const { token } = await auth0.getAccessToken();
 
-  if (!accessToken) {
+  if (!token) {
     return new NextResponse('Unauthorized', { status: 401 });
   }
 
   const apiResponse = await fetch('https://external-api.com/data', {
     headers: {
-      Authorization: `Bearer ${accessToken}`
+      Authorization: `Bearer ${token}`
     }
   });
 

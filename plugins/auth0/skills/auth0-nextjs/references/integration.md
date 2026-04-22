@@ -197,14 +197,14 @@ export const config = {
 import { auth0 } from '@/lib/auth0';
 
 export async function getData() {
-  const { accessToken } = await auth0.getAccessToken();
+  const { token } = await auth0.getAccessToken();
 
-  if (!accessToken) {
+  if (!token) {
     throw new Error('No access token available');
   }
 
   const response = await fetch('https://your-api.com/data', {
-    headers: { Authorization: `Bearer ${accessToken}` }
+    headers: { Authorization: `Bearer ${token}` }
   });
 
   return response.json();
@@ -225,14 +225,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const { accessToken } = await auth0.getAccessToken(req, res);
+  const { token } = await auth0.getAccessToken(req, res);
 
-  if (!accessToken) {
+  if (!token) {
     return res.status(401).json({ error: 'No access token' });
   }
 
   const response = await fetch('https://your-api.com/data', {
-    headers: { Authorization: `Bearer ${accessToken}` }
+    headers: { Authorization: `Bearer ${token}` }
   });
 
   const data = await response.json();

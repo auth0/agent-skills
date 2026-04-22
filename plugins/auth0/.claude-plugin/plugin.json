@@ -1,7 +1,7 @@
 {
   "name": "auth0",
   "version": "1.0.0",
-  "description": "Essential Auth0 skills including quickstarts, migration from other providers, and Multi-Factor Authentication (MFA).",
+  "description": "Auth0 skills for quickstarts, migration, MFA, and framework-specific SDK integrations for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Swift, Android, ASP.NET Core, React Native, and Expo.",
   "author": {
     "name": "Auth0",
     "email": "support@auth0.com"
