@@ -12,7 +12,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
-> gh api repos/auth0/express-oauth2-jwt-bearer/releases/latest --jq '.tag_name'
+> gh api repos/auth0/node-oauth2-jwt-bearer/releases/latest --jq '.tag_name'
 > ```
 > Use the returned version in all `package.json` dependency lines instead of any hardcoded version below.
 
@@ -161,7 +161,7 @@ req.auth.token      // Raw JWT string
 
 ## SDK Architecture
 
-The `express-oauth2-jwt-bearer` monorepo contains three packages:
+The `node-oauth2-jwt-bearer` monorepo contains three packages:
 
 | Package | Purpose |
 |---------|---------|
@@ -203,7 +203,7 @@ curl -v -X OPTIONS http://localhost:3000/api/private \
 ## References
 
 - [express-oauth2-jwt-bearer on npm](https://www.npmjs.com/package/express-oauth2-jwt-bearer)
-- [GitHub: auth0/express-oauth2-jwt-bearer](https://github.com/auth0/express-oauth2-jwt-bearer)
+- [GitHub: auth0/node-oauth2-jwt-bearer](https://github.com/auth0/node-oauth2-jwt-bearer)
 - [Auth0 Node.js API Quickstart](https://auth0.com/docs/quickstart/backend/nodejs/interactive)
 - [Auth0 APIs Dashboard](https://manage.auth0.com/#/apis)
 - [RFC 6750 — Bearer Token Usage](https://datatracker.ietf.org/doc/html/rfc6750)

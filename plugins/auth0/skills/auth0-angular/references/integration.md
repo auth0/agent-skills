@@ -51,16 +51,22 @@ export const routes: Routes = [
 
 ---
 
-## HTTP Interceptor
+## Calling a Protected API
 
-### Add Access Tokens to API Requests
+There are two alternative approaches to attach access tokens to API requests. Choose the one that best fits your needs — you do not need both:
 
-Configure HTTP interceptor in app config:
+- **HTTP Interceptor (recommended)** — Automatically attaches tokens to outgoing requests matching a configured URL list. This is the simplest, most centralized approach and works well for most applications.
+- **Manual token retrieval** — Call `getAccessTokenSilently()` to obtain a token and attach it to requests yourself. Use this when you need explicit, per-request control over token handling.
+
+### Option 1: HTTP Interceptor
+
+Configure the built-in HTTP interceptor in app config:
 
 ```typescript
 // app.config.ts
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { authHttpInterceptorFn } from '@auth0/auth0-angular';
+import { environment } from '../environments/environment'; // Adjust path as needed
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -85,7 +91,7 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-### Make API Calls
+With this in place, any `HttpClient` request to a URL matching `allowedList` will automatically include the access token:
 
 ```typescript
 // data.service.ts
@@ -100,6 +106,35 @@ export class DataService {
     return this.http.get('https://your-api.com/data');
     // Access token automatically added by interceptor
   }
+}
+```
+
+### Option 2: Manual Token Retrieval
+
+If you prefer explicit control instead of using the interceptor, call `getAccessTokenSilently()` to obtain a token and attach it yourself:
+
+```typescript
+import { AuthService } from '@auth0/auth0-angular';
+import { HttpClient } from '@angular/common/http';
+import { switchMap } from 'rxjs/operators';
+
+constructor(private auth: AuthService, private http: HttpClient) {}
+
+callApi() {
+  this.auth.getAccessTokenSilently({
+    authorizationParams: {
+      audience: 'https://your-api-identifier'
+    }
+  }).pipe(
+    switchMap(token =>
+      this.http.get('https://your-api.com/data', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    )
+  ).subscribe({
+    next: (response) => console.log(response),
+    error: (err) => console.error(err)
+  });
 }
 ```
 
@@ -179,26 +214,6 @@ login() {
   });
 }
 ```
-
-### Get Access Token Directly
-
-```typescript
-import { AuthService } from '@auth0/auth0-angular';
-
-constructor(private auth: AuthService) {}
-
-async callApi() {
-  this.auth.getAccessTokenSilently({
-    authorizationParams: {
-      audience: 'https://your-api-identifier'
-    }
-  }).subscribe(token => {
-    // Use token for API call
-  });
-}
-```
-
----
 
 ## Testing
 

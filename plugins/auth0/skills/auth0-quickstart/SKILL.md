@@ -214,6 +214,7 @@ Complete Auth0 CLI reference:
 - `auth0-migration` - Migrate from other auth providers
 
 ### SDK Skills
+- `auth0-spa-js` - SPA integration
 - `auth0-react` - React SPA integration
 - `auth0-nextjs` - Next.js integration
 - `auth0-vue` - Vue.js integration
