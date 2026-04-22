@@ -16,7 +16,7 @@ Protect Spring Boot API endpoints with JWT access token validation using `com.au
 > ```bash
 > gh api repos/auth0/auth0-auth-java/releases/latest --jq '.tag_name'
 > ```
-> Use the returned version in all dependency lines instead of any hardcoded version below. If the API call fails (e.g., no releases yet), use `1.0.0-beta.0`.
+> Use the returned version in all dependency lines instead of any hardcoded version below. If the API call fails (e.g., no releases yet), use `1.0.0-beta.1`.
 
 ## Prerequisites
 
@@ -45,7 +45,7 @@ Protect Spring Boot API endpoints with JWT access token validation using `com.au
 **Gradle (build.gradle):**
 
 ```groovy
-implementation 'com.auth0:auth0-springboot-api:1.0.0-beta.0'
+implementation 'com.auth0:auth0-springboot-api:1.0.0-beta.1'
 ```
 
 **Maven (pom.xml):**
@@ -54,7 +54,7 @@ implementation 'com.auth0:auth0-springboot-api:1.0.0-beta.0'
 <dependency>
     <groupId>com.auth0</groupId>
     <artifactId>auth0-springboot-api</artifactId>
-    <version>1.0.0-beta.0</version>
+    <version>1.0.0-beta.1</version>
 </dependency>
 ```
 

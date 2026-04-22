@@ -34,7 +34,7 @@ AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_AUDIENCE=https://api.example.com
 AUTH0_DPOPMODE=ALLOWED
 AUTH0_DPOPIATOFFSETSECONDS=300
-AUTH0_DPOPIATLEEWAYSSECONDS=30
+AUTH0_DPOPIATLEEWAYSECONDS=30
 ```
 
 > **Note:** Spring Boot environment variable binding removes dashes and is case-insensitive. Do not use underscores to separate words within a property name (e.g., use `AUTH0_DPOPMODE`, not `AUTH0_DPOP_MODE`).
@@ -50,6 +50,18 @@ AUTH0_DPOPIATLEEWAYSSECONDS=30
 | `dpopMode` | `DPoPMode` | No | `ALLOWED` | Controls which token types are accepted |
 | `dpopIatOffsetSeconds` | `Long` | No | `300` | Maximum age of DPoP proof `iat` claim in seconds |
 | `dpopIatLeewaySeconds` | `Long` | No | `30` | Additional leeway for DPoP proof time validation |
+| `domains` | `List<String>` | No | — | Additional trusted Auth0 domains (for Multiple Custom Domains) |
+| `cacheMaxEntries` | `Integer` | No | — | Maximum entries in the JWKS cache |
+| `cacheTtlSeconds` | `Long` | No | — | TTL in seconds for JWKS cache entries |
+
+### Auto-Configuration Beans
+
+The SDK auto-configuration also supports custom beans:
+
+| Bean | Description |
+|------|-------------|
+| `DomainResolver` | Custom domain resolution for Multiple Custom Domains (MCD). Provide a `@Bean` of type `DomainResolver` to route requests to different Auth0 domains based on the request. |
+| `AuthCache` | Custom cache implementation for JWKS or token verification results. Provide a `@Bean` of type `AuthCache` to override the default in-memory cache. |
 
 ### DPoPMode Enum
 

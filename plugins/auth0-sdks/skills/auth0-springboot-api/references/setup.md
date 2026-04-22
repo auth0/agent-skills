@@ -95,7 +95,7 @@ auth0.audience=https://my-springboot-api
 **Gradle (build.gradle):**
 
 ```groovy
-implementation 'com.auth0:auth0-springboot-api:1.0.0-beta.0'
+implementation 'com.auth0:auth0-springboot-api:1.0.0-beta.1'
 ```
 
 **Maven (pom.xml):**
@@ -104,7 +104,7 @@ implementation 'com.auth0:auth0-springboot-api:1.0.0-beta.0'
 <dependency>
     <groupId>com.auth0</groupId>
     <artifactId>auth0-springboot-api</artifactId>
-    <version>1.0.0-beta.0</version>
+    <version>1.0.0-beta.1</version>
 </dependency>
 ```
 

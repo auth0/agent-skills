@@ -255,10 +255,10 @@ The library uses `BaseAuthException` subclasses for different error conditions:
 
 | Exception | HTTP Status | Cause |
 |-----------|-------------|-------|
-| `MissingAuthorizationException` | 401 | No or multiple `Authorization` headers |
+| `MissingAuthorizationException` | 400 | No or multiple `Authorization` headers |
 | `VerifyAccessTokenException` | 401 | JWT validation failed (expired, bad signature, wrong audience) |
-| `InvalidAuthSchemeException` | 401 | Wrong auth scheme for configured DPoP mode |
-| `InvalidDpopProofException` | 401 | DPoP proof validation failed |
+| `InvalidAuthSchemeException` | 400 | Wrong auth scheme for configured DPoP mode |
+| `InvalidDpopProofException` | 400 | DPoP proof validation failed |
 | `InsufficientScopeException` | 403 | Valid token but missing required scope |
 
 The `Auth0AuthenticationFilter` handles all exceptions automatically, setting the appropriate HTTP status and `WWW-Authenticate` header. No custom exception handling is needed in controllers for auth errors.
