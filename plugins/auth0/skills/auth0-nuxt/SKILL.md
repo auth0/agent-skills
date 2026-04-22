@@ -8,13 +8,6 @@ metadata:
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
-    requires:
-      env:
-        - NUXT_AUTH0_DOMAIN
-        - NUXT_AUTH0_CLIENT_ID
-        - NUXT_AUTH0_CLIENT_SECRET
-        - NUXT_AUTH0_SESSION_SECRET
-        - NUXT_AUTH0_APP_BASE_URL
 ---
 
 # Auth0 Nuxt SDK

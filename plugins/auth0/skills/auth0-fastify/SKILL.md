@@ -8,13 +8,6 @@ metadata:
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
-    requires:
-      env:
-        - AUTH0_DOMAIN
-        - AUTH0_CLIENT_ID
-        - AUTH0_CLIENT_SECRET
-        - SESSION_SECRET
-        - APP_BASE_URL
 ---
 
 # Auth0 Fastify Integration
