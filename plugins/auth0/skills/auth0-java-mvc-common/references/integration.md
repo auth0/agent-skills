@@ -14,7 +14,7 @@ public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
+            throws ServletException, IOException {
         AuthenticationController controller = Auth0Config.getAuthController();
 
         String scheme = request.getScheme();
@@ -39,7 +39,7 @@ public class CallbackServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
+            throws ServletException, IOException {
         AuthenticationController controller = Auth0Config.getAuthController();
 
         try {
@@ -72,7 +72,7 @@ public class LogoutServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
+            throws ServletException, IOException {
         // Invalidate local session
         if (request.getSession(false) != null) {
             request.getSession().invalidate();
@@ -303,7 +303,7 @@ public class DashboardServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
+            throws ServletException, IOException {
         String idToken = (String) request.getSession().getAttribute("idToken");
         DecodedJWT jwt = JWT.decode(idToken);
 
