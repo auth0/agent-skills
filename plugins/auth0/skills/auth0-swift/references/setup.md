@@ -4,40 +4,55 @@
 
 > **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt.
 > - **If credentials are provided:** Write `Auth0.plist` directly with those values and proceed to "Post-Setup Steps".
-> - **If no credentials are provided:** Run the bootstrap script below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
+> - **If no credentials are provided:** Create the Auth0 application using the CLI commands below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
 
-### Bootstrap Script
+### Auth0 CLI Setup
 
-> **Agent instruction:** Run these checks before the script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+> **Agent instruction:** Run these pre-flight checks before creating the Auth0 application. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
-> 1. **Check Node.js**: `node --version`. If missing or below 20, install it: `brew install node`.
-> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
+> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
+> 2. **Check Ruby xcodeproj gem**: `ruby -e "require 'xcodeproj'" 2>&1`. If it fails, install it: `gem install xcodeproj`.
 > 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
 > 4. **Confirm active tenant**: Parse the `→` line from the CSV output. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
 >    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 3.
 >
-> Once confirmed, run:
-> ```bash
-> cd <path-to-skill>/auth0-swift/scripts
-> npm install
-> node bootstrap.mjs <path-to-xcode-project>
-> ```
+> Once confirmed, run the following steps:
 >
-> If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run. Retry up to 3 times.
-> Only if the script keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID, then write `Auth0.plist` with those values.
-
-The script will:
-1. Detect your bundle identifier from `project.pbxproj` (`PRODUCT_BUNDLE_IDENTIFIER`)
-2. Create a **Native** application in Auth0 Dashboard
-3. Register both `https://` and `{bundle}://` callback + logout URLs
-4. Set up a database connection (Username-Password-Authentication)
-5. Write `Auth0.plist` to your project directory
+> **Step A — Detect bundle identifier:**
+> ```bash
+> grep -m1 'PRODUCT_BUNDLE_IDENTIFIER' <path-to-xcodeproj>/project.pbxproj | sed 's/.*= *//;s/;.*//' | tr -d '[:space:]'
+> ```
+> Skip values containing `$(` or `Tests`.
+>
+> **Step B — Create Native application:**
+> ```bash
+> auth0 apps create \
+>   --name "APP_NAME" \
+>   --type native \
+>   --callbacks "BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>   --logout-urls "BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>   --json \
+>   --no-input
+> ```
+> Parse the JSON output to extract `client_id` and `domain` (the tenant domain).
+>
+> **Step C — Write `Auth0.plist`:**
+> Write the plist file to the Xcode project directory (next to the `.xcodeproj`) using the `ClientId` and `Domain` from Step B. See [Writing Auth0.plist](#writing-auth0plist-credentials-already-known) below for the XML template.
+>
+> **Step D — Add `Auth0.plist` to Xcode project:**
+> ```bash
+> ruby <path-to-skill>/auth0-swift/scripts/xcode-modify.rb <xcodeproj_path> <plist_abs_path> <entitlements_rel_path>
+> ```
+> This adds `Auth0.plist` to the main app target's Resources build phase and sets `CODE_SIGN_ENTITLEMENTS` on all build configurations.
+>
+> If any CLI command fails due to session expiry, ask the user to run `auth0 login` again, then retry. Retry up to 3 times.
+> Only if the CLI keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID, then write `Auth0.plist` with those values.
 
 ### Writing Auth0.plist (credentials already known)
 
-Use this only when credentials are explicitly provided by the user or obtained after bootstrap script failure.
+Use this only when credentials are explicitly provided by the user or obtained after CLI setup failure.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -52,10 +67,11 @@ Use this only when credentials are explicitly provided by the user or obtained a
 </plist>
 ```
 
-Add the file to the Xcode project:
-1. Right-click on the project in Navigator → **Add Files to "YourProject"**
-2. Select `Auth0.plist`
-3. Ensure your app target is checked in the "Add to targets" list
+Add the file to the Xcode project using the Ruby script:
+```bash
+ruby <path-to-skill>/auth0-swift/scripts/xcode-modify.rb <xcodeproj_path> <plist_abs_path> <entitlements_rel_path>
+```
+This automatically adds `Auth0.plist` to the main app target's Resources build phase and sets `CODE_SIGN_ENTITLEMENTS`.
 
 ---
 
@@ -75,14 +91,16 @@ This allows the Auth0 browser to redirect back to your app using the `{bundle}:/
 >
 > **Prerequisites:** Before configuring Xcode, Auth0 must be told your Apple Team ID and Bundle ID so it can host the `apple-app-site-association` file. Without this, Universal Links will not work even if the entitlements are correct.
 
-#### Step 1 — Configure Device Settings in Auth0 Dashboard
+#### Step 1 — Configure Device Settings via Auth0 CLI
 
 > **Agent instruction:**
-> 1. In Auth0 Dashboard → **Applications** → your app → **Settings**, scroll to the bottom and click **Show Advanced Settings**
-> 2. Select the **Device Settings** tab
-> 3. Enter the **Apple Team ID** — found at [developer.apple.com/account](https://developer.apple.com/account) under Membership Details
-> 4. Enter the **App Bundle Identifier** (e.g. `com.example.myapp`)
-> 5. Click **Save Changes**
+> Extract `DEVELOPMENT_TEAM` from `project.pbxproj` (10-character value, e.g. `ABC12DE34F`). If not found, ask via `AskUserQuestion`: _"What is your Apple Team ID? (developer.apple.com → Account → Membership Details)"_
+>
+> ```bash
+> auth0 api patch applications/CLIENT_ID \
+>   --data '{"mobile":{"ios":{"team_id":"TEAM_ID","app_bundle_identifier":"BUNDLE_ID"}}}' \
+>   --no-input
+> ```
 >
 > Auth0 will now automatically host the Apple App Site Association file at:
 > `https://YOUR_AUTH0_DOMAIN/.well-known/apple-app-site-association`
@@ -110,13 +128,15 @@ This allows the Auth0 browser to redirect back to your app using the `{bundle}:/
 > - `webcredentials:` — enables Password AutoFill and credential handoff with Auth0
 >
 > 4. If `com.apple.developer.associated-domains` already exists in the file, append the two `<string>` entries to the existing array rather than replacing it.
-> 5. If the file was newly created, check that `CODE_SIGN_ENTITLEMENTS` in the target's build settings points to it. If not, inform the user to set it in Xcode under target → Build Settings → Code Signing Entitlements.
+> 5. If the file was newly created, run `ruby <path-to-skill>/auth0-swift/scripts/xcode-modify.rb` to set `CODE_SIGN_ENTITLEMENTS` in the target's build settings automatically.
 > 6. Ensure `.useHTTPS()` is called on the `webAuth()` builder:
 >    ```swift
 >    Auth0.webAuth().useHTTPS()
 >    ```
 
 ### Verify Auth0.plist Target Membership
+
+> **Agent instruction:** If `xcode-modify.rb` was used to add `Auth0.plist`, target membership is already configured. Only verify manually if the plist was added by hand.
 
 In Xcode Project Navigator:
 1. Click `Auth0.plist`
@@ -128,10 +148,12 @@ In Xcode Project Navigator:
 For macOS targets, also:
 1. Select your app target → **Signing & Capabilities** tab
 2. Click **+ Capability** → add **Outgoing Connections (Client)**
-3. Register macOS callback URLs in Auth0 Dashboard:
-   ```text
-   https://YOUR_DOMAIN/macos/YOUR_BUNDLE_ID/callback,
-   YOUR_BUNDLE_ID://YOUR_DOMAIN/macos/YOUR_BUNDLE_ID/callback
+3. Register macOS callback URLs via Auth0 CLI:
+   ```bash
+   auth0 apps update CLIENT_ID \
+     --callbacks "https://DOMAIN/macos/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/macos/BUNDLE_ID/callback" \
+     --logout-urls "https://DOMAIN/macos/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/macos/BUNDLE_ID/callback" \
+     --no-input
    ```
 
 ---
