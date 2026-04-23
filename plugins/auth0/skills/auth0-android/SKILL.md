@@ -40,7 +40,15 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 2. **Configure Auth0**:
 
-    See [**Setup Guide**](references/setup.md) for automatic/manual setup, post-setup required project changes, and callback URL configuration.
+   > **Agent instruction:** Check whether the user prompt already includes both Auth0 **Client ID** and **Domain**.
+   > - If both are provided, proceed directly to **Manual Setup** in [**Setup Guide**](references/setup.md) using those values.
+   > - If either is missing, you MUST ask the user BEFORE writing any code or files. Use `AskUserQuestion`:
+   >   _"How would you like to configure Auth0 for this project?"_
+   >   - **Automatic setup (Recommended)** — Auth0 CLI creates the app and writes credentials to `strings.xml`
+   >   - **Manual setup** — I'll provide my Client ID and Domain
+   >
+   > Then follow [**Setup Guide**](references/setup.md) for the chosen path.
+   > **Do NOT proceed to step 3 until Auth0 credentials are confirmed.**
 
 3. **Initialize**: Create an Auth0 account instance:
    ```kotlin

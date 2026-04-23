@@ -7,7 +7,7 @@
 ## Setup Overview
 
 1. Add SDK dependency to `build.gradle`
-2. Configure Auth0 (automatic bootstrap script or manual credentials)
+2. Configure Auth0 (automatic inline script or manual credentials)
 3. Add manifest placeholders and INTERNET permission (post-setup)
 
 ## Auth0 Configuration
@@ -15,36 +15,170 @@
 > **Agent instruction:** First, check whether the user prompt already includes both Auth0 **Client ID** and **Domain**.
 > - If both are provided, skip the setup-choice question and proceed directly to **Manual Setup (User-Provided Credentials)** using those values.
 > - If either value is missing, ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this project?"_
-> - **Automatic setup (Recommended)** — runs a bootstrap script that creates the Auth0 app, database connection, callback URLs, and populates `strings.xml`
+> - **Automatic setup (Recommended)** — runs an inline bash script that creates the Auth0 app, database connection, callback URLs, and populates `strings.xml`
 > - **Manual setup** — the user provides their Auth0 Client ID and Domain
 >
 > Follow the matching section below based on their choice.
 
 ### Automatic Setup
 
-> **Agent instruction:** Run these quick checks before the bootstrap script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
->
-> 1. **Check Node.js**: `node --version`. If missing or below 20, ask user: install (`brew install node`) or switch to manual setup.
-> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, ask user: install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
-> 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
->    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
->    - Wait for the user to confirm, then re-run the check to verify.
-> 4. **Confirm active tenant**: Parse the `→` line from the CSV output to identify the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
->    - If yes, proceed.
->    - If no, ask the user to run `auth0 tenants use <tenant-domain>` in their terminal, then re-run step 3 to confirm the new active tenant.
->
-> Once confirmed, run the bootstrap script:
-> ```bash
-> cd <path-to-skill>/auth0-android/scripts
-> npm install
-> node bootstrap.mjs <path-to-android-project>
-> ```
->
-> The script handles Auth0 app creation, database connection, callback URLs, and `strings.xml`. The agent should NOT handle client_id or domain manually.
->
-> If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run the script. For other failures, fall back to **Manual Setup** below.
->
-> After the script completes, proceed to **Post-Setup Steps** below.
+Below automates the setup. Inform the user that Auth0 credentials will be written to `strings.xml`.
+
+**Before running any part of this setup that writes to `strings.xml`, you MUST ask the user for explicit confirmation.** Follow the steps below precisely.
+
+#### Step 1: Check for existing strings.xml and confirm with user
+
+Before writing credentials, check whether a `strings.xml` already exists:
+
+```bash
+test -f app/src/main/res/values/strings.xml && echo "STRINGS_EXISTS" || echo "STRINGS_NOT_FOUND"
+```
+
+Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
+
+- If `strings.xml` exists, ask:
+  - Question: "A `strings.xml` file already exists. This setup will add or update the Auth0 credential entries (`com_auth0_client_id`, `com_auth0_domain`, `com_auth0_scheme`) without modifying other entries. Do you want to proceed?"
+  - Options: "Yes, update existing strings.xml" / "No, I'll update it manually"
+
+- If `strings.xml` does **not** exist, ask:
+  - Question: "This setup will create `app/src/main/res/values/strings.xml` with Auth0 credentials (`com_auth0_client_id`, `com_auth0_domain`, `com_auth0_scheme`). Do you want to proceed?"
+  - Options: "Yes, create strings.xml" / "No, I'll configure it manually"
+
+**Do not proceed with writing to strings.xml unless the user selects the confirmation option.**
+
+#### Step 2: Run automated setup (only after confirmation)
+
+```bash
+#!/bin/bash
+
+PROJECT_PATH="${1:-$PWD}"
+SCHEME="demo"
+
+# Install Auth0 CLI
+if ! command -v auth0 &> /dev/null; then
+  [[ "$OSTYPE" == "darwin"* ]] && brew install auth0/auth0-cli/auth0 || \
+  curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
+fi
+
+# Login
+auth0 login 2>/dev/null || auth0 login
+
+# Find build.gradle / build.gradle.kts
+if [ -f "$PROJECT_PATH/app/build.gradle" ]; then
+  GRADLE_FILE="$PROJECT_PATH/app/build.gradle"
+elif [ -f "$PROJECT_PATH/app/build.gradle.kts" ]; then
+  GRADLE_FILE="$PROJECT_PATH/app/build.gradle.kts"
+else
+  echo "❌ No app/build.gradle or app/build.gradle.kts found in $PROJECT_PATH"
+  exit 1
+fi
+
+# Extract applicationId
+PACKAGE_NAME=$(grep -E 'applicationId\s*=?\s*"[^"]*"' "$GRADLE_FILE" | grep -oE '"[^"]*"' | tr -d '"' | head -1)
+if [ -z "$PACKAGE_NAME" ]; then
+  echo "❌ Could not find applicationId in $GRADLE_FILE"
+  exit 1
+fi
+
+# List existing apps and prompt to pick or create
+auth0 apps list
+read -p "Enter app ID (or press Enter to create a new one): " APP_ID
+
+if [ -z "$APP_ID" ]; then
+  DOMAIN=$(auth0 tenants list --csv --no-input 2>/dev/null | grep '→' | cut -d',' -f2 | tr -d ' ')
+  CALLBACK_URL="${SCHEME}://${DOMAIN}/android/${PACKAGE_NAME}/callback"
+  CLIENT_JSON=$(auth0 apps create \
+    --name "${PACKAGE_NAME}-android" \
+    --type native \
+    --auth-method none \
+    --callbacks "$CALLBACK_URL" \
+    --logout-urls "$CALLBACK_URL" \
+    --json \
+    --no-input)
+  CLIENT_ID=$(echo "$CLIENT_JSON" | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+else
+  CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+  DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
+  CALLBACK_URL="${SCHEME}://${DOMAIN}/android/${PACKAGE_NAME}/callback"
+fi
+
+# Check / create database connection
+CONNECTIONS_JSON=$(auth0 api get connections --no-input 2>/dev/null || echo "[]")
+CONNECTION_ID=$(echo "$CONNECTIONS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for c in data:
+    if c.get('name') == 'Username-Password-Authentication':
+        print(c['id'])
+        break
+" 2>/dev/null)
+ENABLED_CLIENTS=$(echo "$CONNECTIONS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for c in data:
+    if c.get('name') == 'Username-Password-Authentication':
+        print(json.dumps(c.get('enabled_clients', [])))
+        break
+" 2>/dev/null)
+
+if [ -z "$CONNECTION_ID" ]; then
+  auth0 api post connections \
+    --data "{\"strategy\":\"auth0\",\"name\":\"Username-Password-Authentication\",\"enabled_clients\":[\"$CLIENT_ID\"]}" \
+    --no-input > /dev/null
+else
+  UPDATED_CLIENTS=$(echo "$ENABLED_CLIENTS" | python3 -c "
+import sys, json
+clients = json.load(sys.stdin)
+if '$CLIENT_ID' not in clients:
+    clients.append('$CLIENT_ID')
+print(json.dumps(clients))
+")
+  auth0 api patch "connections/$CONNECTION_ID" \
+    --data "{\"enabled_clients\":$UPDATED_CLIENTS}" \
+    --no-input > /dev/null
+fi
+
+# Write / update strings.xml
+STRINGS_FILE="$PROJECT_PATH/app/src/main/res/values/strings.xml"
+mkdir -p "$(dirname "$STRINGS_FILE")"
+
+python3 << PYEOF
+import re, os
+
+path = "$STRINGS_FILE"
+entries = {
+    'com_auth0_client_id': '$CLIENT_ID',
+    'com_auth0_domain': '$DOMAIN',
+    'com_auth0_scheme': '$SCHEME',
+}
+
+content = open(path).read() if os.path.exists(path) else ''
+
+if '<resources' in content:
+    for key, value in entries.items():
+        pattern = re.compile(r'<string\s+name="' + re.escape(key) + r'"[^>]*>[\s\S]*?</string>')
+        replacement = f'<string name="{key}">{value}</string>'
+        if pattern.search(content):
+            content = pattern.sub(replacement, content)
+        else:
+            content = content.replace('</resources>', f'    <string name="{key}">{value}</string>\n</resources>')
+else:
+    lines = ['    <string name="app_name">My App</string>']
+    lines += [f'    <string name="{k}">{v}</string>' for k, v in entries.items()]
+    content = '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n' + '\n'.join(lines) + '\n</resources>\n'
+
+with open(path, 'w') as f:
+    f.write(content)
+PYEOF
+
+echo "✅ Auth0 credentials written to $STRINGS_FILE"
+echo "   Domain:       $DOMAIN"
+echo "   Client ID:    $CLIENT_ID"
+echo "   Package:      $PACKAGE_NAME"
+echo "   Callback URL: $CALLBACK_URL"
+```
+
+After the script runs, proceed to **Post-Setup Steps** below.
 
 ### Manual Setup (User-Provided Credentials)
 
@@ -117,7 +251,7 @@ android {
 
 ## Android App Links (Recommended for Production)
 
-> **Note:** The bootstrap script and manual setup default to a custom scheme (`demo://`) for simplicity. App Links with `https://` are recommended for production apps. To switch, update `com_auth0_scheme` to `https` in `strings.xml` and update your callback URL in the Auth0 Dashboard to `https://YOUR_AUTH0_DOMAIN/android/YOUR_APP_PACKAGE_NAME/callback`.
+> **Note:** The automatic setup script and manual setup default to a custom scheme (`demo://`) for simplicity. App Links with `https://` are recommended for production apps. To switch, update `com_auth0_scheme` to `https` in `strings.xml` and update your callback URL in the Auth0 Dashboard to `https://YOUR_AUTH0_DOMAIN/android/YOUR_APP_PACKAGE_NAME/callback`.
 
 For the `https://` scheme, Android uses App Links for deeper integration:
 
