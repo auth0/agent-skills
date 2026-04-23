@@ -37,22 +37,22 @@
         "angular",
         "express",
         "fastify",
-        "fastify-api",
         "fastapi",
+        "flask",
+        "springboot",
+        "java",
         "swift",
         "android",
         "aspnetcore",
         "dotnet",
         "springboot",
         "java",
-        "servlet",
-        "java-mvc",
         "react-native",
         "expo",
+        "spa-js",
         "node",
         "jwt",
-        "express-oauth2-jwt-bearer",
-        "express-jwt"
+        "express-oauth2-jwt-bearer"
       ],
       "category": "authentication"
     }
