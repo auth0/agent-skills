@@ -152,17 +152,19 @@ public class Auth0Config {
 import com.auth0.AuthenticationController;
 import com.auth0.AuthorizeUrl;
 
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @WebServlet(urlPatterns = {"/login"})
 public class LoginServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
+            throws ServletException, IOException {
         AuthenticationController controller = Auth0Config.getAuthController();
 
         // Build callback URL — omit port for standard ports (80/443) to avoid
@@ -187,17 +189,19 @@ import com.auth0.AuthenticationController;
 import com.auth0.IdentityVerificationException;
 import com.auth0.Tokens;
 
+import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @WebServlet(urlPatterns = {"/callback"})
 public class CallbackServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
+            throws ServletException, IOException {
         AuthenticationController controller = Auth0Config.getAuthController();
 
         try {
