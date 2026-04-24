@@ -144,6 +144,7 @@ cp -r agent-skills/plugins/auth0/skills/* .claude/skills/
 | [auth0-quickstart](./plugins/auth0/skills/auth0-quickstart/SKILL.md) | Framework detector and router     | v1.0.0  |
 | [auth0-migration](./plugins/auth0/skills/auth0-migration/SKILL.md)   | Migrate from other auth providers | v1.0.0  |
 | [auth0-mfa](./plugins/auth0/skills/auth0-mfa/SKILL.md)               | Multi-Factor Authentication       | v1.0.0  |
+| [acul-screen-generator](./plugins/auth0/skills/acul-screen-generator/SKILL.md) | ACUL screen generation and theming | v1.0.0 |
 
 ### Frontend Framework Skills
 
@@ -305,6 +306,20 @@ auth0/agent-skills/
 │           │       ├── api.md
 │           │       ├── backend.md
 │           │       └── examples.md
+│           ├── acul-screen-generator/
+│           │   ├── SKILL.md
+│           │   ├── assets/
+│           │   │   ├── js-templates/
+│           │   │   ├── react-templates/
+│           │   │   └── theme-templates/
+│           │   ├── references/
+│           │   │   ├── acul-js-sdk.md
+│           │   │   ├── acul-react-sdk.md
+│           │   │   ├── cli-commands.md
+│           │   │   ├── screen-catalog.md
+│           │   │   ├── social-providers.md
+│           │   │   └── theming-patterns.md
+│           │   └── tests/
 │           ├── auth0-react/
 │           │   ├── SKILL.md
 │           │   └── references/
