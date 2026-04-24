@@ -14,9 +14,9 @@
 
 > **Agent instruction:** First, check whether the user prompt already includes both Auth0 **Client ID** and **Domain**.
 > - If both are provided, skip the setup-choice question and proceed directly to **Manual Setup (User-Provided Credentials)** using those values.
-> - If either value is missing, ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this project?"_
-> - **Automatic setup (Recommended)** — runs an inline bash script that creates the Auth0 app, database connection, callback URLs, and populates `strings.xml`
-> - **Manual setup** — the user provides their Auth0 Client ID and Domain
+> - If either value is missing, ask the user:
+>   - Question: "How would you like to configure Auth0 for this project?"
+>   - Options: "Automatic setup (Recommended) — Auth0 CLI creates the app and writes credentials to strings.xml" / "Manual setup — I'll provide my Client ID and Domain"
 >
 > Follow the matching section below based on their choice.
 
