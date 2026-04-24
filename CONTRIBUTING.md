@@ -6,19 +6,16 @@ We appreciate feedback and contribution to this repo! Before you get started, pl
 
 ### Adding a New Skill
 
-1. Determine which plugin your skill belongs to:
-   - `plugins/auth0/` - Core skills (quickstart, migration, MFA, etc.)
-   - `plugins/auth0-sdks/` - Language or Framework related SDK skills
-2. Create a new directory under the appropriate plugin's `skills/` directory
-3. Add a `SKILL.md` file following the [Agent Skills specification](https://agentskills.io/specification)
-4. Optionally add additional reference files
-5. Update the README.md to list your skill in the appropriate table
-6. Submit a pull request
+1. Create a new directory under `plugins/auth0/skills/`
+2. Add a `SKILL.md` file following the [Agent Skills specification](https://agentskills.io/specification)
+3. Optionally add additional reference files
+4. Update the README.md to list your skill in the appropriate table
+5. Submit a pull request
 
 ### Skill Structure
 
 ```
-plugins/auth0-sdks/skills/my-skill/
+plugins/auth0/skills/my-skill/
 ├── SKILL.md           # Required: Main skill file
 ├── references/        # Optional: Additional documentation
 │   └── reference.md
@@ -71,10 +68,10 @@ Use the skills reference library to validate your skills:
 
 ```bash
 # Validate a specific skill
-npx skills-ref validate ./plugins/auth0-sdks/skills/my-skill
+npx skills-ref validate ./plugins/auth0/skills/my-skill
 
-# Validate all skills in a plugin
-npx skills-ref validate ./plugins/auth0-sdks/skills/
+# Validate all skills
+npx skills-ref validate ./plugins/auth0/skills/
 ```
 
 ### Testing with AI Assistants
@@ -84,10 +81,10 @@ Test your skills work correctly with AI assistants:
 1. Install the plugin/skill locally:
    ```bash
    # Install entire plugin
-   npx skills add ./plugins/auth0-sdks
+   npx skills add ./plugins/auth0
 
    # Or copy to Claude skills directory
-   cp -r ./plugins/auth0-sdks/skills/my-skill ~/.claude/skills/
+   cp -r ./plugins/auth0/skills/my-skill ~/.claude/skills/
    ```
 2. Ask an AI assistant to use the skill
 3. Verify the generated code is correct

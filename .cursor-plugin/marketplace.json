@@ -13,21 +13,7 @@
     {
       "name": "auth0",
       "source": "auth0",
-      "description": "Essential Auth0 skills including quickstarts, migration from other providers, and Multi-Factor Authentication (MFA).",
-      "version": "1.0.0",
-      "repository": "https://github.com/auth0/agent-skills.git",
-      "license": "Apache-2.0",
-      "author": {
-        "name": "Auth0",
-        "email": "support@auth0.com"
-      },
-      "keywords": ["auth0", "quickstart", "migration", "mfa", "security"],
-      "category": "authentication"
-    },
-    {
-      "name": "auth0-sdks",
-      "source": "auth0-sdks",
-      "description": "Framework-specific Auth0 SDK integration skills for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Swift, Android, ASP.NET Core, React Native, and Expo with complete implementation guides.",
+      "description": "Auth0 skills for quickstarts, migration, MFA, and framework-specific SDK integrations for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Swift, Android, ASP.NET Core, React Native, and Expo.",
       "version": "1.0.0",
       "repository": "https://github.com/auth0/agent-skills.git",
       "license": "Apache-2.0",
@@ -37,6 +23,10 @@
       },
       "keywords": [
         "auth0",
+        "quickstart",
+        "migration",
+        "mfa",
+        "security",
         "sdk",
         "react",
         "nextjs",
@@ -45,16 +35,22 @@
         "angular",
         "express",
         "fastify",
-        "fastify-api",
         "fastapi",
-        "android",
+        "flask",
+        "springboot",
+        "java",
         "swift",
+        "android",
         "aspnetcore",
         "dotnet",
         "react-native",
-        "expo"
+        "expo",
+        "spa-js",
+        "node",
+        "jwt",
+        "express-oauth2-jwt-bearer"
       ],
-      "category": "sdk"
+      "category": "authentication"
     }
   ]
 }

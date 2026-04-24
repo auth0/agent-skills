@@ -166,7 +166,7 @@ ng serve
 | Not configuring AuthModule properly | Must call `AuthModule.forRoot()` in NgModule or `provideAuth0()` in standalone config |
 | Accessing auth before initialization | Use `isLoading$` observable to wait for SDK initialization |
 | Storing tokens manually | Never manually store tokens - SDK handles secure storage automatically |
-| Missing HTTP interceptor | Use `authHttpInterceptorFn` or `AuthHttpInterceptor` to attach tokens to API calls |
+| No token sent to API | Use either `authHttpInterceptorFn` for automatic token attachment, or `getAccessTokenSilently()` for manual control — see [Integration Guide](references/integration.md#calling-a-protected-api) |
 | Route guard not protecting routes | Apply `AuthGuard` (or `authGuardFn`) to protected routes in routing config |
 
 ---
@@ -187,12 +187,12 @@ ng serve
 - `user$` - Observable user profile information
 - `loginWithRedirect()` - Initiate login
 - `logout()` - Log out user
-- `getAccessTokenSilently()` - Get access token for API calls
+- `getAccessTokenSilently()` - Get access token manually (alternative to HTTP interceptor)
 
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
 - Protected routes with guards → [Integration Guide](references/integration.md#protected-routes)
-- HTTP interceptors for API calls → [Integration Guide](references/integration.md#http-interceptor)
+- Calling a protected API → [Integration Guide](references/integration.md#calling-a-protected-api)
 - Error handling → [Integration Guide](references/integration.md#error-handling)
 
 ---
