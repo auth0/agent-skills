@@ -25,9 +25,9 @@ auth0 acul init <app_name> -t react -s login,login-id,login-password,signup,rese
 
 | Flag | Short | Description |
 |------|-------|-------------|
-| `--template string` | `-t` | Framework template: `react` or `js` |
-| `--screens strings` | `-s` | Comma-separated screen list |
-| `--tenant string` | | Target a specific tenant |
+| `--template` | `-t` | Framework template: `react` or `js` |
+| `--screens` | `-s` | Comma-separated screen list |
+| `--tenant` | | Target a specific tenant |
 | `--no-input` | | Disable interactive prompts |
 
 Creates `acul_config.json` in the project directory — required for all subsequent commands.
@@ -47,7 +47,7 @@ auth0 acul screen add mfa-otp-challenge -d ./my-project
 | Flag | Short | Description |
 |------|-------|-------------|
 | `--dir` | `-d` | Path to project directory (must contain `acul_config.json`) |
-| `--tenant string` | | Target a specific tenant |
+| `--tenant` | | Target a specific tenant |
 
 **ON ERROR:** Fall back to SDK examples — see `screen-catalog.md` for URLs.
 
@@ -66,13 +66,13 @@ auth0 acul config list --prompt login --rendering-mode advanced --fields head_ta
 
 | Flag | Description |
 |------|-------------|
-| `--prompt string` | Filter by Universal Login prompt |
-| `--rendering-mode string` | Filter by mode: `advanced` or `standard` |
-| `--screen string` | Filter by screen name |
-| `--fields string` | Comma-separated fields to include |
+| `--prompt` | Filter by Universal Login prompt |
+| `--rendering-mode` | Filter by mode: `advanced` or `standard` |
+| `--screen` | Filter by screen name |
+| `--fields` | Comma-separated fields to include |
 | `--json` | Output as JSON |
-| `--page int` | Page index (starts at 0) |
-| `--per-page int` | Results per page (default 50, max 100) |
+| `--page` | Page index (starts at 0) |
+| `--per-page` | Results per page (default 50, max 100) |
 
 ### Get screen config
 
@@ -84,7 +84,7 @@ auth0 acul config get signup-id --file settings.json
 
 | Flag | Short | Description |
 |------|-------|-------------|
-| `--file string` | `-f` | Save config to file path |
+| `--file` | `-f` | Save config to file path |
 
 ### Set screen config
 
@@ -120,10 +120,10 @@ auth0 acul dev -c -s login-id,signup -d ./my-project
 
 | Flag | Short | Description |
 |------|-------|-------------|
-| `--port string` | `-p` | Local dev server port (required) |
-| `--dir string` | `-d` | ACUL project directory path |
+| `--port` | `-p` | Local dev server port (required) |
+| `--dir` | `-d` | ACUL project directory path |
 | `--connected` | `-c` | Connected mode: syncs to tenant |
-| `--screens strings` | `-s` | Specific screens to develop |
+| `--screens` | `-s` | Specific screens to develop |
 
 ⚠️ **Connected mode warning:** only use on stage/dev tenants, never production.
 
