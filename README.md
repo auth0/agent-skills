@@ -69,13 +69,14 @@ You don't pick skills manually — framework detection handles it.
 
 ## Skills
 
-22 skills covering web, mobile, and API authentication.
+23 skills covering web, mobile, and API authentication.
 
 | Skill | SDK | Frameworks |
 |-------|-----|------------|
 | **Quickstart Router** | — | Detects your framework and routes to the right skill |
 | **Migration** | — | Migrate from Firebase, Cognito, Supabase, Clerk, or custom auth |
 | **MFA** | — | TOTP, SMS, email, push, WebAuthn |
+| **ACUL Screen Generator** | [`@auth0/auth0-acul-react`](https://github.com/auth0/universal-login) | Custom Universal Login screens and theming |
 | **React** | [`@auth0/auth0-react`](https://github.com/auth0/auth0-react) | React SPAs (Vite, CRA) |
 | **Vue** | [`@auth0/auth0-vue`](https://github.com/auth0/auth0-vue) | Vue 3 |
 | **Angular** | [`@auth0/auth0-angular`](https://github.com/auth0/auth0-angular) | Angular 13+ |
