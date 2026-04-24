@@ -4,461 +4,126 @@
 
 [![License](https://img.shields.io/:license-apache-blue.svg?style=flat)](https://opensource.org/licenses/Apache-2.0)
 
-📚 [Documentation](https://auth0.com/docs/quickstart/agent-skills) • 🚀 [Getting Started](#quick-start) • 💬 [Feedback](#feedback)
+AI agent skills that help coding assistants implement Auth0 authentication correctly. Works with [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com), [GitHub Copilot](https://github.com/features/copilot), and [40+ other agents](https://agentskills.io/clients) that support the [Agent Skills](https://agentskills.io) format.
 
-AI agent skills for Auth0 authentication integration. These skills help AI coding assistants (Claude Code, Cursor, Copilot) implement Auth0 correctly across any framework.
+[Documentation](https://auth0.com/docs/quickstart/agent-skills) · [Getting Started](#prerequisites) · [Feedback](#feedback)
 
-## What are Agent Skills?
+## Prerequisites
 
-Agent Skills are structured instructions that help AI agents implement features correctly. Each skill contains best practices, code patterns, and step-by-step guidance for Auth0 integration.
+- An [Auth0 account](https://auth0.com/signup) (free)
+- An AI coding assistant (Claude Code, Cursor, GitHub Copilot, or any [Agent Skills-compatible](https://agentskills.io/clients) tool)
 
-Learn more at [agentskills.io](https://agentskills.io) and [skills.sh](https://skills.sh)
+## Install
 
-## Quick Start
+### Claude Code
 
-Get Auth0 up running in your app in minutes:
+Auth0 is on the official Claude Code plugins marketplace:
 
-### Prerequisites
-
-- An Auth0 account ([sign up free](https://auth0.com/signup))
-- An AI coding assistant (Claude Code, Cursor, or GitHub Copilot)
-
-### Steps
-
-1. **Install the Auth0 skills** (choose one method):
-   _Option 1: Via Skills CLI (fastest)_
-
-   ```bash
-   npx skills add auth0/agent-skills
-   ```
-
-   _Option 2: Via Claude Code marketplace_
-
-   ```bash
-   # Open Claude Code
-   claude
-
-   # Add the Auth0 marketplace
-   /plugin marketplace add auth0/agent-skills
-
-   # Install the plugin
-   /plugin install auth0@auth0-agent-skills
-   ```
-
-2. **Ask your AI assistant to add Auth0**:
-   ```
-    "Add authentication to my React app"
-    "Implement login with Auth0"
-    "Add MFA to my application"
-   ```
-
-That's it! Your AI assistant will setup Auth0 on your app and you will have production-ready authentication powered by Auth0.
-
-## Installation
-
-### Option 1: Claude Code Marketplace (Recommended for Enterprise)
-
-#### Step 1: Open Claude Code
-
-```bash
-claude
+```
+/plugin install auth0@claude-plugins-official
 ```
 
-#### Step 2: Add the Auth0 Marketplace
+Or type `/plugin` in a session, go to **Discover**, and search "Auth0".
 
-Add the Auth0 agent skills marketplace to Claude Code:
+From the terminal (no session needed):
 
 ```bash
-# From GitHub
-/plugin marketplace add auth0/agent-skills
-
-# Or from local path
-/plugin marketplace add /path/to/agent-skills
+claude plugin install auth0@claude-plugins-official
 ```
 
-#### Step 3: Install the Plugin
+### Cursor
 
-All Auth0 skills are included in a single plugin:
+Auth0 is on the [Cursor marketplace](https://cursor.com/marketplace/auth0). Open the listing and click **Add** to install.
 
-- `auth0-quickstart` - Framework detection and routing
-- `auth0-migration` - Migrate from other auth providers
-- `auth0-mfa` - Multi-Factor Authentication
-- `auth0-react` - React SPAs
-- `auth0-nextjs` - Next.js (App Router & Pages Router)
-- `auth0-nuxt` - Nuxt 3/4 applications
-- `auth0-vue` - Vue.js 3
-- `auth0-angular` - Angular 12+
-- `auth0-express` - Express.js
-- `auth0-flask` - Flask web applications
-- `auth0-fastify` - Fastify web applications
-- `auth0-fastify-api` - Fastify API authentication
-- `auth0-fastapi-api` - FastAPI API authentication
-- `auth0-java-mvc-common` - Java Servlet web applications (mvc-auth-commons)
-- `auth0-springboot-api` - Spring Boot API authentication
-- `auth0-aspnetcore-api` - ASP.NET Core API authentication
-- `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
-- `auth0-spa-js` - Vanilla JS SPAs (auth0-spa-js)
-- `auth0-react-native` - React Native CLI (bare workflow)
-- `auth0-expo` - Expo (managed workflow)
-- `auth0-android` - Android
-- `auth0-swift` - Native iOS/macOS applications (Swift)
+You can also install via `Cursor Settings → Rules → Add Rule → Remote Rule (GitHub)` and enter this repository URL.
+
+### GitHub Copilot
 
 ```bash
-/plugin install auth0@auth0-agent-skills
+npx skills add auth0/agent-skills --agent github-copilot
 ```
 
-### Option 2: CLI Installation (Recommended for Developers)
+### Any Agent (Skills CLI)
 
-Install all skills using the [Skills CLI](https://skills.sh):
+The [Skills CLI](https://github.com/vercel-labs/skills) works with Claude Code, Cursor, Copilot, Codex, and [40+ other agents](https://agentskills.io/clients):
 
 ```bash
-# Install all skills
 npx skills add auth0/agent-skills
-
-# Install individual skills
-npx skills add auth0/agent-skills/plugins/auth0/skills/auth0-quickstart
-npx skills add auth0/agent-skills/plugins/auth0/skills/auth0-react
 ```
 
-### Option 3: Manual Installation
-
-Clone the repository and copy skills to your Claude configuration:
+Target specific agents with `--agent`:
 
 ```bash
-# Clone the repository
-git clone https://github.com/auth0/agent-skills.git
-
-# Copy all skills
-cp -r agent-skills/plugins/auth0/skills/* ~/.claude/skills/
-
-# Or copy to your project's Claude skills directory
-cp -r agent-skills/plugins/auth0/skills/* .claude/skills/
+npx skills add auth0/agent-skills --agent claude-code cursor
 ```
 
-## Available Skills
+## What happens after install
 
-### Core Skills
+When you ask your AI assistant something like "add Auth0 login to my app," the assistant:
 
-| Skill                                                                | Description                       | Version |
-| -------------------------------------------------------------------- | --------------------------------- | ------- |
-| [auth0-quickstart](./plugins/auth0/skills/auth0-quickstart/SKILL.md) | Framework detector and router     | v1.0.0  |
-| [auth0-migration](./plugins/auth0/skills/auth0-migration/SKILL.md)   | Migrate from other auth providers | v1.0.0  |
-| [auth0-mfa](./plugins/auth0/skills/auth0-mfa/SKILL.md)               | Multi-Factor Authentication       | v1.0.0  |
-| [acul-screen-generator](./plugins/auth0/skills/acul-screen-generator/SKILL.md) | ACUL screen generation and theming | v1.0.0 |
+1. Loads the **quickstart router** skill, which reads your project files (`package.json`, `requirements.txt`, `build.gradle`, etc.)
+2. Detects your framework and selects the matching skill (e.g., `auth0-nextjs` for a Next.js project)
+3. Follows the skill's step-by-step instructions to install the right SDK, create auth routes, configure environment variables, and wire up login/logout
 
-### Frontend Framework Skills
+You don't pick skills manually — framework detection handles it.
 
-| Skill                                                                   | Description                    | Version |
-| ----------------------------------------------------------------------- | ------------------------------ | ------- |
-| [auth0-react](./plugins/auth0/skills/auth0-react/SKILL.md)              | React SPAs (Vite, CRA)         | v1.0.0  |
-| [auth0-vue](./plugins/auth0/skills/auth0-vue/SKILL.md)                  | Vue.js 3 applications          | v1.0.0  |
-| [auth0-angular](./plugins/auth0/skills/auth0-angular/SKILL.md)          | Angular 12+ applications       | v1.0.0  |
-| [auth0-spa-js](./plugins/auth0/skills/auth0-spa-js/SKILL.md)            | Vanilla JS SPAs (auth0-spa-js) | v1.0.0  |
+## Skills
 
-### Backend Framework Skills
+23 skills covering web, mobile, and API authentication.
 
-| Skill                                                                                 | Description                       | Version |
-| ------------------------------------------------------------------------------------- | --------------------------------- | ------- |
-| [auth0-nextjs](./plugins/auth0/skills/auth0-nextjs/SKILL.md)                           | Next.js App Router & Pages Router | v1.0.0  |
-| [auth0-nuxt](./plugins/auth0/skills/auth0-nuxt/SKILL.md)                               | Nuxt 3/4 applications             | v1.0.0  |
-| [auth0-express](./plugins/auth0/skills/auth0-express/SKILL.md)                         | Express.js web applications       | v1.0.0  |
-| [auth0-flask](./plugins/auth0/skills/auth0-flask/SKILL.md)                             | Flask web applications            | v1.0.0  |
-| [auth0-fastify](./plugins/auth0/skills/auth0-fastify/SKILL.md)                         | Fastify web applications          | v1.0.0  |
-| [auth0-fastify-api](./plugins/auth0/skills/auth0-fastify-api/SKILL.md)                 | Fastify API authentication        | v1.0.0  |
-| [auth0-fastapi-api](./plugins/auth0/skills/auth0-fastapi-api/SKILL.md)                 | FastAPI API authentication        | v1.0.0  |
-| [auth0-springboot-api](./plugins/auth0/skills/auth0-springboot-api/SKILL.md)           | Spring Boot API authentication    | v1.0.0  |
-| [auth0-java-mvc-common](./plugins/auth0/skills/auth0-java-mvc-common/SKILL.md)         | Java Servlet web applications     | v1.0.0  |
-| [auth0-aspnetcore-api](./plugins/auth0/skills/auth0-aspnetcore-api/SKILL.md)           | ASP.NET Core API authentication   | v1.0.0  |
-| [express-oauth2-jwt-bearer](./plugins/auth0/skills/express-oauth2-jwt-bearer/SKILL.md) | Express API JWT Bearer validation | v1.0.0  |
+| Skill | SDK | Frameworks |
+|-------|-----|------------|
+| **Quickstart Router** | — | Detects your framework and routes to the right skill |
+| **Migration** | — | Migrate from Firebase, Cognito, Supabase, Clerk, or custom auth |
+| **MFA** | — | TOTP, SMS, email, push, WebAuthn |
+| **ACUL Screen Generator** | [`@auth0/auth0-acul-react`](https://github.com/auth0/universal-login) | Custom Universal Login screens and theming |
+| **React** | [`@auth0/auth0-react`](https://github.com/auth0/auth0-react) | React SPAs (Vite, CRA) |
+| **Vue** | [`@auth0/auth0-vue`](https://github.com/auth0/auth0-vue) | Vue 3 |
+| **Angular** | [`@auth0/auth0-angular`](https://github.com/auth0/auth0-angular) | Angular 13+ |
+| **Vanilla JS** | [`@auth0/auth0-spa-js`](https://github.com/auth0/auth0-spa-js) | Any SPA (also Svelte, SolidJS) |
+| **Next.js** | [`@auth0/nextjs-auth0`](https://github.com/auth0/nextjs-auth0) | Next.js 13+ (App Router & Pages Router) |
+| **Nuxt** | [`@auth0/auth0-nuxt`](https://github.com/auth0/auth0-nuxt) | Nuxt 3/4 |
+| **Express** | [`express-openid-connect`](https://github.com/auth0/express-openid-connect) | Express.js |
+| **Flask** | [`auth0-server-python`](https://github.com/auth0/auth0-server-python) | Flask |
+| **Fastify** | [`@auth0/auth0-fastify`](https://github.com/auth0/auth0-fastify) | Fastify |
+| **Java Servlet** | [`mvc-auth-commons`](https://github.com/auth0/auth0-java-mvc-common) | Java Servlet |
+| **Express API** | [`express-oauth2-jwt-bearer`](https://github.com/auth0/node-oauth2-jwt-bearer) | Node.js/Express APIs |
+| **Fastify API** | [`@auth0/auth0-fastify`](https://github.com/auth0/auth0-fastify) | Fastify APIs |
+| **FastAPI** | [`auth0-fastapi-api`](https://github.com/auth0/auth0-fastapi-api) | Python FastAPI |
+| **Spring Boot API** | [`auth0-springboot-api`](https://github.com/auth0/auth0-auth-java) | Spring Boot |
+| **ASP.NET Core API** | [`Auth0.AspNetCore.Authentication`](https://github.com/auth0/auth0-aspnetcore-authentication) | ASP.NET Core |
+| **React Native** | [`react-native-auth0`](https://github.com/auth0/react-native-auth0) | React Native CLI (bare workflow) |
+| **Expo** | [`react-native-auth0`](https://github.com/auth0/react-native-auth0) | Expo (managed workflow) |
+| **Android** | [`Auth0.Android`](https://github.com/auth0/Auth0.Android) | Android (Kotlin/Java) |
+| **iOS/macOS** | [`Auth0.swift`](https://github.com/auth0/Auth0.swift) | Swift (iOS, macOS, tvOS, watchOS, visionOS) |
 
-### Mobile Skills
-
-| Skill                                                                   | Description                      | Version |
-| ----------------------------------------------------------------------- | -------------------------------- | ------- |
-| [auth0-react-native](./plugins/auth0/skills/auth0-react-native/SKILL.md) | React Native CLI (bare workflow) | v1.0.0  |
-| [auth0-expo](./plugins/auth0/skills/auth0-expo/SKILL.md)                 | Expo (managed workflow)          | v1.0.0  |
-| [auth0-android](./plugins/auth0/skills/auth0-android/SKILL.md)           | Android                          | v1.0.0  |
-| [auth0-swift](./plugins/auth0/skills/auth0-swift/SKILL.md)               | Native iOS/macOS (Swift)         | v1.0.0  |
-
----
-
-### auth0-quickstart
-
-The quickstart skill is now a **lightweight router** that:
-
-- Detects your framework automatically
-- Guides you to the right framework-specific skill
-- Sets up Auth0 CLI and creates applications
-- Provides CLI quick reference and troubleshooting
-
-### Framework-Specific Skills
-
-Each framework has its own dedicated skill with:
-
-- Framework-specific installation and setup
-- Idiomatic code patterns and best practices
-- Protected routes and authentication flows
-- API integration examples
-- Common issues and troubleshooting
-- Security considerations
-
-### auth0-migration
-
-The migration skill covers:
-
-- User export from existing providers (Firebase, Cognito, etc.)
-- Bulk import to Auth0
-- Code migration patterns (before/after examples)
-- JWT validation updates
-- Gradual migration strategies
-
-### auth0-mfa
-
-The MFA skill covers:
-
-- Step-up authentication with `acr_values`
-- `amr` claim validation
-- Adaptive/risk-based MFA
-- MFA enrollment flows
-- Multiple factors (TOTP, SMS, Email, Push, WebAuthn)
-
-### Supported Frameworks
-
-| Frontend SPAs | Backend/Web Apps | Mobile           | APIs         |
-| ------------- | ---------------- | ---------------- | ------------ |
-| React         | Next.js          | React Native     | Express.js   |
-| Vue.js        | SvelteKit        | Expo             | Fastify      |
-| Angular       | Nuxt.js          | Android (Kotlin) | FastAPI      |
-|               | Remix            | iOS (Swift)      | Django REST  |
-|               | Fastify          |                  | Go           |
-|               | Flask            |                  | Spring Boot  |
-|               | Ruby on Rails    |                  | ASP.NET Core |
-|               | PHP/Laravel      |                  |              |
-
-### Coming Soon
-
-| Skill                | Description                             |
-| -------------------- | --------------------------------------- |
-| auth0-passkeys       | Passkeys and WebAuthn implementation    |
-| auth0-organizations  | Multi-tenancy and B2B organizations     |
-| auth0-dpop           | DPoP token binding                      |
-| auth0-token-exchange | Custom Token Exchange (RFC 8693)        |
-| auth0-enterprise     | PAR, CIBA, RAR, and enterprise features |
-
-## Migration Support
-
-The quickstart skill includes comprehensive migration guidance for moving from other auth providers:
-
-- **User export/import** - Bulk user migration with password hash support
-- **Code patterns** - Before/after examples for common auth patterns
-- **Gradual migration** - Phased approach for production apps
-- **JWT validation** - Update APIs to validate Auth0 tokens
-
-## SDK Coverage
-
-| Platform     | SDK                                                                                             | Skill                     |
-| ------------ | ----------------------------------------------------------------------------------------------- | ------------------------- |
-| React        | [@auth0/auth0-react](https://github.com/auth0/auth0-react)                                      | auth0-react, auth0-mfa    |
-| Vue.js       | [@auth0/auth0-vue](https://github.com/auth0/auth0-vue)                                          | auth0-vue, auth0-mfa      |
-| Angular      | [@auth0/auth0-angular](https://github.com/auth0/auth0-angular)                                  | auth0-angular, auth0-mfa  |
-| Next.js      | [@auth0/nextjs-auth0](https://github.com/auth0/nextjs-auth0)                                    | auth0-nextjs, auth0-mfa   |
-| Nuxt.js      | [@auth0/auth0-nuxt](https://github.com/auth0/auth0-nuxt)                                        | auth0-nuxt                |
-| Express      | [express-openid-connect](https://github.com/auth0/express-openid-connect)                       | auth0-express, auth0-mfa  |
-| Flask        | [auth0-server-python](https://github.com/auth0/auth0-server-python)                             | auth0-flask               |
-| Fastify      | [@auth0/auth0-fastify](https://github.com/auth0/auth0-fastify)                                  | auth0-fastify, auth0-mfa  |
-| Fastify API  | [@auth0/auth0-fastify-api](https://github.com/auth0/auth0-fastify)                              | auth0-fastify-api         |
-| FastAPI      | [auth0-fastapi-api](https://github.com/auth0/auth0-fastapi-api)                                 | auth0-fastapi-api         |
-| React Native | [react-native-auth0](https://github.com/auth0/react-native-auth0)                               | auth0-react-native        |
-| Expo         | [react-native-auth0](https://github.com/auth0/react-native-auth0)                               | auth0-expo                |
-| Android      | [Auth0.Android](https://github.com/auth0/Auth0.Android)                                         | auth0-android             |
-| iOS/macOS    | [Auth0.swift](https://github.com/auth0/Auth0.swift)                                             | auth0-swift               |
-| Spring Boot  | [auth0-springboot-api](https://github.com/auth0/auth0-auth-java)                                | auth0-springboot-api      |
-| Java Servlet | [mvc-auth-commons](https://github.com/auth0/auth0-java-mvc-common)                              | auth0-java-mvc-common     |
-| ASP.NET Core | [Auth0.AspNetCore.Authentication.Api](https://github.com/auth0/auth0-aspnetcore-authentication) | auth0-aspnetcore-api      |
-| Express API  | [express-oauth2-jwt-bearer](https://github.com/auth0/node-oauth2-jwt-bearer)                    | express-oauth2-jwt-bearer |
-
-## Project Structure
+## Example prompts
 
 ```
-auth0/agent-skills/
-├── .claude-plugin/
-│   └── marketplace.json          # Marketplace metadata
-├── plugins/
-│   └── auth0/                    # Single unified plugin
-│       ├── .claude-plugin/
-│       │   └── plugin.json       # Plugin configuration
-│       └── skills/
-│           ├── auth0-quickstart/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── cli.md
-│           │       ├── concepts.md
-│           │       └── environments.md
-│           ├── auth0-migration/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── code-patterns.md
-│           │       └── user-import.md
-│           ├── auth0-mfa/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── advanced.md
-│           │       ├── api.md
-│           │       ├── backend.md
-│           │       └── examples.md
-│           ├── acul-screen-generator/
-│           │   ├── SKILL.md
-│           │   ├── assets/
-│           │   │   ├── js-templates/
-│           │   │   ├── react-templates/
-│           │   │   └── theme-templates/
-│           │   ├── references/
-│           │   │   ├── acul-js-sdk.md
-│           │   │   ├── acul-react-sdk.md
-│           │   │   ├── cli-commands.md
-│           │   │   ├── screen-catalog.md
-│           │   │   ├── social-providers.md
-│           │   │   └── theming-patterns.md
-│           │   └── tests/
-│           ├── auth0-react/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── integration.md
-│           │       └── setup.md
-│           ├── auth0-nextjs/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── integration.md
-│           │       └── setup.md
-│           ├── auth0-vue/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── integration.md
-│           │       └── setup.md
-│           ├── auth0-angular/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── integration.md
-│           │       └── setup.md
-│           ├── auth0-spa-js/
-│           │   ├── SKILL.md
-│           │   ├── references/
-│           │   │   ├── api.md
-│           │   │   ├── integration.md
-│           │   │   └── setup.md
-│           │   └── scripts/
-│           ├── auth0-nuxt/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── examples.md
-│           │       ├── route-protection.md
-│           │       └── session-stores.md
-│           ├── auth0-express/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── integration.md
-│           │       └── setup.md
-│           ├── auth0-flask/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── integration.md
-│           │       └── setup.md
-│           ├── auth0-fastify/
-│           │   └── SKILL.md
-│           ├── auth0-fastify-api/
-│           │   └── SKILL.md
-│           ├── auth0-fastapi-api/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── integration.md
-│           │       └── setup.md
-│           ├── auth0-java-mvc-common/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── integration.md
-│           │       └── setup.md
-│           ├── auth0-react-native/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── patterns.md
-│           │       └── setup.md
-│           ├── auth0-android/
-│           │   ├── SKILL.md
-│           │   ├── references/
-│           │   │   ├── api.md
-│           │   │   ├── integration.md
-│           │   │   └── setup.md
-│           │   ├── scripts/
-│           │   └── tests/
-│           ├── auth0-expo/
-│           │   ├── SKILL.md
-│           │   ├── references/
-│           │   │   ├── api.md
-│           │   │   ├── integration.md
-│           │   │   └── setup.md
-│           │   ├── scripts/
-│           │   └── tests/
-│           ├── auth0-swift/
-│           │   ├── SKILL.md
-│           │   ├── references/
-│           │   │   ├── api.md
-│           │   │   ├── integration.md
-│           │   │   └── setup.md
-│           │   ├── scripts/
-│           │   └── tests/
-│           ├── auth0-springboot-api/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── integration.md
-│           │       └── setup.md
-│           ├── auth0-aspnetcore-api/
-│           │   ├── SKILL.md
-│           │   └── references/
-│           │       ├── api.md
-│           │       ├── integration.md
-│           │       └── setup.md
-│           └── express-oauth2-jwt-bearer/
-│               ├── SKILL.md
-│               ├── references/
-│               │   ├── api.md
-│               │   ├── integration.md
-│               │   └── setup.md
-│               ├── scripts/
-│               └── tests/
-├── .gitignore
-├── CODE_OF_CONDUCT.md
-├── CONTRIBUTING.md
-├── LICENSE
-├── PLUGIN.md
-└── README.md
+Add Auth0 authentication to my app
+```
+
+```
+Set up Auth0 in my Next.js project with protected routes
+```
+
+```
+Add multi-factor authentication with TOTP
+```
+
+```
+Migrate from Firebase Auth to Auth0
+```
+
+```
+Secure my Express API with Auth0 JWT validation
 ```
 
 ## Feedback
 
-### Contributing
-
-We appreciate feedback and contributions! Before you get started, please see:
-
-- [Auth0's general contribution guidelines](https://github.com/auth0/open-source-template/blob/master/GENERAL-CONTRIBUTING.md)
-- [Auth0's code of conduct](https://github.com/auth0/open-source-template/blob/master/CODE-OF-CONDUCT.md)
-
-### Raise an Issue
-
-To provide feedback or report a bug, please [raise an issue](https://github.com/auth0/agent-skills/issues).
-
-### Vulnerability Reporting
-
-Please do not report security vulnerabilities on the public GitHub issue tracker. See the [Responsible Disclosure Program](https://auth0.com/responsible-disclosure-policy) for details.
+- [Open an issue](https://github.com/auth0/agent-skills/issues) to report bugs or request new skills
+- See [contribution guidelines](https://github.com/auth0/open-source-template/blob/master/GENERAL-CONTRIBUTING.md) and [code of conduct](https://github.com/auth0/open-source-template/blob/master/CODE-OF-CONDUCT.md)
+- Security vulnerabilities: [Responsible Disclosure Program](https://auth0.com/responsible-disclosure-policy)
 
 ---
 
