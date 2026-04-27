@@ -37,8 +37,6 @@ Auth0 is on the [Cursor marketplace](https://cursor.com/marketplace/auth0). Open
 
 You can also install via `Cursor Settings → Rules → Add Rule → Remote Rule (GitHub)` and enter this repository URL.
 
-### GitHub Copilot
-
 ```bash
 npx skills add auth0/agent-skills --agent github-copilot
 ```
