@@ -54,6 +54,7 @@ Mobile skills:
 - `auth0-swift` - iOS/macOS (Swift)
 - `auth0-react-native` - React Native CLI (bare workflow)
 - `auth0-expo` - Expo (managed workflow)
+- `auth0-ionic-vue` - Ionic Vue + Capacitor (iOS/Android)
 
 ---
 
@@ -95,6 +96,7 @@ auth0/agent-skills/
 │           ├── express-oauth2-jwt-bearer/
 │           ├── auth0-react-native/
 │           ├── auth0-expo/
+│           ├── auth0-ionic-vue/
 │           ├── auth0-android/
 │           └── auth0-swift/
 ├── .gitignore
@@ -165,7 +167,7 @@ cp -r plugins/auth0/skills/* ~/.claude/skills/
 ## Use Cases
 
 ### Install Everything (Most Common)
-User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 22 skills.
+User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 24 skills.
 
 ### Install One Framework
 Developer working on React app -> uses CLI to install just `auth0-react` skill.

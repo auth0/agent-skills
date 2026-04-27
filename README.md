@@ -69,7 +69,7 @@ You don't pick skills manually — framework detection handles it.
 
 ## Skills
 
-23 skills covering web, mobile, and API authentication.
+24 skills covering web, mobile, and API authentication.
 
 | Skill | SDK | Frameworks |
 |-------|-----|------------|
@@ -94,6 +94,7 @@ You don't pick skills manually — framework detection handles it.
 | **ASP.NET Core API** | [`Auth0.AspNetCore.Authentication`](https://github.com/auth0/auth0-aspnetcore-authentication) | ASP.NET Core |
 | **React Native** | [`react-native-auth0`](https://github.com/auth0/react-native-auth0) | React Native CLI (bare workflow) |
 | **Expo** | [`react-native-auth0`](https://github.com/auth0/react-native-auth0) | Expo (managed workflow) |
+| **Ionic Vue** | [`@auth0/auth0-vue`](https://github.com/auth0/auth0-vue) | Ionic Vue + Capacitor (iOS/Android) |
 | **Android** | [`Auth0.Android`](https://github.com/auth0/Auth0.Android) | Android (Kotlin/Java) |
 | **iOS/macOS** | [`Auth0.swift`](https://github.com/auth0/Auth0.swift) | Swift (iOS, macOS, tvOS, watchOS, visionOS) |
 
