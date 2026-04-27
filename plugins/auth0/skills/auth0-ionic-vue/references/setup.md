@@ -7,42 +7,170 @@
 > **Check if credentials are already provided in the user's prompt:**
 > If the prompt contains Auth0 domain and client ID, use them directly — skip to "SDK Installation" below. Do NOT call `AskUserQuestion` to re-confirm.
 >
-> **If credentials are NOT provided:** Create the Auth0 application using the CLI commands below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
+> **If credentials are NOT provided:** Follow the "Auth0 CLI Automated Setup" steps below to create the Auth0 application. Do NOT offer manual Dashboard setup or ask the user to create an application themselves.
 
-### Auth0 CLI Setup
+### Auth0 CLI Automated Setup
 
-> **Agent instruction:** Run these pre-flight checks before creating the Auth0 application. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+> **Agent instruction:** Execute these steps in order. Do NOT run `auth0 login` from the agent — it is interactive and will hang. All other `auth0` CLI commands below are non-interactive and safe to run.
 >
-> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
-> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
->    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
->    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
-> 3. **Confirm active tenant**: Parse the `→` line from the CSV output. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
->    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 2.
+> ---
 >
-> Once confirmed, run the following steps:
+> #### Step A — Check Auth0 CLI is installed
 >
-> **Step A — Detect package ID:**
-> Read `capacitor.config.ts` (or `capacitor.config.json`) and extract the `appId` field (e.g., `com.example.myapp`).
+> ```bash
+> command -v auth0
+> ```
 >
-> **Step B — Create Native application:**
+> If missing, install it:
+> ```bash
+> brew install auth0/auth0-cli/auth0
+> ```
+> On Linux: `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh`
+>
+> ---
+>
+> #### Step B — Verify Auth0 CLI login session
+>
+> ```bash
+> auth0 tenants list --csv --no-input 2>&1
+> ```
+>
+> - **If the command succeeds** and returns CSV output with tenant rows: proceed to Step C.
+> - **If the command fails** (exit code non-zero, or output contains "login" / "unauthorized" / is empty):
+>   - Tell the user: _"You're not logged in to the Auth0 CLI. Please run `auth0 login` in your terminal and let me know when done."_
+>   - Use `AskUserQuestion` to wait for confirmation.
+>   - After confirmation, re-run this check. Retry up to 3 times.
+>   - If still failing after 3 retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID manually, then skip to Step F.
+>
+> ---
+>
+> #### Step C — Detect active Auth0 tenant domain
+>
+> Parse the CSV output from Step B. The active tenant line contains `→` (Unicode arrow U+2192).
+>
+> ```
+> Example output:
+>   ACTIVE,DOMAIN
+>   →,dev-example.us.auth0.com
+>     ,dev-other.us.auth0.com
+> ```
+>
+> Extract the domain from the second column of the `→` line (e.g., `dev-example.us.auth0.com`).
+>
+> Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
+> - If no, ask the user to run `auth0 tenants use <correct-tenant-domain>`, then re-run Step B.
+>
+> Store this as `AUTH0_DOMAIN`.
+>
+> ---
+>
+> #### Step D — Detect package ID from Capacitor config
+>
+> Read `capacitor.config.ts` (or `capacitor.config.json`) in the project root:
+>
+> - For `.ts`: parse `appId: 'com.example.myapp'` using regex.
+> - For `.json`: parse the `appId` field from JSON.
+>
+> Store this as `PACKAGE_ID` (e.g., `com.example.myapp`).
+>
+> Also extract `appName` if available (for the Auth0 app display name). Fall back to the project name from `package.json` if not found.
+>
+> ---
+>
+> #### Step E — Create Native Auth0 application
+>
+> Build the callback URL: `PACKAGE_ID://AUTH0_DOMAIN/capacitor/PACKAGE_ID/callback`
+>
 > ```bash
 > auth0 apps create \
 >   --name "APP_NAME" \
 >   --type native \
->   --callbacks "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
->   --logout-urls "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
+>   --auth-method none \
+>   --callbacks "PACKAGE_ID://AUTH0_DOMAIN/capacitor/PACKAGE_ID/callback" \
+>   --logout-urls "PACKAGE_ID://AUTH0_DOMAIN/capacitor/PACKAGE_ID/callback" \
 >   --origins "capacitor://localhost,http://localhost" \
 >   --json \
 >   --no-input
 > ```
-> Parse the JSON output to extract `client_id` and `domain` (the tenant domain).
 >
-> **Step C — Use credentials in code:**
-> Use the `client_id` and `domain` from Step B when configuring `createAuth0()` in the app (see [Integration Patterns](./integration.md)).
+> Replace `APP_NAME`, `PACKAGE_ID`, and `AUTH0_DOMAIN` with the actual values from Steps C and D.
 >
-> If any CLI command fails due to session expiry, ask the user to run `auth0 login` again, then retry. Retry up to 3 times.
-> Only if the CLI keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID.
+> **Parse the JSON output** to extract `client_id`. Example response:
+> ```json
+> {
+>   "client_id": "abc123def456...",
+>   "name": "my-app",
+>   "app_type": "native",
+>   ...
+> }
+> ```
+>
+> Store `client_id` as `AUTH0_CLIENT_ID`.
+>
+> If this command fails due to session expiry, ask the user to run `auth0 login` again and retry. Retry up to 3 times.
+>
+> ---
+>
+> #### Step F — Write `.env` with real credentials
+>
+> Write (or update) the `.env` file in the project root with the actual values from Steps C–E:
+>
+> ```bash
+> VITE_AUTH0_DOMAIN=AUTH0_DOMAIN
+> VITE_AUTH0_CLIENT_ID=AUTH0_CLIENT_ID
+> VITE_AUTH0_CALLBACK_URI=PACKAGE_ID://AUTH0_DOMAIN/capacitor/PACKAGE_ID/callback
+> ```
+>
+> Replace `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, and `PACKAGE_ID` with the actual values.
+>
+> - **If `.env` already exists:** Update or add these three variables without removing other existing variables.
+> - **If `.env` does not exist:** Create the file.
+> - **If `.gitignore` does not include `.env`:** Add `.env` to `.gitignore`.
+>
+> ---
+>
+> #### Step G — Update `src/main.ts` to use env vars
+>
+> Read `src/main.ts` and wire it to read credentials from `import.meta.env`:
+>
+> **If `createAuth0()` already exists in the file:**
+> - Replace any hardcoded `domain` value (e.g., `"YOUR_AUTH0_DOMAIN"` or a real domain string) with `import.meta.env.VITE_AUTH0_DOMAIN`.
+> - Replace any hardcoded `clientId` value with `import.meta.env.VITE_AUTH0_CLIENT_ID`.
+> - Replace the `redirect_uri` value with `` `${packageId}://${import.meta.env.VITE_AUTH0_DOMAIN}/capacitor/${packageId}/callback` `` (where `packageId` is read from the Capacitor config or hardcoded if it never changes).
+>
+> **If `createAuth0()` does NOT exist in the file:**
+> 1. Add the import: `import { createAuth0 } from '@auth0/auth0-vue';`
+> 2. Add the Auth0 plugin registration before `router.isReady()` or `app.mount()`:
+>    ```typescript
+>    const packageId = "PACKAGE_ID"; // From capacitor.config.ts appId
+>
+>    app.use(
+>      createAuth0({
+>        domain: import.meta.env.VITE_AUTH0_DOMAIN,
+>        clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
+>        useRefreshTokens: true,
+>        useRefreshTokensFallback: false,
+>        authorizationParams: {
+>          redirect_uri: `${packageId}://${import.meta.env.VITE_AUTH0_DOMAIN}/capacitor/${packageId}/callback`
+>        }
+>      })
+>    );
+>    ```
+>
+> Replace `PACKAGE_ID` with the actual package ID from Step D.
+>
+> ---
+>
+> #### Step H — Confirm setup to user
+>
+> After completing all steps, tell the user:
+> - _"Auth0 application created and configured:"_
+> - _"Domain: `AUTH0_DOMAIN`"_
+> - _"Client ID: `AUTH0_CLIENT_ID`"_
+> - _"Package ID: `PACKAGE_ID`"_
+> - _"Callback URL: `PACKAGE_ID://AUTH0_DOMAIN/capacitor/PACKAGE_ID/callback`"_
+> - _"`.env` has been written with `VITE_AUTH0_DOMAIN` and `VITE_AUTH0_CLIENT_ID`."_
+> - _"`src/main.ts` reads credentials from `import.meta.env`."_
 
 ### Callback URL Format
 
