@@ -153,7 +153,7 @@ import { IonApp, IonRouterOutlet } from '@ionic/vue';
 
 const { handleRedirectCallback } = useAuth0();
 
-let urlOpenListener: { remove: () => void } | undefined;
+let urlOpenListener: any;
 
 onMounted(async () => {
   urlOpenListener = await CapApp.addListener('appUrlOpen', async ({ url }) => {
@@ -186,7 +186,7 @@ import { IonButton } from '@ionic/vue';
 
 const domain = import.meta.env.VITE_AUTH0_DOMAIN;
 // Agent: read appId from capacitor.config.ts and replace this value
-const packageId = "YOUR_PACKAGE_ID";
+const packageId = "YOUR_PACKAGE_ID";)
 const logoutUri = `${packageId}://${domain}/capacitor/${packageId}/callback`;
 
 const { logout } = useAuth0();
