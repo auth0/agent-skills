@@ -46,19 +46,21 @@ go get github.com/joho/godotenv
 
 You need an **API** (not Application) in Auth0.
 
+> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain and audience), use them directly — skip the setup choice question below and proceed to Step 3 to write the `.env` file.
+>
 > **STOP — ask the user before proceeding.**
 >
 > Ask exactly this question and wait for their answer before doing anything else:
 >
 > > "How would you like to create the Auth0 API resource?
-> > 1. **Automated** — I'll run Auth0 CLI scripts that create the resource and write the exact values to your .env file automatically.
+> > 1. **Automated** — I'll use the Auth0 CLI to create the API resource and write the exact values to your .env file automatically.
 > > 2. **Manual** — You create the API yourself in the Auth0 Dashboard (or via `auth0 apis create`) and provide me the Domain and Audience.
 > >
 > > Which do you prefer? (1 = Automated / 2 = Manual)"
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for complete CLI scripts. The automated path writes `.env` for you — skip Step 3 below and proceed directly to Step 4.
+**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for complete Auth0 CLI instructions. The automated path writes `.env` for you — skip Step 3 below and proceed directly to Step 4.
 
 **If the user chose Manual**, follow the [Setup Guide](references/setup.md) (Manual Setup section) for full instructions. Then continue with Step 3 below.
 
@@ -68,7 +70,8 @@ Quick reference for manual API creation:
 # Using Auth0 CLI
 auth0 apis create \
   --name "My Go API" \
-  --identifier https://my-api.example.com
+  --identifier https://my-api.example.com \
+  --metadata "created_by=agent_skills"
 ```
 
 Or create manually in Auth0 Dashboard → Applications → APIs
@@ -224,7 +227,15 @@ mux.Handle("/api/private-scoped", middleware.CheckJWT(http.HandlerFunc(privateSc
 > ```bash
 > go build ./...
 > ```
-> If compilation fails, iterate up to 5 times to fix errors. If still failing after 5 attempts, use `AskUserQuestion` to get help.
+> If compilation fails, diagnose the error and fix it. Repeat up to 5-6 times.
+>
+> **Failcheck:** If the build still fails after 5-6 fix attempts, stop and ask the user using `AskUserQuestion`:
+> _"The build is still failing after several fix attempts. How would you like to proceed?"_
+> - **Let me continue fixing iteratively**
+> - **Fix it manually** — I'll show the remaining errors
+> - **Skip build verification** — proceed without a successful build
+>
+> Repeat this check after every 5-6 iterations if errors persist.
 
 Test public endpoint:
 

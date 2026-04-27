@@ -9,44 +9,42 @@ Setup instructions for Go API applications.
 > **Agent instruction:**
 >
 > **Credential check (always first):**
-> If the user's prompt already provides Auth0 credentials (domain and audience), use them directly. Write the `.env` file and proceed to integration. Do NOT call `AskUserQuestion` to re-confirm and do NOT run the bootstrap script.
+> If the user's prompt already provides Auth0 credentials (domain and audience), use them directly. Write the `.env` file and proceed to integration. Do NOT call `AskUserQuestion` to re-confirm.
 >
 > **If credentials are NOT in the prompt:**
 >
 > Use `AskUserQuestion` to ask the user:
 > "How would you like to configure Auth0 for this project?"
-> - Option A: "Automatic setup (recommended)" — uses the bootstrap script
+> - Option A: "Automatic setup (recommended)" — uses the Auth0 CLI to create the API resource
 > - Option B: "Manual setup" — provide Auth0 credentials manually
 >
 > **If Automatic Setup:**
 >
-> 1. **Pre-flight checks:**
->    - Verify Node.js 20+ is installed: `node --version`
->    - Verify Auth0 CLI is installed: `auth0 --version`
->    - Verify logged in: `auth0 tenants list --csv --no-input`
->    - If any check fails, guide user to install/login, or fall back to manual setup
+> **Important:** Do NOT run `auth0 login` from the agent — it is interactive and will hang. If the user needs to log in, ask them to run it in their terminal.
 >
-> 2. **Tenant selection (if multiple tenants):**
->    After running `auth0 tenants list --csv --no-input`, check if there are multiple tenants.
->    - If **one tenant**: use it automatically, no need to ask.
->    - If **multiple tenants**: use `AskUserQuestion` to ask which tenant to use. Display the list of available tenants and let the user pick. Example:
->      > "I found multiple Auth0 tenants. Which one should I use for this project?
->      > 1. dev-example.auth0.com
->      > 2. staging-example.auth0.com
->      > 3. prod-example.us.auth0.com"
->    - After selection, if the active tenant differs from the chosen one, switch with: `auth0 tenants use <selected-tenant>`
->
-> 3. **Run bootstrap script:**
+> 1. **Check Auth0 CLI**: Run `command -v auth0`. If missing, ask user to install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
+> 2. **Check Auth0 login**: Run `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
+>    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
+>    - Wait for the user to confirm, then re-run the check to verify.
+> 3. **Confirm active tenant**: Parse the output to identify the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
+>    - If yes, proceed.
+>    - If no, ask the user to run `auth0 tenants use <tenant-domain>` in their terminal, then re-run step 2 to confirm the new active tenant.
+> 4. **Create the Auth0 API resource**:
 >    ```bash
->    cd <skill-dir>/scripts && npm install && node bootstrap.mjs <project-path>
+>    auth0 apis create \
+>      --name "My Go API" \
+>      --identifier https://my-api.example.com \
+>      --metadata "created_by=agent_skills" \
+>      --json
 >    ```
->    The script will:
->    - Validate the Go project structure (go.mod)
->    - Discover existing Auth0 APIs
->    - Show a change plan and ask for confirmation
->    - Create the Auth0 API resource
->    - Write the .env file
->    - Print a summary
+>    Parse the JSON output to extract the `identifier` (audience) value.
+> 5. **Get the tenant domain**: Extract from the active tenant (from step 3).
+> 6. **Write `.env` file**:
+>    - **Never read the contents of an existing `.env` file** — it may contain sensitive secrets that should not be exposed in the LLM context.
+>    - If a `.env` file already exists, ask the user for confirmation using `AskUserQuestion`: _"A `.env` file already exists in this project. Can I add the Auth0 configuration to it?"_
+>    - If no `.env` exists, ask: _"This setup will create a `.env` file with your Auth0 credentials. OK to proceed?"_
+>    - Write `AUTH0_DOMAIN` and `AUTH0_AUDIENCE` to the file.
+> 7. **Add `.env` to `.gitignore`** if not already present.
 >
 > **If Manual Setup:**
 >
@@ -73,6 +71,7 @@ auth0 login --no-input
 auth0 apis create \
   --name "My Go API" \
   --identifier https://my-api.example.com \
+  --metadata "created_by=agent_skills" \
   --json
 ```
 
