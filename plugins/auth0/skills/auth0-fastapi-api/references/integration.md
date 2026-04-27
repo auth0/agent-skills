@@ -176,7 +176,7 @@ When deploying behind a reverse proxy (nginx, AWS ALB, Cloudflare CDN), you **mu
 
 ```python
 from fastapi import FastAPI
-from auth0_fastapi_api import Auth0FastAPI
+from fastapi_plugin import Auth0FastAPI
 
 app = FastAPI()
 
@@ -315,7 +315,7 @@ async def custom_http_exception_handler(request, exc):
 
 ```python
 from fastapi import FastAPI, Depends
-from auth0_fastapi_api import Auth0FastAPI
+from fastapi_plugin import Auth0FastAPI
 
 app = FastAPI()
 auth0 = Auth0FastAPI(
@@ -366,7 +366,7 @@ app.add_middleware(
 ```python
 from fastapi import FastAPI, Depends
 from fastapi.testclient import TestClient
-from auth0_fastapi_api import Auth0FastAPI
+from fastapi_plugin import Auth0FastAPI
 
 app = FastAPI()
 auth0 = Auth0FastAPI(domain="my-tenant.us.auth0.com", audience="my-api")

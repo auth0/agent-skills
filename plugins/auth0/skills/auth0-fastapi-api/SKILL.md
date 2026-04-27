@@ -84,7 +84,7 @@ AUTH0_AUDIENCE=https://your-api.example.com
 ```python
 import os
 from fastapi import FastAPI, Depends
-from auth0_fastapi_api import Auth0FastAPI
+from fastapi_plugin import Auth0FastAPI
 from dotenv import load_dotenv
 
 load_dotenv()
