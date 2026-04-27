@@ -11,7 +11,6 @@ You are responsible for correctly provisioning, configuring, and validating Auth
 
 ## Core Rules
 
-- Prefix every command with: `DEV_MODE=true`
 - Use `stripe projects` CLI as the **primary control plane**
 - Reference the [Auth0 Management API OpenAPI spec](https://auth0.com/docs/api/management/openapi.json) to inform valid properties for your configuration payloads.
 - Never guess config keys or capabilities; use the OpenAPI spec schema.
@@ -31,9 +30,9 @@ You are responsible for correctly provisioning, configuring, and validating Auth
 Run:
 
 ```bash
-DEV_MODE=true stripe projects status
-DEV_MODE=true stripe projects services list
-DEV_MODE=true stripe projects catalog auth0 --json
+stripe projects status
+stripe projects services list
+stripe projects catalog auth0 --json
 ```
 
 Use this data alongside the **Auth0 OpenAPI spec** to determine:
@@ -123,13 +122,13 @@ Formulate the `--config` JSON payload using the [Auth0 Management API OpenAPI sp
 Create:
 
 ```bash
-DEV_MODE=true stripe projects add auth0/client --name "<name>" --config '<json>' -y
+stripe projects add auth0/client --name "<name>" --config '<json>' -y
 ```
 
 Update:
 
 ```bash
-DEV_MODE=true stripe projects update <name> auth0/client --config '<json>' -y
+stripe projects update <name> auth0/client --config '<json>' -y
 ```
 
 Requirements:
@@ -146,9 +145,9 @@ Requirements:
 Run:
 
 ```bash
-DEV_MODE=true stripe projects status
-DEV_MODE=true stripe projects env
-DEV_MODE=true stripe projects env --pull
+stripe projects status
+stripe projects env
+stripe projects env --pull
 ```
 
 Confirm:
@@ -166,7 +165,7 @@ If verification is incomplete, explicitly state what cannot be confirmed.
 If Stripe Projects cannot configure something:
 
 ```bash
-DEV_MODE=true stripe projects open auth0
+stripe projects open auth0
 ```
 
 Then clearly specify:
@@ -234,12 +233,12 @@ If something fails:
 ## Commands Reference
 
 ```bash
-DEV_MODE=true stripe projects status
-DEV_MODE=true stripe projects services list
-DEV_MODE=true stripe projects catalog auth0 --json
-DEV_MODE=true stripe projects add auth0/client --name "<name>" --config '{"callbacks": ["http://localhost:3000/api/auth/callback"], "allowed_logout_urls": ["http://localhost:3000"]}' -y
-DEV_MODE=true stripe projects update <name> auth0/client --config '<json>' -y
-DEV_MODE=true stripe projects env
-DEV_MODE=true stripe projects env --pull
-DEV_MODE=true stripe projects open auth0
+stripe projects status
+stripe projects services list
+stripe projects catalog auth0 --json
+stripe projects add auth0/client --name "<name>" --config '{"callbacks": ["http://localhost:3000/api/auth/callback"], "allowed_logout_urls": ["http://localhost:3000"]}' -y
+stripe projects update <name> auth0/client --config '<json>' -y
+stripe projects env
+stripe projects env --pull
+stripe projects open auth0
 ```
