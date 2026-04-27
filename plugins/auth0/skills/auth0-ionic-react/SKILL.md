@@ -1,6 +1,9 @@
 ---
 name: auth0-ionic-react
 description: Use when adding Auth0 authentication to an Ionic React application with Capacitor — integrates @auth0/auth0-react SDK with Capacitor Browser and App plugins for native iOS/Android deep linking, login, logout, and user profile display.
+license: Proprietary
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Auth0 Ionic React (Capacitor) Integration
