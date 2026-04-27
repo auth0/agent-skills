@@ -51,11 +51,12 @@ Backend/fullstack framework skills:
 
 Mobile skills:
 - `auth0-ionic-angular` - Ionic Angular + Capacitor (iOS/Android)
+- `auth0-ionic-react` - Ionic React + Capacitor (iOS/Android)
+- `auth0-ionic-vue` - Ionic Vue + Capacitor (iOS/Android)
 - `auth0-android` - Android (Kotlin/Java)
 - `auth0-swift` - iOS/macOS (Swift)
 - `auth0-react-native` - React Native CLI (bare workflow)
 - `auth0-expo` - Expo (managed workflow)
-- `auth0-ionic-vue` - Ionic Vue + Capacitor (iOS/Android)
 
 ---
 
@@ -96,9 +97,10 @@ auth0/agent-skills/
 │           ├── auth0-aspnetcore-api/
 │           ├── express-oauth2-jwt-bearer/
 │           ├── auth0-ionic-angular/
+│           ├── auth0-ionic-vue/
+│           ├── auth0-ionic-react/
 │           ├── auth0-react-native/
 │           ├── auth0-expo/
-│           ├── auth0-ionic-vue/
 │           ├── auth0-android/
 │           └── auth0-swift/
 ├── .gitignore

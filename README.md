@@ -120,6 +120,7 @@ You don't pick skills manually — framework detection handles it.
 | **ASP.NET Core API** | [`Auth0.AspNetCore.Authentication`](https://github.com/auth0/auth0-aspnetcore-authentication) | ASP.NET Core |
 | **Ionic Angular** | [`@auth0/auth0-angular`](https://github.com/auth0/auth0-angular) + Capacitor | Ionic Angular + Capacitor (iOS/Android) |
 | **Ionic Vue** | [`@auth0/auth0-vue`](https://github.com/auth0/auth0-vue) | Ionic Vue + Capacitor (iOS/Android) |
+| **Ionic React** | [`@auth0/auth0-react`](https://github.com/auth0/auth0-react) + Capacitor | Ionic React + Capacitor (iOS/Android) |
 | **React Native** | [`react-native-auth0`](https://github.com/auth0/react-native-auth0) | React Native CLI (bare workflow) |
 | **Expo** | [`react-native-auth0`](https://github.com/auth0/react-native-auth0) | Expo (managed workflow) |
 | **Android** | [`Auth0.Android`](https://github.com/auth0/Auth0.Android) | Android (Kotlin/Java) |
