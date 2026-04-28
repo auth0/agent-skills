@@ -1,6 +1,6 @@
 # auth0
 
-Auth0 skills for setting up authentication, migrating from other providers, implementing Multi-Factor Authentication (MFA), and framework-specific SDK integrations.
+Auth0 skills for setting up authentication, migrating from other providers, implementing Multi-Factor Authentication (MFA), framework-specific SDK integrations and CLI.
 
 ## Installation
 
@@ -27,7 +27,7 @@ npx skills add auth0/agent-skills/plugins/auth0
 ## Skills
 
 | Skill                                                         | Description                                                                                                                                                                                                                                              | Documentation                                         |
-| ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+|---------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------|
 | [auth0-quickstart](skills/auth0-quickstart)                   | Detects the project's framework and guides through a complete Auth0 integration from scratch. Handles tenant and application setup, environment variable configuration, and routes to the correct SDK skill.                                             | [SKILL.md](skills/auth0-quickstart/SKILL.md)          |
 | [auth0-migration](skills/auth0-migration)                     | Guides migration of existing authentication to Auth0 from other providers (Firebase, Cognito, Supabase, Clerk, custom). Covers user import strategies, JWT validation updates, and gradual migration patterns.                                           | [SKILL.md](skills/auth0-migration/SKILL.md)           |
 | [auth0-mfa](skills/auth0-mfa)                                 | Implements Multi-Factor Authentication. Covers factor setup (TOTP, SMS, email, push, WebAuthn, voice), step-up authentication for sensitive operations, and adaptive MFA policies.                                                                       | [SKILL.md](skills/auth0-mfa/SKILL.md)                 |
@@ -51,3 +51,4 @@ npx skills add auth0/agent-skills/plugins/auth0
 | [auth0-aspnetcore-api](skills/auth0-aspnetcore-api)           | Secures ASP.NET Core Web API endpoints with JWT Bearer token validation using `Auth0.AspNetCore.Authentication.Api`. Covers scope/permission checks, DPoP proof-of-possession token binding, and stateless auth for REST APIs.                           | [SKILL.md](skills/auth0-aspnetcore-api/SKILL.md)      |
 | [auth0-fastapi-api](skills/auth0-fastapi-api)                 | Secures FastAPI API endpoints with JWT Bearer token validation using `auth0-fastapi-api`. Covers scope/permission checks, DPoP proof-of-possession token binding, and stateless auth for REST APIs.                                                      | [SKILL.md](skills/auth0-fastapi-api/SKILL.md)         |
 | [express-oauth2-jwt-bearer](skills/express-oauth2-jwt-bearer) | Secures Node.js/Express API endpoints with JWT Bearer token validation using `express-oauth2-jwt-bearer`. Covers scope and permission-based RBAC, claim validation, DPoP support, and stateless auth for REST APIs.                                      | [SKILL.md](skills/express-oauth2-jwt-bearer/SKILL.md) |
+| [auth0-cli](skills/auth0-cli)                                 | Reference for Auth0 CLI commands  manage applications, APIs, users, roles, organizations, actions, logs, custom domains, Universal Login, Terraform export, and raw Management API access from the terminal.                                             | [SKILL.md](skills/auth0-cli/SKILL.md)                 |

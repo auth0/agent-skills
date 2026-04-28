@@ -254,6 +254,13 @@ private let auth = AuthenticationService()
 | Not calling `clearSession()` on logout | Always call `clearSession()` to remove the Auth0 session cookie from the browser |
 | Build error "No such module 'Auth0'" | Verify the package is added to the correct target; for CocoaPods, open `.xcworkspace` |
 
+## Related Skills
+
+- `auth0-quickstart` - Basic Auth0 setup
+- `auth0-cli` - Manage Auth0 resources from the terminal
+
+---
+
 ## References
 
 - [Auth0.swift GitHub](https://github.com/auth0/Auth0.swift)

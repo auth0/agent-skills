@@ -214,6 +214,7 @@ Built-in proof-of-possession token binding per RFC 9449. DPoP is enabled by defa
 
 - `auth0-quickstart` - Basic Auth0 setup and framework detection
 - `auth0-mfa` - Add Multi-Factor Authentication
+- `auth0-cli` - Manage Auth0 resources from the terminal
 
 ---
 

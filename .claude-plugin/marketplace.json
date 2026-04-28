@@ -29,7 +29,7 @@
         "migration",
         "mfa",
         "security",
-        "acul", 
+        "acul",
         "universal-login",
         "sdk",
         "react",
@@ -54,7 +54,8 @@
         "spa-js",
         "node",
         "jwt",
-        "express-oauth2-jwt-bearer"
+        "express-oauth2-jwt-bearer",
+        "cli"
       ],
       "category": "authentication"
     }

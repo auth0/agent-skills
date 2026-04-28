@@ -151,6 +151,7 @@ curl http://localhost:3001/api/private \
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-fastify` - For server-rendered Fastify web apps with sessions
 - `auth0-mfa` - Add Multi-Factor Authentication
+- `auth0-cli` - Manage Auth0 resources from the terminal
 
 ---
 

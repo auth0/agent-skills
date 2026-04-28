@@ -121,6 +121,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 - **[auth0-aspnetcore-api](../auth0-aspnetcore-api)** — BACKEND_API reference implementation for .NET
 - **[go-jwt-middleware](../go-jwt-middleware)** — JWT middleware for Go APIs
 - **[auth0-api-python](../auth0-api-python)** — JWT validation for Python APIs (Flask/FastAPI)
+- **[auth0-cli](../auth0-cli)** — Manage Auth0 resources from the terminal
 
 ## Quick Reference
 
