@@ -1,7 +1,7 @@
 ---
 name: auth0-java-mvc-common
 description: Use when adding Auth0 login, logout, and callback handling to Java Servlet web applications - integrates com.auth0:mvc-auth-commons SDK for server-side Java apps using javax.servlet with session-based authentication. Triggers on AuthenticationController, AuthorizeUrl, Tokens, IdentityVerificationException, Java MVC auth.
-license: MIT
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
 ---

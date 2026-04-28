@@ -2,7 +2,7 @@
 
 # Auth0 Agent Skills
 
-[![License](https://img.shields.io/:license-apache-blue.svg?style=flat)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/:license-mit-0-blue.svg?style=flat)](https://opensource.org/licenses/MIT-0)
 
 AI agent skills that help coding assistants implement Auth0 authentication correctly. Works with [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com), [GitHub Copilot](https://github.com/features/copilot), and [40+ other agents](https://agentskills.io/clients) that support the [Agent Skills](https://agentskills.io) format.
 

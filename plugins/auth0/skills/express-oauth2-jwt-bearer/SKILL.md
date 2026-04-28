@@ -1,7 +1,7 @@
 ---
 name: express-oauth2-jwt-bearer
 description: Use when adding Auth0 token validation to Express or Node.js APIs - integrates express-oauth2-jwt-bearer SDK to protect Node.js API endpoints with JWT Bearer authentication, scope-based RBAC, claim validation, and optional DPoP support
-license: Apache-2.0
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
 ---

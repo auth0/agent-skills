@@ -16,7 +16,7 @@
       "description": "Auth0 skills for quickstarts, migration, MFA, and framework-specific SDK integrations for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Swift, Android, ASP.NET Core, React Native, and Expo.",
       "version": "1.0.0",
       "repository": "https://github.com/auth0/agent-skills.git",
-      "license": "Apache-2.0",
+      "license": "MIT-0",
       "author": {
         "name": "Auth0",
         "email": "support@auth0.com"

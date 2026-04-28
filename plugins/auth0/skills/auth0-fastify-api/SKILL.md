@@ -1,7 +1,7 @@
 ---
 name: auth0-fastify-api
 description: Use when securing Fastify API endpoints with JWT Bearer token validation, scope/permission checks, or stateless auth - integrates @auth0/auth0-fastify-api for REST APIs receiving access tokens from frontends or mobile apps.
-license: Apache-2.0
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
 ---

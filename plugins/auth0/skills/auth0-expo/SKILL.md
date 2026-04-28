@@ -1,7 +1,7 @@
 ---
 name: auth0-expo
 description: Use when adding authentication to Expo (React Native) mobile apps — login, logout, user sessions, protected routes, biometrics, or token management. Integrates react-native-auth0 SDK with Expo Config Plugin for native iOS/Android builds. Trigger for any Expo project needing Auth0, including app.json plugin config, custom scheme setup, or credential management. Do NOT use for bare React Native CLI projects (use auth0-react-native), React web apps (use auth0-react), Next.js (use auth0-nextjs), or backend APIs.
-license: Proprietary
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
 ---

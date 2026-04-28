@@ -1,7 +1,7 @@
 ---
 name: auth0-mfa
 description: Use when adding MFA, 2FA, TOTP, SMS codes, push notifications, passkeys, or when requiring step-up verification for sensitive operations or meeting compliance requirements (HIPAA, PCI-DSS) - covers adaptive and risk-based authentication with Auth0.
-license: Apache-2.0
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
 ---

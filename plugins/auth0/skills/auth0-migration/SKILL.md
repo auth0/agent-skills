@@ -1,7 +1,7 @@
 ---
 name: auth0-migration
 description: Use when migrating or switching from an existing auth provider (Firebase, Cognito, Supabase, Clerk, custom auth) to Auth0 - covers bulk user import, gradual migration strategies, code migration patterns, and JWT validation updates.
-license: Apache-2.0
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
 ---

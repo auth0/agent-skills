@@ -1,7 +1,7 @@
 ---
 name: auth0-flask
 description: Use when adding login, logout, and user profile to a Flask web application using session-based authentication - integrates auth0-server-python for server-rendered apps with login/callback/profile/logout flows.
-license: Apache-2.0
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
 ---

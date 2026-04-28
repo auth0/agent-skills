@@ -1,7 +1,7 @@
 ---
 name: auth0-spa-js
 description: Use when adding authentication to Vanilla JS, Svelte, or any framework-agnostic single-page applications - integrates @auth0/auth0-spa-js SDK for SPAs without framework-specific wrappers
-license: Proprietary
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
 ---
