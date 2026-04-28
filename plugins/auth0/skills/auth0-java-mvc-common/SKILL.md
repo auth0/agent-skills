@@ -4,6 +4,10 @@ description: Use when adding Auth0 login, logout, and callback handling to Java 
 license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Auth0 Java MVC Common Integration

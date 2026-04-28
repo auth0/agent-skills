@@ -44,8 +44,15 @@ Then ask the user for explicit confirmation before proceeding — do not continu
 
 # Install Auth0 CLI
 if ! command -v auth0 &> /dev/null; then
-  [[ "$OSTYPE" == "darwin"* ]] && brew install auth0/auth0-cli/auth0 || \
-  curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install auth0/auth0-cli/auth0
+  else
+    # Download and review the install script before executing
+    curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh
+    echo "⚠️  Review the install script at /tmp/auth0-install.sh before running"
+    sh /tmp/auth0-install.sh -b /usr/local/bin
+    rm /tmp/auth0-install.sh
+  fi
 fi
 
 # Login

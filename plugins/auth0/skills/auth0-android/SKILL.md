@@ -4,6 +4,14 @@ description: Use when adding authentication to Android applications (Kotlin/Java
 license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
+    requires:
+      bins:
+        - gh
+        - node
 ---
 
 # Auth0 Android Integration

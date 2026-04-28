@@ -4,6 +4,10 @@ description: Use when adding Auth0 token validation to Express or Node.js APIs -
 license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Node OAuth2 JWT Bearer Integration

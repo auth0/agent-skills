@@ -4,6 +4,22 @@ description: Use when adding authentication or login to any app - detects your s
 license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
+    requires:
+      bins:
+        - auth0
+    os:
+      - darwin
+      - linux
+    install:
+      - id: brew
+        kind: brew
+        package: auth0/auth0-cli/auth0
+        bins: [auth0]
+        label: 'Install Auth0 CLI (brew)'
 ---
 
 # Auth0 Quickstart

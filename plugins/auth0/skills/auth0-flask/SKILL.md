@@ -4,6 +4,10 @@ description: Use when adding login, logout, and user profile to a Flask web appl
 license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Auth0 Flask Web App Integration
