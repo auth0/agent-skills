@@ -30,8 +30,8 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 - **Xcode** 16.x
 - **Swift** 6.0+
 - Auth0 account — [Sign up free](https://auth0.com/signup)
-- Node.js 20+ (for bootstrap script automation)
-- Auth0 CLI — `brew install auth0/auth0-cli/auth0` (for bootstrap script)
+- Auth0 CLI — `brew install auth0/auth0-cli/auth0`
+- Ruby with `xcodeproj` gem — `gem install xcodeproj` (for Xcode project manipulation)
 
 ## Quick Start Workflow
 
@@ -59,9 +59,11 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 
 > **Agent instruction:**
 > - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write `Auth0.plist` directly with those values and proceed to Step 3.
-> - **If no credentials are provided:** Run the bootstrap script — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
+> - **If no credentials are provided:** Create an Auth0 application using the CLI — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
 >
-> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and the script command.
+> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and CLI commands.
+>
+> After creating the app via CLI, write `Auth0.plist` and run `ruby scripts/xcode-modify.rb` to add it to the Xcode project. See [Setup Guide](./references/setup.md#auth0-configuration) for full details.
 
 ### Step 3 — Configure Callback URLs
 
@@ -232,7 +234,7 @@ private let auth = AuthenticationService()
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 Dashboard configuration, bootstrap script, manual setup, URL scheme registration, CocoaPods/SPM/Carthage install
+- **[Setup Guide](./references/setup.md)** — Auth0 CLI configuration, Auth0.plist setup, URL scheme registration, CocoaPods/SPM/Carthage install
 - **[Integration Patterns](./references/integration.md)** — Web Auth login/logout, CredentialsManager, biometric protection, MFA, organizations, error handling, SwiftUI/UIKit patterns
 - **[API Reference & Testing](./references/api.md)** — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
 
