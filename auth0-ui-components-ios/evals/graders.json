@@ -1,0 +1,104 @@
+[
+  {
+    "type": "matches",
+    "pattern": "\\.package\\(url:\\s*\"https://github\\.com/auth0/ui-components-ios(\\.git)?\"|pod\\s+['\"]Auth0UniversalComponents['\"]|github\\s+\"auth0/ui-components-ios\"",
+    "description": "Has Auth0UniversalComponents package dependency (SPM, CocoaPods, or Carthage)"
+  },
+  {
+    "type": "contains",
+    "value": "import Auth0UniversalComponents",
+    "description": "Imports Auth0UniversalComponents module"
+  },
+  {
+    "type": "matches",
+    "pattern": "Auth0UniversalComponentsSDKInitializer\\.initialize",
+    "description": "Initializes Auth0UniversalComponents SDK"
+  },
+  {
+    "type": "contains",
+    "value": "MyAccountAuthMethodsView",
+    "description": "Uses MyAccountAuthMethodsView component for MFA management"
+  },
+  {
+    "type": "matches",
+    "pattern": "TokenProvider|func\\s+fetchCredentials|func\\s+fetchAPICredentials|func\\s+storeCredentials",
+    "description": "Implements TokenProvider protocol with required methods"
+  },
+  {
+    "type": "contains_any",
+    "values": [
+      "CredentialsManager",
+      "credentialsManager",
+      "credentials()"
+    ],
+    "description": "Uses secure credential storage via CredentialsManager"
+  },
+  {
+    "type": "matches",
+    "pattern": "webAuth|Web\\.Auth|Auth0\\.webAuth|login|logout|clearSession",
+    "description": "Has login/logout authentication flow for step-up auth"
+  },
+  {
+    "type": "file_contains",
+    "file_pattern": "Auth0.plist",
+    "value": "dev-test-tenant.auth0.com",
+    "description": "Auth0 domain written to Auth0.plist"
+  },
+  {
+    "type": "file_contains",
+    "file_pattern": "Auth0.plist",
+    "value": "abc123clientid",
+    "description": "Client ID written to Auth0.plist"
+  },
+  {
+    "type": "not_contains",
+    "value": "@auth0/auth0-spa-js",
+    "description": "Does not use SPA SDK in native iOS app"
+  },
+  {
+    "type": "not_contains",
+    "value": "http://localhost",
+    "description": "Does not use localhost callback URLs in native app"
+  },
+  {
+    "type": "not_contains",
+    "value": "client_secret",
+    "description": "Does not include client secret in native mobile app"
+  },
+  {
+    "type": "judge",
+    "question": "Does the solution correctly integrate Auth0UniversalComponents into a SwiftUI app with proper SDK initialization, TokenProvider implementation, and MyAccountAuthMethodsView embedded in a NavigationStack? This is a correctness check for the overall integration.",
+    "framework": "SwiftUI",
+    "description": "Does the solution correctly integrate Auth0UniversalComponents into a SwiftUI app"
+  },
+  {
+    "type": "matches",
+    "pattern": "from:\\s*\"1\\.0\\.0\"|~>\\s*1\\.0",
+    "description": "Specifies version constraint for Auth0UniversalComponents"
+  },
+  {
+    "type": "matches",
+    "pattern": "api/v2/|Audience|audience",
+    "description": "Advanced: configures My Account API audience for MFA operations"
+  },
+  {
+    "type": "matches",
+    "pattern": "embeddedInNavigationStack|NavigationStack",
+    "description": "Advanced: properly handles NavigationStack requirement for MFA view"
+  },
+  {
+    "type": "not_contains_any",
+    "values": [
+      "Auth0Lock",
+      "auth0-lock",
+      "Lock.swift"
+    ],
+    "description": "Does not use deprecated Lock library"
+  },
+  {
+    "type": "judge",
+    "question": "Does the solution demonstrate knowledge beyond basic Auth0 Swift SDK usage — specifically: (1) Auth0UniversalComponentsSDKInitializer initialization with tokenProvider, (2) custom TokenProvider protocol implementation with fetchAPICredentials for My Account API, (3) MyAccountAuthMethodsView with NavigationStack, (4) My Account API audience configuration? Exclude basic patterns: import Auth0, Auth0.plist, webAuth, credentials, CredentialsManager. This is a skill attribution judge assessing whether the skill provided unique value.",
+    "framework": "SwiftUI",
+    "description": "Checks for skill-specific advanced pattern usage: Auth0UniversalComponentsSDKInitializer, TokenProvider, MyAccountAuthMethodsView, My Account API audience"
+  }
+]

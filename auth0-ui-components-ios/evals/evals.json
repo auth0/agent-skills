@@ -1,0 +1,30 @@
+{
+  "skill_name": "auth0-ui-components-ios",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Auth0 MFA enrollment and verification UI to a SwiftUI application using the Auth0UniversalComponents SDK.\n\n**Auth0 Credentials:**\n- Domain: `dev-test-tenant.auth0.com`\n- Client ID: `abc123clientid`",
+      "expected_output": "Working SwiftUI app with Auth0UniversalComponents SDK initialized, TokenProvider implementation, MyAccountAuthMethodsView for MFA management, and Auth0.plist configuration",
+      "expectations": [
+        "Has Auth0UniversalComponents package dependency (SPM, CocoaPods, or Carthage)",
+        "Imports Auth0UniversalComponents module",
+        "Initializes Auth0UniversalComponents SDK",
+        "Uses MyAccountAuthMethodsView component for MFA management",
+        "Implements TokenProvider protocol with required methods",
+        "Uses secure credential storage via CredentialsManager",
+        "Has login/logout authentication flow for step-up auth",
+        "dev-test-tenant.auth0.com written to Auth0.plist",
+        "abc123clientid written to Auth0.plist",
+        "Does not use SPA SDK in native iOS app",
+        "Does not use localhost callback URLs in native app",
+        "Does not include client secret in native mobile app",
+        "Does the solution correctly integrate Auth0UniversalComponents into a SwiftUI app",
+        "Specifies version constraint for Auth0UniversalComponents",
+        "Advanced: configures My Account API audience for MFA operations",
+        "Advanced: properly handles NavigationStack requirement for MFA view",
+        "Does not use deprecated Lock library",
+        "Checks for skill-specific advanced pattern usage: Auth0UniversalComponentsSDKInitializer, TokenProvider, MyAccountAuthMethodsView, My Account API audience"
+      ]
+    }
+  ]
+}
