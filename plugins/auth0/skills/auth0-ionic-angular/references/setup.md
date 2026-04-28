@@ -5,9 +5,9 @@
 > **Agent instruction:**
 >
 > **Credential check (always first):**
-> If the user's prompt already provides Auth0 credentials (domain and client ID), use them directly — skip the bootstrap script and do NOT call `AskUserQuestion`. Go straight to writing the SDK configuration and proceeding with integration.
+> If the user's prompt already provides Auth0 credentials (domain and client ID), use them directly — skip the automated setup and do NOT call `AskUserQuestion`. Go straight to writing the SDK configuration and proceeding with integration.
 >
-> **Option A: Automatic Setup (Bootstrap Script)** — only when credentials are NOT in the prompt
+> **Option A: Automatic Setup (Auth0 CLI)** — only when credentials are NOT in the prompt
 >
 > 1. **Pre-flight checks:**
 >    - Verify Node.js 20+: `node --version`
@@ -15,17 +15,58 @@
 >    - Verify logged in: `auth0 tenants list --csv --no-input`
 >    - If any check fails, guide user to install/login, or fall back to manual setup
 >
-> 2. **Run bootstrap script:**
+> 2. **Detect project and appId:**
+>    - Verify `package.json` contains `@angular/core`, `@ionic/angular`, and `@capacitor/core`
+>    - Read `appId` from `capacitor.config.ts` (match `appId: 'com.example.app'`) or `capacitor.config.json`
+>
+> 3. **Get the active tenant domain:**
 >    ```bash
->    cd SKILL_DIR/scripts && npm install && node bootstrap.mjs <project-path>
+>    auth0 tenants list --csv --no-input
 >    ```
->    The script will:
->    - Validate the Ionic Angular project structure
->    - Discover existing Auth0 apps and connections
->    - Show a change plan and ask for confirmation
->    - Create/update the Auth0 application (type: **Native**)
->    - Set up database connection
->    - Print a summary with callback URLs and remaining steps
+>    Parse the line with `→` to get the active domain.
+>
+> 4. **Create a Native Auth0 application:**
+>    ```bash
+>    auth0 apps create \
+>      --name "PROJECT_NAME-ionic-angular" \
+>      --type native \
+>      --auth-method none \
+>      --callbacks "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
+>      --logout-urls "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
+>      --origins "capacitor://localhost,http://localhost" \
+>      --json --no-input
+>    ```
+>    Extract `client_id` from the JSON output.
+>
+> 5. **Ensure Username-Password-Authentication connection is enabled for the app:**
+>    ```bash
+>    # List connections to check if it exists
+>    auth0 api get connections
+>    ```
+>    - If the connection exists but doesn't include the new `client_id` in `enabled_clients`, update it:
+>      ```bash
+>      auth0 api patch "connections/CONNECTION_ID" --data '{"enabled_clients":["EXISTING_IDS","NEW_CLIENT_ID"]}'
+>      ```
+>    - If it doesn't exist, create it:
+>      ```bash
+>      auth0 api post connections --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}'
+>      ```
+>
+> 6. **Write `src/environments/environment.ts`:**
+>    ```typescript
+>    export const environment = {
+>      production: false,
+>      auth0: {
+>        domain: 'DOMAIN',
+>        clientId: 'CLIENT_ID',
+>        callbackUrl: 'PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback',
+>        appId: 'PACKAGE_ID',
+>      },
+>    };
+>    ```
+>    Create the `src/environments/` directory if it doesn't exist.
+>
+> 7. **Print summary** with domain, client ID, appId, and callback URL.
 >
 > **Option B: Manual Setup** — only when credentials are NOT in the prompt
 >
