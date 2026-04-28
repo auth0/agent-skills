@@ -62,7 +62,7 @@ npx skills add auth0/agent-skills --agent claude-code cursor
 Install individual skills from [ClawHub.ai](https://clawhub.ai):
 
 ```bash
-# Install all Auth0 skills
+# Install each Auth0 skill separatly.
 npx clawhub install auth0-quickstart
 npx clawhub install auth0-migration
 npx clawhub install auth0-mfa
