@@ -40,7 +40,14 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 2. **Configure Auth0**:
 
-    See [**Setup Guide**](references/setup.md) for automatic/manual setup, post-setup required project changes, and callback URL configuration.
+   > **Agent instruction:** Check whether the user prompt already includes both Auth0 **Client ID** and **Domain**.
+   > - If both are provided, proceed directly to **Manual Setup** in [**Setup Guide**](references/setup.md) using those values.
+   > - If either is missing, you MUST ask the user BEFORE writing any code or files:
+   >   - Question: "How would you like to configure Auth0 for this project?"
+   >   - Options: "Automatic setup (Recommended) — Auth0 CLI creates the app and writes credentials to strings.xml" / "Manual setup — I'll provide my Client ID and Domain"
+   >
+   > Then follow [**Setup Guide**](references/setup.md) for the chosen path.
+   > **Do NOT proceed to step 3 until Auth0 credentials are confirmed.**
 
 3. **Initialize**: Create an Auth0 account instance:
    ```kotlin
@@ -117,11 +124,9 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
    >
    > Re-run the build after each fix. Track the number of build-fix iterations.
    >
-   > **Failcheck:** If the build still fails after 5–6 fix attempts, stop and ask the user using `AskUserQuestion`:
-   > _"The build is still failing after several fix attempts. How would you like to proceed?"_
-   > - **Let the skill continue fixing iteratively** — continue the build-fix loop for another 5–6 attempts
-   > - **Fix it manually** — show the remaining errors and let the user resolve them
-   > - **Skip build verification** — proceed without a successful build
+   > **Failcheck:** If the build still fails after 5–6 fix attempts, stop and ask the user:
+   > - Question: "The build is still failing after several fix attempts. How would you like to proceed?"
+   > - Options: "Let the agent continue fixing iteratively" / "I'll fix it manually — show me the errors" / "Skip build verification and proceed"
    >
    > Repeat this check after every 5–6 iterations if errors persist. Do not leave the project in a non-compiling state without the user's explicit consent.
 
