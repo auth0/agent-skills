@@ -1,7 +1,7 @@
 ---
 name: auth0-android
 description: Use when adding authentication to Android applications (Kotlin/Java) with Web Auth, biometric-protected credentials, and MFA - integrates com.auth0.android:auth0 SDK for native Android apps
-license: Apache-2.0
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
   version: '1.0.0'

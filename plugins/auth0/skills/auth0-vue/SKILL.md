@@ -1,7 +1,7 @@
 ---
 name: auth0-vue
 description: Use when adding authentication to Vue.js 3 applications (login, logout, user sessions, protected routes) - integrates @auth0/auth0-vue SDK for SPAs with Vite or Vue CLI
-license: Apache-2.0
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
   version: '1.0.0'

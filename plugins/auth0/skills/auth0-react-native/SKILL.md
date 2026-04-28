@@ -1,7 +1,7 @@
 ---
 name: auth0-react-native
 description: Use when adding authentication to React Native or Expo mobile apps (iOS/Android) with biometric support - integrates react-native-auth0 SDK with native deep linking
-license: Apache-2.0
+license: MIT-0
 metadata:
   author: Auth0 <support@auth0.com>
   version: '1.0.0'

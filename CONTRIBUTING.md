@@ -32,7 +32,7 @@ Your `SKILL.md` must include:
    ---
    name: my-skill
    description: Brief description of what this skill does and when to use it.
-   license: Apache-2.0
+   license: MIT-0
    metadata:
      author: your-name
      version: 1.0.0
