@@ -1,6 +1,9 @@
 ---
 name: auth0-ionic-angular
 description: Use when adding Auth0 authentication to an Ionic Angular application with Capacitor — integrates @auth0/auth0-angular SDK with Capacitor Browser and App plugins for native iOS/Android deep linking, login, logout, and user profile display.
+license: Proprietary
+metadata:
+  author: Auth0 <support@auth0.com>
 ---
 
 # Auth0 Ionic Angular (Capacitor) Integration
@@ -49,7 +52,7 @@ npm install @auth0/auth0-angular @capacitor/browser @capacitor/app
 
 > **Agent instruction:** Use `AskUserQuestion` to ask:
 > "How would you like to configure Auth0?"
-> - Option A: "Automatic setup (recommended)" — runs the bootstrap script
+> - Option A: "Automatic setup (recommended)" — uses Auth0 CLI to create app and configure project
 > - Option B: "Manual setup" — provide Auth0 credentials manually
 >
 > See [Setup Guide](./references/setup.md) for full details on both paths.
@@ -220,7 +223,7 @@ export class ProfileComponent {
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 configuration, bootstrap script, Capacitor platform setup, deep linking
+- **[Setup Guide](./references/setup.md)** — Auth0 configuration, Auth0 CLI setup, Capacitor platform setup, deep linking
 - **[Integration Patterns](./references/integration.md)** — Login/logout flows, token management, user profile, error handling, Capacitor lifecycle
 - **[API Reference & Testing](./references/api.md)** — AuthService API, configuration options, claims reference, testing checklist
 
