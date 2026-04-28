@@ -57,6 +57,31 @@ Target specific agents with `--agent`:
 npx skills add auth0/agent-skills --agent claude-code cursor
 ```
 
+### ClawHub Marketplace
+
+Install individual skills from [ClawHub.ai](https://clawhub.ai/search?q=auth0):
+
+```bash
+# Install each Auth0 skill separatly.
+npx clawhub install auth0-quickstart
+npx clawhub install auth0-migration
+npx clawhub install auth0-mfa
+npx clawhub install auth0-react
+npx clawhub install auth0-nextjs
+npx clawhub install auth0-vue
+npx clawhub install auth0-nuxt
+npx clawhub install auth0-angular
+npx clawhub install auth0-express
+npx clawhub install auth0-fastify
+npx clawhub install auth0-fastify-api
+npx clawhub install auth0-react-native
+npx clawhub install auth0-android
+npx clawhub install auth0-aspnetcore-api
+```
+
+Or browse and install from the [ClawHub web UI](https://clawhub.ai) — search for "auth0".
+
+
 ## What happens after install
 
 When you ask your AI assistant something like "add Auth0 login to my app," the assistant:

@@ -368,7 +368,7 @@ class SkillRequiredMetadataRule(Rule):
     Enforce that SKILL.md frontmatter includes license and metadata.author.
 
     Per marketplace convention, all skills must declare:
-    - license (e.g., "Proprietary")
+    - license (e.g., "Apache-2.0")
     - metadata.author (e.g., "Name <email>")
     """
 
@@ -419,7 +419,7 @@ class SkillRequiredMetadataRule(Rule):
                     violations.append(
                         self.violation(
                             f"SKILL.md is missing 'license' field. "
-                            f"Add 'license: Proprietary' (or appropriate license) to frontmatter.",
+                            f"Add 'license: Apache-2.0' (or appropriate license) to frontmatter.",
                             file_path=skill_md
                         )
                     )
@@ -492,4 +492,223 @@ class SkillRequiredMetadataRule(Rule):
             return None
 
         # Let yaml.YAMLError propagate so the caller can report it as a violation
+        return yaml.safe_load(content[3:end])
+
+
+class SkillOpenclawMetadataRule(Rule):
+    """
+    Enforce that SKILL.md frontmatter includes metadata.openclaw with required fields.
+
+    All skills must declare openclaw metadata for marketplace compatibility:
+    - metadata.openclaw.emoji (string, non-empty)
+    - metadata.openclaw.homepage (string, valid URL)
+
+    Optional openclaw fields (not enforced but validated if present):
+    - metadata.openclaw.requires.bins (list of binary names)
+    - metadata.openclaw.os (list of OS identifiers, e.g., "darwin", "linux")
+    - metadata.openclaw.install (list of install definitions)
+    """
+
+    # Simple URL pattern: must start with https://
+    URL_RE = re.compile(r'^https?://\S+$')
+
+    # Valid OS identifiers
+    VALID_OS = {'darwin', 'linux', 'windows'}
+
+    @property
+    def rule_id(self) -> str:
+        return "skill-openclaw-metadata"
+
+    @property
+    def description(self) -> str:
+        return "SKILL.md must include 'metadata.openclaw' with 'emoji' and 'homepage' in frontmatter"
+
+    def default_severity(self) -> Severity:
+        return Severity.ERROR
+
+    def check(self, context: RepositoryContext) -> List[RuleViolation]:
+        violations = []
+
+        for plugin_path in context.plugins:
+            skills_dir = plugin_path / "skills"
+            if not skills_dir.exists():
+                continue
+
+            for skill_dir in skills_dir.iterdir():
+                if not skill_dir.is_dir() or skill_dir.name.startswith('.'):
+                    continue
+
+                skill_md = skill_dir / "SKILL.md"
+                if not skill_md.exists():
+                    continue
+
+                try:
+                    frontmatter = self._parse_frontmatter(skill_md)
+                except yaml.YAMLError:
+                    continue  # SkillRequiredMetadataRule already reports YAML errors
+                if frontmatter is None:
+                    continue
+
+                metadata = frontmatter.get('metadata')
+                if not isinstance(metadata, dict):
+                    continue  # SkillRequiredMetadataRule already reports missing metadata
+
+                openclaw = metadata.get('openclaw')
+                if not isinstance(openclaw, dict):
+                    violations.append(
+                        self.violation(
+                            "SKILL.md is missing 'metadata.openclaw' section. "
+                            "Add 'metadata:\\n  openclaw:\\n    emoji: \"\\U0001F510\"\\n"
+                            "    homepage: https://github.com/auth0/agent-skills' to frontmatter.",
+                            file_path=skill_md
+                        )
+                    )
+                    continue
+
+                # Validate required fields
+                violations.extend(self._check_required_fields(openclaw, skill_md))
+
+                # Validate optional fields if present
+                violations.extend(self._check_optional_fields(openclaw, skill_md))
+
+        return violations
+
+    def _check_required_fields(self, openclaw: Dict[str, Any], skill_md: Path) -> List[RuleViolation]:
+        """Check that required openclaw fields are present and valid."""
+        violations = []
+
+        # emoji: must be a non-empty string
+        emoji = openclaw.get('emoji')
+        if not emoji or not isinstance(emoji, str) or not emoji.strip():
+            violations.append(
+                self.violation(
+                    "metadata.openclaw.emoji is missing or empty. "
+                    "Add an emoji identifier, e.g., 'emoji: \"\\U0001F510\"'.",
+                    file_path=skill_md
+                )
+            )
+
+        # homepage: must be a valid URL
+        homepage = openclaw.get('homepage')
+        if not homepage or not isinstance(homepage, str):
+            violations.append(
+                self.violation(
+                    "metadata.openclaw.homepage is missing. "
+                    "Add a homepage URL, e.g., 'homepage: https://github.com/auth0/agent-skills'.",
+                    file_path=skill_md
+                )
+            )
+        elif not self.URL_RE.match(homepage):
+            violations.append(
+                self.violation(
+                    f"metadata.openclaw.homepage '{homepage}' is not a valid URL. "
+                    "Must start with http:// or https://.",
+                    file_path=skill_md
+                )
+            )
+
+        return violations
+
+    def _check_optional_fields(self, openclaw: Dict[str, Any], skill_md: Path) -> List[RuleViolation]:
+        """Validate optional openclaw fields if they are present."""
+        violations = []
+
+        # requires.bins: if present, must be a list of non-empty strings
+        requires = openclaw.get('requires')
+        if requires is not None:
+            if not isinstance(requires, dict):
+                violations.append(
+                    self.violation(
+                        "metadata.openclaw.requires must be a mapping. "
+                        "Example: 'requires:\\n  bins:\\n    - auth0'.",
+                        file_path=skill_md
+                    )
+                )
+            else:
+                bins = requires.get('bins')
+                if bins is not None:
+                    if not isinstance(bins, list) or not all(
+                        isinstance(b, str) and b.strip() for b in bins
+                    ):
+                        violations.append(
+                            self.violation(
+                                "metadata.openclaw.requires.bins must be a list of non-empty strings. "
+                                "Example: 'bins:\\n  - auth0'.",
+                                file_path=skill_md
+                            )
+                        )
+
+        # os: if present, must be a list of valid OS identifiers
+        os_list = openclaw.get('os')
+        if os_list is not None:
+            if not isinstance(os_list, list) or not os_list:
+                violations.append(
+                    self.violation(
+                        "metadata.openclaw.os must be a non-empty list. "
+                        f"Valid values: {', '.join(sorted(self.VALID_OS))}.",
+                        file_path=skill_md
+                    )
+                )
+            else:
+                invalid = [o for o in os_list if o not in self.VALID_OS]
+                if invalid:
+                    violations.append(
+                        self.violation(
+                            f"metadata.openclaw.os contains invalid entries: {invalid}. "
+                            f"Valid values: {', '.join(sorted(self.VALID_OS))}.",
+                            file_path=skill_md
+                        )
+                    )
+
+        # install: if present, must be a list of dicts with required keys
+        install = openclaw.get('install')
+        if install is not None:
+            if not isinstance(install, list):
+                violations.append(
+                    self.violation(
+                        "metadata.openclaw.install must be a list of install definitions.",
+                        file_path=skill_md
+                    )
+                )
+            else:
+                for i, entry in enumerate(install):
+                    if not isinstance(entry, dict):
+                        violations.append(
+                            self.violation(
+                                f"metadata.openclaw.install[{i}] must be a mapping with "
+                                "'id', 'kind', 'package', 'bins', and 'label' fields.",
+                                file_path=skill_md
+                            )
+                        )
+                        continue
+                    missing = [
+                        k for k in ('id', 'kind', 'package', 'bins', 'label')
+                        if not entry.get(k)
+                    ]
+                    if missing:
+                        violations.append(
+                            self.violation(
+                                f"metadata.openclaw.install[{i}] is missing required fields: "
+                                f"{', '.join(missing)}.",
+                                file_path=skill_md
+                            )
+                        )
+
+        return violations
+
+    @staticmethod
+    def _parse_frontmatter(skill_md: Path) -> Optional[Dict[str, Any]]:
+        """Extract YAML frontmatter from a SKILL.md file."""
+        try:
+            content = skill_md.read_text()
+        except OSError:
+            return None
+
+        if not content.startswith('---'):
+            return None
+
+        end = content.find('---', 3)
+        if end == -1:
+            return None
+
         return yaml.safe_load(content[3:end])

@@ -4,6 +4,10 @@ description: Use when implementing Auth0 authentication in Nuxt 3/4 applications
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Auth0 Nuxt SDK

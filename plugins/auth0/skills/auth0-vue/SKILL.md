@@ -4,6 +4,10 @@ description: Use when adding authentication to Vue.js 3 applications (login, log
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Auth0 Vue.js Integration
