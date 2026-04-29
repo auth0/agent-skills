@@ -1,5 +1,5 @@
 ---
-name: sp-auth0
+name: stripe-projects-auth0
 description: Always use this skill before running any `stripe projects` commands involving Auth0, or before writing any Auth0 integration code in this project.
 ---
 
