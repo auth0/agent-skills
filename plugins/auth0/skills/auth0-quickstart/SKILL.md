@@ -55,6 +55,7 @@ ls -la | grep -E "angular.json|vue.config.js|next.config|app.json|Package.swift|
 | React Native | `"react-native"` or `"expo"` in package.json | `auth0-react-native` |
 | Flask | `"flask"` in requirements.txt, Pipfile, or pyproject.toml | `auth0-flask` |
 | Node.js API | `"express-oauth2-jwt-bearer"` in package.json | `express-oauth2-jwt-bearer` |
+| ASP.NET Core web app | `*.csproj` exists, has `Views/` or `Pages/` folder | `auth0-aspnetcore-authentication` |
 
 **Don't see your framework?** See Tier 2 Frameworks below.
 
@@ -160,6 +161,7 @@ Based on your framework detection, use the appropriate skill:
 - **`auth0-fastify`** - Fastify web applications
 - **`auth0-fastify-api`** - Fastify API authentication
 - **`express-oauth2-jwt-bearer`** - Node.js/Express API JWT Bearer validation
+- **`auth0-aspnetcore-authentication`** - ASP.NET Core MVC, Razor Pages, Blazor Server web applications
 
 **Mobile:**
 - **`auth0-react-native`** - React Native and Expo (iOS/Android)
@@ -178,7 +180,6 @@ Not yet available as separate skills. Use Auth0 documentation:
 - [Rails (Ruby)](https://auth0.com/docs/quickstart/webapp/rails)
 - [Laravel (PHP)](https://auth0.com/docs/quickstart/webapp/laravel)
 - [Go](https://auth0.com/docs/quickstart/webapp/golang)
-- [ASP.NET Core](https://auth0.com/docs/quickstart/webapp/aspnet-core)
 - [Spring Boot](https://auth0.com/docs/quickstart/webapp/java-spring-boot)
 
 **Mobile:**
@@ -262,6 +263,7 @@ Complete Auth0 CLI reference:
 - `auth0-android` - Android (Kotlin/Java) integration
 - `auth0-swift` - iOS/macOS (Swift) integration
 - `auth0-fastapi-api` - FastAPI API authentication
+- `auth0-aspnetcore-authentication` - ASP.NET Core web app authentication
 - `auth0-aspnetcore-api` - ASP.NET Core API authentication
 
 ### Advanced Features
