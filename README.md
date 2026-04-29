@@ -79,6 +79,7 @@ npx clawhub install auth0-aspnetcore-api
 npx clawhub install auth0-ionic-react
 npx clawhub install auth0-ionic-angular
 npx clawhub install auth0-ionic-vue
+npx clawhub install auth0-aspnetcore-authentication
 ```
 
 Or browse and install from the [ClawHub web UI](https://clawhub.ai) — search for "auth0".
@@ -96,7 +97,7 @@ You don't pick skills manually — framework detection handles it.
 
 ## Skills
 
-26 skills covering web, mobile, and API authentication.
+27 skills covering web, mobile, and API authentication.
 
 | Skill | SDK | Frameworks |
 |-------|-----|------------|
@@ -118,6 +119,7 @@ You don't pick skills manually — framework detection handles it.
 | **Fastify API** | [`@auth0/auth0-fastify`](https://github.com/auth0/auth0-fastify) | Fastify APIs |
 | **FastAPI** | [`auth0-fastapi-api`](https://github.com/auth0/auth0-fastapi-api) | Python FastAPI |
 | **Spring Boot API** | [`auth0-springboot-api`](https://github.com/auth0/auth0-auth-java) | Spring Boot |
+| **ASP.NET Core** | [`Auth0.AspNetCore.Authentication`](https://github.com/auth0/auth0-aspnetcore-authentication) | ASP.NET Core MVC, Razor Pages, Blazor Server |
 | **ASP.NET Core API** | [`Auth0.AspNetCore.Authentication`](https://github.com/auth0/auth0-aspnetcore-authentication) | ASP.NET Core |
 | **Ionic Angular** | [`@auth0/auth0-angular`](https://github.com/auth0/auth0-angular) + Capacitor | Ionic Angular + Capacitor (iOS/Android) |
 | **Ionic Vue** | [`@auth0/auth0-vue`](https://github.com/auth0/auth0-vue) | Ionic Vue + Capacitor (iOS/Android) |
