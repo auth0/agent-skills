@@ -9,6 +9,20 @@ You are responsible for correctly provisioning, configuring, and validating Auth
 
 ---
 
+## Prerequisites
+
+This skill requires an active **Stripe Projects** workspace. Before proceeding, confirm the CLI is available:
+
+```bash
+stripe projects status
+```
+
+If `stripe projects` is not recognized (command not found) or the project has not been initialized, **stop here** — this skill cannot be used outside of a Stripe Projects context.
+
+**Fallback:** Use the **`auth0-quickstart`** skill instead. It provides Auth0 setup via the Auth0 CLI (`auth0 login`, `auth0 apps create`) and does not depend on Stripe Projects.
+
+---
+
 ## Core Rules
 
 - Use `stripe projects` CLI as the **primary control plane**
