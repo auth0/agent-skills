@@ -50,6 +50,7 @@ Backend/fullstack framework skills:
 - `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
 
 Mobile skills:
+- `auth0-ionic-angular` - Ionic Angular + Capacitor (iOS/Android)
 - `auth0-android` - Android (Kotlin/Java)
 - `auth0-swift` - iOS/macOS (Swift)
 - `auth0-react-native` - React Native CLI (bare workflow)
@@ -93,6 +94,7 @@ auth0/agent-skills/
 │           ├── auth0-springboot-api/
 │           ├── auth0-aspnetcore-api/
 │           ├── express-oauth2-jwt-bearer/
+│           ├── auth0-ionic-angular/
 │           ├── auth0-react-native/
 │           ├── auth0-expo/
 │           ├── auth0-android/
