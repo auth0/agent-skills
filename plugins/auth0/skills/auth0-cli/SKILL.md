@@ -24,7 +24,7 @@ metadata:
 
 # Auth0 CLI — Command Reference
 
-The Auth0 CLI (`auth0`) lets you manage your tenant from the terminal. Install with `brew install auth0`. For complete flag definitions and examples, see the [Full CLI Reference](references/cli.md).
+The Auth0 CLI (`auth0`) lets you manage your tenant from the terminal. Install with `brew install auth0/auth0-cli/auth0`. For complete flag definitions and examples, see the [Full CLI Reference](references/cli.md).
 
 ---
 
@@ -268,6 +268,7 @@ Full details: [Output Formatting Reference](references/cli.md#output-formatting)
 ## Reference Documentation
 
 Complete CLI reference with all flags, examples, and usage patterns:
+- [Setup Guide](references/setup.md) — installation, authentication, CI/CD configuration
 - [Authentication](references/cli.md#authentication) — login modes, tenant management, scopes
 - [Apps](references/cli.md#apps) — create, list, show, update, delete, session-transfer
 - [APIs](references/cli.md#apis) — create, scopes, token lifetime
