@@ -65,6 +65,7 @@ Install individual skills from [ClawHub.ai](https://clawhub.ai/search?q=auth0):
 # Install each Auth0 skill separatly.
 npx clawhub install auth0-quickstart
 npx clawhub install auth0-migration
+npx clawhub install auth0-sdk-migration
 npx clawhub install auth0-mfa
 npx clawhub install auth0-react
 npx clawhub install auth0-nextjs
@@ -94,12 +95,13 @@ You don't pick skills manually — framework detection handles it.
 
 ## Skills
 
-23 skills covering web, mobile, and API authentication.
+24 skills covering web, mobile, and API authentication.
 
 | Skill | SDK | Frameworks |
 |-------|-----|------------|
 | **Quickstart Router** | — | Detects your framework and routes to the right skill |
 | **Migration** | — | Migrate from Firebase, Cognito, Supabase, Clerk, or custom auth |
+| **SDK Migration** | — | Upgrade Auth0 SDKs to new major versions with official migration guides |
 | **MFA** | — | TOTP, SMS, email, push, WebAuthn |
 | **ACUL Screen Generator** | [`@auth0/auth0-acul-react`](https://github.com/auth0/universal-login) | Custom Universal Login screens and theming |
 | **React** | [`@auth0/auth0-react`](https://github.com/auth0/auth0-react) | React SPAs (Vite, CRA) |
@@ -138,6 +140,10 @@ Add multi-factor authentication with TOTP
 
 ```
 Migrate from Firebase Auth to Auth0
+```
+
+```
+Upgrade nextjs-auth0 to v4
 ```
 
 ```
