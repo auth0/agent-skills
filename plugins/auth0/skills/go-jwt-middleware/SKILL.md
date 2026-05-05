@@ -4,6 +4,29 @@ description: Use when securing Go HTTP API endpoints with JWT Bearer token valid
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
+    requires:
+      bins:
+        - go
+        - auth0
+        - gh
+    os:
+      - darwin
+      - linux
+    install:
+      - id: brew
+        kind: brew
+        package: auth0/auth0-cli/auth0
+        bins: [auth0]
+        label: 'Install Auth0 CLI (brew)'
+      - id: brew
+        kind: brew
+        package: gh
+        bins: [gh]
+        label: 'Install GitHub CLI (brew)'
 ---
 
 # Go JWT Middleware Integration
@@ -70,8 +93,7 @@ Quick reference for manual API creation:
 # Using Auth0 CLI
 auth0 apis create \
   --name "My Go API" \
-  --identifier https://my-api.example.com \
-  --metadata "created_by=agent_skills"
+  --identifier https://my-api.example.com
 ```
 
 Or create manually in Auth0 Dashboard → Applications → APIs
@@ -250,7 +272,15 @@ curl http://localhost:8080/api/private \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 ```
 
-Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Test tab.
+Get a test token (requires an authorized M2M application):
+
+```bash
+auth0 test token <M2M_CLIENT_ID> \
+  --audience https://my-api.example.com \
+  --scopes "read:messages"
+```
+
+Or via Auth0 Dashboard → Applications → APIs → your API → Test tab → Copy Token.
 
 ---
 

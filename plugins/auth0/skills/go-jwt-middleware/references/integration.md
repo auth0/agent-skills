@@ -456,8 +456,8 @@ func TestPrivateEndpoint_WithoutToken_Returns401(t *testing.T) {
 ### Testing with a Real Token
 
 ```bash
-# Get a token from Auth0 CLI
-TOKEN=$(auth0 test token --audience https://my-api.example.com --json | jq -r '.access_token')
+# Get a token via Auth0 CLI (uses client credentials for M2M apps)
+TOKEN=$(auth0 test token <M2M_CLIENT_ID> --audience https://my-api.example.com --scopes "read:messages" --json | jq -r '.access_token')
 
 # Test private endpoint
 curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/private
