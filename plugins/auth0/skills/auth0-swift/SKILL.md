@@ -4,6 +4,10 @@ description: Use when adding Auth0 authentication to an iOS, macOS, tvOS, watchO
 license: Proprietary
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Auth0 Swift Integration
@@ -249,6 +253,13 @@ private let auth = AuthenticationService()
 | Opening `.xcodeproj` instead of `.xcworkspace` (CocoaPods) | Always open the `.xcworkspace` file after `pod install` |
 | Not calling `clearSession()` on logout | Always call `clearSession()` to remove the Auth0 session cookie from the browser |
 | Build error "No such module 'Auth0'" | Verify the package is added to the correct target; for CocoaPods, open `.xcworkspace` |
+
+## Related Skills
+
+- `auth0-quickstart` - Basic Auth0 setup
+- `auth0-cli` - Manage Auth0 resources from the terminal
+
+---
 
 ## References
 

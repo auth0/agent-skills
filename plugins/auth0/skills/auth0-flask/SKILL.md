@@ -4,6 +4,10 @@ description: Use when adding login, logout, and user profile to a Flask web appl
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Auth0 Flask Web App Integration
@@ -327,6 +331,7 @@ All methods are async:
 
 - `auth0-express` — For server-rendered Express web apps with login/logout sessions
 - `auth0-fastify` — For Fastify web applications with session-based auth
+- `auth0-cli` — Manage Auth0 resources from the terminal
 
 ---
 

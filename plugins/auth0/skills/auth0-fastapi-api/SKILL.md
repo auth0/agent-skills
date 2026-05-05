@@ -4,6 +4,10 @@ description: "Use when securing FastAPI API endpoints with JWT Bearer token vali
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Auth0 FastAPI API Integration
@@ -84,7 +88,7 @@ AUTH0_AUDIENCE=https://your-api.example.com
 ```python
 import os
 from fastapi import FastAPI, Depends
-from auth0_fastapi_api import Auth0FastAPI
+from fastapi_plugin import Auth0FastAPI
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -210,6 +214,7 @@ Built-in proof-of-possession token binding per RFC 9449. DPoP is enabled by defa
 
 - `auth0-quickstart` - Basic Auth0 setup and framework detection
 - `auth0-mfa` - Add Multi-Factor Authentication
+- `auth0-cli` - Manage Auth0 resources from the terminal
 
 ---
 

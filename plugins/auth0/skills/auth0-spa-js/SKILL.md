@@ -4,6 +4,10 @@ description: Use when adding authentication to Vanilla JS, Svelte, or any framew
 license: Proprietary
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Auth0 SPA JS Integration
@@ -167,6 +171,7 @@ const response = await fetch('https://your-api.example.com/data', {
 - [auth0-angular](/auth0-angular) — Auth0 for Angular SPAs
 - [auth0-vue](/auth0-vue) — Auth0 for Vue 3 SPAs
 - [auth0-mfa](/auth0-mfa) — Add Multi-Factor Authentication
+- [auth0-cli](/auth0-cli) — Manage Auth0 resources from the terminal
 
 ## Quick Reference
 

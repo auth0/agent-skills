@@ -4,6 +4,10 @@ description: Use when adding Auth0 token validation to Express or Node.js APIs -
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Node OAuth2 JWT Bearer Integration
@@ -117,6 +121,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 - **[auth0-aspnetcore-api](../auth0-aspnetcore-api)** — BACKEND_API reference implementation for .NET
 - **[go-jwt-middleware](../go-jwt-middleware)** — JWT middleware for Go APIs
 - **[auth0-api-python](../auth0-api-python)** — JWT validation for Python APIs (Flask/FastAPI)
+- **[auth0-cli](../auth0-cli)** — Manage Auth0 resources from the terminal
 
 ## Quick Reference
 

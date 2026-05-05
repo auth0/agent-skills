@@ -9,7 +9,7 @@ Complete reference for `auth0-fastapi-api` configuration options and methods.
 Main class for protecting FastAPI API routes with Auth0 JWT validation.
 
 ```python
-from auth0_fastapi_api import Auth0FastAPI
+from fastapi_plugin import Auth0FastAPI
 ```
 
 ### Constructor
@@ -166,7 +166,7 @@ auth0 = Auth0FastAPI(
 ### Dynamic Domain Resolver
 
 ```python
-from auth0_fastapi_api import DomainsResolverContext
+from fastapi_plugin import DomainsResolverContext
 
 def domains_resolver(context: DomainsResolverContext) -> list:
     request_url = context.get("request_url")
@@ -214,7 +214,7 @@ auth0 = Auth0FastAPI(
 ### Custom Cache Adapter
 
 ```python
-from auth0_fastapi_api import CacheAdapter
+from fastapi_plugin import CacheAdapter
 
 class RedisCache(CacheAdapter):
     def __init__(self, redis_client):
@@ -245,7 +245,7 @@ auth0 = Auth0FastAPI(
 ## Exports
 
 ```python
-from auth0_fastapi_api import (
+from fastapi_plugin import (
     Auth0FastAPI,              # Main class
     CacheAdapter,              # Interface for custom cache implementations
     ConfigurationError,        # Raised when configuration is invalid

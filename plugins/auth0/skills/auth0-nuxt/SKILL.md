@@ -4,6 +4,10 @@ description: Use when implementing Auth0 authentication in Nuxt 3/4 applications
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Auth0 Nuxt SDK
@@ -223,5 +227,12 @@ export default defineEventHandler(async (event) => {
 ## Additional Resources
 
 **Guides:** [Route Protection Patterns](./references/route-protection.md) • [Custom Session Stores](./references/session-stores.md) • [Common Examples](./references/examples.md)
+
+## Related Skills
+
+- `auth0-quickstart` - Basic Auth0 setup
+- `auth0-cli` - Manage Auth0 resources from the terminal
+
+---
 
 **Links:** [Auth0-Nuxt GitHub](https://github.com/auth0/auth0-nuxt) • [Auth0 Docs](https://auth0.com/docs) • [Nuxt Modules](https://nuxt.com/modules)

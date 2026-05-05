@@ -4,6 +4,14 @@ description: Use when adding authentication to Expo (React Native) mobile apps �
 license: Proprietary
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
+    requires:
+      bins:
+        - gh
+        - node
 ---
 
 # Auth0 Expo Integration
@@ -260,6 +268,7 @@ export default function App() {
 - [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
 - [auth0-react-native](/auth0-react-native) — Bare React Native CLI projects
 - [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
+- [auth0-cli](/auth0-cli) — Manage Auth0 resources from the terminal
 
 ## References
 
