@@ -16,34 +16,52 @@
 
 > **Agent instruction:**
 >
+> **Important:** Never echo Auth0 credentials (domain, client ID) in your response text. Write them directly into config files using the Write or Edit tool.
+>
 > **Credential check (always first):**
-> If the user's prompt already provides Auth0 credentials (domain, client ID), use them directly — skip the bootstrap script and do NOT call `AskUserQuestion` to re-confirm. Go straight to writing the app.json config and proceeding with integration.
+> If the user's prompt already provides Auth0 credentials (domain, client ID), use them directly — do NOT call `AskUserQuestion` to re-confirm. Go straight to writing the app.json config and proceeding with integration.
 >
 > **If credentials are NOT provided**, use `AskUserQuestion` to ask:
 > "How would you like to configure Auth0 for this Expo project?"
-> - Option A: "Automatic setup (recommended)" — uses the bootstrap script
+> - Option A: "Automatic setup (recommended)" — uses the Auth0 CLI to create your app
 > - Option B: "Manual setup" — provide Auth0 credentials manually
 >
 > **If Automatic Setup (Option A):**
 >
 > 1. **Pre-flight checks:**
->    - Verify Node.js 20+ is installed: `node --version`
->    - Verify Auth0 CLI is installed: `auth0 --version`
+>    - Verify Auth0 CLI is installed: `command -v auth0`
 >    - Verify logged in: `auth0 tenants list --csv --no-input`
 >    - If any check fails, guide user to install/login, or fall back to manual setup
 >
-> 2. **Run bootstrap script:**
+> 2. **Read the project's app.json** to extract:
+>    - `expo.name` (for the Auth0 app name)
+>    - `expo.scheme` (custom scheme — if missing, derive one from app name, lowercase, no special chars)
+>    - `expo.ios.bundleIdentifier` (for iOS callback URL)
+>    - `expo.android.package` (for Android callback URL)
+>
+> 3. **Create the Auth0 Native application:**
 >    ```bash
->    cd <skill-dir>/scripts && npm install && node bootstrap.mjs <project-path>
+>    auth0 apps create \
+>      --name "APP_NAME-expo" \
+>      --type native \
+>      --auth-method none \
+>      --callbacks "SCHEME://DOMAIN/ios/BUNDLE_ID/callback,SCHEME://DOMAIN/android/PACKAGE/callback" \
+>      --logout-urls "SCHEME://DOMAIN/ios/BUNDLE_ID/callback,SCHEME://DOMAIN/android/PACKAGE/callback" \
+>      --json --no-input
 >    ```
->    The script will:
->    - Validate the Expo project structure (detect app.json with expo config)
->    - Discover existing Auth0 apps and connections
->    - Show a change plan and ask for confirmation
->    - Create a Native Auth0 application
->    - Set up a database connection
->    - Write the Auth0 plugin config to app.json
->    - Print a summary with remaining manual steps
+>    Parse the JSON output to extract `client_id`.
+>
+> 4. **Enable database connection** for the new client:
+>    ```bash
+>    auth0 api get "connections" --query "name=Username-Password-Authentication" --no-input
+>    ```
+>    If it exists, patch it to include the new client_id in `enabled_clients`.
+>    If it doesn't exist, create it:
+>    ```bash
+>    auth0 api post "connections" --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}' --no-input
+>    ```
+>
+> 5. **Write the plugin config to app.json** using the Edit tool — add `react-native-auth0` to the plugins array with the domain and custom scheme. Do not echo credentials in your response.
 >
 > **If Manual Setup (Option B):**
 >
@@ -51,7 +69,7 @@
 > - Auth0 Domain (e.g., `your-tenant.auth0.com`)
 > - Client ID (32-character alphanumeric string)
 >
-> Then write the configuration to app.json and proceed with integration.
+> Then write the configuration to app.json using the Edit tool and proceed with integration.
 
 ## Expo Dev Client Requirement
 

@@ -34,12 +34,13 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 - **Xcode** 16.x
 - **Swift** 6.0+
 - Auth0 account — [Sign up free](https://auth0.com/signup)
-- Node.js 20+ (for bootstrap script automation)
-- Auth0 CLI — `brew install auth0/auth0-cli/auth0` (for bootstrap script)
+- Auth0 CLI — `brew install auth0/auth0-cli/auth0` (for automatic setup)
 
 ## Quick Start Workflow
 
-> **Agent instruction:** Follow these steps in order. If you encounter an error at any step, attempt to fix it up to 5 times before calling `AskUserQuestion` to ask the user for guidance. Always search existing code first — if there are existing login/logout handlers, hook into them rather than creating new ones.
+> **Agent instruction:** Never echo Auth0 credentials (domain, client ID) in your response text. Write them directly into config files using the Write or Edit tool.
+>
+> Follow these steps in order. If you encounter an error at any step, attempt to fix it up to 5 times before calling `AskUserQuestion` to ask the user for guidance. Always search existing code first — if there are existing login/logout handlers, hook into them rather than creating new ones.
 
 ### Step 1 — Install SDK
 
@@ -62,10 +63,10 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 ### Step 2 — Configure Auth0
 
 > **Agent instruction:**
-> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write `Auth0.plist` directly with those values and proceed to Step 3.
-> - **If no credentials are provided:** Run the bootstrap script — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
+> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write `Auth0.plist` directly with those values using the Write tool and proceed to Step 3.
+> - **If no credentials are provided:** Use the Auth0 CLI to create the application — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
 >
-> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and the script command.
+> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and CLI commands.
 
 ### Step 3 — Configure Callback URLs
 
