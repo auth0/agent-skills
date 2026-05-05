@@ -61,7 +61,7 @@ Or manually in Auth0 Dashboard:
 auth0 connections list --json
 
 # Enable your app on the default database connection
-# (done automatically if using the bootstrap script)
+# (done automatically if using Option A: Automatic Setup)
 ```
 
 #### 3. Write Environment Configuration
