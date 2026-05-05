@@ -19,7 +19,15 @@
 >
 > 4. **Detect bundle identifier**: Search `project.pbxproj` for `PRODUCT_BUNDLE_IDENTIFIER`, skip values containing `$(` or `Tests`.
 >
-> 5. **Create the Auth0 Native application:**
+> 5. **Summarize the plan and confirm** before making any changes. Tell the user what you will do:
+>    - Create a Native Auth0 app named `APP_NAME`
+>    - Enable the Username-Password-Authentication connection
+>    - Configure Device Settings for Universal Links
+>    - Write `Auth0.plist` and entitlements file
+>
+>    Ask for confirmation using `AskUserQuestion`: _"Here's what I'll configure for Auth0. Proceed?"_
+>
+> 6. **Create the Auth0 Native application:**
 >    ```bash
 >    auth0 apps create \
 >      --name "APP_NAME" \
@@ -29,29 +37,33 @@
 >      --logout-urls "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
 >      --json --no-input
 >    ```
->    Parse the JSON output to extract `client_id`.
+>    Parse the JSON output to extract `client_id` and `domain`.
 >
-> 6. **Enable database connection** for the new client:
+> 7. **Enable database connection** for the new client:
 >    ```bash
 >    auth0 api get "connections" --query "name=Username-Password-Authentication" --no-input
 >    ```
->    If it exists, patch it to include the new client_id in `enabled_clients`.
+>    Parse the response JSON to extract the connection's `id` and its current `enabled_clients` array.
+>    If the connection exists, append the new client_id to the existing `enabled_clients` array and patch:
+>    ```bash
+>    auth0 api patch "connections/CONNECTION_ID" --data '{"enabled_clients":["EXISTING_ID_1","EXISTING_ID_2","NEW_CLIENT_ID"]}' --no-input
+>    ```
 >    If it doesn't exist, create it:
 >    ```bash
 >    auth0 api post "connections" --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}' --no-input
 >    ```
 >
-> 7. **Configure Device Settings** (for Universal Links):
+> 8. **Configure Device Settings** (for Universal Links):
 >    Extract `DEVELOPMENT_TEAM` from `project.pbxproj` (10-character value). If not found, ask the user.
 >    ```bash
 >    auth0 api patch "applications/CLIENT_ID" --data '{"mobile":{"ios":{"team_id":"TEAM_ID","app_bundle_identifier":"BUNDLE_ID"}}}' --no-input
 >    ```
 >
-> 8. **Write `Auth0.plist`** using the Write tool with the domain and client_id obtained above.
+> 9. **Write `Auth0.plist`** using the Write tool with the domain and client_id obtained above.
 >
-> 9. **Write entitlements file** (`.entitlements`) with Associated Domains entries for the Auth0 domain.
+> 10. **Write entitlements file** (`.entitlements`) with Associated Domains entries for the Auth0 domain.
 >
-> 10. **Xcode project configuration** — inform the user of any manual steps needed:
+> 11. **Xcode project configuration** — inform the user of any manual steps needed:
 >     - Add `Auth0.plist` to the app target (right-click → Add Files → check target)
 >     - Set `CODE_SIGN_ENTITLEMENTS` in Build Settings if a new entitlements file was created
 >
