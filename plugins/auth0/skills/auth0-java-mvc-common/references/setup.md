@@ -14,7 +14,7 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 
 > **Agent instruction:** Use Auth0 CLI to handle Auth0 configuration automatically:
 > 1. **Pre-flight checks:**
->    - Verify Auth0 CLI is installed: `auth0 --version`
+>    - Verify Auth0 CLI is installed: `command -v auth0`
 >    - Verify logged in: `auth0 tenants list --csv --no-input`
 >    - If any check fails, guide user to install/login, or fall back to manual setup
 >
@@ -61,7 +61,7 @@ Or manually in Auth0 Dashboard:
 auth0 connections list --json
 
 # Enable your app on the default database connection
-# (done automatically if using the bootstrap script)
+# (done automatically if using Option A: Automatic Setup)
 ```
 
 #### 3. Write Environment Configuration

@@ -110,7 +110,7 @@ eas build --profile development --platform android
 
 ## Post-Setup Steps
 
-After Auth0 is configured (via bootstrap or manual setup), complete these steps:
+After Auth0 is configured (via automatic or manual setup), complete these steps:
 
 ### 1. Verify app.json Plugin Configuration
 
