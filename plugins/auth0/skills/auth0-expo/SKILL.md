@@ -65,7 +65,7 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 > 1. **Check Auth0 CLI**: `command -v auth0`. If missing, ask user: install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
 > 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
->    - Wait for the user to confirm, then re-run the check to verify.
+>    - Wait for the user to confirm, then re-run the check to verify. Retry up to 3 times before falling back to Manual Setup.
 > 3. **Confirm active tenant**: Parse the `→` line from the CSV output to identify the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
 >    - If yes, proceed.
 >    - If no, ask the user to run `auth0 tenants use <tenant-domain>` in their terminal, then re-run step 3 to confirm the new active tenant.
@@ -171,6 +171,8 @@ The `customScheme` must be all lowercase with no special characters (e.g., `auth
 > **Agent instruction:** If you used automatic setup (Step 1), you already wrote the plugin config to app.json — verify it's correct. If you used manual setup, write the config now using the user-provided domain and a custom scheme.
 
 ### 5. Configure Callback URLs
+
+> **Agent instruction:** If you used automatic setup (Step 1), callback URLs were already registered via the `--callbacks` and `--logout-urls` flags during app creation. Verify they match the expected pattern but do not re-add them. Only configure manually if you used Manual Setup.
 
 Add to **Allowed Callback URLs** and **Allowed Logout URLs** in the [Auth0 Dashboard](https://manage.auth0.com/):
 
