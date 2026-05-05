@@ -78,7 +78,7 @@ The automatic setup will:
 
 ### Writing Auth0.plist (credentials already known)
 
-Use this only when credentials are explicitly provided by the user or obtained after bootstrap script failure.
+Use this only when credentials are explicitly provided by the user or when CLI setup fails after retries.
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>

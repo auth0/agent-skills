@@ -237,7 +237,7 @@ private let auth = AuthenticationService()
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 Dashboard configuration, bootstrap script, manual setup, URL scheme registration, CocoaPods/SPM/Carthage install
+- **[Setup Guide](./references/setup.md)** — Auth0 Dashboard configuration, Auth0 CLI automation, manual setup, URL scheme registration, CocoaPods/SPM/Carthage install
 - **[Integration Patterns](./references/integration.md)** — Web Auth login/logout, CredentialsManager, biometric protection, MFA, organizations, error handling, SwiftUI/UIKit patterns
 - **[API Reference & Testing](./references/api.md)** — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
 

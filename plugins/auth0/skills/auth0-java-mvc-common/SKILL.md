@@ -80,7 +80,7 @@ You need a **Regular Web Application** (not SPA or Native) in Auth0.
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for complete CLI scripts. The automated path writes configuration for you — skip Step 3 below and proceed directly to Step 4.
+**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for the complete Auth0 CLI steps. The automated path writes configuration for you — skip Step 3 below and proceed directly to Step 4.
 
 **If the user chose Manual**, follow the [Setup Guide](references/setup.md) (Manual Setup section). Then continue with Step 3.
 
