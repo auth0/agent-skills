@@ -49,13 +49,16 @@
 >      --logout-urls "SCHEME://DOMAIN/ios/BUNDLE_ID/callback,SCHEME://DOMAIN/android/PACKAGE/callback" \
 >      --json --no-input
 >    ```
->    Parse the JSON output to extract `client_id`.
+>    Parse the JSON output to extract `client_id` and `domain`.
 >
 > 4. **Enable database connection** for the new client:
 >    ```bash
 >    auth0 api get "connections" --query "name=Username-Password-Authentication" --no-input
 >    ```
->    If it exists, patch it to include the new client_id in `enabled_clients`.
+>    Parse the response to extract the connection `id` and its current `enabled_clients` array. Append the new client_id to the existing array and patch:
+>    ```bash
+>    auth0 api patch "connections/CONNECTION_ID" --data '{"enabled_clients":["EXISTING_IDS...", "NEW_CLIENT_ID"]}' --no-input
+>    ```
 >    If it doesn't exist, create it:
 >    ```bash
 >    auth0 api post "connections" --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}' --no-input

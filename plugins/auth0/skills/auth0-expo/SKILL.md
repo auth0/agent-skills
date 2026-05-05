@@ -72,7 +72,14 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 >
 > 4. **Read app.json** to extract `expo.scheme` (custom scheme), `expo.ios.bundleIdentifier`, and `expo.android.package`. If scheme is missing, generate one from the app name (lowercase, no special chars).
 >
-> 5. **Create the Auth0 Native application:**
+> 5. **Summarize the plan and confirm** before making any changes. Tell the user what you will do:
+>    - Create a Native Auth0 app named `APP_NAME-expo`
+>    - Enable the Username-Password-Authentication connection
+>    - Write the plugin config to app.json
+>
+>    Ask for confirmation using `AskUserQuestion`: _"Here's what I'll configure for Auth0. Proceed?"_
+>
+> 6. **Create the Auth0 Native application:**
 >    ```bash
 >    auth0 apps create \
 >      --name "APP_NAME-expo" \
@@ -84,20 +91,21 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 >    ```
 >    Parse the JSON output to extract `client_id` and `domain`.
 >
-> 6. **Enable database connection** (if not already enabled for this client):
+> 7. **Enable database connection** (if not already enabled for this client):
 >    ```bash
 >    auth0 api get "connections" --query "name=Username-Password-Authentication" --no-input
 >    ```
->    If the connection exists, patch it to add the new client_id to enabled_clients:
+>    Parse the response JSON to extract the connection's `id` and its current `enabled_clients` array.
+>    If the connection exists, append the new client_id to the existing `enabled_clients` array and patch:
 >    ```bash
->    auth0 api patch "connections/CONNECTION_ID" --data '{"enabled_clients":["EXISTING_IDS","NEW_CLIENT_ID"]}' --no-input
+>    auth0 api patch "connections/CONNECTION_ID" --data '{"enabled_clients":["EXISTING_ID_1","EXISTING_ID_2","NEW_CLIENT_ID"]}' --no-input
 >    ```
 >    If it doesn't exist, create it:
 >    ```bash
 >    auth0 api post "connections" --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}' --no-input
 >    ```
 >
-> 7. **Write the plugin config to app.json** using the agent's Edit tool — add `react-native-auth0` to the plugins array with the domain and custom scheme.
+> 8. **Write the plugin config to app.json** using the agent's Edit tool — add `react-native-auth0` to the plugins array with the domain and custom scheme.
 >
 > Proceed to **Step 2 (Verify Expo Dev Client)**.
 
