@@ -6,7 +6,9 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 
 ## Auth0 Configuration
 
-> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), use them directly — skip the bootstrap script and credential questions. Write environment variables and proceed with integration.
+> **Agent instruction:** Never echo Auth0 credentials (domain, client ID, client secret) in your response text. If the user's prompt already provides Auth0 credentials, use them directly — skip the credential questions. Write environment variables to files using the Write tool and proceed with integration.
+>
+> **Important:** Never write `AUTH0_CLIENT_SECRET` to a file directly. Instead, write a `.env.example` showing the required keys (without values), and instruct the user to create their own `.env` with the actual secret. This prevents secret exposure in agent output and version control.
 
 ### Option A: Automatic Setup (Auth0 CLI)
 
@@ -18,18 +20,19 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 >
 > 2. **Create the application using Auth0 CLI:**
 >    ```bash
->    auth0 apps create --name "My Java Web App" --type regular --callbacks http://localhost:3000/callback --logout-urls http://localhost:3000 --json
+>    auth0 apps create --name "My Java Web App" --type regular --callbacks http://localhost:3000/callback --logout-urls http://localhost:3000 --json --no-input
 >    ```
->    Then write the returned domain, client ID, and client secret to a `.env` file.
+>    From the JSON output, extract `domain` and `client_id`. Write these to `.env` using the Write tool.
+>    For `client_secret`: write a `.env.example` file showing the key name, and tell the user to copy the secret from the CLI output into their `.env` manually. Do NOT write the secret to any file.
 
 ### Option B: Manual Setup
 
 > **Agent instruction:** If the user chose manual setup, use `AskUserQuestion` to collect:
 > 1. Auth0 Domain
 > 2. Client ID
-> 3. Client Secret
 >
-> Then write the `.env` file and proceed.
+> For the Client Secret: instruct the user to add it to `.env` themselves. Do NOT ask for or write the secret value.
+> Write `.env` with domain and client ID only, plus a placeholder comment for the secret. Then proceed.
 
 #### 1. Create Auth0 Application
 
@@ -63,13 +66,17 @@ auth0 connections list --json
 
 #### 3. Write Environment Configuration
 
-Create a `.env` file in your project root (add to `.gitignore`):
+Create a `.env.example` file in your project root (safe to commit):
 
 ```properties
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
+AUTH0_CLIENT_SECRET=<set-this-manually-from-auth0-dashboard>
 ```
+
+> **Agent instruction:** Write `.env` with only AUTH0_DOMAIN and AUTH0_CLIENT_ID values. For AUTH0_CLIENT_SECRET, add a placeholder and instruct the user:
+> _"Please add your Auth0 Client Secret to the `.env` file. You can find it in the Auth0 Dashboard under Applications → your app → Settings → Client Secret."_
+> Ensure `.env` is in `.gitignore`. Never write the actual secret value to any file.
 
 > **Agent instruction:** Java does not auto-load `.env` files. If you generate a `.env` file, also add [dotenv-java](https://github.com/cdimascio/dotenv-java) and use `Dotenv.load().get("AUTH0_DOMAIN")`, or instruct the user to run `source .env` before starting the server.
 
@@ -79,13 +86,15 @@ AUTH0_CLIENT_SECRET=your-client-secret
 
 ### Development
 
-Use a `.env` file in the project root:
+Use a `.env` file in the project root with domain and client ID. The client secret must be added by the user manually:
 
 ```properties
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
+AUTH0_CLIENT_SECRET=<user-sets-this-manually>
 ```
+
+> **Agent instruction:** Never write AUTH0_CLIENT_SECRET values to files. Write domain and client ID only. Instruct the user to add the secret themselves from the Auth0 Dashboard.
 
 **Important:** Add `.env` to `.gitignore` to prevent committing secrets:
 

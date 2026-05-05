@@ -44,7 +44,7 @@ Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-a
 
 ## Quick Start Workflow
 
-> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), use them directly — skip the bootstrap script and credential questions. Only offer setup options when credentials are missing.
+> **Agent instruction:** Never echo Auth0 credentials in your response text. Write them directly into config files using the Write or Edit tool. If the user's prompt already provides Auth0 credentials (domain, client ID), use them directly — skip setup questions. Never write `AUTH0_CLIENT_SECRET` values to any file — instruct the user to set it themselves.
 
 ### 1. Install SDK
 
@@ -73,8 +73,8 @@ You need a **Regular Web Application** (not SPA or Native) in Auth0.
 > Ask exactly this question and wait for their answer before doing anything else:
 >
 > > "How would you like to create the Auth0 application?
-> > 1. **Automated** — I'll run Auth0 CLI scripts that create the application and write the values to your config automatically.
-> > 2. **Manual** — You create the application yourself in the Auth0 Dashboard (or via `auth0 apps create`) and provide me the Domain, Client ID, and Client Secret.
+> > 1. **Automated** — I'll use the Auth0 CLI to create the application and write domain/client ID to your config. You'll add the client secret yourself.
+> > 2. **Manual** — You create the application yourself in the Auth0 Dashboard (or via `auth0 apps create`) and provide me the Domain and Client ID.
 > >
 > > Which do you prefer? (1 = Automated / 2 = Manual)"
 >
@@ -104,7 +104,7 @@ Store credentials as environment variables (never hardcode in source):
 ```bash
 export AUTH0_DOMAIN="your-tenant.auth0.com"
 export AUTH0_CLIENT_ID="your-client-id"
-export AUTH0_CLIENT_SECRET="your-client-secret"
+export AUTH0_CLIENT_SECRET="<set-this-from-auth0-dashboard>"
 ```
 
 Or use a `.env` file (add to `.gitignore`):
@@ -112,10 +112,12 @@ Or use a `.env` file (add to `.gitignore`):
 ```properties
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
+AUTH0_CLIENT_SECRET=<set-this-from-auth0-dashboard>
 ```
 
-> **Agent instruction:** Java does not auto-load `.env` files. `System.getenv()` only reads OS-level environment variables. If you generate a `.env` file, you must also either: (1) add [dotenv-java](https://github.com/cdimascio/dotenv-java) as a dependency and use `Dotenv.load().get("AUTH0_DOMAIN")` instead of `System.getenv()`, or (2) instruct the user to run `source .env` before starting the server. Do not generate code that uses both a `.env` file and `System.getenv()` without a loading mechanism — the values will be `null`.
+> **Agent instruction:** Write AUTH0_DOMAIN and AUTH0_CLIENT_ID to the `.env` file. For AUTH0_CLIENT_SECRET, write a placeholder and instruct the user: _"Please add your Client Secret from the Auth0 Dashboard (Applications → Settings → Client Secret)."_ Never write the actual secret value.
+>
+> Java does not auto-load `.env` files. `System.getenv()` only reads OS-level environment variables. If you generate a `.env` file, you must also either: (1) add [dotenv-java](https://github.com/cdimascio/dotenv-java) as a dependency and use `Dotenv.load().get("AUTH0_DOMAIN")` instead of `System.getenv()`, or (2) instruct the user to run `source .env` before starting the server. Do not generate code that uses both a `.env` file and `System.getenv()` without a loading mechanism — the values will be `null`.
 
 **Important:** Domain must NOT include `https://`. The library constructs the issuer URL automatically.
 

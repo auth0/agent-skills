@@ -11,7 +11,6 @@ metadata:
     requires:
       bins:
         - gh
-        - node
 ---
 
 # Auth0 Expo Integration
@@ -28,7 +27,6 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 
 - Expo SDK 53 or higher (react-native-auth0 v5.x requires Expo 53+)
 - React 19 and React Native 0.78.0 or higher
-- Node.js 20+ (for bootstrap script automation)
 - Auth0 account with a **Native** application configured
 - If Auth0 is not set up yet, use the `auth0-quickstart` skill first
 - **Not compatible with Expo Go** — requires custom development client or EAS Build
@@ -48,10 +46,12 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 
 ## Quick Start Workflow
 
-> **Agent instruction:** First, check whether the user's prompt already includes both Auth0 **Client ID** and **Domain**.
+> **Agent instruction:** Never echo Auth0 credentials (domain, client ID) in your response text. Write them directly into config files using the Write or Edit tool.
+>
+> First, check whether the user's prompt already includes both Auth0 **Client ID** and **Domain**.
 > - If both are provided, skip the setup-choice question and proceed directly to **Step 2 (Verify Expo Dev Client)** using those values.
 > - If either value is missing, ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this Expo project?"_
->   - **Automatic setup (Recommended)** — runs a bootstrap script that creates the Auth0 app, database connection, callback URLs, and writes the plugin config to app.json
+>   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create the app, database connection, callback URLs, and writes the plugin config to app.json
 >   - **Manual setup** — the user provides their Auth0 Client ID and Domain
 >
 > Follow the matching section below based on their choice.
@@ -60,29 +60,46 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 
 #### Automatic Setup
 
-> **Agent instruction:** Run these quick checks before the bootstrap script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+> **Agent instruction:** Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
-> 1. **Check Node.js**: `node --version`. If missing or below 20, ask user: install (`brew install node`) or switch to manual setup.
-> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, ask user: install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
-> 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
+> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, ask user: install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
+> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for the user to confirm, then re-run the check to verify.
-> 4. **Confirm active tenant**: Parse the `→` line from the CSV output to identify the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
+> 3. **Confirm active tenant**: Parse the `→` line from the CSV output to identify the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
 >    - If yes, proceed.
 >    - If no, ask the user to run `auth0 tenants use <tenant-domain>` in their terminal, then re-run step 3 to confirm the new active tenant.
 >
-> Once confirmed, run the bootstrap script:
-> ```bash
-> cd <path-to-skill>/auth0-expo/scripts
-> npm install
-> node bootstrap.mjs <path-to-expo-project>
-> ```
+> 4. **Read app.json** to extract `expo.scheme` (custom scheme), `expo.ios.bundleIdentifier`, and `expo.android.package`. If scheme is missing, generate one from the app name (lowercase, no special chars).
 >
-> The script validates the Expo project, creates a Native Auth0 application, sets up a database connection, and writes the plugin config to app.json. The agent should NOT handle client_id or domain manually.
+> 5. **Create the Auth0 Native application:**
+>    ```bash
+>    auth0 apps create \
+>      --name "APP_NAME-expo" \
+>      --type native \
+>      --auth-method none \
+>      --callbacks "SCHEME://DOMAIN/ios/BUNDLE_ID/callback,SCHEME://DOMAIN/android/PACKAGE/callback" \
+>      --logout-urls "SCHEME://DOMAIN/ios/BUNDLE_ID/callback,SCHEME://DOMAIN/android/PACKAGE/callback" \
+>      --json --no-input
+>    ```
+>    Parse the JSON output to extract `client_id` and `domain`.
 >
-> If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run the script. For other failures, fall back to **Manual Setup** below.
+> 6. **Enable database connection** (if not already enabled for this client):
+>    ```bash
+>    auth0 api get "connections" --query "name=Username-Password-Authentication" --no-input
+>    ```
+>    If the connection exists, patch it to add the new client_id to enabled_clients:
+>    ```bash
+>    auth0 api patch "connections/CONNECTION_ID" --data '{"enabled_clients":["EXISTING_IDS","NEW_CLIENT_ID"]}' --no-input
+>    ```
+>    If it doesn't exist, create it:
+>    ```bash
+>    auth0 api post "connections" --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}' --no-input
+>    ```
 >
-> After the script completes, proceed to **Step 2 (Verify Expo Dev Client)**.
+> 7. **Write the plugin config to app.json** using the agent's Edit tool — add `react-native-auth0` to the plugins array with the domain and custom scheme.
+>
+> Proceed to **Step 2 (Verify Expo Dev Client)**.
 
 #### Manual Setup (User-Provided Credentials)
 
@@ -143,7 +160,7 @@ Add the react-native-auth0 plugin to `app.json` (or `app.config.js`) with your A
 
 The `customScheme` must be all lowercase with no special characters (e.g., `auth0sample`). See [**Setup Guide**](./references/setup.md) for HTTPS callbacks, multiple domains, EAS Build, and secret management.
 
-> **Agent instruction:** If you used automatic setup (Step 1), the bootstrap script already wrote the plugin config to app.json — verify it's correct but do not overwrite it. If you used manual setup, write the config now using the user-provided domain and a custom scheme.
+> **Agent instruction:** If you used automatic setup (Step 1), you already wrote the plugin config to app.json — verify it's correct. If you used manual setup, write the config now using the user-provided domain and a custom scheme.
 
 ### 5. Configure Callback URLs
 
