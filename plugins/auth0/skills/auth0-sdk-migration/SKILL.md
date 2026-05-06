@@ -1,6 +1,6 @@
 ---
 name: auth0-sdk-migration
-description: Use when upgrading Auth0 SDKs to a new major version — detects the current SDK and version in the project, fetches the official migration guide from GitHub, and applies breaking changes step by step. Covers all Auth0 SDKs (nextjs-auth0, auth0-react, auth0-angular, auth0-vue, auth0-spa-js, express-openid-connect, react-native-auth0, Auth0.swift, Auth0.Android, node-auth0, auth0-java, auth0-PHP, auth0.net, auth0-python).
+description: Use when upgrading Auth0 SDKs to a new major version — detects the current SDK and version in the project, fetches the official migration guide from GitHub, applies all breaking changes, and iterates until the project builds successfully. Covers all Auth0 SDKs (nextjs-auth0, auth0-react, auth0-angular, auth0-vue, auth0-spa-js, express-openid-connect, react-native-auth0, Auth0.swift, Auth0.Android, node-auth0, auth0-java, auth0-PHP, auth0.net, auth0-python).
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -12,7 +12,7 @@ metadata:
 
 # Auth0 SDK Major Version Migration
 
-Upgrade Auth0 SDKs to the latest major version by detecting the current SDK and version, fetching the official migration guide, and applying breaking changes to the codebase.
+Upgrade Auth0 SDKs to the latest major version by detecting the current SDK and version, fetching the official migration guide, applying all breaking changes to the codebase, and verifying the project builds successfully.
 
 ---
 
@@ -21,7 +21,6 @@ Upgrade Auth0 SDKs to the latest major version by detecting the current SDK and 
 - Upgrading an Auth0 SDK to a new major version (e.g., nextjs-auth0 v3 → v4)
 - The user mentions "upgrade", "update", "migrate", "breaking changes", or "new version" for an Auth0 SDK
 - Dependency audit flags a major version bump for an Auth0 package
-- The user wants to know what changed between major versions of an Auth0 SDK
 
 ## When NOT to Use
 
@@ -36,7 +35,7 @@ Upgrade Auth0 SDKs to the latest major version by detecting the current SDK and 
 
 Scan the project to identify which Auth0 SDK(s) are installed and at what version.
 
-**For JavaScript/TypeScript projects**, read `package.json` and look for these packages in `dependencies` or `devDependencies`:
+**For JavaScript/TypeScript projects**, read `package.json` (and lockfiles if needed) and look for these packages in `dependencies` or `devDependencies`:
 
 | Package Name | SDK | Platform |
 |---|---|---|
@@ -73,155 +72,173 @@ Scan the project to identify which Auth0 SDK(s) are installed and at what versio
 
 ---
 
-## Step 2: Fetch the Official Migration Guide
+## Step 2: Fetch and Read the Migration Guide
 
-Each Auth0 SDK publishes a migration guide in its GitHub repository. **You must fetch and read the migration guide before making any changes.**
+Each Auth0 SDK publishes a migration guide in its GitHub repository. **You must fetch and read the full migration guide before making any changes.** The migration guide is the single source of truth for what needs to change.
 
-> **Agent instruction:** Use the migration guide URL from the [SDK Migration Guide Reference](references/migration-guides.md) for the detected SDK and target version. Fetch the raw markdown content from GitHub using the URL pattern:
+> **Agent instruction:** Look up the migration guide URL from the [SDK Migration Guide Reference](references/migration-guides.md) for the detected SDK and target major version. Fetch the raw markdown content from GitHub:
 >
-> `https://raw.githubusercontent.com/{org}/{repo}/{branch}/{path-to-migration-guide}`
+> `https://raw.githubusercontent.com/{org}/{repo}/{branch}/{migration-guide-filename}`
+>
+> **Read the entire migration guide.** Extract every breaking change, renamed API, removed API, changed configuration, and new requirement. You will use this as your checklist in the next steps.
 >
 > If the migration guide URL returns a 404, try these fallback strategies in order:
 > 1. Check the repository's root for files matching: `MIGRATION_GUIDE.md`, `MIGRATION.md`, `UPGRADE.md`, `V{N}_MIGRATION_GUIDE.md`
-> 2. Check the `docs/` directory for migration files
-> 3. Check the `CHANGELOG.md` for the major version's breaking changes section
-> 4. Check the GitHub release notes for the major version tag
+> 2. Check the `CHANGELOG.md` for the major version's breaking changes section
+> 3. Check the GitHub release notes for the major version tag
 >
-> **Do not proceed with migration without reading the migration guide.** The guide is the source of truth for breaking changes.
+> **Do not proceed with migration without reading the migration guide.**
 
 ---
 
-## Step 3: Analyze Breaking Changes
+## Step 3: Apply Migration Changes
 
-After reading the migration guide, categorize the changes:
+Work through every breaking change from the migration guide systematically. Apply changes in this order to minimize intermediate breakage:
 
-### 3a. Dependency Changes
+### 3a. Update the SDK Dependency
 
-- Package renames (e.g., import path changes)
-- Peer dependency requirements (e.g., minimum Node.js, React, Angular version)
-- New required dependencies or removed dependencies
-- Package manager install command changes
+Update the SDK version in the package manifest to the new major version:
 
-### 3b. Configuration Changes
-
-- Environment variable renames or format changes
-- Configuration file changes (new required fields, removed options, renamed keys)
-- Initialization API changes (constructor arguments, factory functions)
-
-### 3c. API and Code Changes
-
-- Removed or renamed exports, functions, methods, hooks, or components
-- Changed function signatures (new required parameters, removed parameters)
-- Changed return types or response shapes
-- Removed middleware, guards, or decorators with new replacements
-- Async/sync behavior changes
-
-### 3d. Behavioral Changes
-
-- Authentication flow changes (redirect URLs, callback handling)
-- Token storage or session management changes
-- Default configuration value changes
-- Security-related changes
-
-> **Agent instruction:** Present a summary of the breaking changes to the user before applying them:
->
-> "Here are the breaking changes for **[SDK] v[current] → v[target]**:
->
-> **Dependencies:** [list]
-> **Configuration:** [list]
-> **Code changes:** [list]
-> **Behavioral changes:** [list]
->
-> I'll apply these changes to your project. Shall I proceed?"
-
----
-
-## Step 4: Apply Migration Changes
-
-Apply changes in this order to minimize intermediate breakage:
-
-### 4a. Update Dependencies
-
-Update the SDK version in the package manifest:
-
-**npm/yarn/pnpm:**
 ```bash
+# JavaScript/TypeScript
 npm install @auth0/[sdk-name]@latest
-```
 
-**Swift Package Manager:**
-Update the version requirement in `Package.swift`.
+# Swift Package Manager — update version in Package.swift
 
-**Gradle:**
-Update the version in `build.gradle` / `build.gradle.kts`.
+# Gradle — update version in build.gradle / build.gradle.kts
 
-**pip/poetry:**
-```bash
+# Python
 pip install --upgrade auth0-python
+
+# PHP
+composer require auth0/auth0-php:^[new-major]
+
+# .NET
+dotnet add package Auth0.AuthenticationApi --version [new-major].*
 ```
 
-> **Agent instruction:** After updating the dependency, also check if the migration guide specifies peer dependency changes (e.g., minimum Node.js version, framework version). Warn the user if their project does not meet the new requirements.
+Also check the migration guide for:
+- New peer dependency requirements (minimum Node.js, React, Angular, Swift, etc. version)
+- New required dependencies that must be added
+- Dependencies that should be removed
 
-### 4b. Update Configuration
+> **Agent instruction:** If the migration guide specifies a minimum platform/framework version that the project does not meet, warn the user immediately and ask how to proceed.
 
-Apply environment variable renames, configuration file changes, and initialization changes.
+### 3b. Update Configuration
 
-> **Agent instruction:** When renaming environment variables:
-> 1. Update `.env`, `.env.local`, `.env.example`, and any other dotenv files
-> 2. Update any code that references the old variable names
-> 3. Update deployment configuration references (but only warn about these — do not modify CI/CD files without confirmation)
+Apply every configuration change from the migration guide:
 
-### 4c. Update Application Code
+- Rename environment variables (update `.env`, `.env.local`, `.env.example`, and all code references)
+- Update SDK initialization (constructor arguments, factory functions, new required options)
+- Update configuration files (new required fields, removed options, renamed keys)
+- Update Auth0 Dashboard settings if the guide mentions them (inform the user of required manual steps)
 
-Apply code changes file by file. For each file:
+### 3c. Update All Application Code
 
-1. Search for imports from the old SDK path
-2. Update imports to new paths/names
-3. Update function calls, hook usage, component props
-4. Handle removed APIs by replacing with the recommended alternative from the migration guide
-5. Update TypeScript types if applicable
+Search the entire codebase for every usage of the SDK and apply the changes documented in the migration guide:
 
-> **Agent instruction:** When replacing removed APIs:
-> - Always use the replacement recommended in the migration guide
-> - If no direct replacement exists, add a `// TODO: [SDK] v[version] removed [old API] — manual review needed` comment
-> - Show the user a before/after diff for complex changes
+1. **Update imports** — renamed modules, changed import paths, removed exports
+2. **Update function/method calls** — renamed functions, changed signatures, new required parameters
+3. **Replace removed APIs** — use the exact replacement documented in the migration guide
+4. **Update types** — changed interfaces, renamed types, new generic parameters
+5. **Update middleware/guards/decorators** — removed or restructured patterns
+6. **Update hooks/composables** — renamed hooks, changed return types, new usage patterns
 
-### 4d. Update Tests
+> **Agent instruction:** For each breaking change in the migration guide:
+> 1. Search the entire project for usages of the old API (`grep -r "oldApiName" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx"` or equivalent for the project language)
+> 2. Apply the transformation documented in the migration guide to every occurrence
+> 3. If the migration guide does not provide a clear replacement for a removed API, add a `// TODO: [SDK] v[version] — manual migration needed for [old API]` comment and inform the user
 
-Search for test files that reference Auth0 SDK APIs and update them to match the new API surface.
+### 3d. Update Tests
+
+Search for test files that reference Auth0 SDK APIs and update them:
+- Update import paths and function names
+- Update mocks to match the new API surface
+- Update assertions for changed return types or response shapes
+- Remove tests for removed APIs and add tests for new patterns if needed
 
 ---
 
-## Step 5: Verify Migration
+## Step 4: Build and Fix Until Clean
 
-After applying all changes:
+**This step is mandatory.** The migration is not complete until the project builds successfully.
 
-### 5a. Type Check
+### 4a. Run Type Checking (if applicable)
 
 ```bash
-# TypeScript projects
+# TypeScript
 npx tsc --noEmit
+
+# Swift
+swift build
+
+# Kotlin/Gradle
+./gradlew compileKotlin
+
+# .NET
+dotnet build
 ```
 
-### 5b. Run Tests
+### 4b. Run the Build
+
+```bash
+# JavaScript/TypeScript
+npm run build
+
+# Swift
+swift build
+
+# Android
+./gradlew assembleDebug
+
+# Python (check syntax/imports)
+python -m py_compile [main-file]
+
+# .NET
+dotnet build
+```
+
+### 4c. Fix Build Errors Iteratively
+
+> **Agent instruction:** If the build fails:
+>
+> 1. Read each error message carefully
+> 2. Cross-reference the error with the migration guide — it likely indicates a missed breaking change
+> 3. Apply the fix
+> 4. Re-run the build
+> 5. Repeat until the build passes with zero errors
+>
+> Common causes of post-migration build failures:
+> - Missed usages of a renamed/removed API in files you didn't update
+> - Type errors from changed return types or generics
+> - Missing new required configuration or parameters
+> - Import paths that changed but were referenced indirectly
+>
+> **Do not stop until the build succeeds.** If you cannot resolve an error after consulting the migration guide, explain the issue to the user and ask for guidance.
+
+### 4d. Run Tests
 
 ```bash
 npm test
+# or framework-equivalent
 ```
 
-### 5c. Start Development Server
+> **Agent instruction:** If tests fail due to migration-related changes (not pre-existing failures), fix them using the migration guide. If tests fail for reasons unrelated to the migration, note them to the user but do not block the migration on pre-existing test failures.
 
-```bash
-npm run dev
-```
+---
 
-> **Agent instruction:** If type checking or tests fail:
-> 1. Read the error messages
-> 2. Cross-reference with the migration guide for any missed changes
-> 3. Fix the issues
-> 4. Re-run until clean
+## Step 5: Report Migration Summary
+
+After the build succeeds, report to the user:
+
+> **Agent instruction:** Provide a concise summary:
 >
-> Report any issues that cannot be automatically resolved and require manual intervention.
+> 1. **SDK upgraded:** [name] v[old] → v[new]
+> 2. **Files modified:** [count] files
+> 3. **Key changes applied:** [bullet list of the most significant breaking changes that were applied]
+> 4. **Manual steps required (if any):** [e.g., "Update Allowed Callback URLs in Auth0 Dashboard from /api/auth/callback to /auth/callback"]
+> 5. **Build status:** Passing
+> 6. **Test status:** Passing / [N] failures (pre-existing)
 
 ---
 
@@ -229,13 +246,13 @@ npm run dev
 
 | Mistake | Fix |
 |---------|-----|
-| Upgrading without reading the migration guide | Always fetch and read the official migration guide first — it is the source of truth |
-| Missing environment variable renames | Search entire project for old variable names, including CI/CD configs and documentation |
-| Forgetting to update test mocks | Tests often mock SDK functions; update mocks to match the new API surface |
-| Skipping peer dependency checks | Major versions often require newer Node.js, framework, or language versions |
-| Partial migration of removed APIs | Search the entire codebase for usage of removed APIs, not just the files that import the SDK directly |
-| Not testing the authentication flow end-to-end | After migration, always test login, logout, callback, token refresh, and protected route access |
-| Mixing old and new API patterns | After migration, grep for any remaining references to old API patterns to ensure complete migration |
+| Making changes without reading the migration guide | Always fetch and read the official migration guide first — it is the only source of truth for breaking changes |
+| Stopping after updating package.json without fixing code | The migration is not complete until `npm run build` (or equivalent) passes with zero errors |
+| Fixing one file but missing other usages of the same API | Always grep the entire project for each deprecated/removed API before moving on |
+| Ignoring environment variable renames | Search all `.env*` files, CI/CD configs, and code references for old variable names |
+| Not updating test mocks | Tests often mock SDK functions with the old API surface — update mocks to match new signatures |
+| Skipping peer dependency checks | Major versions often require newer Node.js, framework, or language versions — check and warn |
+| Applying changes from memory instead of the migration guide | Different SDKs have different breaking changes per version — always read the specific guide |
 
 ---
 
