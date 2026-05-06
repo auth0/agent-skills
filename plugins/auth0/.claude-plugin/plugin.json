@@ -4,6 +4,7 @@
   "description": "Enterprise-grade auth, easy to implement. Add login, SSO, MFA, and access control to any app with framework-aware guidance.",
   "author": {
     "name": "Auth0",
+    "email": "support@auth0.com",
     "url": "https://auth0.com"
   },
   "homepage": "https://auth0.com",
