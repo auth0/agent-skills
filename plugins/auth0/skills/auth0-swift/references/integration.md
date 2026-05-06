@@ -46,7 +46,7 @@ Auth0
     .start { result in
         switch result {
         case .success(let credentials):
-            print("Login successful: \(credentials.accessToken)")
+            // Access token available at credentials.accessToken
         case .failure(let error):
             print("Login failed: \(error)")
         }
@@ -158,7 +158,7 @@ func hasValidToken(minTTL: Int = 60) -> Bool {
 ```swift
 do {
     let credentials = try await credentialsManager.renew()
-    print("Renewed: \(credentials.accessToken)")
+    // Renewed token available at credentials.accessToken
 } catch {
     print("Renewal failed: \(error)")
 }
@@ -283,7 +283,7 @@ Auth0
     .start { result in
         switch result {
         case .success(let credentials):
-            print("Logged in: \(credentials.accessToken)")
+            // Access token available at credentials.accessToken
         case .failure(let error) where error.isMultifactorRequired:
             // Extract MFA token for MFA challenge flow
             if let mfaPayload = error.mfaRequiredErrorPayload {

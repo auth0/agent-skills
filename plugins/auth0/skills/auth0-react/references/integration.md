@@ -334,7 +334,7 @@ export function MfaChallenge({ mfaToken }: { mfaToken: string }) {
       // For OTP authenticators, you can skip challenge() and go straight to verify()
       const tokens = await mfa.verify({ mfaToken, otp });
       // User is now authenticated — tokens are cached by the SDK
-      console.log('MFA complete, access token:', tokens.access_token);
+      // Access token available at tokens.access_token
     } catch (err) {
       if (err instanceof MfaVerifyError) {
         setError('Invalid code. Please try again.');

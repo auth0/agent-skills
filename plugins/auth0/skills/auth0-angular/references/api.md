@@ -272,11 +272,13 @@ Gets an access token via popup window. Useful when silent authentication fails (
 ```typescript
 // Try silent, fall back to popup
 this.auth.getAccessTokenSilently().subscribe({
-  next: (token) => console.log('Token:', token),
+  next: (token) => {
+    // Use the token (e.g., attach to API requests)
+  },
   error: () => {
     // Silent auth failed, try popup
     this.auth.getAccessTokenWithPopup().subscribe(token => {
-      console.log('Got token via popup:', token);
+      // Use the token (e.g., attach to API requests)
     });
   }
 });
