@@ -31,7 +31,7 @@ Tell the plugin what you need in plain English:
 **Via Claude Code:**
 
 ```bash
-/install-plugin auth0
+/plugin install auth0@claude-plugins-official
 ```
 
 **Via Skills CLI:**

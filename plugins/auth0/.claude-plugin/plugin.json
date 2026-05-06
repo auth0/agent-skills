@@ -1,5 +1,5 @@
 {
-  "name": "Auth0",
+  "name": "auth0",
   "version": "1.0.0",
   "description": "Enterprise-grade auth, easy to implement. Add login, SSO, MFA, and access control to any app with framework-aware guidance.",
   "author": {
