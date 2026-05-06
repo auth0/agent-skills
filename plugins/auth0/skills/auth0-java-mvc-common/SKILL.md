@@ -44,7 +44,7 @@ Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-a
 
 ## Quick Start Workflow
 
-> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), use them directly — skip the bootstrap script and credential questions. Only offer setup options when credentials are missing.
+> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), skip the credential questions. Store the provided values in a `.env` file (ensure it's added to `.gitignore`) or instruct the user to set them as environment variables. Never embed credential values directly in source code or repeat them back in responses. Only offer setup options when credentials are missing.
 
 ### 1. Install SDK
 
@@ -74,7 +74,7 @@ You need a **Regular Web Application** (not SPA or Native) in Auth0.
 >
 > > "How would you like to create the Auth0 application?
 > > 1. **Automated** — I'll run Auth0 CLI scripts that create the application and write the values to your config automatically.
-> > 2. **Manual** — You create the application yourself in the Auth0 Dashboard (or via `auth0 apps create`) and provide me the Domain, Client ID, and Client Secret.
+> > 2. **Manual** — You create the application yourself in the Auth0 Dashboard (or via `auth0 apps create`) and set the Domain, Client ID, and Client Secret as environment variables (or in a `.env` file).
 > >
 > > Which do you prefer? (1 = Automated / 2 = Manual)"
 >
