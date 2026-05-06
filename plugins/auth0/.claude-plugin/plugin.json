@@ -1,9 +1,24 @@
 {
-  "name": "auth0",
+  "name": "Auth0",
   "version": "1.0.0",
-  "description": "Auth0 skills for quickstarts, migration, MFA, Advanced Custom Universal Login (ACUL) screen generation, and framework-specific SDK integrations for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Java MVC, Spring Boot, Swift, Android, ASP.NET Core, React Native, and Expo.",
+  "description": "Enterprise-grade auth, easy to implement. Add login, SSO, MFA, and access control to any app with framework-aware guidance.",
   "author": {
     "name": "Auth0",
-    "email": "support@auth0.com"
-  }
+    "url": "https://auth0.com"
+  },
+  "homepage": "https://auth0.com/docs",
+  "keywords": [
+    "auth0",
+    "authentication",
+    "authorization",
+    "sso",
+    "mfa",
+    "enterprise",
+    "identity",
+    "oauth2",
+    "openid-connect",
+    "rbac",
+    "universal-login",
+    "sdk"
+  ]
 }
