@@ -1,0 +1,50 @@
+{
+  "metadata": {
+    "skill_name": "auth0-sdk-migration",
+    "sdk_type": "MIGRATION",
+    "framework": "Multi-framework",
+    "language": "Multi-language",
+    "package": "Auth0 SDKs",
+    "generated_by": "manual"
+  },
+  "configurations": {
+    "baseline": {
+      "name": "Baseline (no tools)",
+      "description": "Single LLM call, no tools, no skill — pure training data knowledge",
+      "skill_context": "none",
+      "tools": "none"
+    },
+    "without_skill": {
+      "name": "Agent Only",
+      "description": "Agent has tools but no skill context",
+      "skill_context": "none",
+      "tools": "full"
+    },
+    "with_skill": {
+      "name": "Agent + Skill",
+      "description": "Agent has tools and SKILL.md + migration-guides reference in context",
+      "skill_context": "full",
+      "tools": "full"
+    }
+  },
+  "scaffold": {
+    "sdk_type": "MIGRATION",
+    "framework": "Multi-framework",
+    "language": "Multi-language",
+    "notes": "Each eval provides a self-contained project scaffold in the prompt. The agent must create the project files, apply migration, and verify build."
+  },
+  "scoring": {
+    "dimensions": {
+      "build_success": 0.35,
+      "migration_completeness": 0.25,
+      "guide_adherence": 0.20,
+      "correctness": 0.10,
+      "skill_differentiation": 0.10
+    },
+    "thresholds": {
+      "skill_valuable": { "delta_gte": 0.30 },
+      "skill_acceptable": { "with_skill_pass_rate_gte": 0.80 },
+      "needs_improvement": { "delta_lt": 0.15 }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "type": "judge",
+    "description": "Migration guide was fetched and referenced before making code changes",
+    "question": "Did the agent fetch and read the official Auth0 SDK migration guide from GitHub (raw markdown) BEFORE making any code changes? The agent should have consulted the migration guide as its source of truth for breaking changes. Answer YES if the migration guide was fetched and referenced, NO if changes were made without consulting it.",
+    "examples": "PASS: Agent fetches V4_MIGRATION_GUIDE.md from GitHub, reads the breaking changes, then starts modifying code.\nPASS: Agent fetches MIGRATION_GUIDE.md and references specific sections when making changes.\nFAIL: Agent makes code changes based on general knowledge without fetching the migration guide.\nFAIL: Agent only updates the version number without reading the migration guide."
+  },
+  {
+    "type": "judge",
+    "description": "SDK version correctly updated in package manifest to the new major version",
+    "question": "Was the Auth0 SDK dependency version updated in the project's package manifest (package.json, Package.swift, build.gradle, requirements.txt, composer.json, or .csproj) to the target new major version? The version should be the latest major, not an intermediate version.",
+    "examples": "PASS: package.json updated from @auth0/nextjs-auth0 ^3.5.0 to ^4.0.0 or latest.\nPASS: Package.swift updated from: \"1.39.0\" to from: \"2.0.0\".\nFAIL: Version remains at the old major version.\nFAIL: Version updated to a minor/patch within the same major."
+  },
+  {
+    "type": "judge",
+    "description": "All breaking changes from the migration guide were addressed in the code",
+    "question": "Were ALL breaking changes documented in the migration guide properly addressed in the migrated code? This includes: renamed APIs, removed APIs (replaced with documented alternatives), changed configuration (env vars, constructor args), updated import paths, and changed method signatures. Answer YES only if no breaking changes were missed.",
+    "examples": "PASS: All renamed props (redirectUri → authorizationParams.redirect_uri), removed APIs, and new patterns are applied.\nPASS: Configuration, imports, method calls, and types all updated per migration guide.\nFAIL: Some breaking changes addressed but others missed (e.g., logout returnTo not updated).\nFAIL: Only imports updated but method signatures and configuration still use old patterns."
+  },
+  {
+    "type": "judge",
+    "description": "Build command was executed after migration",
+    "question": "Was a build or type-check command executed after applying the migration changes? This could be: npm run build, npx tsc --noEmit, ng build, next build, swift build, ./gradlew build, dotnet build, or equivalent. The agent must have actually run the build, not just mentioned it.",
+    "examples": "PASS: Agent runs 'npm run build' after making all migration changes.\nPASS: Agent runs 'npx tsc --noEmit' to verify type correctness.\nPASS: Agent runs 'swift build' after updating Swift code.\nFAIL: Agent says 'you should run the build' without actually running it.\nFAIL: Agent finishes migration without any build verification step."
+  },
+  {
+    "type": "judge",
+    "description": "Build passes successfully with zero errors after migration",
+    "question": "Did the project build pass successfully (exit code 0, no compilation/type errors) after the migration was complete? If the build initially failed, did the agent fix the errors and re-run until it passed? The final build must succeed.",
+    "examples": "PASS: Build command exits with code 0 and no errors.\nPASS: First build attempt fails, agent fixes remaining issues, re-runs build, and it passes.\nFAIL: Build still has errors that the agent did not resolve.\nFAIL: Build was never run or agent gave up after a failed build.\nFAIL: Agent claims build passes but there are visible error messages in the output."
+  },
+  {
+    "type": "judge",
+    "description": "No leftover deprecated or removed API patterns from the old major version",
+    "question": "Is the final codebase free of deprecated or removed API patterns from the old SDK version? There should be no imports, function calls, configuration keys, or patterns that were marked as removed or renamed in the migration guide. The code should only use the new SDK's supported API.",
+    "examples": "PASS: No references to redirectUri (v1 prop), returnTo in logout (v1 pattern), or old import paths remain.\nPASS: All old callback-based patterns replaced with async/await where the migration guide requires it.\nFAIL: Old pattern 'redirectUri' still exists alongside new 'authorizationParams.redirect_uri'.\nFAIL: Deprecated method calls still present that should have been replaced."
+  },
+  {
+    "type": "judge",
+    "description": "Environment variables and configuration updated per migration guide",
+    "question": "Were environment variables, .env files, and SDK configuration/initialization updated according to the migration guide? This includes renamed env vars, new required configuration, removed options, and changed initialization patterns.",
+    "examples": "PASS: .env.local updated with renamed variables, SDK initialization uses new constructor pattern.\nPASS: Auth0Provider props restructured (audience/scope moved to authorizationParams).\nFAIL: .env file still uses old variable names that were renamed in the new version.\nFAIL: SDK initialization still uses old constructor arguments that were changed."
+  },
+  {
+    "type": "judge",
+    "description": "Migration completed end-to-end (detect → guide → apply → build → verify)",
+    "question": "Did the agent follow the complete migration workflow: (1) detect the SDK and current version, (2) fetch the migration guide, (3) apply all breaking changes systematically, (4) run the build, and (5) iterate until the build passes? All 5 steps must have been performed for a complete migration.",
+    "examples": "PASS: Agent identifies SDK v3, fetches V4_MIGRATION_GUIDE.md, applies all changes, runs build, build passes.\nPASS: Agent detects version, reads guide, applies changes, build fails, fixes issues, re-runs build, passes.\nFAIL: Agent skips fetching the migration guide and works from memory.\nFAIL: Agent applies changes but never verifies with a build.\nFAIL: Agent only updates the version without applying code changes."
+  }
+]
