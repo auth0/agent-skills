@@ -104,7 +104,7 @@ Store credentials as environment variables (never hardcode in source):
 ```bash
 export AUTH0_DOMAIN="your-tenant.auth0.com"
 export AUTH0_CLIENT_ID="your-client-id"
-export AUTH0_CLIENT_SECRET="<set-this-from-auth0-dashboard>"
+export AUTH0_CLIENT_SECRET="your-client-secret"
 ```
 
 Or use a `.env` file (add to `.gitignore`):
@@ -112,10 +112,10 @@ Or use a `.env` file (add to `.gitignore`):
 ```properties
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=<set-this-from-auth0-dashboard>
+AUTH0_CLIENT_SECRET=your-client-secret
 ```
 
-> **Agent instruction:** Write AUTH0_DOMAIN and AUTH0_CLIENT_ID to the `.env` file. For AUTH0_CLIENT_SECRET, write a placeholder and instruct the user: _"Please add your Client Secret from the Auth0 Dashboard (Applications → Settings → Client Secret)."_ Never write the actual secret value.
+> **Agent instruction:** If the user provided all three credentials (domain, client ID, client secret) in their prompt, write all of them to `.env`. If you created the application via `auth0 apps create`, write domain and client ID from the CLI output to `.env`, but for the client secret instruct the user to copy it from the CLI output into `.env` themselves — do not capture transient CLI output secrets into files.
 >
 > Java does not auto-load `.env` files. `System.getenv()` only reads OS-level environment variables. If you generate a `.env` file, you must also either: (1) add [dotenv-java](https://github.com/cdimascio/dotenv-java) as a dependency and use `Dotenv.load().get("AUTH0_DOMAIN")` instead of `System.getenv()`, or (2) instruct the user to run `source .env` before starting the server. Do not generate code that uses both a `.env` file and `System.getenv()` without a loading mechanism — the values will be `null`.
 
