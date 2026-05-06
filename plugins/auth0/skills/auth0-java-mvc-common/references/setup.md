@@ -6,9 +6,7 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 
 ## Auth0 Configuration
 
-> **Agent instruction:** Never echo Auth0 credentials (domain, client ID, client secret) in your response text. If the user's prompt already provides Auth0 credentials, use them directly — skip the credential questions. Write environment variables to files using the Write tool and proceed with integration.
->
-> **Important:** Never write `AUTH0_CLIENT_SECRET` to a file directly. Instead, write a `.env.example` showing the required keys (without values), and instruct the user to create their own `.env` with the actual secret. This prevents secret exposure in agent output and version control.
+> **Agent instruction:** Never echo Auth0 credentials (domain, client ID, client secret) in your response text. If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), use them directly — write all provided values to `.env` using the Write tool and skip the credential questions. Only use placeholders for values the user did not provide.
 
 ### Option A: Automatic Setup (Auth0 CLI)
 
@@ -23,16 +21,16 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 >    auth0 apps create --name "My Java Web App" --type regular --callbacks http://localhost:3000/callback --logout-urls http://localhost:3000 --json --no-input
 >    ```
 >    From the JSON output, extract `domain` and `client_id`. Write these to `.env` using the Write tool.
->    For `client_secret`: write a `.env.example` file showing the key name, and tell the user to copy the secret from the CLI output into their `.env` manually. Do NOT write the secret to any file.
+>    For `client_secret`: the CLI output shows it transiently. Instruct the user to copy the secret from the CLI output into their `.env` themselves — do not capture transient CLI output secrets into files.
 
 ### Option B: Manual Setup
 
 > **Agent instruction:** If the user chose manual setup, use `AskUserQuestion` to collect:
 > 1. Auth0 Domain
 > 2. Client ID
+> 3. Client Secret
 >
-> For the Client Secret: instruct the user to add it to `.env` themselves. Do NOT ask for or write the secret value.
-> Write `.env` with domain and client ID only, plus a placeholder comment for the secret. Then proceed.
+> Write all provided values to `.env` using the Write tool. Then proceed.
 
 #### 1. Create Auth0 Application
 
@@ -66,17 +64,15 @@ auth0 connections list --json
 
 #### 3. Write Environment Configuration
 
-Create a `.env.example` file in your project root (safe to commit):
+Create a `.env` file in your project root (add to `.gitignore`):
 
 ```properties
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=<set-this-manually-from-auth0-dashboard>
+AUTH0_CLIENT_SECRET=your-client-secret
 ```
 
-> **Agent instruction:** Write `.env` with only AUTH0_DOMAIN and AUTH0_CLIENT_ID values. For AUTH0_CLIENT_SECRET, add a placeholder and instruct the user:
-> _"Please add your Auth0 Client Secret to the `.env` file. You can find it in the Auth0 Dashboard under Applications → your app → Settings → Client Secret."_
-> Ensure `.env` is in `.gitignore`. Never write the actual secret value to any file.
+> **Agent instruction:** If the user provided all credentials, write them all to `.env`. If credentials came from `auth0 apps create` CLI output, write domain and client ID but instruct the user to copy the client secret from the CLI output themselves. Ensure `.env` is in `.gitignore`.
 
 > **Agent instruction:** Java does not auto-load `.env` files. If you generate a `.env` file, also add [dotenv-java](https://github.com/cdimascio/dotenv-java) and use `Dotenv.load().get("AUTH0_DOMAIN")`, or instruct the user to run `source .env` before starting the server.
 
@@ -86,15 +82,15 @@ AUTH0_CLIENT_SECRET=<set-this-manually-from-auth0-dashboard>
 
 ### Development
 
-Use a `.env` file in the project root with domain and client ID. The client secret must be added by the user manually:
+Use a `.env` file in the project root:
 
 ```properties
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=<user-sets-this-manually>
+AUTH0_CLIENT_SECRET=your-client-secret
 ```
 
-> **Agent instruction:** Never write AUTH0_CLIENT_SECRET values to files. Write domain and client ID only. Instruct the user to add the secret themselves from the Auth0 Dashboard.
+> **Agent instruction:** If the user provides credentials (including the secret), write all values to `.env`. The distinction is: user-provided secrets are intentional and should be written; transient secrets from CLI output should not be captured.
 
 **Important:** Add `.env` to `.gitignore` to prevent committing secrets:
 
