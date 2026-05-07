@@ -47,6 +47,7 @@ Auth0
         switch result {
         case .success(let credentials):
             // Access token available at credentials.accessToken
+            credentialsManager.store(credentials: credentials)
         case .failure(let error):
             print("Login failed: \(error)")
         }
@@ -127,7 +128,6 @@ guard credentialsManager.store(credentials: credentials) else {
 ```swift
 do {
     let credentials = try await credentialsManager.credentials()
-    // credentials.accessToken is guaranteed to be valid
     callAPI(with: credentials.accessToken)
 } catch CredentialsManagerError.noCredentialsAvailable {
     // No credentials stored — show login screen
@@ -159,6 +159,7 @@ func hasValidToken(minTTL: Int = 60) -> Bool {
 do {
     let credentials = try await credentialsManager.renew()
     // Renewed token available at credentials.accessToken
+    _ = credentialsManager.store(credentials: credentials)
 } catch {
     print("Renewal failed: \(error)")
 }
@@ -284,6 +285,7 @@ Auth0
         switch result {
         case .success(let credentials):
             // Access token available at credentials.accessToken
+            credentialsManager.store(credentials: credentials)
         case .failure(let error) where error.isMultifactorRequired:
             // Extract MFA token for MFA challenge flow
             if let mfaPayload = error.mfaRequiredErrorPayload {
