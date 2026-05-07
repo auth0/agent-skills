@@ -12,7 +12,7 @@ metadata:
 
 # Auth0 SDK Major Version Migration
 
-Upgrade Auth0 SDKs to the latest major version by detecting the current SDK and version, fetching the official migration guide, applying all breaking changes to the codebase, and verifying the project builds successfully.
+Upgrade Auth0 SDKs to a new major version. Asks the user for the app path, SDK name, and target version, then fetches the official migration guide from GitHub, applies all breaking changes to the codebase, and iterates until the project builds successfully.
 
 ---
 
@@ -31,11 +31,41 @@ Upgrade Auth0 SDKs to the latest major version by detecting the current SDK and 
 
 ---
 
-## Step 1: Detect Auth0 SDK and Current Version
+## Step 1: Ask the User for App Path, SDK, and Target Version
 
-Scan the project to identify which Auth0 SDK(s) are installed and at what version.
+**You must collect three things from the user before proceeding:**
 
-**For JavaScript/TypeScript projects**, read `package.json` (and lockfiles if needed) and look for these packages in `dependencies` or `devDependencies`:
+1. **Path to the application** — the root directory of the app that uses the Auth0 SDK
+2. **Which Auth0 SDK** they want to migrate
+3. **Which major version** they want to migrate to
+
+> **Agent instruction:** Always ask the user explicitly. Do NOT assume or skip this step.
+>
+> Ask the user:
+>
+> "To perform the SDK migration, I need the following:
+>
+> 1. **App path** — What is the path to your application? (e.g., `/Users/you/projects/my-app`)
+> 2. **SDK name** — Which Auth0 SDK do you want to upgrade? (e.g., `@auth0/nextjs-auth0`, `Auth0.swift`, `com.auth0.android:auth0`)
+> 3. **Target version** — Which major version do you want to migrate to? (e.g., v4, v2, v3)"
+>
+> **If the user has already provided all three** in their request (e.g., "upgrade nextjs-auth0 to v4 in /Users/me/my-app"), confirm and proceed:
+>
+> "I'll migrate **[SDK] → v[target]** in `[path]`. Proceeding."
+>
+> **Do not proceed to Step 2 until you have the app path, SDK name, and target major version confirmed.**
+
+---
+
+## Step 2: Navigate to App and Detect Current Version
+
+Once you have the app path, navigate to it and detect the currently installed version of the specified SDK.
+
+> **Agent instruction:** Change your working directory to the app path provided by the user. Then detect the current version:
+
+### Detection by Platform
+
+**For JavaScript/TypeScript projects**, read `package.json` and look for the specified package in `dependencies` or `devDependencies`:
 
 | Package Name | SDK | Platform |
 |---|---|---|
@@ -52,27 +82,27 @@ Scan the project to identify which Auth0 SDK(s) are installed and at what versio
 | `@auth0/auth0-fastify-api` | Fastify API SDK | API |
 | `@auth0/auth0-nuxt` | Nuxt SDK | Web |
 
-**For Swift (iOS/macOS)**, check `Package.swift`, `Podfile`, or `Cartfile` for `Auth0.swift` or `Auth0` dependency.
+**For Swift (iOS/macOS)**, check `Package.swift`, `Podfile`, or `Cartfile` for `Auth0.swift` or `Auth0` dependency version.
 
-**For Android (Kotlin/Java)**, check `build.gradle` or `build.gradle.kts` for `com.auth0.android:auth0`.
+**For Android (Kotlin/Java)**, check `build.gradle` or `build.gradle.kts` for `com.auth0.android:auth0` version.
 
-**For Python**, check `requirements.txt`, `pyproject.toml`, `setup.py`, or `Pipfile` for `auth0-python`.
+**For Python**, check `requirements.txt`, `pyproject.toml`, `setup.py`, or `Pipfile` for `auth0-python` version.
 
-**For Java**, check `pom.xml` or `build.gradle` for `com.auth0:auth0`, `com.auth0:mvc-auth-commons`, or `com.auth0:auth0-spring-security-api`.
+**For Java**, check `pom.xml` or `build.gradle` for `com.auth0:auth0`, `com.auth0:mvc-auth-commons`, or `com.auth0:auth0-spring-security-api` version.
 
-**For PHP**, check `composer.json` for `auth0/auth0-php` or `auth0/login`.
+**For PHP**, check `composer.json` for `auth0/auth0-php` or `auth0/login` version.
 
-**For .NET**, check `.csproj` for `Auth0.AuthenticationApi`, `Auth0.ManagementApi`, or `Auth0.AspNetCore.Authentication`.
+**For .NET**, check `.csproj` for `Auth0.AuthenticationApi`, `Auth0.ManagementApi`, or `Auth0.AspNetCore.Authentication` version.
 
-> **Agent instruction:** After detecting the SDK and version, confirm with the user:
+> **Agent instruction:** After detection, confirm:
 >
-> "I found **[SDK name] v[current version]** in your project. The latest major version is **v[target]**. Would you like me to migrate to v[target]?"
+> "Found **[SDK] v[current]** in `[app path]`. Migrating to **v[target]**."
 >
-> If multiple Auth0 SDKs are found, list all of them and ask which one(s) to upgrade.
+> If the SDK is not found at the given path, inform the user and ask them to verify the path and SDK name.
 
 ---
 
-## Step 2: Fetch and Read the Migration Guide
+## Step 3: Fetch and Read the Migration Guide
 
 Each Auth0 SDK publishes a migration guide in its GitHub repository. **You must fetch and read the full migration guide before making any changes.** The migration guide is the single source of truth for what needs to change.
 
@@ -91,11 +121,11 @@ Each Auth0 SDK publishes a migration guide in its GitHub repository. **You must 
 
 ---
 
-## Step 3: Apply Migration Changes
+## Step 4: Apply Migration Changes
 
 Work through every breaking change from the migration guide systematically. Apply changes in this order to minimize intermediate breakage:
 
-### 3a. Update the SDK Dependency
+### 4a. Update the SDK Dependency
 
 Update the SDK version in the package manifest to the new major version:
 
@@ -124,7 +154,7 @@ Also check the migration guide for:
 
 > **Agent instruction:** If the migration guide specifies a minimum platform/framework version that the project does not meet, warn the user immediately and ask how to proceed.
 
-### 3b. Update Configuration
+### 4b. Update Configuration
 
 Apply every configuration change from the migration guide:
 
@@ -133,7 +163,7 @@ Apply every configuration change from the migration guide:
 - Update configuration files (new required fields, removed options, renamed keys)
 - Update Auth0 Dashboard settings if the guide mentions them (inform the user of required manual steps)
 
-### 3c. Update All Application Code
+### 4c. Update All Application Code
 
 Search the entire codebase for every usage of the SDK and apply the changes documented in the migration guide:
 
@@ -149,7 +179,7 @@ Search the entire codebase for every usage of the SDK and apply the changes docu
 > 2. Apply the transformation documented in the migration guide to every occurrence
 > 3. If the migration guide does not provide a clear replacement for a removed API, add a `// TODO: [SDK] v[version] — manual migration needed for [old API]` comment and inform the user
 
-### 3d. Update Tests
+### 4d. Update Tests
 
 Search for test files that reference Auth0 SDK APIs and update them:
 - Update import paths and function names
@@ -159,11 +189,11 @@ Search for test files that reference Auth0 SDK APIs and update them:
 
 ---
 
-## Step 4: Build and Fix Until Clean
+## Step 5: Build and Fix Until Clean
 
 **This step is mandatory.** The migration is not complete until the project builds successfully.
 
-### 4a. Run Type Checking (if applicable)
+### 5a. Run Type Checking (if applicable)
 
 ```bash
 # TypeScript
@@ -179,7 +209,7 @@ swift build
 dotnet build
 ```
 
-### 4b. Run the Build
+### 5b. Run the Build
 
 ```bash
 # JavaScript/TypeScript
@@ -198,7 +228,7 @@ python -m py_compile [main-file]
 dotnet build
 ```
 
-### 4c. Fix Build Errors Iteratively
+### 5c. Fix Build Errors Iteratively
 
 > **Agent instruction:** If the build fails:
 >
@@ -216,7 +246,7 @@ dotnet build
 >
 > **Do not stop until the build succeeds.** If you cannot resolve an error after consulting the migration guide, explain the issue to the user and ask for guidance.
 
-### 4d. Run Tests
+### 5d. Run Tests
 
 ```bash
 npm test
@@ -227,7 +257,7 @@ npm test
 
 ---
 
-## Step 5: Report Migration Summary
+## Step 6: Report Migration Summary
 
 After the build succeeds, report to the user:
 
