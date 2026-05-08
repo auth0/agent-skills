@@ -1,4 +1,4 @@
-name: claudelint
+name: skillsaw
 on:
   pull_request:
     branches: [main]
@@ -6,7 +6,7 @@ on:
     branches: [main]
 
 concurrency:
-  group: claudelint-${{ github.event.pull_request.number || github.ref }}
+  group: skillsaw-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 10
     env:
       UV_PYTHON: "3.12"
-      CLAUDELINT_VERSION: "0.3.6"
+      SKILLSAW_VERSION: "0.4.2"
     steps:
     - name: Checkout
       uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
@@ -33,48 +33,48 @@ jobs:
       uses: actions/cache@1bd1e32a3bdc45362d1e726936510720a7c30a57 # v4.2.0
       with:
         path: ~/.cache/uv
-        key: uv-${{ runner.os }}-py${{ env.UV_PYTHON }}-claudelint-${{ env.CLAUDELINT_VERSION }}
+        key: uv-${{ runner.os }}-py${{ env.UV_PYTHON }}-skillsaw-${{ env.SKILLSAW_VERSION }}
 
-    - name: Run claudelint in strict mode
-      id: claudelint
+    - name: Run skillsaw in strict mode
+      id: skillsaw
       continue-on-error: true
       run: |
         set +e  # Don't exit on error; we capture the exit code manually below
         # -q suppresses uv's download/install noise on stderr
-        # sed strips hardcoded ANSI escape codes (claudelint doesn't support NO_COLOR)
-        uvx -q "claudelint==${CLAUDELINT_VERSION}" --strict \
+        # sed strips hardcoded ANSI escape codes (skillsaw doesn't support NO_COLOR)
+        uvx -q "skillsaw==${SKILLSAW_VERSION}" --strict \
           | sed 's/\x1b\[[0-9;]*m//g' \
-          | tee claudelint.txt
+          | tee skillsaw.txt
         EXIT_CODE=${PIPESTATUS[0]}
         echo "exit_code=${EXIT_CODE}" >> $GITHUB_OUTPUT
 
         # Capture output for PR comment
         {
           echo "report<<EOF"
-          cat claudelint.txt
+          cat skillsaw.txt
           echo "EOF"
         } >> $GITHUB_OUTPUT
 
         exit 0  # Always succeed so the PR comment step runs before we fail the job
 
-    - name: Prepare claudelint results
+    - name: Prepare skillsaw results
       if: always()
       id: prepare-comment
       run: |
-        EXIT_CODE="${{ steps.claudelint.outputs.exit_code }}"
+        EXIT_CODE="${{ steps.skillsaw.outputs.exit_code }}"
         if [ "$EXIT_CODE" = "0" ]; then
-          echo "header=✅ claudelint — All checks passed" >> $GITHUB_OUTPUT
+          echo "header=✅ skillsaw — All checks passed" >> $GITHUB_OUTPUT
           echo "details_open=" >> $GITHUB_OUTPUT  # Empty = <details> closed by default
         else
-          echo "header=❌ claudelint — Issues found" >> $GITHUB_OUTPUT
+          echo "header=❌ skillsaw — Issues found" >> $GITHUB_OUTPUT
           echo "details_open= open" >> $GITHUB_OUTPUT  # Leading space + "open" renders as <details open>
         fi
 
-    - name: Post claudelint results as PR comment
+    - name: Post skillsaw results as PR comment
       if: ${{ always() && github.event_name == 'pull_request' }}
       uses: thollander/actions-comment-pull-request@24bffb9b452ba05a4f3f77933840a6a841d1b32b # v3.0.1
       with:
-        comment-tag: claudelint
+        comment-tag: skillsaw
         mode: recreate
         message: |
           ## ${{ steps.prepare-comment.outputs.header }}
@@ -83,21 +83,21 @@ jobs:
           <summary>Full report</summary>
 
           ```
-          ${{ steps.claudelint.outputs.report }}
+          ${{ steps.skillsaw.outputs.report }}
           ```
 
           </details>
 
-          > [`claudelint ${{ env.CLAUDELINT_VERSION }}`](https://github.com/stbenjam/claudelint) · [config](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha }}/.claudelint.yaml) · [custom rules](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha }}/.claudelint/rules.py) · [run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          > [`skillsaw ${{ env.SKILLSAW_VERSION }}`](https://github.com/stbenjam/skillsaw) · [config](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha }}/.skillsaw.yaml) · [custom rules](${{ github.server_url }}/${{ github.repository }}/blob/${{ github.event.pull_request.head.sha }}/.skillsaw/rules.py) · [run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-    - name: Fail if claudelint failed
-      if: steps.claudelint.outputs.exit_code != '0'
+    - name: Fail if skillsaw failed
+      if: steps.skillsaw.outputs.exit_code != '0'
       run: exit 1
 
     - name: Upload linter output
       if: always()
       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.4.0
       with:
-        name: claudelint-report
-        path: claudelint.txt
+        name: skillsaw-report
+        path: skillsaw.txt
         if-no-files-found: error
