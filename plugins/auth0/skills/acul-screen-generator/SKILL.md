@@ -415,7 +415,7 @@ If lint or build produces errors, parse each error and apply the appropriate fix
 5. Re-run `npm run build 2>&1`.
 6. Repeat from step 1 until the build succeeds.
 
-**Iteration cap:** Stop after **5 iterations**. If the build still fails after 5 rounds of fixes, present the remaining errors to the customer and ask for guidance rather than continuing to modify code.
+**Iteration cap:** Default to **5 iterations**. For projects with many screens or complex interdependencies, increase to **10 iterations** if each iteration is making measurable progress (i.e., the error count is decreasing). If errors plateau (same count or same errors across 2 consecutive iterations), stop immediately regardless of the cap. When the cap is reached and errors remain, present the remaining errors to the customer and ask for guidance rather than continuing to modify code.
 
 ### Common pitfalls this phase catches
 
