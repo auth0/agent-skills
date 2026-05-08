@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 10
     env:
       UV_PYTHON: "3.12"
-      SKILLSAW_VERSION: "0.4.2"
+      SKILLSAW_VERSION: "0.4.3"
     steps:
     - name: Checkout
       uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
@@ -38,12 +38,12 @@ jobs:
     - name: Run skillsaw in strict mode
       id: skillsaw
       continue-on-error: true
+      env:
+        NO_COLOR: "1"
       run: |
         set +e  # Don't exit on error; we capture the exit code manually below
         # -q suppresses uv's download/install noise on stderr
-        # sed strips hardcoded ANSI escape codes (skillsaw doesn't support NO_COLOR)
         uvx -q "skillsaw==${SKILLSAW_VERSION}" --strict \
-          | sed 's/\x1b\[[0-9;]*m//g' \
           | tee skillsaw.txt
         EXIT_CODE=${PIPESTATUS[0]}
         echo "exit_code=${EXIT_CODE}" >> $GITHUB_OUTPUT
