@@ -15,11 +15,11 @@
 
 > **Agent instruction:** Run these pre-flight checks. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
-> **IMPORTANT — Credential privacy:** Never display Auth0 client IDs, client secrets, or domain values in terminal output visible to the user. When running Auth0 CLI commands, redirect output to a temporary file and read it programmatically:
+> **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands, redirect output to a temporary file:
 > ```bash
 > auth0 <command> --json --no-input > /tmp/auth0-output.json 2>&1
 > ```
-> Then use the Read tool or parse the file to extract values. Do NOT echo, print, or cat files containing credentials to the terminal. When confirming the active tenant with the user, mask the domain (e.g., `your-te****.us.auth0.com`).
+> Then use the Read tool to extract values and write them directly into `Auth0.plist` or other config files — never echo them in response text or terminal. When confirming the active tenant with the user, mask the domain (e.g., `your-te****.us.auth0.com`).
 >
 > **Pre-flight checks:**
 >
@@ -286,7 +286,7 @@ After completing setup, verify:
 # 1. Build the project
 xcodebuild build -scheme YOUR_SCHEME -destination "platform=iOS Simulator,name=iPhone 16"
 
-# 2. Verify Auth0.plist is bundled (should print your domain)
+# 2. Verify Auth0.plist is bundled
 # Run app in Simulator and check Xcode console for Auth0 initialization
 ```
 

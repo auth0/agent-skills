@@ -40,11 +40,11 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 
 > **Agent instruction:** Follow these steps in order. If you encounter an error at any step, attempt to fix it up to 5 times before calling `AskUserQuestion` to ask the user for guidance. Always search existing code first — if there are existing login/logout handlers, hook into them rather than creating new ones.
 >
-> **IMPORTANT — Credential privacy:** Never display Auth0 client IDs, client secrets, or domain values in terminal output visible to the user. When running Auth0 CLI commands that produce output containing these values, redirect output to a file or pipe through a filter, then read the file programmatically. For example:
+> **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands that produce output containing these values, redirect output to a file and read it programmatically. For example:
 > ```bash
 > auth0 apps create ... --json --no-input > /tmp/auth0-output.json 2>&1
 > ```
-> Then read `/tmp/auth0-output.json` to extract needed values. Do NOT echo, print, or cat files containing credentials to the terminal. When confirming the active tenant with the user, use a masked format (e.g., `your-te****.us.auth0.com`).
+> Then use the Read tool on `/tmp/auth0-output.json` to extract needed values and write them directly into `Auth0.plist` or other config files — never echo them in response text or terminal. When confirming the active tenant with the user, use a masked format (e.g., `your-te****.us.auth0.com`).
 
 ### Step 1 — Install SDK
 
