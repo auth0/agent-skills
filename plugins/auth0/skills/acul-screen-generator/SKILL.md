@@ -4,6 +4,7 @@ description: Generates complete, branded Auth0 Advanced Custom Universal Login (
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.1'
   openclaw:
     emoji: "🔐"
     homepage: https://github.com/auth0/agent-skills
@@ -11,24 +12,29 @@ metadata:
 
 # ACUL Screen Generator
 
-Generates production-ready, fully themed Auth0 ACUL screen components. Follows a strict 8-phase workflow (Phases 0–7): CLI authentication → intent detection → project setup → screen requirements → tech stack and design → theme extraction → structured code generation → dev mode wiring.
+Generates production-ready, fully themed Auth0 ACUL screen components. Follows a strict 9-phase workflow (Phases 0–8): CLI authentication → intent detection → project setup → screen requirements → tech stack and design → theme extraction → structured code generation → build validation & iterative fix → dev mode wiring.
 
 ## Reference Hierarchy
 
-Always resolve the correct reference for a screen using this priority order:
+Always resolve the correct reference for a screen using this CLI-first priority order:
 
 ```
-1. auth0-acul-samples  (31 React screens, 3 React-JS screens)
+1. Auth0 CLI scaffolded code  (preferred — always try first)
+   → Use `auth0 acul screen add` or `auth0 acul init` to generate screen code locally
+   → The CLI produces the correct project structure, SDK imports, and hook patterns
+   → If the CLI succeeds, use the scaffolded code as-is — do NOT fetch from GitHub
+
+2. auth0-acul-samples  (fallback — only if CLI does not support the screen)
    → Complete modular implementation: index.tsx + components/ + hooks/ + locales/
    → React:    https://github.com/auth0-samples/auth0-acul-samples/tree/main/react/src/screens/<screen-name>
    → React-JS: https://github.com/auth0-samples/auth0-acul-samples/tree/main/react-js/src/screens/<screen-name>
 
-2. SDK examples  (68 React, 71 JS — all screens)
+3. SDK examples  (last resort — only if neither CLI nor samples have the screen)
    → Code snippets showing SDK imports, hooks, and action functions
    → React: https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-react/examples/<screen-name>.md
    → JS:    https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-js/examples/<screen-name>.md
 
-3. assets/react-templates/ or assets/js-templates/
+4. assets/react-templates/ or assets/js-templates/
    → Structural component pattern only — never use their hooks/actions for other screens
 ```
 
@@ -110,7 +116,7 @@ export const use<ScreenName>Manager = () => {
 }
 ```
 
-When a screen is **not** in auth0-acul-samples, fall back to a single-file component based on the SDK example.
+When a screen is **not** in auth0-acul-samples and the CLI doesn't support it, fall back to a single-file component based on the SDK example.
 
 ## Prerequisites
 
@@ -154,38 +160,50 @@ auth0 acul init <app_name> -t react -s login-id,login-password,signup
 auth0 acul config generate <screen-name>    # repeat per screen
 ```
 
-Verify `acul_config.json` is created in the project directory. Proceed to Phase 3.
+Verify `acul_config.json` is created in the project directory.
+
+**The CLI-scaffolded code is your primary source.** Read the generated screen files to understand the project structure, SDK imports, hook patterns, and component layout. Do NOT fetch from GitHub — the CLI output is the canonical starting point. Only customize or extend the generated code based on the customer’s requirements (branding, extra components, etc.).
+
+Proceed to Phase 3.
 
 ---
 
-## Phase 2B: Add Screen — CLI + Reference Fetch
+## Phase 2B: Add Screen — CLI-First Approach
 
 1. Verify `acul_config.json` exists in the project directory.
    - If missing → stop. Instruct customer to run `auth0 acul init` first.
 
-2. Run:
+2. **Try adding the screen via CLI first:**
    ```bash
    auth0 acul screen add <screen-name> -d <project-dir>
    ```
-   If CLI errors or screen is not recognised → continue to step 3.
 
-3. **Always resolve the reference using the hierarchy** (regardless of CLI success or failure):
+3. **If CLI succeeds → use the scaffolded code directly.** Read the generated files to understand the structure, SDK imports, and hook patterns. Do NOT fetch from GitHub. Customize the CLI-generated code based on the customer's requirements (branding, components, etc.). Proceed to Phase 3.
 
-   **Step 3a — Check auth0-acul-samples first:**
+4. **If CLI errors or the screen is not recognised → use the CLI dummy-page strategy:**
+
+   The goal is to always use the CLI to establish the correct project structure, even for screens the CLI doesn’t natively support.
+
+   **Step 4a — Create a dummy page to get the project structure:**
+   ```bash
+   # Add a known/supported screen as a placeholder to get the correct project scaffolding
+   auth0 acul screen add login-id -d <project-dir>
+   ```
+   - Read the generated dummy screen files to capture the project structure, directory layout, config wiring, and build setup
+   - Then remove the dummy screen files (delete the `login-id/` screen directory)
+
+   **Step 4b — Now fetch the actual screen reference (only because CLI didn’t have it):**
    - Read `references/screen-catalog.md` to check if the screen has a `✅` in the Samples column
-   - If yes → fetch the screen directory from:
+   - If yes → fetch from auth0-acul-samples:
      - React: `https://github.com/auth0-samples/auth0-acul-samples/tree/main/react/src/screens/<screen-name>`
      - React-JS: `https://github.com/auth0-samples/auth0-acul-samples/tree/main/react-js/src/screens/<screen-name>`
-   - Fetch `index.tsx` and the `hooks/use<ScreenName>Manager.ts` file to understand the full implementation
-   - Use the samples architecture (modular: index + components + hooks + locales)
+     - Fetch `index.tsx` and `hooks/use<ScreenName>Manager.ts` to understand the full implementation
+   - If no → fetch SDK example as last resort:
+     - React: `https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-react/examples/<screen-name>.md`
+     - JS: `https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-js/examples/<screen-name>.md`
+     - Parse for: exact import path, hook pattern, action functions and payload shapes
 
-   **Step 3b — If not in samples, fetch SDK example:**
-   - React: `https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-react/examples/<screen-name>.md`
-   - JS: `https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-js/examples/<screen-name>.md`
-   - Parse for: exact import path, hook pattern (generic vs screen-specific), action functions and payload shapes
-   - Use a single-file component (no modular split needed)
-
-   This step is mandatory. The 68+ ACUL screens use fundamentally different hook patterns — wrong pattern = broken code.
+   **Step 4c — Generate the screen files using the project structure from the dummy page**, populated with the SDK/samples reference data from step 4b. This ensures correct directory layout, config integration, and build compatibility.
 
    For all screen names and which are in samples → read `references/screen-catalog.md`.
 
@@ -201,9 +219,9 @@ Verify `acul_config.json` is created in the project directory. Proceed to Phase 
    auth0 acul config list --rendering-mode advanced
    ```
 
-3. Read the existing screen file from the customer's codebase.
+3. Read the existing screen file from the customer's codebase. **The local code is your primary reference.** Understand its current structure, SDK imports, and hook patterns before making any changes.
 
-4. **Always resolve the reference using the same hierarchy as Phase 2B** (samples first, SDK example second). Even when modifying an existing file, the reference confirms whether the current code uses the correct hook pattern, action functions, and component structure before making changes.
+4. Only fetch from GitHub references if the local code is missing critical SDK patterns (e.g., wrong hook pattern, missing action functions) and you cannot determine the correct pattern from the existing codebase. Use the Reference Hierarchy (CLI first → samples → SDK examples) to validate.
 
 ---
 
@@ -287,11 +305,22 @@ Replace all `{{TOKEN}}` placeholders with extracted token values.
 
 ## Phase 6: Structured Code Generation
 
-Generation approach depends on whether the screen is in auth0-acul-samples.
+Generation approach depends on the source of the screen code.
 
-### Path A — Screen is in auth0-acul-samples (modular architecture)
+### Path A — CLI-scaffolded screen (preferred)
 
-Generate the full directory structure using the samples pattern (see "auth0-acul-samples Architecture" above):
+When the CLI successfully generates the screen (via `auth0 acul init` or `auth0 acul screen add`), use the CLI output as the base. Read the generated files and customise them based on the customer's requirements:
+
+- Apply design tokens from Phase 5 to the generated component styling
+- Add/remove components as specified (social buttons, captcha, passkey, etc.)
+- Adjust layout and structure per the customer's design input
+- Preserve the CLI's SDK imports, hook patterns, and action functions — they are correct
+
+Do NOT discard CLI-generated code to re-generate from a GitHub reference.
+
+### Path B — Screen from auth0-acul-samples (only when CLI doesn't support the screen)
+
+Use the project structure captured from the CLI dummy-page strategy (Phase 2B, Step 4a) as the foundation. Generate the screen directory using the samples pattern (see "auth0-acul-samples Architecture" above), matching the directory layout and config wiring from the dummy page:
 
 ```
 <screen-name>/
@@ -315,7 +344,7 @@ Generate the full directory structure using the samples pattern (see "auth0-acul
 
 Apply design tokens from Phase 5 to the layout components and form component styling.
 
-### Path B — Screen is NOT in auth0-acul-samples (single-file component)
+### Path C — Screen is NOT in auth0-acul-samples (single-file component)
 
 Generate a single `<screen-name>.tsx` (React) or `<screen-name>.js` (JS) using the structure from `assets/react-templates/` or `assets/js-templates/` as a pattern, with hooks and actions sourced entirely from the SDK example fetched in Phase 2.
 
@@ -330,17 +359,79 @@ Submit button → Passkey button (conditional) → Social divider + buttons
 ### Validation before outputting any code
 
 - SDK import path exactly matches the screen name (e.g., `@auth0/auth0-acul-react/mfa-otp-challenge`)
-- Hook pattern (generic `useScreen()` vs screen-specific hook) sourced from the reference, not assumed
-- Action function names and payload shapes sourced from the reference
+- Hook pattern (generic `useScreen()` vs screen-specific hook) sourced from the CLI-generated code or reference, not assumed
+- Action function names and payload shapes sourced from the CLI-generated code or reference
 - Error state uses SDK source (`hasErrors` / `getErrors()`) — never local-only error state
 - No hardcoded UI strings — use `screen.texts.*` with locale fallback
-- `applyAuth0Theme()` called in index.tsx for Path A screens
+- `applyAuth0Theme()` called in index.tsx for Path B screens
 
-**All-screens scope:** repeat Path A or Path B (whichever applies per screen) for every screen in the project, all importing from the shared theme file. Consistent component structure within each path.
+**All-screens scope:** repeat Path A, B, or C (whichever applies per screen) for every screen in the project, all importing from the shared theme file. Consistent component structure within each path.
 
 ---
 
-## Phase 7: Dev Mode Wiring
+## Phase 7: Build Validation & Iterative Fix
+
+After generating or modifying screen code, **always** validate the output before moving on. Generated code may contain incorrect import paths, wrong import styles (default vs named), invalid component props, or references to non-existent exports. This phase catches and fixes those issues automatically.
+
+### Step 1 — Run lint
+
+Run the project's linter to surface import errors, type mismatches, and invalid props:
+
+```bash
+# Detect the lint command from package.json scripts
+npm run lint 2>&1 || npx eslint src/screens/<screen-name>/ --ext .ts,.tsx,.js,.jsx 2>&1
+```
+
+If the project uses TypeScript, also run the type checker:
+
+```bash
+npx tsc --noEmit 2>&1
+```
+
+### Step 2 — Run build
+
+```bash
+npm run build 2>&1
+```
+
+### Step 3 — Parse errors and fix iteratively
+
+If lint or build produces errors, parse each error and apply the appropriate fix:
+
+| Error pattern | Root cause | Fix |
+|---------------|-----------|-----|
+| `does not have a default export` | Using `import X` on a named export | Change to `import { X }` |
+| `has no exported member` | Importing a symbol that doesn't exist in the module | Read the source module to find the correct export name |
+| `Module not found` / `Cannot find module` | Wrong import path | Verify the correct path from `node_modules` or the project's own source tree |
+| `Property 'X' does not exist on type` | Invalid prop passed to a component | Read the component's type definition or source to find valid props |
+| `is not assignable to type` | Prop type mismatch | Cast or transform the value to match the expected type |
+| `JSX element type 'X' does not have any construct or call signatures` | Component imported incorrectly or doesn't exist | Verify the component exists and is exported correctly from its module |
+
+**Fix workflow:**
+1. Read the error output — identify the file, line, and error code.
+2. Read the source file at the error location to understand context.
+3. If the error involves an import — read the target module (from `node_modules` or project source) to find the correct export names and paths.
+4. Apply the fix.
+5. Re-run `npm run build 2>&1`.
+6. Repeat from step 1 until the build succeeds.
+
+**Iteration cap:** Stop after **5 iterations**. If the build still fails after 5 rounds of fixes, present the remaining errors to the customer and ask for guidance rather than continuing to modify code.
+
+### Common pitfalls this phase catches
+
+- `import Component from './Component'` when the file uses `export const Component` (named export) — fix: `import { Component } from './Component'`
+- `import { useLoginId } from '@auth0/auth0-acul-react'` instead of the screen-specific path `@auth0/auth0-acul-react/login-id'` — fix: use the correct sub-path import
+- Using `<ULThemeCard title={...}>` when `ULThemeCard` doesn't accept a `title` prop — fix: remove the invalid prop and use a `<Header>` child component instead
+- Importing a theme utility from a path that doesn't exist in the project — fix: verify the actual path in the project tree
+- Using `applyAuth0Theme` as a named import when it's a default export (or vice versa) — fix: match the module's actual export style
+
+### Successful validation
+
+Once the build completes with **exit code 0** and no lint errors, proceed to Phase 8.
+
+---
+
+## Phase 8: Dev Mode Wiring
 
 Provide the customer with ready-to-run commands:
 
