@@ -1,0 +1,19 @@
+name: Notify docs-v2 to sync skills
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'plugins/*/skills/**'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger docs-v2 sync
+        env:
+          GH_TOKEN: ${{ secrets.DOCS_V2_DISPATCH_TOKEN }}
+        run: |
+          gh api repos/auth0/docs-v2/dispatches \
+            --method POST \
+            --field event_type=sync-agent-skills
