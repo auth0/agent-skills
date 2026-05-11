@@ -16,23 +16,27 @@ Generates production-ready, fully themed Auth0 ACUL screen components. Follows a
 
 ## Reference Hierarchy
 
-Always resolve the correct reference for a screen using this CLI-first priority order:
+Always resolve the correct reference for a screen using this priority order. **Before running the CLI**, check if the screen exists in auth0-acul-samples — if it does not, the CLI will fail.
 
 ```
-1. Auth0 CLI scaffolded code  (preferred — always try first)
+1. Check auth0-acul-samples availability first  (gate for CLI usage)
+   → Read `references/screen-catalog.md` for the Samples column
+   → Verify the screen directory exists at:
+     React:    https://github.com/auth0-samples/auth0-acul-samples/tree/main/react/src/screens/<screen-name>
+     React-JS: https://github.com/auth0-samples/auth0-acul-samples/tree/main/react-js/src/screens/<screen-name>
+   → If the screen IS in samples → proceed to CLI (step 2)
+   → If the screen is NOT in samples → skip CLI entirely, go to step 3
+
+2. Auth0 CLI scaffolded code  (only for screens confirmed in auth0-acul-samples)
    → Use `auth0 acul screen add` or `auth0 acul init` to generate screen code locally
    → The CLI produces the correct project structure, SDK imports, and hook patterns
    → If the CLI succeeds, use the scaffolded code as-is — do NOT fetch from GitHub
 
-2. auth0-acul-samples  (fallback — only if CLI does not support the screen)
-   → Complete modular implementation: index.tsx + components/ + hooks/ + locales/
-   → React:    https://github.com/auth0-samples/auth0-acul-samples/tree/main/react/src/screens/<screen-name>
-   → React-JS: https://github.com/auth0-samples/auth0-acul-samples/tree/main/react-js/src/screens/<screen-name>
-
-3. SDK examples  (last resort — only if neither CLI nor samples have the screen)
+3. SDK examples  (for screens NOT in auth0-acul-samples — do NOT attempt CLI for these)
    → Code snippets showing SDK imports, hooks, and action functions
    → React: https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-react/examples/<screen-name>.md
    → JS:    https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-js/examples/<screen-name>.md
+   → Determine if the example is React or JS, then adapt to match the project's framework
 
 4. assets/react-templates/ or assets/js-templates/
    → Structural component pattern only — never use their hooks/actions for other screens
@@ -122,11 +126,25 @@ When a screen is **not** in auth0-acul-samples and the CLI doesn't support it, f
 
 - Auth0 CLI installed: `brew install auth0`
 - Custom domain configured on the Auth0 tenant (hard ACUL requirement)
-- Node.js 18+
+- Node.js **≥ 22** (required by Auth0 CLI-generated ACUL projects)
 
 ---
 
-## Phase 0: CLI Authentication & Tenant Check
+## Phase 0: Environment Validation & CLI Authentication
+
+### Step 1 — Verify Node.js version
+
+```bash
+node --version 2>&1
+```
+
+Parse the output and verify the major version is **≥ 22**. If Node.js is not installed or the version is below 22:
+- **Not installed:** Stop and instruct the customer to install Node.js 22+ (e.g., `nvm install 22` or download from nodejs.org).
+- **Version < 22:** Stop and instruct the customer to upgrade. Example: `nvm install 22 && nvm use 22`. The Auth0 CLI-generated ACUL projects require Node.js 22+ and will fail to build or run on older versions.
+
+Do NOT proceed to any subsequent phase until Node.js ≥ 22 is confirmed.
+
+### Step 2 — CLI Authentication & Tenant Check
 
 ```bash
 auth0 login
@@ -168,44 +186,58 @@ Proceed to Phase 3.
 
 ---
 
-## Phase 2B: Add Screen — CLI-First Approach
+## Phase 2B: Add Screen — Check Samples Availability First
 
 1. Verify `acul_config.json` exists in the project directory.
    - If missing → stop. Instruct customer to run `auth0 acul init` first.
 
-2. **Try adding the screen via CLI first:**
+2. **Check if the screen exists in auth0-acul-samples before attempting CLI.**
+
+   Read `references/screen-catalog.md` and check the `Samples (React)` or `Samples (React-JS)` column for the requested screen. Then fetch the GitHub directory listing to **confirm** the screen actually exists at the expected path:
+
+   ```
+   React:    https://github.com/auth0-samples/auth0-acul-samples/tree/main/react/src/screens/<screen-name>
+   React-JS: https://github.com/auth0-samples/auth0-acul-samples/tree/main/react-js/src/screens/<screen-name>
+   ```
+
+   This check determines whether the CLI can scaffold the screen. If the screen is NOT present in auth0-acul-samples, the CLI `auth0 acul screen add` command will fail — so skip it entirely and go straight to Step 4.
+
+3. **Screen IS in auth0-acul-samples → try the CLI:**
    ```bash
    auth0 acul screen add <screen-name> -d <project-dir>
    ```
+   - **If CLI succeeds → use the scaffolded code directly.** Read the generated files to understand the structure, SDK imports, and hook patterns. Do NOT fetch from GitHub. Customize the CLI-generated code based on the customer’s requirements (branding, components, etc.). Proceed to Phase 3.
+   - **If CLI errors despite the screen being in samples** (e.g., auth issues, version mismatch) → fall through to Step 4 as a recovery path.
 
-3. **If CLI succeeds → use the scaffolded code directly.** Read the generated files to understand the structure, SDK imports, and hook patterns. Do NOT fetch from GitHub. Customize the CLI-generated code based on the customer's requirements (branding, components, etc.). Proceed to Phase 3.
+4. **Screen is NOT in auth0-acul-samples (or CLI failed) → skip CLI, fetch reference directly.**
 
-4. **If CLI errors or the screen is not recognised → use the CLI dummy-page strategy:**
+   Since the CLI does not support this screen, do NOT attempt `auth0 acul screen add` — it will error. Instead, build the screen from reference code.
 
-   The goal is to always use the CLI to establish the correct project structure, even for screens the CLI doesn’t natively support.
-
-   **Step 4a — Create a dummy page to get the project structure:**
+   **Step 4a — Capture project structure (if not already known):**
+   If this is the first screen being added manually (i.e., you don’t already have a reference for the project’s directory layout, config wiring, and build setup from a previous CLI-generated screen), create a dummy page:
    ```bash
-   # Add a known/supported screen as a placeholder to get the correct project scaffolding
    auth0 acul screen add login-id -d <project-dir>
    ```
    - Read the generated dummy screen files to capture the project structure, directory layout, config wiring, and build setup
    - Then remove the dummy screen files (delete the `login-id/` screen directory)
 
-   **Step 4b — Now fetch the actual screen reference (only because CLI didn’t have it):**
-   - Read `references/screen-catalog.md` to check if the screen has a `✅` in the Samples column
-   - If yes → fetch from auth0-acul-samples:
-     - React: `https://github.com/auth0-samples/auth0-acul-samples/tree/main/react/src/screens/<screen-name>`
-     - React-JS: `https://github.com/auth0-samples/auth0-acul-samples/tree/main/react-js/src/screens/<screen-name>`
-     - Fetch `index.tsx` and `hooks/use<ScreenName>Manager.ts` to understand the full implementation
-   - If no → fetch SDK example as last resort:
-     - React: `https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-react/examples/<screen-name>.md`
-     - JS: `https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-js/examples/<screen-name>.md`
-     - Parse for: exact import path, hook pattern, action functions and payload shapes
+   If you already have the project structure from a previous CLI-generated or manually-created screen, skip this step.
 
-   **Step 4c — Generate the screen files using the project structure from the dummy page**, populated with the SDK/samples reference data from step 4b. This ensures correct directory layout, config integration, and build compatibility.
+   **Step 4b — Fetch the screen reference code:**
+   Determine the tech stack of the existing project (React or JS/Vanilla) by inspecting the project files. Then fetch the reference:
 
-   For all screen names and which are in samples → read `references/screen-catalog.md`.
+   - **React project → check SDK examples in universal-login repo:**
+     - Fetch: `https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-react/examples/<screen-name>.md`
+     - Parse for: exact import path, hook pattern (Pattern A or B), action function names, and payload shapes
+   - **JS/Vanilla project → check JS SDK examples:**
+     - Fetch: `https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-js/examples/<screen-name>.md`
+     - Parse for: manager class name, method names, and payload shapes
+
+   Determine whether the example is React (JSX/TSX, hooks) or plain JS (class-based manager) and match it to the project’s framework. If the project is React but only a JS example exists (or vice versa), adapt the patterns accordingly using the appropriate SDK reference (`references/acul-react-sdk.md` or `references/acul-js-sdk.md`).
+
+   **Step 4c — Generate the screen files using the project structure**, populated with the SDK reference data from step 4b. This ensures correct directory layout, config integration, and build compatibility. Follow the modular architecture pattern from the "auth0-acul-samples Architecture" section if React, or a single-file component if the example is simple enough.
+
+   For all screen names and their availability → read `references/screen-catalog.md`.
 
 ---
 
