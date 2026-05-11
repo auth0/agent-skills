@@ -13,8 +13,52 @@ permissions:
   contents: read
 
 jobs:
-  scan:
+  discover:
     runs-on: ubuntu-latest
+    outputs:
+      skills: ${{ steps.find-skills.outputs.skills }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+    - name: Find skills to scan
+      id: find-skills
+      env:
+        BASE_REF: ${{ github.base_ref }}
+        IS_PUSH: ${{ github.event_name == 'push' }}
+      run: |
+        set -euo pipefail
+
+        if [ "$IS_PUSH" = "true" ]; then
+          SKILL_DIRS=$(find plugins/*/skills -maxdepth 1 -mindepth 1 -type d 2>/dev/null | sort)
+        else
+          git fetch origin "$BASE_REF" --depth=1
+          SKILL_DIRS=$(git diff --name-only "origin/$BASE_REF" -- 'plugins/*/skills/**' \
+            | cut -d/ -f1-4 \
+            | sort -u)
+        fi
+
+        # Filter to directories that actually have a SKILL.md
+        SKILLS="[]"
+        if [ -n "$SKILL_DIRS" ]; then
+          SKILLS=$(echo "$SKILL_DIRS" | while IFS= read -r dir; do
+            if [ -f "${dir}/SKILL.md" ]; then
+              echo "$dir"
+            fi
+          done | jq -R -s -c 'split("\n") | map(select(length > 0))')
+        fi
+
+        echo "skills=${SKILLS}" >> $GITHUB_OUTPUT
+        echo "Skills to scan: ${SKILLS}"
+
+  scan:
+    needs: discover
+    if: ${{ needs.discover.outputs.skills != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        skill: ${{ fromJson(needs.discover.outputs.skills) }}
     env:
       UV_PYTHON: "3.12"
       SNYK_AGENT_SCAN_VERSION: "0.5.1"
@@ -34,76 +78,37 @@ jobs:
         path: ~/.cache/uv
         key: uv-${{ runner.os }}-py${{ env.UV_PYTHON }}-snyk-agent-scan-${{ env.SNYK_AGENT_SCAN_VERSION }}
 
-    - name: Run snyk-agent-scan on skills
-      if: ${{ !cancelled() }}
+    - name: Derive skill name
+      id: skill-name
+      run: echo "name=$(echo '${{ matrix.skill }}' | tr '/' '-')" >> $GITHUB_OUTPUT
+
+    - name: Run snyk-agent-scan
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        BASE_REF: ${{ github.base_ref }}
-        IS_PUSH: ${{ github.event_name == 'push' }}
       run: |
         set -euo pipefail
 
-        scan_skill() {
-          local skill_file="$1"
-          local skill_name="$2"
+        SKILL_FILE="${{ matrix.skill }}/SKILL.md"
+        SKILL_NAME="${{ steps.skill-name.outputs.name }}"
 
-          uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$skill_file" --skills --json 2>/dev/null \
-            | tee "snyk-agent-scan-skill-${skill_name}.json" \
-            && return 0
+        uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$SKILL_FILE" --skills --json 2>/dev/null \
+          | tee "snyk-agent-scan-skill-${SKILL_NAME}.json" \
+          && exit 0
 
-          echo "Retrying ${skill_name} in 5s..."
-          sleep 5
+        echo "Retrying in 5s..."
+        sleep 5
 
-          uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$skill_file" --skills --json 2>/dev/null \
-            | tee "snyk-agent-scan-skill-${skill_name}.json"
-        }
-
-        if [ "$IS_PUSH" = "true" ]; then
-          # On main: scan all skills
-          SKILL_DIRS=$(find plugins/*/skills -maxdepth 1 -mindepth 1 -type d 2>/dev/null | sort)
-        else
-          # On PRs: scan only changed skills
-          git fetch origin "$BASE_REF" --depth=1
-          SKILL_DIRS=$(git diff --name-only "origin/$BASE_REF" -- 'plugins/*/skills/**' \
-            | cut -d/ -f1-4 \
-            | sort -u)
-        fi
-
-        if [ -z "$SKILL_DIRS" ]; then
-          echo "No skills to scan"
-          echo '{}' > snyk-agent-scan-skills.json
-          exit 0
-        fi
-
-        echo "Skills to scan:"
-        echo "$SKILL_DIRS"
-
-        EXIT_CODE=0
-        while IFS= read -r skill_dir; do
-          skill_file="${skill_dir}/SKILL.md"
-          if [ -f "$skill_file" ]; then
-            skill_name=$(echo "$skill_dir" | tr '/' '-')
-            echo "Scanning ${skill_dir}..."
-            scan_skill "$skill_file" "$skill_name" || EXIT_CODE=1
-          else
-            echo "Skipping deleted or non-existent skill: ${skill_dir}"
-          fi
-        done <<< "$SKILL_DIRS"
-
-        exit $EXIT_CODE
-
-    - name: Combine scan results
-      if: ${{ !cancelled() }}
-      run: cat snyk-agent-scan-*.json > snyk-agent-scan-combined.json 2>/dev/null || true
+        uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$SKILL_FILE" --skills --json 2>/dev/null \
+          | tee "snyk-agent-scan-skill-${SKILL_NAME}.json"
 
     - name: Fail on High or Critical findings
       if: ${{ !cancelled() }}
       run: python3 scripts/check_snyk_findings.py
 
-    - name: Upload report artifacts
+    - name: Upload report artifact
       if: always()
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        name: snyk-agent-scan-reports
+        name: snyk-agent-scan-${{ steps.skill-name.outputs.name }}
         path: snyk-agent-scan-*.json
         if-no-files-found: error
