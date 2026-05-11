@@ -14,9 +14,12 @@ def load_ignores(path='.snyk-agent-scan-ignore.json'):
         return []
 
 
-def ignored_reason(code, message, ignores):
+def ignored_reason(code, message, ignores, skill=None):
     for entry in ignores:
         if entry.get('code') != code:
+            continue
+        entry_skills = entry.get('skills')
+        if entry_skills and skill and skill not in entry_skills:
             continue
         url = entry.get('url', '')
         if url and re.search(r'(?<![/\w])' + re.escape(url) + r'(?![a-zA-Z0-9_/\-])', message):
@@ -39,13 +42,19 @@ def check_findings(report_glob='snyk-agent-scan-*.json', ignores=None):
             print(f'WARNING: could not parse {path}: {e}')
             continue
 
+        # Extract skill name from filename (e.g. "snyk-agent-scan-skill-plugins-auth0-skills-auth0-expo.json" -> "auth0-expo")
+        skill = None
+        match = re.search(r'snyk-agent-scan-skill-.*?-skills-(.+)\.json$', path)
+        if match:
+            skill = match.group(1)
+
         for scan_result in data.values() if isinstance(data, dict) else [data]:
             for issue in scan_result.get('issues', []):
                 code = issue.get('code', '')
                 if not BLOCKING.match(code):
                     continue
                 message = issue.get('message', '') + ' ' + json.dumps(issue.get('extra_data', {}))
-                reason = ignored_reason(code, message, ignores)
+                reason = ignored_reason(code, message, ignores, skill=skill)
                 title = issue.get('extra_data', {}).get('title', code)
                 if reason:
                     print(f'IGNORED [{path}]: {code} ({title}) — {reason}')

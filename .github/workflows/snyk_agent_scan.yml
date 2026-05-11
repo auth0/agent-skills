@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       UV_PYTHON: "3.12"
-      SNYK_AGENT_SCAN_VERSION: "0.4.16"
+      SNYK_AGENT_SCAN_VERSION: "0.5.1"
     steps:
     - name: Checkout
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -47,14 +47,14 @@ jobs:
           local skill_file="$1"
           local skill_name="$2"
 
-          uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$skill_file" --skills --json --verbose \
+          uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$skill_file" --skills --json 2>/dev/null \
             | tee "snyk-agent-scan-skill-${skill_name}.json" \
             && return 0
 
           echo "Retrying ${skill_name} in 5s..."
           sleep 5
 
-          uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$skill_file" --skills --json --verbose \
+          uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$skill_file" --skills --json 2>/dev/null \
             | tee "snyk-agent-scan-skill-${skill_name}.json"
         }
 
