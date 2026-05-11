@@ -40,7 +40,7 @@ auth0 login
 auth0 login --scopes "read:client_grants,create:client_grants"
 
 # Machine login with client secret (CI/CD, non-interactive)
-auth0 login --domain <tenant>.auth0.com --client-id <id> --client-secret <secret>
+auth0 login --domain <tenant>.auth0.com --client-id <id> --client-secret "$AUTH0_CLIENT_SECRET"
 
 # Machine login with private key JWT
 auth0 login --domain <tenant>.auth0.com --client-id <id> \
@@ -327,7 +327,7 @@ Simpler alternative to `search` when you just need an exact email match.
 auth0 users create \
   --connection-name "Username-Password-Authentication" \
   --email "testuser@example.com" \
-  --password "SecureP@ss123!" \
+  --password "$USER_PASSWORD" \
   --name "Test User" \
   --json
 ```
