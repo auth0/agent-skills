@@ -84,18 +84,11 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 >
 > After the script completes, proceed to **Step 2 (Verify Expo Dev Client)**.
 
-#### Manual Setup (User-Provided Credentials)
+#### Manual Setup
 
-> **Agent instruction:** Ask the user for their Auth0 credentials using `AskUserQuestion`:
+> **Agent instruction:** If the user has not provided their Auth0 Domain and Client ID, ask them using `AskUserQuestion`. They can find both in the [Auth0 Dashboard](https://manage.auth0.com/) under **Applications > Applications > your app > Settings**. If they don't have an Auth0 app yet, they should create one with type **Native**.
 >
-> "I need your Auth0 credentials to set up authentication. Please provide:
->
-> 1. **Auth0 Domain** (e.g., `your-tenant.us.auth0.com`)
-> 2. **Client ID** (a 32-character alphanumeric string)
->
-> You can find both in the [Auth0 Dashboard](https://manage.auth0.com/) under **Applications > Applications > your app > Settings**. If you don't have an Auth0 app yet, create one with type **Native** and copy the domain and client ID from the settings page."
->
-> Then write the configuration to app.json and proceed to **Step 2**.
+> Once provided, configure the Auth0 plugin in app.json and proceed to **Step 2**.
 
 ### 2. Verify Expo Dev Client
 
