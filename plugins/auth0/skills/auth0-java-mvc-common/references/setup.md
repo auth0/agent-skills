@@ -6,7 +6,7 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 
 ## Auth0 Configuration
 
-> **Agent instruction:** If the user's prompt already includes Auth0 configuration values, skip the bootstrap script and credential questions — configure the `.env` file (which must be in `.gitignore`) and proceed with integration.
+> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), use them directly — skip the bootstrap script and credential questions. Write environment variables and proceed with integration.
 
 ### Option A: Automatic Setup (Auth0 CLI)
 
@@ -20,11 +20,16 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 >    ```bash
 >    auth0 apps create --name "My Java Web App" --type regular --callbacks http://localhost:3000/callback --logout-urls http://localhost:3000 --json
 >    ```
->    Then write the returned domain, client ID, and client secret to a `.env` file (ensure `.env` is in `.gitignore`).
+>    Then write the returned domain, client ID, and client secret to a `.env` file.
 
 ### Option B: Manual Setup
 
-> **Agent instruction:** If the user chose manual setup, use `AskUserQuestion` to collect the required configuration. Then proceed.
+> **Agent instruction:** If the user chose manual setup, use `AskUserQuestion` to collect:
+> 1. Auth0 Domain
+> 2. Client ID
+> 3. Client Secret
+>
+> Then write the `.env` file and proceed.
 
 #### 1. Create Auth0 Application
 
