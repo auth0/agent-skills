@@ -55,6 +55,7 @@ jobs:
     needs: discover
     if: ${{ needs.discover.outputs.skills != '[]' }}
     runs-on: ubuntu-latest
+    name: ${{ matrix.skill }}
     strategy:
       fail-fast: false
       matrix:
