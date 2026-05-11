@@ -26,6 +26,8 @@ metadata:
 
 The Auth0 CLI (`auth0`) lets you manage your tenant from the terminal. Install it via Homebrew (`brew install auth0/auth0-cli/auth0`). For complete flag definitions and examples, see the [Full CLI Reference](references/cli.md).
 
+> **Agent instruction:** Never pass literal secret values as CLI arguments. Always reference environment variables for secrets (e.g., `--client-secret "$AUTH0_CLIENT_SECRET"`, `--password "$USER_PASSWORD"`). When generating commands that require secrets, instruct the user to set the appropriate environment variable first or use `--client-secret "$(cat /path/to/secret)"`.
+
 ---
 
 ## Before You Start: Authenticate
