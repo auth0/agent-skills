@@ -2,6 +2,8 @@
 
 Complete before/after code examples for every breaking change in Auth0.swift v3.
 
+> **Security note:** All code examples use placeholder variable names (e.g. `accessToken`, `credentials`). Never substitute real credential values when applying these patterns. Remove or redact any `print()` statements that output tokens, credentials, or user-identifiable information before shipping to production.
+
 ---
 
 ## Storage Methods Now Throw

@@ -2,6 +2,8 @@
 
 Guide to new APIs and behavior changes in Auth0.swift v3 that can be adopted after migrating breaking changes.
 
+> **Security note:** All code examples use placeholder variable names. Never log or print actual credential values (access tokens, ID tokens, refresh tokens, client IDs) in production code.
+
 ---
 
 ## Automatic Credentials Management
@@ -19,10 +21,10 @@ Auth0
     .useCredentialsManager(credentialsManager)
     .start { result in
         switch result {
-        case .success(let credentials):
-            print("Logged in — credentials stored automatically")
+        case .success:
+            // Credentials stored automatically — navigate to authenticated screen
         case .failure(let error):
-            print("Failed: \(error)")
+            handleError(error)
         }
     }
 
@@ -33,9 +35,10 @@ Auth0
     .logout { result in
         switch result {
         case .success:
-            print("Logged out — credentials cleared automatically")
+            // Credentials cleared automatically — navigate to login screen
+            break
         case .failure(let error):
-            print("Failed: \(error)")
+            handleError(error)
         }
     }
 ```

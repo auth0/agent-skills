@@ -15,6 +15,12 @@ metadata:
 Migrate existing iOS/macOS/tvOS/watchOS/visionOS apps from Auth0.swift v1 or v2 to v3. Auth0.swift v3 is a Swift 6-ready release with improved error handling, predictable threading, and a cleaner API surface.
 
 > **Agent instruction:** This skill handles **upgrading** an existing Auth0.swift integration to v3. If the project does not already use Auth0.swift, use `auth0-swift` instead to add a fresh integration.
+>
+> **Security — credential handling:**
+> - **NEVER** echo, print, or display actual values of: access tokens, ID tokens, refresh tokens, client secrets, client IDs, Auth0 domains, API keys, or any other credentials found in the user's project (e.g. `Auth0.plist`, environment variables, Keychain data, `.env` files).
+> - When reporting migration findings (Step 1), reference files and line numbers only — do not quote credential values from config files.
+> - When showing code diffs or migration examples, use placeholder variables (e.g. `accessToken`, `clientId`) — never substitute real values from the project.
+> - If a user's code contains `print()` or logging statements that output tokens, flag it as a security issue and recommend removal or redaction.
 
 ## When NOT to Use
 
@@ -53,7 +59,7 @@ Migrate existing iOS/macOS/tvOS/watchOS/visionOS apps from Auth0.swift v1 or v2 
 >    - Custom `WebAuth` conformances (now must be `Sendable`)
 >    - Custom `CredentialsStorage` conformances (methods now throw)
 >    - Builder methods called imperatively (not chained) on `webAuth()`
-> 3. Report findings to the user with a summary of required changes before proceeding.
+> 3. Report findings to the user with a summary of required changes before proceeding. List affected files and line numbers — **never** include actual credential values (tokens, client IDs, domains) in the summary.
 
 ### Step 2 — Update SDK Version
 
@@ -157,6 +163,7 @@ Migrate existing iOS/macOS/tvOS/watchOS/visionOS apps from Auth0.swift v1 or v2 
 | Unnecessary `DispatchQueue.main.async` in callbacks | v3 guarantees main thread delivery — remove manual dispatch |
 | Not handling new `.storeFailed` / `.clearFailed` errors | These new error paths surface previously-silent Keychain failures |
 | Expecting `offline_access` not in default scope | v3 includes it by default — explicitly set scope if you don't want refresh tokens |
+| Logging tokens or credentials via `print()` | Never log access tokens, ID tokens, refresh tokens, or client secrets — use error-only logging and redact sensitive fields |
 
 ## Related Skills
 
