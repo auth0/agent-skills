@@ -86,26 +86,35 @@ npx cap sync
 
 ### Step 3: Set Up Auth0Provider
 
-Wrap the app root with `Auth0Provider`, configuring it for Capacitor:
+Wrap the app root with `Auth0Provider`, configuring it for Capacitor. In `src/main.tsx`:
 
 ```tsx
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import { Auth0Provider } from '@auth0/auth0-react';
+import App from './App';
 
-const domain = "YOUR_AUTH0_DOMAIN";
-const clientId = "YOUR_AUTH0_CLIENT_ID";
-const packageId = "YOUR_PACKAGE_ID"; // e.g., com.example.myapp
+const domain = import.meta.env.VITE_AUTH0_DOMAIN;
+const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
+const packageId = import.meta.env.VITE_AUTH0_PACKAGE_ID; // e.g., com.example.myapp
 
-<Auth0Provider
-  domain={domain}
-  clientId={clientId}
-  useRefreshTokens={true}
-  useRefreshTokensFallback={false}
-  authorizationParams={{
-    redirect_uri: `${packageId}://${domain}/capacitor/${packageId}/callback`
-  }}
->
-  <App />
-</Auth0Provider>
+const redirectUri = `${packageId}://${domain}/capacitor/${packageId}/callback`;
+
+createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <Auth0Provider
+      domain={domain}
+      clientId={clientId}
+      useRefreshTokens={true}
+      useRefreshTokensFallback={false}
+      authorizationParams={{
+        redirect_uri: redirectUri
+      }}
+    >
+      <App />
+    </Auth0Provider>
+  </React.StrictMode>
+);
 ```
 
 ### Step 4: Implement Login with Capacitor Browser
@@ -113,6 +122,8 @@ const packageId = "YOUR_PACKAGE_ID"; // e.g., com.example.myapp
 ```tsx
 import { useAuth0 } from '@auth0/auth0-react';
 import { Browser } from '@capacitor/browser';
+
+const { loginWithRedirect } = useAuth0();
 
 const login = async () => {
   await loginWithRedirect({
@@ -126,17 +137,24 @@ const login = async () => {
 ### Step 5: Handle Callback via Deep Link
 
 ```tsx
+import { useEffect } from 'react';
 import { App as CapApp } from '@capacitor/app';
 import { Browser } from '@capacitor/browser';
 import { useAuth0 } from '@auth0/auth0-react';
 
+const { handleRedirectCallback } = useAuth0();
+
 useEffect(() => {
-  CapApp.addListener('appUrlOpen', async ({ url }) => {
+  const listener = CapApp.addListener('appUrlOpen', async ({ url }) => {
     if (url.includes('state') && (url.includes('code') || url.includes('error'))) {
       await handleRedirectCallback(url);
     }
     await Browser.close();
   });
+
+  return () => {
+    listener.then(l => l.remove());
+  };
 }, [handleRedirectCallback]);
 ```
 
