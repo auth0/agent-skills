@@ -6,9 +6,9 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 
 ## Auth0 Configuration
 
-> **Agent instruction:** Never echo Auth0 credentials in your response text. If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), write all provided values to `.env` using the Write tool and skip the credential questions.
+> **Agent instruction:** Do not write or echo credential values yourself. If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), skip the credential questions and instruct the user to populate their `.env` file — provide variable names and placeholders (`<YOUR_DOMAIN>`, `<YOUR_CLIENT_ID>`, `<YOUR_CLIENT_SECRET>`), never actual values.
 >
-> **Secret handling:** Never retrieve or parse `client_secret` from Auth0 CLI output unless the user explicitly asked. Do NOT read `.env` files — if the file exists, append credentials (preserve existing content). Always add the target file to `.gitignore` if not already present. Warn the user to check for duplicates if they may have already configured credentials.
+> **Secret handling:** Never retrieve or parse `client_secret` from Auth0 CLI output. Never write actual credential values into any file — always use placeholders. Do NOT read `.env` files. Always add `.env` to `.gitignore` if not already present. Warn the user to check for duplicates if they may have already configured credentials.
 
 ### Option A: Automatic Setup (Auth0 CLI)
 
@@ -22,8 +22,8 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 >    ```bash
 >    auth0 apps create --name "My Java Web App" --type regular --callbacks http://localhost:3000/callback --logout-urls http://localhost:3000 --json --no-input
 >    ```
->    From the JSON output, extract `domain` and `client_id`. Write these to `.env` using the Write tool.
->    Do NOT extract `client_secret` from the CLI output — instruct the user to copy it into `.env` themselves.
+>    From the JSON output, note the `domain` and `client_id`. Instruct the user to add these values (along with `client_secret`) to their `.env` file themselves.
+>    Do NOT extract or write any credential values from the CLI output.
 
 ### Option B: Manual Setup
 
@@ -32,7 +32,7 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 > 2. Client ID
 > 3. Client Secret
 >
-> Write all provided values to `.env` using the Write tool. Then proceed.
+> Then instruct the user to add these values to their `.env` file. Do not write credential values yourself — provide the template with placeholders only.
 
 #### 1. Create Auth0 Application
 
@@ -74,7 +74,7 @@ AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 ```
 
-> **Agent instruction:** If the user provided all credentials, write them all to `.env`. If credentials came from `auth0 apps create`, write domain and client ID only — do not extract the secret from CLI output. If `.env` already exists, append (preserve existing content). Always add `.env` to `.gitignore` automatically.
+> **Agent instruction:** Never write actual credential values to files. Instruct the user to populate `.env` with their credentials. If `.env` already exists, remind the user to append (not overwrite). Always add `.env` to `.gitignore` automatically.
 
 > **Agent instruction:** Java does not auto-load `.env` files. If you generate a `.env` file, also add [dotenv-java](https://github.com/cdimascio/dotenv-java) and use `Dotenv.load().get("AUTH0_DOMAIN")`, or instruct the user to run `source .env` before starting the server.
 
@@ -92,7 +92,7 @@ AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 ```
 
-> **Agent instruction:** If the user provides credentials (including the secret), write all values to `.env`. Never retrieve the secret from CLI output unless the user explicitly asked. If `.env` already exists, append (do not overwrite existing content). Always ensure `.env` is in `.gitignore`.
+> **Agent instruction:** Never write actual credential values to files. Instruct the user to populate `.env` with their own values. Never retrieve secrets from CLI output. Always ensure `.env` is in `.gitignore`.
 
 **Important:** Add `.env` to `.gitignore` to prevent committing secrets:
 
