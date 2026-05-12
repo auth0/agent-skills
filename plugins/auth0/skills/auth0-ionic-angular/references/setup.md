@@ -123,16 +123,21 @@ import { provideRouter } from '@angular/router';
 import { provideAuth0 } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
 
+// Replace with your capacitor.config.ts appId and Auth0 domain
+const appId = 'YOUR_PACKAGE_ID';
+const domain = 'YOUR_AUTH0_DOMAIN';
+const callbackUri = `${appId}://${domain}/capacitor/${appId}/callback`;
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideAuth0({
-      domain: 'YOUR_AUTH0_DOMAIN',
+      domain,
       clientId: 'YOUR_AUTH0_CLIENT_ID',
       useRefreshTokens: true,
       useRefreshTokensFallback: false,
       authorizationParams: {
-        redirect_uri: window.location.origin,
+        redirect_uri: callbackUri,
       },
     }),
   ],
@@ -151,6 +156,10 @@ import { AuthModule } from '@auth0/auth0-angular';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 
+const appId = 'YOUR_PACKAGE_ID';
+const domain = 'YOUR_AUTH0_DOMAIN';
+const callbackUri = `${appId}://${domain}/capacitor/${appId}/callback`;
+
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -158,12 +167,12 @@ import { AppRoutingModule } from './app-routing.module';
     IonicModule.forRoot(),
     AppRoutingModule,
     AuthModule.forRoot({
-      domain: 'YOUR_AUTH0_DOMAIN',
+      domain,
       clientId: 'YOUR_AUTH0_CLIENT_ID',
       useRefreshTokens: true,
       useRefreshTokensFallback: false,
       authorizationParams: {
-        redirect_uri: window.location.origin,
+        redirect_uri: callbackUri,
       },
     }),
   ],
@@ -226,13 +235,16 @@ export const environment = {
 // src/app/app.config.ts
 import { environment } from '../environments/environment';
 
+const appId = 'YOUR_PACKAGE_ID'; // from capacitor.config.ts
+const callbackUri = `${appId}://${environment.auth0.domain}/capacitor/${appId}/callback`;
+
 provideAuth0({
   domain: environment.auth0.domain,
   clientId: environment.auth0.clientId,
   useRefreshTokens: true,
   useRefreshTokensFallback: false,
   authorizationParams: {
-    redirect_uri: window.location.origin,
+    redirect_uri: callbackUri,
   },
 }),
 ```

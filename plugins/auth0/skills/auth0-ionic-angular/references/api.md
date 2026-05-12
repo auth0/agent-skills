@@ -11,7 +11,7 @@
 | `useRefreshTokens` | `boolean` | Yes (mobile) | `false` | Must be `true` for Ionic Capacitor apps |
 | `useRefreshTokensFallback` | `boolean` | Yes (mobile) | `true` | Must be `false` for Ionic Capacitor apps |
 | `cacheLocation` | `'memory' \| 'localstorage'` | No | `'memory'` | Where to store tokens — `'memory'` recommended for mobile |
-| `authorizationParams.redirect_uri` | `string` | No | `window.location.origin` | Redirect URI after login |
+| `authorizationParams.redirect_uri` | `string` | Yes (Capacitor) | `window.location.origin` | Must be set to custom URL scheme for Capacitor: `PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback` |
 | `authorizationParams.audience` | `string` | No | — | API audience for access token scoping |
 | `authorizationParams.scope` | `string` | No | `'openid profile email'` | OAuth scopes to request |
 | `httpInterceptor.allowedList` | `string[] \| HttpInterceptorRouteConfig[]` | No | `[]` | API URLs to attach access tokens to |
@@ -59,11 +59,12 @@ export default config;
 ### `loginWithRedirect` Options (Capacitor)
 
 ```typescript
+// callbackUri = `${appId}://${domain}/capacitor/${appId}/callback`
 this.auth.loginWithRedirect({
   authorizationParams: {
     audience: 'https://my-api.example.com',
     scope: 'openid profile email read:data',
-    redirect_uri: window.location.origin,
+    redirect_uri: callbackUri,
   },
   async openUrl(url: string) {
     await Browser.open({ url, windowName: '_self' });
@@ -74,9 +75,10 @@ this.auth.loginWithRedirect({
 ### `logout` Options (Capacitor)
 
 ```typescript
+// callbackUri = `${appId}://${domain}/capacitor/${appId}/callback`
 this.auth.logout({
   logoutParams: {
-    returnTo: `$PACKAGE_ID://$YOUR_DOMAIN/capacitor/$PACKAGE_ID/callback`,
+    returnTo: callbackUri,
   },
   async openUrl(url: string) {
     await Browser.open({ url, windowName: '_self' });
@@ -148,17 +150,21 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAuth0, authHttpInterceptorFn } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
 
+const appId = 'YOUR_PACKAGE_ID';
+const domain = 'YOUR_AUTH0_DOMAIN';
+const callbackUri = `${appId}://${domain}/capacitor/${appId}/callback`;
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
     provideHttpClient(withInterceptors([authHttpInterceptorFn])),
     provideAuth0({
-      domain: 'YOUR_AUTH0_DOMAIN',
+      domain,
       clientId: 'YOUR_AUTH0_CLIENT_ID',
       useRefreshTokens: true,
       useRefreshTokensFallback: false,
       authorizationParams: {
-        redirect_uri: window.location.origin,
+        redirect_uri: callbackUri,
       },
     }),
   ],

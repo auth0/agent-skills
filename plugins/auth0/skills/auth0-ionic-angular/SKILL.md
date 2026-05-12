@@ -54,10 +54,11 @@ npm install @auth0/auth0-angular @capacitor/browser @capacitor/app
 
 ### Step 2: Configure Auth0
 
-> **Agent instruction:** Use `AskUserQuestion` to ask:
-> "How would you like to configure Auth0?"
-> - Option A: "Automatic setup (recommended)" — uses Auth0 CLI to create app and configure project
-> - Option B: "Manual setup" — provide Auth0 credentials manually
+> **Agent instruction:** Run the bootstrap script to configure Auth0 automatically via the CLI:
+> ```bash
+> cd <skill-dir>/scripts && npm install && node bootstrap.mjs <project-path>
+> ```
+> If the Auth0 CLI is not installed or the user prefers manual setup, ask for Domain and Client ID directly.
 >
 > See [Setup Guide](./references/setup.md) for full details on both paths.
 
@@ -85,16 +86,20 @@ The `provideAuth0()` function (or `AuthModule.forRoot()`) is the Angular equival
 import { ApplicationConfig } from '@angular/core';
 import { provideAuth0 } from '@auth0/auth0-angular';
 
+// Replace with your capacitor.config.ts appId and Auth0 domain
+const appId = 'com.example.myapp';
+const domain = 'YOUR_AUTH0_DOMAIN';
+const callbackUri = `${appId}://${domain}/capacitor/${appId}/callback`;
+
 export const appConfig: ApplicationConfig = {
   providers: [
     provideAuth0({
-      domain: 'YOUR_AUTH0_DOMAIN',
+      domain,
       clientId: 'YOUR_AUTH0_CLIENT_ID',
       useRefreshTokens: true,
       useRefreshTokensFallback: false,
       authorizationParams: {
-        redirect_uri: window.location.origin,
-        audience: 'YOUR_API_AUDIENCE', // optional, only if calling an API
+        redirect_uri: callbackUri,
       },
     }),
   ],
@@ -105,15 +110,19 @@ export const appConfig: ApplicationConfig = {
 ```typescript
 import { AuthModule } from '@auth0/auth0-angular';
 
+const appId = 'com.example.myapp';
+const domain = 'YOUR_AUTH0_DOMAIN';
+const callbackUri = `${appId}://${domain}/capacitor/${appId}/callback`;
+
 @NgModule({
   imports: [
     AuthModule.forRoot({
-      domain: 'YOUR_AUTH0_DOMAIN',
+      domain,
       clientId: 'YOUR_AUTH0_CLIENT_ID',
       useRefreshTokens: true,
       useRefreshTokensFallback: false,
       authorizationParams: {
-        redirect_uri: window.location.origin,
+        redirect_uri: callbackUri,
       },
     }),
   ],
@@ -121,22 +130,24 @@ import { AuthModule } from '@auth0/auth0-angular';
 export class AppModule {}
 ```
 
-### Step 4: Implement Login
+### Step 4: Handle Deep Link Callbacks (AppComponent)
+
+Register the `appUrlOpen` listener at the app root so it persists across navigation:
 
 ```typescript
-import { Component, NgZone } from '@angular/core';
+import { Component, NgZone, OnInit } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
 import { Browser } from '@capacitor/browser';
 import { App as CapApp } from '@capacitor/app';
 import { mergeMap } from 'rxjs/operators';
 
 @Component({
-  selector: 'app-login',
-  template: `<ion-button (click)="login()">Log In</ion-button>`,
+  selector: 'app-root',
+  template: `<ion-app><ion-router-outlet></ion-router-outlet></ion-app>`,
 })
-export class LoginPage {
+export class AppComponent implements OnInit {
   constructor(
-    public auth: AuthService,
+    private auth: AuthService,
     private ngZone: NgZone
   ) {}
 
@@ -152,6 +163,22 @@ export class LoginPage {
       });
     });
   }
+}
+```
+
+### Step 5: Implement Login
+
+```typescript
+import { Component } from '@angular/core';
+import { AuthService } from '@auth0/auth0-angular';
+import { Browser } from '@capacitor/browser';
+
+@Component({
+  selector: 'app-login',
+  template: `<ion-button (click)="login()">Log In</ion-button>`,
+})
+export class LoginPage {
+  constructor(public auth: AuthService) {}
 
   login() {
     this.auth
@@ -165,7 +192,7 @@ export class LoginPage {
 }
 ```
 
-### Step 5: Implement Logout
+### Step 6: Implement Logout
 
 ```typescript
 import { Component } from '@angular/core';
@@ -194,12 +221,12 @@ export class LogoutButtonComponent {
 }
 ```
 
-### Step 6: Display User Profile
+### Step 7: Display User Profile
 
 ```typescript
 import { Component } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
-import { AsyncPipe, JsonPipe } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-profile',
@@ -216,7 +243,7 @@ export class ProfileComponent {
 }
 ```
 
-### Step 7: Build and Test
+### Step 8: Build and Test
 
 > **Agent instruction:** After writing all code, verify the build succeeds:
 > ```bash
