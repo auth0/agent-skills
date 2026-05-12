@@ -8,6 +8,10 @@ metadata:
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
+    requires:
+      bins:
+        - gh
+        - node
 ---
 
 # Auth0 Ionic Vue (Capacitor) Integration
@@ -87,7 +91,8 @@ import { IonicVue } from '@ionic/vue';
 import App from './App.vue';
 import router from './router';
 
-const packageId = "YOUR_PACKAGE_ID"; // From capacitor.config.ts appId
+// Agent: read appId from capacitor.config.ts and replace this value
+const packageId = "YOUR_PACKAGE_ID";
 
 const app = createApp(App);
 
@@ -148,7 +153,7 @@ import { IonApp, IonRouterOutlet } from '@ionic/vue';
 
 const { handleRedirectCallback } = useAuth0();
 
-let urlOpenListener: any;
+let urlOpenListener: { remove: () => void } | undefined;
 
 onMounted(async () => {
   urlOpenListener = await CapApp.addListener('appUrlOpen', async ({ url }) => {
@@ -180,7 +185,8 @@ import { Browser } from '@capacitor/browser';
 import { IonButton } from '@ionic/vue';
 
 const domain = import.meta.env.VITE_AUTH0_DOMAIN;
-const packageId = "YOUR_PACKAGE_ID"; // From capacitor.config.ts appId
+// Agent: read appId from capacitor.config.ts and replace this value
+const packageId = "YOUR_PACKAGE_ID";
 const logoutUri = `${packageId}://${domain}/capacitor/${packageId}/callback`;
 
 const { logout } = useAuth0();
@@ -234,8 +240,6 @@ const doLogout = async () => {
 | Not calling `app.use(createAuth0(...))` before mount | Register Auth0 plugin before calling `app.mount('#app')` |
 | Accessing `.value` incorrectly on auth refs | `useAuth0()` returns Vue refs — use `.value` in `<script>`, template unwraps automatically |
 | localStorage treated as persistent on mobile | Use refresh tokens (`useRefreshTokens: true`) for reliable token persistence |
-| iOS SSO not working | SFSafariViewController doesn't share cookies with Safari on iOS 11+; this is expected |
-| Not testing on physical device | Always test auth flows on a physical device; simulators may not handle deep links correctly |
 
 ## WebAuth Method
 

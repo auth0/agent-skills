@@ -155,11 +155,36 @@ export default config;
 
 ### iOS: URL Scheme Registration
 
-No additional URL scheme registration needed for Capacitor — the deep link uses the app's bundle ID as the scheme, which Capacitor handles automatically.
+Add a custom URL scheme to `ios/App/App/Info.plist` so iOS can route the Auth0 callback deep link back to the app:
+
+```xml
+<key>CFBundleURLTypes</key>
+<array>
+  <dict>
+    <key>CFBundleURLSchemes</key>
+    <array>
+      <string>YOUR_PACKAGE_ID</string>
+    </array>
+  </dict>
+</array>
+```
+
+Replace `YOUR_PACKAGE_ID` with the `appId` from `capacitor.config.ts` (e.g., `com.example.myapp`).
 
 ### Android: URL Scheme Registration
 
-Capacitor handles deep link registration automatically via the `appId` in `capacitor.config.ts`. Ensure the `appId` matches the `applicationId` in `android/app/build.gradle`.
+Add an intent filter to `android/app/src/main/AndroidManifest.xml` inside the main `<activity>` to handle the custom scheme callback:
+
+```xml
+<intent-filter>
+  <action android:name="android.intent.action.VIEW" />
+  <category android:name="android.intent.category.DEFAULT" />
+  <category android:name="android.intent.category.BROWSABLE" />
+  <data android:scheme="YOUR_PACKAGE_ID" />
+</intent-filter>
+```
+
+Replace `YOUR_PACKAGE_ID` with the `appId` from `capacitor.config.ts`. Ensure the `appId` matches the `applicationId` in `android/app/build.gradle`.
 
 ## Auth0 Dashboard Configuration
 
