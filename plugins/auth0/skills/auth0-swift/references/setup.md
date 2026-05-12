@@ -2,42 +2,106 @@
 
 ## Auth0 Configuration
 
-> **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt.
-> - **If credentials are provided:** Write `Auth0.plist` directly with those values and proceed to "Post-Setup Steps".
-> - **If no credentials are provided:** Run the bootstrap script below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
-
-### Bootstrap Script
-
-> **Agent instruction:** Run these checks before the script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+> **Agent instruction:** Check whether an `Auth0.plist` already exists in the project directory.
+> - **If `Auth0.plist` exists:** Read it to extract `ClientId` and `Domain`, then proceed to "Post-Setup Steps".
+> - **If no `Auth0.plist` exists:** Ask the user via `AskUserQuestion` which setup path they prefer:
+>   - **Automatic (Auth0 CLI)** — creates the application, callback URLs, and database connection via the CLI.
+>   - **Manual** — the user provides a pre-configured `Auth0.plist` file from the Auth0 Dashboard.
 >
-> 1. **Check Node.js**: `node --version`. If missing or below 20, install it: `brew install node`.
-> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
-> 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
+> If the user chooses **manual**, follow [Manual Setup](#manual-setup-user-provided-auth0plist).
+> If the user chooses **automatic**, follow the section below.
+
+### Automated Setup via Auth0 CLI
+
+> **Agent instruction:** Run these pre-flight checks. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+>
+> **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands, redirect output to a temporary file:
+> ```bash
+> auth0 <command> --json --no-input > /tmp/auth0-output.json 2>&1
+> ```
+> Then use the Read tool to extract values and write them directly into `Auth0.plist` or other config files — never echo them in response text or terminal. When confirming the active tenant with the user, mask the domain (e.g., `your-te****.us.auth0.com`).
+>
+> **Pre-flight checks:**
+>
+> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
+> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input > /tmp/auth0-tenants.txt 2>&1`. Read the file to check the result. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
-> 4. **Confirm active tenant**: Parse the `→` line from the CSV output. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
->    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 3.
+> 3. **Confirm active tenant**: Redirect tenant list output to a file and read it. Parse the `→` line to extract the domain. Tell the user using a masked format: _"Your active Auth0 tenant is: `your-te****.us.auth0.com`. Is this correct? (Recommend using a development/test tenant rather than production.)"_ — mask all but the first 7 characters of the subdomain.
+>    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 2.
 >
-> Once confirmed, run:
-> ```bash
-> cd <path-to-skill>/auth0-swift/scripts
-> npm install
-> node bootstrap.mjs <path-to-xcode-project>
-> ```
+> **Detect project settings:**
 >
-> If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run. Retry up to 3 times.
-> Only if the script keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID, then write `Auth0.plist` with those values.
+> 4. **Extract bundle identifier** from `project.pbxproj`: search for `PRODUCT_BUNDLE_IDENTIFIER`, skip values containing `$(` or `Tests` or `NO`.
+> 5. **Extract Team ID** (optional): search for `DEVELOPMENT_TEAM` in `project.pbxproj` — a 10-character alphanumeric value (e.g. `ABC12DE34F`). If not found, proceed without it (will prompt later if needed for Universal Links).
+>
+> **Create the Auth0 application:**
+>
+> 6. **Create a Native application** with both HTTPS and custom scheme callback URLs:
+>    ```bash
+>    auth0 apps create \
+>      --name "BUNDLE_ID-ios" \
+>      --type native \
+>      --auth-method none \
+>      --callbacks "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>      --logout-urls "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>      --json \
+>      --no-input > /tmp/auth0-app-created.json 2>&1
+>    ```
+>    Read `/tmp/auth0-app-created.json` to extract `client_id`. Do not display the file contents in the terminal.
+>
+> 7. **Set up database connection**: Check if `Username-Password-Authentication` already exists and has the new client enabled:
+>    ```bash
+>    auth0 api get connections --no-input > /tmp/auth0-connections.json 2>&1
+>    ```
+>    Read `/tmp/auth0-connections.json` to check existing connections.
+>    - If the connection does not exist, create it:
+>      ```bash
+>      auth0 api post connections \
+>        --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}' \
+>        --no-input > /dev/null 2>&1
+>      ```
+>    - If it exists but the client is not in `enabled_clients`, update it:
+>      ```bash
+>      auth0 api patch connections/CONNECTION_ID \
+>        --data '{"enabled_clients":["EXISTING_CLIENT_1","EXISTING_CLIENT_2","CLIENT_ID"]}' \
+>        --no-input > /dev/null 2>&1
+>      ```
+>    - If it exists and already includes the client, skip this step.
+>
+> 8. **Configure Device Settings** (for Universal Links — Auth0 hosts `apple-app-site-association`):
+>    If Team ID was detected in step 5:
+>    ```bash
+>    auth0 api patch applications/CLIENT_ID \
+>      --data '{"mobile":{"ios":{"team_id":"TEAM_ID","app_bundle_identifier":"BUNDLE_ID"}}}' \
+>      --no-input > /dev/null 2>&1
+>    ```
+>    If Team ID was not detected, inform the user: _"Set your Apple Team ID in Auth0 Dashboard → App Settings → Advanced → Device Settings, or provide it now."_
+>
+> 9. **Write `Auth0.plist`** to the project directory (see template below).
+>
+> 10. **Write or merge entitlements file** — see [Associated Domains Setup](#associated-domains-setup-https-universal-links) below.
+>
+> 11. **Inform user of remaining manual Xcode steps:**
+>     - Add `Auth0.plist` to the app target in Xcode (File Inspector → Target Membership).
+>     - Register URL scheme: target → Info tab → URL Types → add `$(PRODUCT_BUNDLE_IDENTIFIER)`.
+>     - If a new entitlements file was created, set `CODE_SIGN_ENTITLEMENTS` in Build Settings.
+>
+> If any CLI command fails due to session expiry, ask the user to run `auth0 login` again, then retry. Retry up to 3 times.
+> Only if the CLI keeps failing after retries: fall back to the [Manual Setup](#manual-setup-user-provided-auth0plist) path — ask the user to provide their `Auth0.plist` file.
 
-The script will:
-1. Detect your bundle identifier from `project.pbxproj` (`PRODUCT_BUNDLE_IDENTIFIER`)
-2. Create a **Native** application in Auth0 Dashboard
-3. Register both `https://` and `{bundle}://` callback + logout URLs
-4. Set up a database connection (Username-Password-Authentication)
-5. Write `Auth0.plist` to your project directory
+### Manual Setup (User-Provided Auth0.plist)
 
-### Writing Auth0.plist (credentials already known)
+> **Agent instruction:** Do NOT ask the user to type or paste credentials (domain, client ID) into the terminal. Instead:
+>
+> 1. Ask the user via `AskUserQuestion`: _"Please place your `Auth0.plist` file (containing your ClientId and Domain) in the project root directory and let me know when it's ready. You can download it from Auth0 Dashboard → Applications → your app → Settings → scroll to bottom → 'Download Auth0.plist'."_
+> 2. Once the user confirms, verify the file exists in the project directory. If not found, search common locations (`~/Downloads/Auth0.plist`, project root).
+> 3. Read the file to validate it contains both `ClientId` and `Domain` keys. If malformed, ask the user to re-download it.
+> 4. If the file is not already in the correct location (alongside the `.xcodeproj`), copy it there.
+> 5. Inform the user to add it to the Xcode target: _"Add Auth0.plist to your app target in Xcode: select the file in Navigator → File Inspector → check your app target under Target Membership."_
+> 6. Proceed to "Post-Setup Steps".
 
-Use this only when credentials are explicitly provided by the user or obtained after bootstrap script failure.
+Expected `Auth0.plist` format:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -51,11 +115,6 @@ Use this only when credentials are explicitly provided by the user or obtained a
 </dict>
 </plist>
 ```
-
-Add the file to the Xcode project:
-1. Right-click on the project in Navigator → **Add Files to "YourProject"**
-2. Select `Auth0.plist`
-3. Ensure your app target is checked in the "Add to targets" list
 
 ---
 
@@ -75,14 +134,16 @@ This allows the Auth0 browser to redirect back to your app using the `{bundle}:/
 >
 > **Prerequisites:** Before configuring Xcode, Auth0 must be told your Apple Team ID and Bundle ID so it can host the `apple-app-site-association` file. Without this, Universal Links will not work even if the entitlements are correct.
 
-#### Step 1 — Configure Device Settings in Auth0 Dashboard
+#### Step 1 — Configure Device Settings via Auth0 CLI
 
 > **Agent instruction:**
-> 1. In Auth0 Dashboard → **Applications** → your app → **Settings**, scroll to the bottom and click **Show Advanced Settings**
-> 2. Select the **Device Settings** tab
-> 3. Enter the **Apple Team ID** — found at [developer.apple.com/account](https://developer.apple.com/account) under Membership Details
-> 4. Enter the **App Bundle Identifier** (e.g. `com.example.myapp`)
-> 5. Click **Save Changes**
+> Extract `DEVELOPMENT_TEAM` from `project.pbxproj` (10-character value, e.g. `ABC12DE34F`). If not found, ask via `AskUserQuestion`: _"What is your Apple Team ID? (developer.apple.com → Account → Membership Details)"_
+>
+> ```bash
+> auth0 api patch applications/CLIENT_ID \
+>   --data '{"mobile":{"ios":{"team_id":"TEAM_ID","app_bundle_identifier":"BUNDLE_ID"}}}' \
+>   --no-input > /dev/null 2>&1
+> ```
 >
 > Auth0 will now automatically host the Apple App Site Association file at:
 > `https://YOUR_AUTH0_DOMAIN/.well-known/apple-app-site-association`
@@ -225,7 +286,7 @@ After completing setup, verify:
 # 1. Build the project
 xcodebuild build -scheme YOUR_SCHEME -destination "platform=iOS Simulator,name=iPhone 16"
 
-# 2. Verify Auth0.plist is bundled (should print your domain)
+# 2. Verify Auth0.plist is bundled
 # Run app in Simulator and check Xcode console for Auth0 initialization
 ```
 

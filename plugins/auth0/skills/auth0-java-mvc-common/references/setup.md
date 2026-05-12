@@ -6,7 +6,9 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 
 ## Auth0 Configuration
 
-> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), use them directly — skip the bootstrap script and credential questions. Write environment variables and proceed with integration.
+> **Agent instruction:** Never echo Auth0 credentials in your response text. If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), write all provided values to `.env` using the Write tool and skip the credential questions.
+>
+> **Secret handling:** Never retrieve or parse `client_secret` from Auth0 CLI output unless the user explicitly asked. Do NOT read `.env` files — if the file exists, append credentials (preserve existing content). Always add the target file to `.gitignore` if not already present. Warn the user to check for duplicates if they may have already configured credentials.
 
 ### Option A: Automatic Setup (Auth0 CLI)
 
@@ -18,9 +20,10 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 >
 > 2. **Create the application using Auth0 CLI:**
 >    ```bash
->    auth0 apps create --name "My Java Web App" --type regular --callbacks http://localhost:3000/callback --logout-urls http://localhost:3000 --json
+>    auth0 apps create --name "My Java Web App" --type regular --callbacks http://localhost:3000/callback --logout-urls http://localhost:3000 --json --no-input
 >    ```
->    Then write the returned domain, client ID, and client secret to a `.env` file.
+>    From the JSON output, extract `domain` and `client_id`. Write these to `.env` using the Write tool.
+>    Do NOT extract `client_secret` from the CLI output — instruct the user to copy it into `.env` themselves.
 
 ### Option B: Manual Setup
 
@@ -29,7 +32,7 @@ Setup and configuration guide for Auth0 Java Servlet authentication using `com.a
 > 2. Client ID
 > 3. Client Secret
 >
-> Then write the `.env` file and proceed.
+> Write all provided values to `.env` using the Write tool. Then proceed.
 
 #### 1. Create Auth0 Application
 
@@ -58,7 +61,7 @@ Or manually in Auth0 Dashboard:
 auth0 connections list --json
 
 # Enable your app on the default database connection
-# (done automatically if using the bootstrap script)
+# (done automatically if using Option A: Automatic Setup)
 ```
 
 #### 3. Write Environment Configuration
@@ -70,6 +73,8 @@ AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 ```
+
+> **Agent instruction:** If the user provided all credentials, write them all to `.env`. If credentials came from `auth0 apps create`, write domain and client ID only — do not extract the secret from CLI output. If `.env` already exists, append (preserve existing content). Always add `.env` to `.gitignore` automatically.
 
 > **Agent instruction:** Java does not auto-load `.env` files. If you generate a `.env` file, also add [dotenv-java](https://github.com/cdimascio/dotenv-java) and use `Dotenv.load().get("AUTH0_DOMAIN")`, or instruct the user to run `source .env` before starting the server.
 
@@ -86,6 +91,8 @@ AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 ```
+
+> **Agent instruction:** If the user provides credentials (including the secret), write all values to `.env`. Never retrieve the secret from CLI output unless the user explicitly asked. If `.env` already exists, append (do not overwrite existing content). Always ensure `.env` is in `.gitignore`.
 
 **Important:** Add `.env` to `.gitignore` to prevent committing secrets:
 

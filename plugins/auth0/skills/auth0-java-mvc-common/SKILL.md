@@ -44,7 +44,13 @@ Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-a
 
 ## Quick Start Workflow
 
-> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), skip the credential questions. Store the provided values in a `.env` file (ensure it's added to `.gitignore`) or instruct the user to set them as environment variables. Never embed credential values directly in source code or repeat them back in responses. Only offer setup options when credentials are missing.
+> **Agent instruction:** Never echo Auth0 credentials in your response text. Write them directly into config files using the Write or Edit tool. If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), skip the credential questions. Store the provided values in a `.env` file (ensure it's added to `.gitignore`) or instruct the user to set them as environment variables. Never embed credential values directly in source code or repeat them back in responses. 
+
+> **Secret handling rules:**
+> - Never retrieve or parse `client_secret` from Auth0 CLI output unless the user explicitly asked you to.
+> - If the user provided the secret in their prompt, you may write it to `.env`.
+> - Do NOT read `.env` files (to avoid exposing existing secrets in context). If the file already exists, append credentials (preserve existing content). Warn the user to check for duplicate entries if they may have already configured Auth0 credentials.
+> - Always ensure the target file is in `.gitignore` — add the entry automatically if missing.
 
 ### 1. Install SDK
 
@@ -74,13 +80,13 @@ You need a **Regular Web Application** (not SPA or Native) in Auth0.
 >
 > > "How would you like to create the Auth0 application?
 > > 1. **Automated** — I'll run Auth0 CLI scripts that create the application and write the values to your config automatically.
-> > 2. **Manual** — You create the application yourself in the Auth0 Dashboard (or via `auth0 apps create`) and set the Domain, Client ID, and Client Secret as environment variables (or in a `.env` file).
+> > 2. **Manual** — You create the application yourself in the Auth0 Dashboard (or via `auth0 apps create`) and provide me the Domain, Client ID, and Client Secret.
 > >
 > > Which do you prefer? (1 = Automated / 2 = Manual)"
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for complete CLI scripts. The automated path writes configuration for you — skip Step 3 below and proceed directly to Step 4.
+**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for the complete Auth0 CLI steps. The automated path writes configuration for you — skip Step 3 below and proceed directly to Step 4.
 
 **If the user chose Manual**, follow the [Setup Guide](references/setup.md) (Manual Setup section). Then continue with Step 3.
 
@@ -115,7 +121,9 @@ AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 ```
 
-> **Agent instruction:** Java does not auto-load `.env` files. `System.getenv()` only reads OS-level environment variables. If you generate a `.env` file, you must also either: (1) add [dotenv-java](https://github.com/cdimascio/dotenv-java) as a dependency and use `Dotenv.load().get("AUTH0_DOMAIN")` instead of `System.getenv()`, or (2) instruct the user to run `source .env` before starting the server. Do not generate code that uses both a `.env` file and `System.getenv()` without a loading mechanism — the values will be `null`.
+> **Agent instruction:** If the user provided all three credentials (domain, client ID, client secret) in their prompt, write all of them to `.env`. If you created the application via `auth0 apps create`, write domain and client ID to `.env` but do NOT extract the client secret from CLI output — instruct the user to copy it into `.env` themselves. If `.env` already exists, append credentials (do not overwrite). Always add `.env` to `.gitignore` if not already present. Warn the user: _"Check your `.env` for duplicate Auth0 entries if you've configured it previously."_
+>
+> Java does not auto-load `.env` files. `System.getenv()` only reads OS-level environment variables. If you generate a `.env` file, you must also either: (1) add [dotenv-java](https://github.com/cdimascio/dotenv-java) as a dependency and use `Dotenv.load().get("AUTH0_DOMAIN")` instead of `System.getenv()`, or (2) instruct the user to run `source .env` before starting the server. Do not generate code that uses both a `.env` file and `System.getenv()` without a loading mechanism — the values will be `null`.
 
 **Important:** Domain must NOT include `https://`. The library constructs the issuer URL automatically.
 

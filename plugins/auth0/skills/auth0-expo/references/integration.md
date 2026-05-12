@@ -64,7 +64,7 @@ const credentials = await auth0.webAuth.authorize(
   { scope: 'openid profile email' },
   { customScheme: 'auth0sample' }
 );
-console.log('Access Token:', credentials.accessToken);
+// Access token available at credentials.accessToken
 ```
 
 ### Login with Audience (API Access)
@@ -334,7 +334,7 @@ const apiCredentials = await getApiCredentials(
   'https://second-api.example.com',
   'read:data write:data'
 );
-console.log('API Token:', apiCredentials.accessToken);
+// Access token available at apiCredentials.accessToken
 ```
 
 ## Custom Token Exchange (RFC 8693)
