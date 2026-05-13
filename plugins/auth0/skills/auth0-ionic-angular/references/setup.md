@@ -5,15 +5,31 @@
 > **Agent instruction:**
 >
 > **Credential check (always first):**
-> If the user's prompt already provides Auth0 credentials (domain and client ID), use them directly — skip the automated setup and do NOT call `AskUserQuestion`. Go straight to writing the SDK configuration and proceeding with integration.
+> If the user's prompt already provides Auth0 credentials (domain and client ID), use them directly — skip the setup choice, write the config file, and proceed with integration.
 >
-> **Option A: Automatic Setup (Auth0 CLI)** — only when credentials are NOT in the prompt
+> **When credentials are NOT in the prompt, always present the setup choice using `AskUserQuestion`:**
+>
+> ```
+> AskUserQuestion:
+>   question: "How would you like to configure Auth0 for your Ionic Angular app?"
+>   options:
+>     - label: "Automatic Setup (Recommended)"
+>       description: "Uses the Auth0 CLI to create a Native application, configure callback URLs, and store credentials in your project automatically."
+>     - label: "Manual Setup"
+>       description: "You provide your Auth0 Domain and Client ID, and the agent writes the configuration file for you."
+> ```
+>
+> ---
+>
+> ### Option A: Automatic Setup (Auth0 CLI)
+>
+> The agent executes Auth0 CLI commands to create the application, configure it, retrieve credentials, and write them to the project config file — fully hands-free.
 >
 > 1. **Pre-flight checks:**
 >    - Verify Node.js 20+: `node --version`
->    - Verify Auth0 CLI: `auth0 --version`
+>    - Verify Auth0 CLI installed: `auth0 --version`
 >    - Verify logged in: `auth0 tenants list --csv --no-input`
->    - If any check fails, guide user to install/login, or fall back to manual setup
+>    - If any check fails, guide the user to install (`brew install auth0/auth0-cli/auth0`) or login (`auth0 login`), then retry. If the user cannot resolve it, fall back to Manual Setup.
 >
 > 2. **Detect project and appId:**
 >    - Verify `package.json` contains `@angular/core`, `@ionic/angular`, and `@capacitor/core`
@@ -38,9 +54,8 @@
 >    ```
 >    Extract `client_id` from the JSON output.
 >
-> 5. **Ensure Username-Password-Authentication connection is enabled for the app:**
+> 5. **Enable Username-Password-Authentication connection for the app:**
 >    ```bash
->    # List connections to check if it exists
 >    auth0 api get connections
 >    ```
 >    - If the connection exists but doesn't include the new `client_id` in `enabled_clients`, update it:
@@ -52,29 +67,45 @@
 >      auth0 api post connections --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}'
 >      ```
 >
-> 6. **Write `src/environments/environment.ts`:**
->    ```typescript
->    export const environment = {
->      production: false,
->      auth0: {
->        domain: 'DOMAIN',
->        clientId: 'CLIENT_ID',
->        callbackUrl: 'PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback',
->        appId: 'PACKAGE_ID',
->      },
->    };
->    ```
->    Create the `src/environments/` directory if it doesn't exist.
+> 6. **Write config file** — see "Write Config File" section below.
 >
 > 7. **Print summary** with domain, client ID, appId, and callback URL.
 >
-> **Option B: Manual Setup** — only when credentials are NOT in the prompt
+> ---
 >
-> Ask the user for:
-> - Auth0 Domain (e.g., `your-tenant.auth0.com`)
-> - Client ID
+> ### Option B: Manual Setup
+>
+> The user provides their own Auth0 credentials, and the agent writes the configuration file for them.
+>
+> 1. Use `AskUserQuestion` to collect:
+>    - Auth0 Domain (e.g., `your-tenant.auth0.com`)
+>    - Client ID
+> 2. Read `appId` from `capacitor.config.ts` or `capacitor.config.json`.
+> 3. **Write config file** — see "Write Config File" section below.
 >
 > No Client Secret is needed — Native apps use PKCE.
+>
+> **Note:** With Manual Setup, the user is responsible for configuring Allowed Callback URLs, Allowed Logout URLs, and Allowed Origins in the Auth0 Dashboard (see "Auth0 Dashboard Configuration" section below).
+>
+> ---
+>
+> ### Write Config File (both paths)
+>
+> Create the `src/environments/` directory if it doesn't exist, then write `src/environments/environment.ts`:
+>
+> ```typescript
+> export const environment = {
+>   production: false,
+>   auth0: {
+>     domain: 'DOMAIN',
+>     clientId: 'CLIENT_ID',
+>     callbackUrl: 'PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback',
+>     appId: 'PACKAGE_ID',
+>   },
+> };
+> ```
+>
+> Replace `DOMAIN`, `CLIENT_ID`, and `PACKAGE_ID` with the actual values obtained from the chosen setup path.
 
 ## Auth0 Dashboard Configuration
 
