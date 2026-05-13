@@ -74,10 +74,11 @@ npx clawhub install auth0-fastify
 npx clawhub install auth0-fastify-api
 npx clawhub install auth0-react-native
 npx clawhub install auth0-android
-npx clawbub install auth0-swift
+npx clawhub install auth0-swift
 npx clawhub install auth0-aspnetcore-api
-npx clawhub install auth0-vue-ionic
-npx clawhub install auth0-angular-ionic
+npx clawhub install auth0-ionic-react
+npx clawhub install auth0-ionic-angular
+npx clawhub install auth0-ionic-vue
 ```
 
 Or browse and install from the [ClawHub web UI](https://clawhub.ai) — search for "auth0".
@@ -95,7 +96,7 @@ You don't pick skills manually — framework detection handles it.
 
 ## Skills
 
-24 skills covering web, mobile, and API authentication.
+26 skills covering web, mobile, and API authentication.
 
 | Skill | SDK | Frameworks |
 |-------|-----|------------|

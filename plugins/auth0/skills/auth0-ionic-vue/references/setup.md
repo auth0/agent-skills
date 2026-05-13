@@ -4,10 +4,14 @@
 
 > **Agent instruction:**
 >
-> **Check if credentials are already provided in the user's prompt:**
-> If the prompt contains Auth0 domain and client ID, use them directly — skip to "SDK Installation" below. Do NOT call `AskUserQuestion` to re-confirm.
+> **IMPORTANT — Never display credentials:** After obtaining credentials from the CLI or user input, write them directly into config files. Do NOT echo, print, or display the domain, client ID, or any credential values in conversation output.
 >
-> **If credentials are NOT provided:** Follow the "Auth0 CLI Automated Setup" steps below to create the Auth0 application. Do NOT offer manual Dashboard setup or ask the user to create an application themselves.
+> Always ask the user to choose between automatic and manual setup using `AskUserQuestion`:
+> _"How would you like to configure Auth0 for this Ionic Vue project?"_
+>   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create a Native application, configure callback URLs, and store credentials in the project `.env` file automatically
+>   - **Manual setup** — you provide an existing `.env` file or Auth0 credentials (domain, client ID) and the agent writes them to the project config
+>
+> **If credentials are already provided in the user's prompt:** Use them directly — skip to "SDK Installation" below. Do NOT call `AskUserQuestion` to re-confirm.
 
 ### Auth0 CLI Automated Setup
 
@@ -161,16 +165,24 @@
 >
 > ---
 >
-> #### Step H — Confirm setup to user
+> #### Step H — Confirm setup to user (never display credentials)
 >
 > After completing all steps, tell the user:
-> - _"Auth0 application created and configured:"_
-> - _"Domain: `AUTH0_DOMAIN`"_
-> - _"Client ID: `AUTH0_CLIENT_ID`"_
-> - _"Package ID: `PACKAGE_ID`"_
-> - _"Callback URL: `PACKAGE_ID://AUTH0_DOMAIN/capacitor/PACKAGE_ID/callback`"_
-> - _"`.env` has been written with `VITE_AUTH0_DOMAIN` and `VITE_AUTH0_CLIENT_ID`."_
+> - _"Auth0 application created and configured successfully."_
+> - _"Credentials have been written to `.env` (`VITE_AUTH0_DOMAIN` and `VITE_AUTH0_CLIENT_ID`)."_
 > - _"`src/main.ts` reads credentials from `import.meta.env`."_
+>
+> **Do NOT display the actual domain, client ID, or callback URL values.** Only confirm that the setup succeeded and where the credentials were saved.
+>
+> If the CLI keeps failing after retries, fall back to **Manual Setup** below.
+
+### Manual Setup (User-Provided Configuration)
+
+> **Agent instruction:** Ask the user to provide their Auth0 configuration. Accept either:
+> - **An `.env` file path** — read the file to extract the Auth0 domain and client ID, then copy or reference it in the project.
+> - **Direct credentials** — ask using `AskUserQuestion`: _"Please provide your Auth0 Domain and Client ID."_
+>
+> Once credentials are obtained, write them to the project `.env` file using `VITE_AUTH0_DOMAIN` and `VITE_AUTH0_CLIENT_ID` variable names. **Do NOT display the credentials in conversation output.**
 
 ### Callback URL Format
 
