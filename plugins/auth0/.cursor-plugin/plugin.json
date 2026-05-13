@@ -2,7 +2,7 @@
   "name": "auth0",
   "displayName": "Auth0",
   "version": "1.0.0",
-  "description": "Auth0 skills for quickstarts, migration, MFA, and framework-specific SDK integrations for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Go, Swift, Android, ASP.NET Core, React Native, Expo and Ionic Angular (Capacitor).",
+  "description": "Auth0 skills for quickstarts, migration, MFA, and framework-specific SDK integrations for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Go, Swift, Android, ASP.NET Core, React Native, Expo Ionic Vue (Capacitor), Ionic React (Capacitor) and Ionic Angular (Capacitor).",
   "author": {
     "name": "Auth0",
     "email": "support@auth0.com"
@@ -31,6 +31,8 @@
     "dotnet",
     "ionic",
     "ionic-angular",
+    "ionic-react",
+    "ionic-vue",
     "capacitor",
     "react-native",
     "expo",
