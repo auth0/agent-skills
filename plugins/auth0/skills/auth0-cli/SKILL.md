@@ -72,6 +72,7 @@ Create or inspect Auth0 applications (client ID, secret, callback URLs, app type
 
 ```bash
 auth0 apps create --name "My SPA" --type spa \
+  --auth-method None \
   --callbacks "http://localhost:3000" \
   --logout-urls "http://localhost:3000" \
   --origins "http://localhost:3000" --json

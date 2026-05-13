@@ -120,6 +120,7 @@ auth0 apps show <client-id> --reveal-secrets --json-compact
 ```bash
 # SPA (React, Vue, Angular — browser-only, no backend)
 auth0 apps create --name "My SPA" --type spa \
+  --auth-method None \
   --callbacks "http://localhost:3000" \
   --logout-urls "http://localhost:3000" \
   --origins "http://localhost:3000" \
@@ -136,7 +137,7 @@ auth0 apps create --name "My Web App" --type regular \
 auth0 apps create --name "My API Service" --type m2m --json
 
 # Native (iOS, Android, React Native)
-auth0 apps create --name "My Mobile App" --type native --json
+auth0 apps create --name "My Mobile App" --type native --auth-method None --json
 
 # Resource Server (API + client in one entity)
 auth0 apps create --name "My API Client" --type resource_server \
