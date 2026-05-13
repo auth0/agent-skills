@@ -4,12 +4,14 @@
 
 > **Agent instruction:**
 >
-> **Check if credentials are already provided in the user's prompt:**
-> If the prompt contains Auth0 domain and client ID, use them directly — skip to "SDK Installation" below. Do NOT call `AskUserQuestion` to re-confirm.
+> **IMPORTANT — Never display credentials:** After obtaining credentials from the CLI or user input, write them directly into config files. Do NOT echo, print, or display the domain, client ID, or any credential values in conversation output.
 >
-> **If credentials are NOT provided:** Create the Auth0 application using the CLI commands below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
+> Always ask the user to choose between automatic and manual setup using `AskUserQuestion`:
+> _"How would you like to configure Auth0 for this Ionic React project?"_
+>   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create a Native application, configure callback URLs, and store credentials in the project config files automatically
+>   - **Manual setup** — you provide an existing `.env` file or Auth0 credentials (domain, client ID) and the agent writes them to the project config
 
-### Auth0 CLI Setup
+### Automatic Setup (Auth0 CLI)
 
 > **Agent instruction:** Run these pre-flight checks before creating the Auth0 application. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
@@ -38,11 +40,19 @@
 > ```
 > Parse the JSON output to extract `client_id` and `domain` (the tenant domain).
 >
-> **Step C — Use credentials in code:**
-> Use the `client_id` and `domain` from Step B when configuring `Auth0Provider` in the app (see [Integration Patterns](./integration.md)).
+> **Step C — Write credentials to config files (never display them):**
+> Write the `client_id` and `domain` from Step B directly into the project `.env` file. Detect whether the project uses Vite (`VITE_` prefix) or CRA (`REACT_APP_` prefix) and use the appropriate variable names. **Do NOT echo, print, or display the domain, client ID, or any credential values in your conversation output.** Simply confirm that the Auth0 app was created and credentials were saved, without showing the actual values.
 >
 > If any CLI command fails due to session expiry, ask the user to run `auth0 login` again, then retry. Retry up to 3 times.
-> Only if the CLI keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID.
+> Only if the CLI keeps failing after retries: fall back to **Manual Setup** below.
+
+### Manual Setup (User-Provided Configuration)
+
+> **Agent instruction:** Ask the user to provide their Auth0 configuration. Accept either:
+> - **An `.env` file path** — read the file to extract the Auth0 domain and client ID, then copy or reference it in the project.
+> - **Direct credentials** — ask using `AskUserQuestion`: _"Please provide your Auth0 Domain and Client ID."_
+>
+> Once credentials are obtained, write them to the project `.env` file. Detect whether the project uses Vite (`VITE_` prefix) or CRA (`REACT_APP_` prefix) and use the appropriate variable names. **Do NOT display the credentials in conversation output.**
 
 ### Callback URL Format
 

@@ -45,26 +45,24 @@ Add Auth0 authentication to Ionic React applications using Capacitor. This skill
 
 ## Quick Start Workflow
 
-> **Agent instruction:** Follow these steps in order. If the user's prompt already provides Auth0 credentials (domain, client ID), use them directly — skip the CLI setup. When credentials are missing, always use the Auth0 CLI to create the application.
+> **Agent instruction:** Follow these steps in order. Always ask the user to choose between automatic and manual setup before configuring Auth0.
+>
+> **IMPORTANT — Never display credentials:** After obtaining Auth0 credentials (domain, client ID) from the CLI or user input, write them directly into the project config files (`.env`, source code, etc.). Do NOT echo, print, or display the domain, client ID, or any other credential values in your conversation output. Simply confirm that the Auth0 application was created and credentials were saved to the config file, without showing the actual values.
 
 > **Agent instruction:** Check if the codebase already has an existing provider or auth wrapper. Search for existing login/logout handlers, auth buttons, or authentication-related UI to reuse. If found, integrate Auth0 into those existing components rather than creating new ones.
 
-### Step 1: Install Dependencies
+### Step 1: Configure Auth0
 
-```bash
-npm install @auth0/auth0-react @capacitor/browser @capacitor/app
-npx cap sync
-```
-
-### Step 2: Configure Auth0
-
-> **Agent instruction:**
-> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Use them directly and skip to Step 3.
-> - **If no credentials are provided:** Create an Auth0 application using the CLI — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
+> **Agent instruction:** Always ask the user how they want to configure Auth0 using `AskUserQuestion`:
+> _"How would you like to configure Auth0 for this Ionic React project?"_
+>   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create a Native application, configure callback URLs, and store credentials in the project config files automatically
+>   - **Manual setup** — you provide an existing `.env` file or Auth0 credentials (domain, client ID) and the agent writes them to the project config
 >
-> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and CLI commands.
->
-> **Create the application and configure callback URLs via Auth0 CLI:**
+> Follow the matching section below based on their choice.
+
+#### Automatic Setup
+
+> **Agent instruction:** Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and CLI commands.
 >
 > 1. Detect the package ID from `capacitor.config.ts` (`appId` field).
 > 2. Get the Auth0 domain from the active tenant: `auth0 tenants list --csv --no-input` (parse the `→` line).
@@ -79,10 +77,26 @@ npx cap sync
 >      --json \
 >      --no-input
 >    ```
->    Parse the JSON output to extract `client_id`.
+>    Parse the JSON output to extract `client_id`. **Do NOT display the extracted credentials (domain, client ID) in your response — write them directly into the project config files.**
+> 4. Write the extracted `domain` and `client_id` to the project `.env` file. Detect whether the project uses Vite (`VITE_` prefix) or CRA (`REACT_APP_` prefix) and use the appropriate variable names.
 >
 > If any CLI command fails due to session expiry, ask the user to run `auth0 login` again, then retry up to 3 times.
-> Only if the CLI keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID.
+> Only if the CLI keeps failing after retries: fall back to **Manual Setup** below.
+
+#### Manual Setup
+
+> **Agent instruction:** Ask the user to provide their Auth0 configuration. Accept either:
+> - **An `.env` file path** — read the file to extract the Auth0 domain and client ID, then copy or reference it in the project.
+> - **Direct credentials** — ask using `AskUserQuestion`: _"Please provide your Auth0 Domain and Client ID."_
+>
+> Once credentials are obtained, write them to the project `.env` file. Detect whether the project uses Vite (`VITE_` prefix) or CRA (`REACT_APP_` prefix) and use the appropriate variable names. **Do NOT display the credentials in conversation output.**
+
+### Step 2: Install Dependencies
+
+```bash
+npm install @auth0/auth0-react @capacitor/browser @capacitor/app
+npx cap sync
+```
 
 ### Step 3: Set Up Auth0Provider
 
