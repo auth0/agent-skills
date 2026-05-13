@@ -42,7 +42,9 @@ Add authentication to an Ionic Angular application using the `@auth0/auth0-angul
 
 ## Quick Start Workflow
 
-> **Agent instruction:** Follow these steps in order. If the user's prompt already provides Auth0 credentials (domain, client ID), use them directly — skip the setup choice and `AskUserQuestion`, write the config file, and proceed. When credentials are missing, always use `AskUserQuestion` to let the user choose between Automatic Setup and Manual Setup before proceeding.
+> **Agent instruction:** Follow these steps in order. **Always** use `AskUserQuestion` to let the developer choose between Automatic Setup and Manual Setup before proceeding — even if credentials are already provided in the prompt.
+>
+> **SECURITY — Never display credentials:** After obtaining Auth0 credentials (domain, client ID) via the CLI or from a file, NEVER print, echo, or display them in your text output. Write them directly to the config file (`src/environments/environment.ts`) silently. Do NOT produce output like "Domain: xxx" or "Client ID: yyy". Instead, confirm that the config file has been written and tell the user where to find it.
 >
 > **UI reuse:** Before creating new login/logout components, search the existing project for login/logout handlers or buttons. If found, hook Auth0 into the existing UI rather than creating duplicate components.
 
@@ -54,9 +56,8 @@ npm install @auth0/auth0-angular @capacitor/browser @capacitor/app
 
 ### Step 2: Configure Auth0
 
-> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain and client ID), skip the setup choice — use them directly and write the config file. Otherwise, **always** use `AskUserQuestion` to let the user choose between Automatic and Manual setup:
+> **Agent instruction:** **Always** present the setup choice using `AskUserQuestion` — even if the user has already provided credentials:
 >
-> **Present this choice:**
 > ```
 > AskUserQuestion:
 >   question: "How would you like to configure Auth0 for your Ionic Angular app?"
@@ -64,81 +65,10 @@ npm install @auth0/auth0-angular @capacitor/browser @capacitor/app
 >     - label: "Automatic Setup (Recommended)"
 >       description: "Uses the Auth0 CLI to create a Native application, configure callback URLs, and store credentials in your project automatically."
 >     - label: "Manual Setup"
->       description: "You provide your Auth0 Domain and Client ID, and the agent writes the configuration file for you."
+>       description: "You provide an .env file with your Auth0 Domain and Client ID, and the agent reads it and writes the project configuration for you."
 > ```
 >
-> **Option A — Automatic Setup (Auth0 CLI):**
->
-> 1. **Pre-flight checks:**
->    - Verify Node.js 20+: `node --version`
->    - Verify Auth0 CLI installed: `auth0 --version`
->    - Verify logged in: `auth0 tenants list --csv --no-input`
->    - If any check fails, guide the user to install (`brew install auth0/auth0-cli/auth0`) or login (`auth0 login`), then retry. If the user cannot resolve it, fall back to Manual Setup.
->
-> 2. **Detect project and appId:**
->    - Verify `package.json` contains `@angular/core`, `@ionic/angular`, and `@capacitor/core`
->    - Read `appId` from `capacitor.config.ts` (match `appId: 'com.example.app'`) or `capacitor.config.json`
->
-> 3. **Get the active tenant domain:**
->    ```bash
->    auth0 tenants list --csv --no-input
->    ```
->    Parse the line with `→` to get the active domain.
->
-> 4. **Create a Native Auth0 application:**
->    ```bash
->    auth0 apps create \
->      --name "PROJECT_NAME-ionic-angular" \
->      --type native \
->      --auth-method none \
->      --callbacks "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
->      --logout-urls "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
->      --origins "capacitor://localhost,http://localhost" \
->      --json --no-input
->    ```
->    Extract `client_id` from the JSON output.
->
-> 5. **Enable Username-Password-Authentication connection for the app:**
->    ```bash
->    auth0 api get connections
->    ```
->    - If the connection exists but doesn't include the new `client_id` in `enabled_clients`, update it:
->      ```bash
->      auth0 api patch "connections/CONNECTION_ID" --data '{"enabled_clients":["EXISTING_IDS","NEW_CLIENT_ID"]}'
->      ```
->    - If it doesn't exist, create it:
->      ```bash
->      auth0 api post connections --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}'
->      ```
->
-> 6. **Write config file** — see step below.
->
-> 7. **Print summary** with domain, client ID, appId, and callback URL.
->
-> **Option B — Manual Setup:**
->
-> 1. Use `AskUserQuestion` to collect:
->    - Auth0 Domain (e.g., `your-tenant.auth0.com`)
->    - Client ID
-> 2. Read `appId` from `capacitor.config.ts` or `capacitor.config.json`.
-> 3. **Write config file** — see step below.
->
-> **Write config file (both paths):**
->
-> Create `src/environments/environment.ts` (and the `src/environments/` directory if needed):
-> ```typescript
-> export const environment = {
->   production: false,
->   auth0: {
->     domain: 'DOMAIN',
->     clientId: 'CLIENT_ID',
->     callbackUrl: 'PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback',
->     appId: 'PACKAGE_ID',
->   },
-> };
-> ```
->
-> See [Setup Guide](./references/setup.md) for full details on both paths.
+> Follow the chosen path in the [Setup Guide](./references/setup.md) which has the full step-by-step instructions for both options.
 
 **Auth0 Dashboard settings (Native application type):**
 
