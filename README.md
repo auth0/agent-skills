@@ -76,6 +76,7 @@ npx clawhub install auth0-fastify
 npx clawhub install auth0-fastify-api
 npx clawhub install auth0-react-native
 npx clawhub install auth0-android
+npx clawbub install auth0-swift
 npx clawhub install auth0-aspnetcore-api
 npx clawhub install auth0-vue-ionic
 npx clawhub install auth0-angular-ionic
