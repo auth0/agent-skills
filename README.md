@@ -72,6 +72,7 @@ npx clawhub install auth0-angular
 npx clawhub install auth0-express
 npx clawhub install auth0-fastify
 npx clawhub install auth0-fastify-api
+npx clawhub install auth0-hono
 npx clawhub install auth0-react-native
 npx clawhub install auth0-android
 npx clawhub install auth0-swift
@@ -96,7 +97,7 @@ You don't pick skills manually — framework detection handles it.
 
 ## Skills
 
-26 skills covering web, mobile, and API authentication.
+27 skills covering web, mobile, and API authentication.
 
 | Skill | SDK | Frameworks |
 |-------|-----|------------|
@@ -113,6 +114,7 @@ You don't pick skills manually — framework detection handles it.
 | **Express** | [`express-openid-connect`](https://github.com/auth0/express-openid-connect) | Express.js |
 | **Flask** | [`auth0-server-python`](https://github.com/auth0/auth0-server-python) | Flask |
 | **Fastify** | [`@auth0/auth0-fastify`](https://github.com/auth0/auth0-fastify) | Fastify |
+| **Hono** | [`@auth0/auth0-hono`](https://github.com/auth0/auth0-hono) | Hono (Node.js, Cloudflare Workers, Deno, Bun) |
 | **Java Servlet** | [`mvc-auth-commons`](https://github.com/auth0/auth0-java-mvc-common) | Java Servlet |
 | **Express API** | [`express-oauth2-jwt-bearer`](https://github.com/auth0/node-oauth2-jwt-bearer) | Node.js/Express APIs |
 | **Fastify API** | [`@auth0/auth0-fastify`](https://github.com/auth0/auth0-fastify) | Fastify APIs |
