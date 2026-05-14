@@ -1,0 +1,64 @@
+[
+  {
+    "type": "judge",
+    "description": "Creates safety backup before modifying code",
+    "question": "Does the solution verify a clean git state and/or create a backup branch before making any code changes? Look for: git status check, git checkout -b backup, git stash, or any explicit backup step.",
+    "examples": "PASS: Runs git status to verify clean state, then creates a backup branch before proceeding.\nPASS: Checks git status and confirms clean working tree before making changes.\nFAIL: Immediately starts editing files without any git safety check.\nFAIL: Mentions backup in passing but never actually runs git commands.",
+    "framework": "swift"
+  },
+  {
+    "type": "judge",
+    "description": "Detects current version and determines target version dynamically",
+    "question": "Does the solution detect the current Auth0.swift version from the project files (Package.swift, Podfile, Cartfile, Package.resolved) and determine the target version by checking GitHub releases or the user's request? It should NOT hardcode a specific target version without verification.",
+    "examples": "PASS: Reads Package.swift to find current version '2.0.0', then checks GitHub releases for latest major.\nPASS: Finds version in Podfile.lock and confirms target with user.\nFAIL: Assumes target version without checking releases or asking user.\nFAIL: Skips version detection entirely.",
+    "framework": "swift"
+  },
+  {
+    "type": "judge",
+    "description": "Fetches or references official migration guide before making changes",
+    "question": "Does the solution fetch the official migration guide (V{N}_MIGRATION_GUIDE.md, CHANGELOG, or release notes) from the Auth0.swift GitHub repository before applying breaking changes? The guide should be retrieved dynamically, not hardcoded.",
+    "examples": "PASS: Fetches V3_MIGRATION_GUIDE.md from the auth0/Auth0.swift repo using curl or similar.\nPASS: Checks release notes on GitHub for breaking changes.\nFAIL: Applies changes from memory without fetching any official documentation.\nFAIL: Only reads the user's code and guesses what needs to change.",
+    "framework": "swift"
+  },
+  {
+    "type": "matches",
+    "pattern": "from:\\s*\"[3-9]\\.|~>\\s*[3-9]\\.|\"auth0/Auth0\\.swift\"\\s*~>\\s*[3-9]",
+    "description": "Updates dependency to a newer major version (v3+)"
+  },
+  {
+    "type": "judge",
+    "description": "Applies breaking changes from migration guide systematically",
+    "question": "Does the solution apply breaking changes by (1) searching for affected patterns across ALL Swift files, (2) applying the replacement from the migration guide, and (3) doing this for each breaking change category? It should NOT just fix one issue and stop.",
+    "examples": "PASS: Searches for clearSession, UserInfo, store returning Bool, etc. across all files and fixes each.\nPASS: Goes through breaking changes one category at a time, searching project-wide.\nFAIL: Only fixes the obvious errors in one file, misses occurrences in other files.\nFAIL: Applies random changes without referencing the migration guide.",
+    "framework": "swift"
+  },
+  {
+    "type": "not_contains",
+    "value": "client_secret",
+    "description": "Does not introduce client_secret in native app"
+  },
+  {
+    "type": "not_contains_any",
+    "values": ["UserDefaults.standard.set", "UserDefaults().set"],
+    "description": "Does not downgrade from CredentialsManager to UserDefaults"
+  },
+  {
+    "type": "judge",
+    "description": "Preserves existing functionality — does not remove login, logout, or user profile features",
+    "question": "Does the migrated code still implement login, logout, and user profile retrieval? The migration should update APIs but NOT remove any existing features. If an API was removed from the SDK, the solution should note it with a TODO or provide an alternative, not silently delete the functionality.",
+    "examples": "PASS: Login/logout/getUser all still exist with updated API calls.\nPASS: If Management API was removed, adds a TODO comment explaining the backend migration needed.\nFAIL: Removes getUser() entirely without explanation.\nFAIL: Removes logout because clearSession was renamed, instead of updating to the new name.",
+    "framework": "swift"
+  },
+  {
+    "type": "matches",
+    "pattern": "xcodebuild\\s+build|xcodebuild\\s+test|BUILD SUCCEEDED",
+    "description": "Attempts an xcodebuild to verify the migration compiles"
+  },
+  {
+    "type": "judge",
+    "description": "Presents summary of changes after migration",
+    "question": "Does the solution present a summary to the user after migration? This could be a git diff --stat, a list of changes made, TODO items for follow-up, or new features available. The user should know what changed and what to do next.",
+    "examples": "PASS: Shows git diff --stat and lists the breaking changes that were applied.\nPASS: Summarizes: 'Updated 3 files, renamed clearSession to logout, converted store/clear to throwing.'\nFAIL: Silently finishes without telling the user what was done.\nFAIL: Just says 'done' with no details.",
+    "framework": "swift"
+  }
+]
