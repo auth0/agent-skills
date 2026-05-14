@@ -72,7 +72,7 @@ Auth0-managed certificates are the default and recommended. Self-managed certifi
 
 ### Verification difference
 
-Self-managed domains use **TXT record verification** instead of CNAME. The skill's provider playbook handles CNAME creation; for TXT records, the same tier logic applies, with the record type swapped. The provider-specific instructions in [providers.md](providers.md) are identical except for the record type field.
+Self-managed domains use **TXT record verification** instead of CNAME. The skill's provider playbook handles CNAME creation; for TXT records, the same tier logic applies, with the record type swapped. The provider-specific instructions in the per-provider sub-files (see the router at [providers.md](providers.md)) are identical except for the record type field.
 
 See [Auth0-managed](https://auth0.com/docs/customize/custom-domains/auth0-managed-certificates) and [Self-managed](https://auth0.com/docs/customize/custom-domains/self-managed-certificates) for full configuration.
 

@@ -10,7 +10,7 @@
       "assertions": [
         "Invokes the auth0-branding skill",
         "Routes to capability 1 (Brand my tenant) directly from the intent, not via a picker",
-        "Checks for a stored Brandfetch key at ~/.config/auth0-branding/brandfetch.key before asking",
+        "Checks for a stored Brandfetch key at ${XDG_CONFIG_HOME:-$HOME/.config}/auth0-branding/brandfetch.key before asking",
         "If no key is present, asks once whether to paste / sign up / skip, and persists the decision",
         "Fills the four slots: primary color, logo URL, font family, page background (background defaults to white)",
         "Runs auth0 tenants list and surfaces the active tenant before writing",
@@ -159,7 +159,7 @@
         "Invokes the auth0-branding skill",
         "Routes to capability 1 (Brand my tenant)",
         "Runs GETs freely: tenants list, /branding, /branding/themes/default, etc.",
-        "Still collects intent-gathering answers (Brandfetch key prompt is asked, not skipped) but notes in the plan that the key save to ~/.config/auth0-branding/brandfetch.key will happen on approval",
+        "Still collects intent-gathering answers (Brandfetch key prompt is asked, not skipped) but notes in the plan that the key save to ${XDG_CONFIG_HOME:-$HOME/.config}/auth0-branding/brandfetch.key will happen on approval",
         "Produces a plan listing every write: PATCH /branding (body summary), GET + PATCH /branding/themes/{themeId} (full merged theme), local file writes with absolute paths",
         "Includes the active tenant name in the plan",
         "Calls ExitPlanMode once the plan is complete",

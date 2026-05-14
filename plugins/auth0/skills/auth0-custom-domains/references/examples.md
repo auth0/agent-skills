@@ -1,6 +1,6 @@
 # Auth0 Custom Domains: Management API Examples
 
-cURL patterns for the Auth0 API calls the skill makes (create the custom domain, trigger verification, poll status until `ready`), plus end-to-end CI/CD automation that stitches Auth0 together with a DNS provider. DNS-provider-specific calls live in [providers.md](providers.md).
+cURL patterns for the Auth0 API calls the skill makes (create the custom domain, trigger verification, poll status until `ready`), plus end-to-end CI/CD automation that stitches Auth0 together with a DNS provider. DNS-provider-specific calls live in the per-provider sub-files — [providers/cloudflare.md](providers/cloudflare.md), [providers/route53.md](providers/route53.md), [providers/azure-dns.md](providers/azure-dns.md), or [providers/manual.md](providers/manual.md); the router at [providers.md](providers.md) picks one based on the root domain's NS records.
 
 ## cURL
 

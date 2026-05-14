@@ -2,8 +2,21 @@
 
 Two artifacts:
 
-- **`evals.json`** — canonical eval spec in the repo-wide format: prompts, expected behavior, and per-eval assertions. This is the source of truth; use it when wiring the skill into a shared evals runner, or when reviewing what the skill is expected to do.
+- **`evals.json`** — canonical eval spec in the repo-wide format: prompts, expected behavior, and per-eval assertions. This is the source of truth; use it when wiring the skill into a shared evals runner, or when reviewing what the skill is expected to do. Shares the shape used by `auth0-cli/tests/evals.json` (also a routing/guidance skill).
 - **`run-regression.sh`** — lightweight bash harness for a quick routing sanity check after edits. Runs each prompt through `claude -p` in a fresh session and greps for a capability-name marker in the response. Not a full correctness check — it verifies that Claude loads the right capability, not that every assertion in `evals.json` holds.
+
+## Why no `graders.json` + `run-evals.mjs`
+
+Most other auth0 skills (`auth0-flask`, `auth0-spa-js`, etc.) ship a `graders.json` consumed by `tests/run-evals.mjs`, which scans a workspace directory for generated source files (`.py`, `.ts`, `.swift`, etc.) and greps them. That pattern fits **code-generating** skills — it is a file-contents check, not a response check.
+
+`auth0-custom-domains` is a **routing / guidance** skill: it does not generate code files. It runs `auth0 api ...` CLI calls and conversational text. There are no source files to grep. Running the existing `run-evals.mjs` against this skill would walk an empty workspace and fail every eval for the wrong reason.
+
+Options considered:
+1. Add `graders.json` and pipe transcript text into the workspace as a fake source file — brittle, obscures intent, and the existing runner's `file_contains` glob assumes real file extensions.
+2. Extend `run-evals.mjs` to grade response text — a bigger refactor than this PR should carry.
+3. Ship a routing-only harness (`run-regression.sh`) that greps skill-specific regexes against the `claude -p` response. Same pattern as the manual walk described in `auth0-cli/tests/evals.json`.
+
+This skill takes option 3. If we later extend the shared runner to support response-text grading, the regexes in `run-regression.sh` port over directly.
 
 ## When to run each
 

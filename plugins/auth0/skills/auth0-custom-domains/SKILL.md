@@ -8,6 +8,18 @@ metadata:
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
+    requires:
+      bins:
+        - auth0
+    os:
+      - darwin
+      - linux
+    install:
+      - id: brew
+        kind: brew
+        package: auth0/auth0-cli/auth0
+        bins: [auth0]
+        label: 'Install Auth0 CLI (brew)'
 ---
 
 # Auth0 Custom Domains
@@ -68,11 +80,11 @@ When this skill is invoked and the user is NOT asking about an error code, ask t
 
 | # | Capability | What it does |
 |---|---|---|
-| 1 | **Set up a custom domain** | End-to-end: create the domain in Auth0, detect the DNS provider, write the CNAME record (automated on Cloudflare / Route 53 / Azure; guided on other providers), verify ownership, and report what to update in the user's apps. Handles first-time setup and adding to MCD. See [references/capability-1-setup.md](references/capability-1-setup.md) |
-| 2 | **Troubleshoot verification** | Domain stuck in `pending_verification` or verification failing. Diagnostic ladder: compare DNS to expected, check for proxies / CNAME flattening / conflicting records / propagation / private-zone issues, then retry. See [references/capability-2-troubleshoot.md](references/capability-2-troubleshoot.md) |
-| 3 | **Manage existing domains** | Surgical edits on already-configured domains: set or change the default (for MCD), update TLS policy, configure the custom client IP header, set the relying party identifier for passkeys, manage per-domain metadata (up to 10 key-value pairs readable from Actions), list domains and show status. Intent-driven. Certificate type is fixed at create time; PATCH rejects `type` changes. See [references/capability-3-manage.md](references/capability-3-manage.md) |
-| 4 | **Remove a custom domain** | Delete a domain safely: warn if it's the default, surface dependent applications, delete in Auth0, clean up the CNAME in DNS. See [references/capability-4-remove.md](references/capability-4-remove.md) |
-| 5 | **Check domain health** | Read-only: list all custom domains, check DNS records match expected values, surface default-domain config, flag anything needing attention. Safe starter capability. See [references/capability-5-health.md](references/capability-5-health.md) |
+| 1 | **Set up a custom domain** | End-to-end: create the domain in Auth0, detect the DNS provider, write the CNAME record (automated on Cloudflare / Route 53 / Azure; guided on other providers), verify ownership, and report what to update in the user's apps. Handles first-time setup and adding to MCD. See [references/capability-setup.md](references/capability-setup.md) |
+| 2 | **Troubleshoot verification** | Domain stuck in `pending_verification` or verification failing. Diagnostic ladder: compare DNS to expected, check for proxies / CNAME flattening / conflicting records / propagation / private-zone issues, then retry. See [references/capability-troubleshoot.md](references/capability-troubleshoot.md) |
+| 3 | **Manage existing domains** | Surgical edits on already-configured domains: set or change the default (for MCD), update TLS policy, configure the custom client IP header, set the relying party identifier for passkeys, manage per-domain metadata (up to 10 key-value pairs readable from Actions), list domains and show status. Intent-driven. Certificate type is fixed at create time; PATCH rejects `type` changes. See [references/capability-manage.md](references/capability-manage.md) |
+| 4 | **Remove a custom domain** | Delete a domain safely: warn if it's the default, surface dependent applications, delete in Auth0, clean up the CNAME in DNS. See [references/capability-remove.md](references/capability-remove.md) |
+| 5 | **Check domain health** | Read-only: list all custom domains, check DNS records match expected values, surface default-domain config, flag anything needing attention. Safe starter capability. See [references/capability-health.md](references/capability-health.md) |
 
 Pick a capability, then follow the flow in its reference file. The **Prerequisites** and **Key Concepts** sections below apply across all capabilities.
 
@@ -128,7 +140,7 @@ Then re-confirm before proceeding. For mutating calls (create, PATCH, delete), r
 - **Tier 3 Azure DNS**: Azure CLI signed in. Verified with `az account show`.
 - **Tier 4 other**: no programmatic access; user manually adds the record in their provider's dashboard.
 
-**Plan requirements for automation**: None of the three automated tiers require a paid plan on the DNS provider side. Cloudflare DNS record CRUD via the MCP works on the Free plan (Free zones created after Sept 2024 cap at 200 DNS records per zone; Auth0's CNAME counts as one). Route 53 is pay-per-use (~$0.50/hosted zone/month + query costs, not in AWS free tier). Azure DNS is subscription-based with no tier gating; the signed-in identity needs the DNS Zone Contributor role. Full detail per tier in [references/providers.md](references/providers.md).
+**Plan requirements for automation**: None of the three automated tiers require a paid plan on the DNS provider side. Cloudflare DNS record CRUD via the MCP works on the Free plan (Free zones created after Sept 2024 cap at 200 DNS records per zone; Auth0's CNAME counts as one). Route 53 is pay-per-use (~$0.50/hosted zone/month + query costs, not in AWS free tier). Azure DNS is subscription-based with no tier gating; the signed-in identity needs the DNS Zone Contributor role. Full detail per tier in the per-provider sub-files under [references/providers/](references/providers/) (router: [references/providers.md](references/providers.md)).
 
 ### Credit card on file (Free-tier tenants)
 
@@ -143,13 +155,13 @@ Quick index; each entry links to the canonical treatment in the relevant capabil
 | Mistake | See |
 |---|---|
 | Assuming a 403 on create means plan upgrade | [api.md error codes](references/api.md#error-codes) |
-| Removing the CNAME after verification (breaks cert renewal) | [capability-5 interpreting results](references/capability-5-health.md#interpreting-results) |
-| Using a subdomain with passkeys without setting `relying_party_identifier` | [capability-3 RPID section](references/capability-3-manage.md#set-the-relying-party-identifier-passkeys) |
-| Trying to change certificate type via PATCH | [capability-3 scope note](references/capability-3-manage.md#scope-note) |
-| Enabling DNS proxy on the CNAME (Cloudflare orange cloud) | [capability-2 proxy check](references/capability-2-troubleshoot.md#2-check-for-dns-proxy) |
-| Enabling CNAME flattening on the zone | [capability-2 flattening check](references/capability-2-troubleshoot.md#3-check-for-cname-flattening) |
-| Deleting and recreating to "unstick" verification | [capability-2 what not to do](references/capability-2-troubleshoot.md#what-not-to-do) |
-| Not updating SDK `domain` / `issuerBaseURL` after verification | [capability-1 report next steps](references/capability-1-setup.md#report-next-steps) |
+| Removing the CNAME after verification (breaks cert renewal) | [capability-5 interpreting results](references/capability-health.md#interpreting-results) |
+| Using a subdomain with passkeys without setting `relying_party_identifier` | [capability-3 RPID section](references/capability-manage.md#set-the-relying-party-identifier-passkeys) |
+| Trying to change certificate type via PATCH | [capability-3 scope note](references/capability-manage.md#scope-note) |
+| Enabling DNS proxy on the CNAME (Cloudflare orange cloud) | [capability-2 proxy check](references/capability-troubleshoot.md#2-check-for-dns-proxy) |
+| Enabling CNAME flattening on the zone | [capability-2 flattening check](references/capability-troubleshoot.md#3-check-for-cname-flattening) |
+| Deleting and recreating to "unstick" verification | [capability-2 what not to do](references/capability-troubleshoot.md#what-not-to-do) |
+| Not updating SDK `domain` / `issuerBaseURL` after verification | [capability-1 report next steps](references/capability-setup.md#report-next-steps) |
 | Calling Management API via tenant domain under MCD | [advanced.md auth0-custom-domain header](references/advanced.md#the-auth0-custom-domain-header) |
 
 ## Related Skills
@@ -159,12 +171,12 @@ Quick index; each entry links to the canonical treatment in the relevant capabil
 
 ## References
 
-- [references/capability-1-setup.md](references/capability-1-setup.md): Set up a custom domain
-- [references/capability-2-troubleshoot.md](references/capability-2-troubleshoot.md): Troubleshoot verification
-- [references/capability-3-manage.md](references/capability-3-manage.md): Manage existing domains
-- [references/capability-4-remove.md](references/capability-4-remove.md): Remove a custom domain
-- [references/capability-5-health.md](references/capability-5-health.md): Check domain health
-- [references/providers.md](references/providers.md): DNS provider detection, tier-by-tier mechanics, per-registrar cheat sheet
+- [references/capability-setup.md](references/capability-setup.md): Set up a custom domain
+- [references/capability-troubleshoot.md](references/capability-troubleshoot.md): Troubleshoot verification
+- [references/capability-manage.md](references/capability-manage.md): Manage existing domains
+- [references/capability-remove.md](references/capability-remove.md): Remove a custom domain
+- [references/capability-health.md](references/capability-health.md): Check domain health
+- [references/providers.md](references/providers.md): DNS provider router — NS → provider map; links into per-provider sub-files under `references/providers/` (`cloudflare.md`, `route53.md`, `azure-dns.md`, `manual.md`). Open only the sub-file matching the detected provider.
 - [references/examples.md](references/examples.md): cURL samples plus end-to-end CI/CD automation and multi-environment patterns
 - [references/api.md](references/api.md): Endpoint reference, CLI commands, error codes, scopes
 - [references/advanced.md](references/advanced.md): MCD, default-domain, `auth0-custom-domain` header, self-managed certs, token `iss` behavior, verification troubleshooting deep-dive

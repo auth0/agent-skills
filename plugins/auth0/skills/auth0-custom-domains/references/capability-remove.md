@@ -202,11 +202,11 @@ Note the current CNAME target value before deletion; after deletion, the Managem
 
 ### Automated path (preferred)
 
-- **Tier 1 Cloudflare (via MCP)**: If the Cloudflare MCP is connected, `search("dns records")` then `execute()` a script that calls `cf.dns.records.delete(record_id)` for the CNAME at the target name. No user action needed.
-- **Tier 2 Route 53**: If AWS credentials are configured (`aws sts get-caller-identity` succeeds), run `aws route53 change-resource-record-sets` with action `DELETE` (requires the full record set to match). Use `list-resource-record-sets` first to get the exact current value, then poll `get-change` until `INSYNC`. No user action needed.
-- **Tier 3 Azure DNS**: If the Azure CLI is signed in (`az account show` succeeds), run `az network dns record-set cname delete --resource-group my-rg --zone-name example.com --name login --yes`. No user action needed.
+- **Tier 1 Cloudflare (via MCP)**: If the Cloudflare MCP is connected, `search("dns records")` then `execute()` a script that calls `cf.dns.records.delete(record_id)` for the CNAME at the target name. No user action needed. Full mechanics: [providers/cloudflare.md](providers/cloudflare.md).
+- **Tier 2 Route 53**: If AWS credentials are configured (`aws sts get-caller-identity` succeeds), run `aws route53 change-resource-record-sets` with action `DELETE` (requires the full record set to match). Use `list-resource-record-sets` first to get the exact current value, then poll `get-change` until `INSYNC`. No user action needed. Full mechanics including the exact-match DELETE gotcha: [providers/route53.md](providers/route53.md#delete-the-cname-record-the-remove-a-custom-domain-flow).
+- **Tier 3 Azure DNS**: If the Azure CLI is signed in (`az account show` succeeds), run `az network dns record-set cname delete --resource-group my-rg --zone-name example.com --name login --yes`. No user action needed. Full mechanics: [providers/azure-dns.md](providers/azure-dns.md).
 
-Full per-tier command examples live in [providers.md](providers.md).
+Open only the sub-file matching the detected provider; don't load all three.
 
 ### Manual fallback
 
@@ -226,7 +226,7 @@ Reply 'done' when removed so I can confirm the DNS record is gone, or 'skip' if
 you want to leave it in place (harmless but clutters your zone).
 ```
 
-Use the provider cheat-sheet in [providers.md](providers.md#per-provider-cheat-sheet) for the right deep-link and UI labels. On "done", run `dig +short CNAME login.example.com` to verify the record is gone; warn the user if it still resolves (propagation can take a few minutes).
+Use the provider cheat-sheet in [providers/manual.md](providers/manual.md#per-provider-cheat-sheet) for the right deep-link and UI labels. On "done", run `dig +short CNAME login.example.com` to verify the record is gone; warn the user if it still resolves (propagation can take a few minutes).
 
 ### Why automate by default
 

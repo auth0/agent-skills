@@ -8,6 +8,18 @@ metadata:
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
+    requires:
+      bins:
+        - auth0
+    os:
+      - darwin
+      - linux
+    install:
+      - id: brew
+        kind: brew
+        package: auth0/auth0-cli/auth0
+        bins: [auth0]
+        label: 'Install Auth0 CLI (brew)'
 ---
 
 # Auth0 Branding
@@ -62,7 +74,7 @@ When Claude Code is in plan mode, the skill's writes — PATCH/PUT/DELETE/POST a
 - Local file writes: Capability 4 backup JSON, Capability 1 Brandfetch-key save.
 - `auth0 test login` (it starts an auth flow in a browser — not a tenant mutation, but a side effect; defer it along with the writes).
 
-**Still do the interactive asks.** The Brandfetch-key prompt in Capability 1, the source/screens/locale prompts in Capability 3, the surface/backup prompts in Capability 4 — all still happen. Plan mode defers *execution*, not *intent gathering*. For any ask whose answer triggers a write (e.g., "paste a Brandfetch key"), collect the answer and note in the plan "will save to `~/.config/auth0-branding/brandfetch.key` on approval."
+**Still do the interactive asks.** The Brandfetch-key prompt in Capability 1, the source/screens/locale prompts in Capability 3, the surface/backup prompts in Capability 4 — all still happen. Plan mode defers *execution*, not *intent gathering*. For any ask whose answer triggers a write (e.g., "paste a Brandfetch key"), collect the answer and note in the plan "will save to `${XDG_CONFIG_HOME:-$HOME/.config}/auth0-branding/brandfetch.key` on approval."
 
 **Plan contents.** Produce a complete plan covering:
 - Target tenant (from `auth0 tenants list`) and the active-tenant confirmation.

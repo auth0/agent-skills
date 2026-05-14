@@ -69,14 +69,14 @@ See [examples.md](examples.md) for curl, node-auth0, and auth0-python code patte
 dig +short NS example.com
 ```
 
-Match the NS pattern against the table in [providers.md](providers.md#ns-pattern-to-provider-mapping) to select a tier:
+Match the NS pattern against the table in [providers.md](providers.md#ns-pattern-to-provider-mapping) to select a tier, then open **only** the matching sub-file:
 
-- **Tier 1 Cloudflare**: full automation via Cloudflare MCP
-- **Tier 2 AWS Route 53**: assisted via AWS CLI
-- **Tier 3 Azure DNS**: assisted via Azure CLI
-- **Tier 4 other**: guided manual record entry
+- **Tier 1 Cloudflare** → [providers/cloudflare.md](providers/cloudflare.md) (full automation via Cloudflare MCP)
+- **Tier 2 AWS Route 53** → [providers/route53.md](providers/route53.md) (assisted via AWS CLI)
+- **Tier 3 Azure DNS** → [providers/azure-dns.md](providers/azure-dns.md) (assisted via Azure CLI)
+- **Tier 4 other** → [providers/manual.md](providers/manual.md) (guided manual record entry)
 
-The per-tier mechanics (MCP pre-flight, CLI commands, record format, fallbacks) live in [providers.md](providers.md). Follow the tier section that matches, then return here for the verify step.
+Each sub-file is self-contained (plan requirements, pre-flight, create, error handling, fallback). Don't load every tier — load only the one that matches the detected NS pattern. Return here for the verify step once the record is written.
 
 ## Check for an existing record at the target name
 
@@ -93,7 +93,7 @@ Three outcomes:
 
 ## Write the CNAME record
 
-Execute the tier-specific flow from [providers.md](providers.md). For Tiers 2 and 3, wait for the provider to report propagation complete (Route 53: `INSYNC`; Azure: proceed after ~30s) before triggering Auth0 verification. For Tier 4, wait for the user to reply "done."
+Execute the tier-specific flow from the sub-file you opened above. For Tiers 2 and 3, wait for the provider to report propagation complete (Route 53: `INSYNC`; Azure: proceed after ~30s) before triggering Auth0 verification. For Tier 4, wait for the user to reply "done."
 
 ## Trigger Auth0 verification
 

@@ -167,6 +167,8 @@ Before writing, strip any key whose approved value is identical to the Auth0 def
 
 Never PUT without merging; PUT replaces the full object for that prompt/lang. The custom-text API is per-prompt, not per-screen, so screens under the same prompt share one PUT call.
 
+**Rate limits.** A multi-prompt, multi-locale rewrite can produce 20+ PUTs in quick succession. The Management API's default per-tenant write budget is a few hundred requests per minute, but concurrent writes are the real risk: run PUTs **sequentially**, not in parallel. If the API returns **429 Too Many Requests**, back off and retry the failed PUT only — don't re-run the batch. Use exponential backoff: wait 5s, 10s, 20s, 30s, 60s; stop after five attempts and surface the failed prompt/locale pair to the user. Honor the `Retry-After` response header if present (seconds to wait before the next attempt). Successful PUTs don't need to be retried; the per-prompt design means each PUT is independent.
+
 After all PUTs succeed, run the "Verify in browser (post-apply)" step from SKILL.md.
 
 ## Learn new screens

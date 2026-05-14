@@ -63,7 +63,7 @@ The dedicated `auth0 domains` subcommands and the `auth0 api` passthrough use di
 | `tls_policy` | string | TLS posture for Auth0-managed certs. Default `recommended` | create + PATCH |
 | `custom_client_ip_header` | string | Header carrying real client IP. One of `true-client-ip`, `cf-connecting-ip`, `x-forwarded-for`, `x-azure-clientip`. `null` to clear | create + PATCH |
 | `relying_party_identifier` | string | Per-domain passkey `rpId`. Must be a registrable suffix of `domain`. `null` to clear (defaults to domain hostname) | create + PATCH |
-| `domain_metadata` | object | Up to 10 key-value pairs (≤ 255 chars each). To remove a key, PATCH the full merged object without it (GET → merge client-side → PATCH). See [capability-3-manage.md](capability-3-manage.md#manage-domain-metadata) | create + PATCH |
+| `domain_metadata` | object | Up to 10 key-value pairs (≤ 255 chars each). To remove a key, PATCH the full merged object without it (GET → merge client-side → PATCH). See [capability-manage.md](capability-manage.md#manage-domain-metadata) | create + PATCH |
 | `primary` | boolean | Whether this is the default domain (set via `PATCH /tenants/settings`, not here) | read-only here |
 | `status` | string | `disabled`, `pending`, `pending_verification`, `ready` | read-only |
 | `verification.methods` | array | DNS records needed to prove ownership | read-only |
@@ -88,7 +88,7 @@ Only these fields are accepted on `PATCH /custom-domains/{id}`. Omit fields you 
 }
 ```
 
-Scalar fields (`tls_policy`, `custom_client_ip_header`, `relying_party_identifier`) can be cleared by PATCHing with `null`. For `domain_metadata`, use the GET → merge client-side → PATCH pattern and submit the full post-merge object (see [capability-3-manage.md](capability-3-manage.md#manage-domain-metadata)).
+Scalar fields (`tls_policy`, `custom_client_ip_header`, `relying_party_identifier`) can be cleared by PATCHing with `null`. For `domain_metadata`, use the GET → merge client-side → PATCH pattern and submit the full post-merge object (see [capability-manage.md](capability-manage.md#manage-domain-metadata)).
 
 ## POST body reference
 

@@ -26,7 +26,7 @@ Four slots to fill: **primary color, logo URL, font family, page background**. B
 
 ### Source: URL
 
-1. Check for a stored Brandfetch key at `~/.config/auth0-branding/brandfetch.key`.
+1. Check for a stored Brandfetch key at `${XDG_CONFIG_HOME:-$HOME/.config}/auth0-branding/brandfetch.key`. This follows the XDG Base Directory spec: honor `$XDG_CONFIG_HOME` when it's set, otherwise fall back to `~/.config/`. Saves and reads use the same resolved path.
 2. If no key, one-time ask:
    ```
    One-time setup: Brandfetch gives the cleanest colors, fonts, and logos
