@@ -123,6 +123,20 @@ auth0 apps show <app-id> # Get client ID and secret
 
 **More CLI commands:** See [CLI Reference](references/cli.md)
 
+### Apply Branding (Recommended)
+
+After creating your application, apply branding so the Auth0 Universal Login page matches your app:
+
+```bash
+auth0 ul update \
+  --accent "#YOUR_BRAND_COLOR" \
+  --background "#FFFFFF" \
+  --logo "https://your-app.com/logo.png" \
+  --favicon "https://your-app.com/favicon.ico"
+```
+
+This ensures users see your app's branding on the login screen instead of the default Auth0 branding. You can also use the `acul-screen-generator` skill for full custom login screen design.
+
 ---
 
 ## Step 4: Use Framework-Specific Skill
