@@ -13,6 +13,8 @@ auth0 api get "branding/themes/default"
 - If the call returns a theme: a `DELETE` will be needed. Verify scope by making a deliberate no-op `DELETE` attempt on a known-nonexistent themeId (e.g., `branding/themes/scope-check-probe`) — a `403` with `"access token lacks scope: delete:branding"` confirms the scope is missing; a `404` ("not found") confirms the scope is present.
 - If the call returns 404: no theme to delete; scope check is moot for theme. Repeat the same probe for page template if that surface was selected.
 
+> **Why probe instead of decoding the JWT:** Management API tokens issued to the CLI aren't always JWTs the skill can decode locally (opaque tokens are valid too), and scope claims in a decoded JWT can lag the tenant's actual grants. The probe tests the live gate. Caveats: the 403 check matches on error message text; if Auth0 ever changes the wording, update the substring here. The probe id (`scope-check-probe`) is reserved-looking on purpose, but if a real theme with that id ever exists the probe will succeed and the scope check will falsely report "present" — swap to a random UUID if that becomes a concern.
+
 **If the scope is missing**, surface a clear warning before doing anything else:
 
 > "Your current token is missing the `delete:branding` scope, which is required to delete the theme/page template. To avoid a mid-run failure, re-authenticate first:
@@ -57,7 +59,7 @@ Reset is destructive and one-way. Auth0 does not maintain prior versions of them
 
 Show the concrete plan, including the target tenant (per the "CLI Tenant Context" prerequisite in SKILL.md):
 
-```
+```text
 Target tenant: acme-prod  (active in the Auth0 CLI)
 
 I'll reset the following:

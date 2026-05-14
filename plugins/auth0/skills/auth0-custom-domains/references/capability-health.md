@@ -95,7 +95,7 @@ These cases are not reachable-today failures but they will page someone in a fut
 
 Do not probe speculatively by attempting a create. If the tenant has zero custom domains and the user is asking whether adding one will work, mention the Free-tier requirement in the output report:
 
-```
+```text
 Note: Free-tier tenants need a credit card on file at
 Dashboard → Tenant Settings → Billing to create custom domains. The card is
 not charged. If custom domain creation returns 403, this is usually the cause.
@@ -105,7 +105,7 @@ not charged. If custom domain creation returns 403, this is usually the cause.
 
 Structured checklist with pass/fail/warn per item. Lean on visual contrast (✓, ✗, ⚠) and keep the output scannable:
 
-```
+```text
 Tenant: acme-prod
 
 Custom domains (3):

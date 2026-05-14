@@ -29,7 +29,7 @@ auth0 api get "tenants/settings"
 
 If `default_custom_domain_id` matches the domain being deleted, warn:
 
-```
+```text
 login.example.com is the default custom domain for this tenant. Deleting it
 means notification-triggering Management API calls will route through
 your-tenant.auth0.com until you set a new default via the Manage existing domains flow.
@@ -45,7 +45,7 @@ auth0 api get "custom-domains"
 
 If the list has only this one domain, warn:
 
-```
+```text
 This is the only custom domain on the tenant. After deletion, all traffic will
 use your-tenant.auth0.com. Apps and SDKs currently pointing at
 login.example.com will start failing with iss claim mismatches.
@@ -243,7 +243,7 @@ Different flow; don't run this capability. They should:
 
 After successful deletion, tell the user:
 
-```
+```text
 Deleted login.example.com from Auth0.
 DNS CNAME removed via {provider}.
 

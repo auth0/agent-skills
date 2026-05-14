@@ -31,7 +31,7 @@ If a flow is intentionally kept in Classic, "Brand my tenant" can still apply te
 
 Structured checklist with pass/fail/warn and a summary of what the theme *will* and *won't* affect:
 
-```
+```text
 Tenant: acme-prod (environment: production)
 
 Universal Login at tenant level              ✓

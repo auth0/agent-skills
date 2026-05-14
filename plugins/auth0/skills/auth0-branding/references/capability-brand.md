@@ -13,7 +13,7 @@ Look for:
 - **Inline brand values** (hex codes, logo URL, font URL, design tokens, Tailwind/CSS snippets, palette) → use directly.
 - **A Figma URL** → see "Figma".
 - **Nothing** → one prompt:
-  ```
+  ```text
   Paste a website URL, or drop your brand values (primary color, logo URL,
   font). I'll propose a branding you can review before anything changes.
   ```
@@ -28,7 +28,7 @@ Four slots to fill: **primary color, logo URL, font family, page background**. B
 
 1. Check for a stored Brandfetch key at `${XDG_CONFIG_HOME:-$HOME/.config}/auth0-branding/brandfetch.key`. This follows the XDG Base Directory spec: honor `$XDG_CONFIG_HOME` when it's set, otherwise fall back to `~/.config/`. Saves and reads use the same resolved path.
 2. If no key, one-time ask:
-   ```
+   ```text
    One-time setup: Brandfetch gives the cleanest colors, fonts, and logos
    for URL-based branding. Free tier covers 100 lookups/month.
      [paste key]  [sign up, ~30s]  [skip]
@@ -60,7 +60,7 @@ Figma pages don't render server-side; a URL alone can't be scraped. If the user 
 
 1. **Figma MCP detected silently** (Claude Code has the server connected) → read tokens, variables, and styles directly.
 2. **No Figma MCP** → one prompt:
-   ```
+   ```text
    I need the Figma MCP server to read a Figma file. Set it up here:
    https://help.figma.com/hc/en-us/articles/32132100833559-Guide-to-the-Figma-MCP-server
 
@@ -76,7 +76,7 @@ Figma typically covers colors and typography; it does not cover a hostable logo 
 
 After all available sources have been tried, if any of the four slots is still empty, ask once in a consolidated prompt:
 
-```
+```text
 I need a few brand values to finish the proposal (paste hex codes / URLs,
 or type "skip" for any to use the Auth0 default):
 
@@ -100,7 +100,7 @@ These are held constant unless the user opts in to changing them via `[edit]`:
 
 Single proposal, single free-text review prompt. Always include the "Also available" block so users can see what else is editable.
 
-```
+```text
 Proposed branding for ikea.com:
 
   Primary color      #0051BA      (from Brandfetch)
@@ -151,7 +151,7 @@ Editable knobs and what each reply means:
 
 Before any write, run `auth0 tenants list` and present the active tenant:
 
-```
+```text
 Target tenant: acme-prod  (active in the Auth0 CLI)
 
   [y] apply to acme-prod

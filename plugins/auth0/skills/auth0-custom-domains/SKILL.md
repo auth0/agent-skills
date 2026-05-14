@@ -42,7 +42,7 @@ Ask questions as plain conversational text. Never use structured UI widgets (e.g
 
 Example of the right pattern for capability routing:
 
-```
+```text
 What do you want to do?
 
 1. Set up a custom domain
@@ -54,7 +54,7 @@ What do you want to do?
 
 Example of the right pattern for a single input:
 
-```
+```text
 What's the hostname you want to set up? (e.g., login.example.com)
 ```
 
@@ -62,8 +62,8 @@ What's the hostname you want to set up? (e.g., login.example.com)
 
 If the user's message is primarily about an HTTP error code from the Management API (e.g., "I got a 403", "why is this returning 409?", a pasted error body, a log entry with a status code), **answer from this table first.** Do not default to general Auth0 knowledge — it leads to wrong advice on the Free-tier 403 case in particular. Only after the error-code answer, offer to route into the matching capability if the user wants to continue (e.g., "want me to walk through Set up with that fix in place?").
 
-| Status | Context | Correct diagnosis and fix |
-|---|---|---|
+| Status and context | Correct diagnosis and fix |
+|---|---|
 | **403** on `POST /custom-domains` (Free tier) | **Not a plan-tier problem.** Custom domains are available on **all plans including Free** (confirmed in Auth0 docs: *"To set up a free custom domain, Auth0 tenants must have a valid credit card on file for verification purposes and fraud prevention. The credit card will not be charged."*). Fix at **Dashboard → Tenant Settings → Billing** by adding a card. **Do NOT suggest a plan upgrade.** |
 | **403** on `POST /custom-domains` with `type: self_managed_certs` | This *is* a plan issue. Self-managed certs are Enterprise-only. Either downgrade to `type: auth0_managed_certs` (works on all plans) or upgrade to Enterprise. |
 | **409** on `POST /custom-domains` | Domain already exists on this tenant or another. Run `auth0 domains list` to check; if on another tenant the user owns, delete it there first. Do not retry a fresh create. |

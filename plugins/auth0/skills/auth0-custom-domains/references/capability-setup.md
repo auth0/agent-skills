@@ -111,7 +111,7 @@ If the polling window expires with status still `pending_verification`: route to
 
 On success, tell the user what they need to update in their applications:
 
-```
+```text
 Custom domain login.example.com is verified and ready.
 
 Next steps (outside this skill's scope):

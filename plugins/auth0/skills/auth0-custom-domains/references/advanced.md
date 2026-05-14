@@ -20,13 +20,13 @@ The skill's primary flow creates one domain. To add another, invoke the skill ag
 
 When multiple domains are configured, one is designated the **default**. The default is used when a Management API call that triggers a notification (password reset email, verification email, etc.) is made **without** an `auth0-custom-domain` header.
 
-Set the default:
+Set the default. Two endpoints exist; **prefer `PATCH /custom-domains/default`** — it accepts the human-readable domain name and is the endpoint the skill uses in the Manage capability. The `tenants/settings` form is the older path, still supported, and handy when you already have the `custom_domain_id` (e.g., from a list response). Both are idempotent and produce the same result; pick whichever keeps the surrounding code simpler.
 
 ```bash
-# Via the PATCH /custom-domains/default endpoint (pass domain name, not ID):
+# Preferred: PATCH /custom-domains/default (pass domain name, not ID):
 auth0 api patch "custom-domains/default" --data '{"domain": "login.example.com"}'
 
-# Or via the tenant settings endpoint (pass the custom_domain_id):
+# Alternative: tenant settings endpoint (pass the custom_domain_id):
 auth0 api patch "tenants/settings" --data '{"default_custom_domain_id": "cd_abc123"}'
 ```
 

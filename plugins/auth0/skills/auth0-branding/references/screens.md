@@ -96,8 +96,6 @@ Grouped by factor. When the user picks MFA, show a sub-picker so they can scope 
 | mfa-push | mfa-push-list |
 | mfa-push | mfa-push-success |
 | mfa-push | mfa-push-welcome |
-| mfa-push | mfa-push-enrollment-code |
-| mfa-push | mfa-push-success |
 | mfa-sms | mfa-country-codes |
 | mfa-sms | mfa-sms-challenge |
 | mfa-sms | mfa-sms-enrollment |

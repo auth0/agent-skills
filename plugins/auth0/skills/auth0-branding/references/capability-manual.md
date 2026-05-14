@@ -11,9 +11,9 @@ The user never needs to know the API field names or which surface a setting live
 3. Parse the user's request and resolve it to one or more specific fields using the **Intent mapping** table below.
 4. Disambiguate only when needed. If the mapped target is unique, skip ahead. If multiple fields are plausible, ask one question and show current values so the user can see what they'd be changing:
    > "'button color'; which one?
-   >  [a] Primary button fill (currently `#533AFD`)
-   >  [b] Primary button label/text (currently `#FFFFFF`)
-   >  [c] Secondary button border (currently `#CCCCCC`)"
+   > [a] Primary button fill (currently `#533AFD`)
+   > [b] Primary button label/text (currently `#FFFFFF`)
+   > [c] Secondary button border (currently `#CCCCCC`)"
 5. Restate the concrete change in plain language ("change primary button fill from `#533AFD` to `#FF5733`") and confirm.
 6. Stage the change in an in-memory bundle. Do not write to the tenant yet.
 7. Ask **"anything else?"**; loop to step 2 if yes.

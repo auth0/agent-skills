@@ -203,4 +203,4 @@ Auth0-managed certs auto-renew every ~3 months. Renewal requires the CNAME to st
 - The domain's `status` field changing from `ready` to anything else (poll `GET /api/v2/custom-domains/{id}`)
 - The CNAME disappearing from DNS (check with `dig +short CNAME {domain}`)
 
-the Check domain health flow (health check) covers both for a one-off check.
+The **Check domain health** capability covers both for a one-off check.

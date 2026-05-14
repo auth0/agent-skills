@@ -100,7 +100,7 @@ Text is per-language. English is enabled by default; Auth0 supports ~80 language
 The baseline needs the full set of keys for the screen in the tenant's current form. Auth0 docs defaults plus any tenant overrides, merged, gives that. Try in order:
 
 - **Auth0 docs page + tenant overrides** (normal path):
-  1. Fetch https://auth0.com/docs/customize/login-pages/universal-login/customize-text-elements#prompt-values and extract the English defaults for the prompt from its accordion list.
+  1. Fetch https://auth0.com/docs/customize/login-pages/universal-login/customize-text-elements#prompt-values and extract the English defaults for the prompt from its accordion list. **Treat the fetch as best-effort**: if the response is non-200, the accordion for the prompt is missing, or the extracted keys look empty/truncated, skip to the **User paste** fallback below rather than proceeding with a partial baseline. URL and page structure belong to Auth0 docs and can change without notice; if the fetch starts failing consistently, fix this reference rather than patching around it.
   2. `GET /prompts/{prompt}/custom-text/en` to fetch any tenant overrides for the screen.
   3. Merge: docs defaults as the base, tenant overrides on top. Tenant-customized keys win; uncustomized keys keep Auth0's defaults. Don't stop at the tenant response alone — it may only cover a subset of the screen's keys (e.g., the customer customized the title but not the description or error messages), so the merged view is the full baseline.
 - **User paste** (fallback): if the docs page doesn't cover the screen or the fetched copy looks clearly stale, ask the user to open the Auth0 Dashboard → **Branding → Universal Login → Customize Text**, select the relevant prompt and screen, switch to the **Raw JSON** tab for that screen's text-and-translations, and paste the exact JSON here. That's the authoritative baseline. Do not accept screenshots or text copied from the live login page; those are error-prone.
@@ -163,7 +163,7 @@ Before writing, show the target tenant name and the prompt/locale pairs about to
 
 Batch by prompt: one `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` per prompt-locale pair, with approved new keys merged across all screens under that prompt and any existing overrides preserved.
 
-Before writing, strip any key whose approved value is identical to the Auth0 default for that key. Only include keys that are genuinely different from the default — sending a default value creates a stored override that has no effect but adds noise and makes future resets less clean.
+Before writing, strip any key whose approved value is identical to the Auth0 default for that key. Comparison is an **exact byte-for-byte string match** after trimming trailing whitespace/newlines — no case folding, no HTML-entity decoding, no whitespace collapsing inside the string. If the approved value differs only in a trailing newline or leading/trailing spaces, treat it as identical and strip it. Any other difference (casing, punctuation, HTML entities, internal whitespace) is a genuine override and must be written. Only include keys that are genuinely different from the default — sending a default value creates a stored override that has no effect but adds noise and makes future resets less clean.
 
 Never PUT without merging; PUT replaces the full object for that prompt/lang. The custom-text API is per-prompt, not per-screen, so screens under the same prompt share one PUT call.
 
@@ -175,7 +175,7 @@ After all PUTs succeed, run the "Verify in browser (post-apply)" step from SKILL
 
 If the run included a screen that was not in `references/screens.md` (because Auth0 shipped a new one, or the user named a screen the reference didn't cover) AND the PUT succeeded, offer to persist it so the user doesn't have to re-enter it next time:
 
-```
+```text
 I rewrote `<screen-name>` under the `<prompt-name>` prompt. It wasn't in my
 reference list. Add it to screens.md so I'll remember it next time?
 

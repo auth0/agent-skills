@@ -61,7 +61,7 @@ Azure DNS propagates quickly (typically <30s). No polling equivalent to Route 53
 
 ## Fallback deep-link
 
-```
+```text
 https://portal.azure.com/#view/HubsExtension/BrowseResource/resourceType/Microsoft.Network%2FdnsZones
 ```
 Instruct the user to select their zone, then **+ Record set**.

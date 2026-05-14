@@ -4,9 +4,9 @@ For all other providers, the skill outputs a copy-pasteable record block and pro
 
 ## Record block to output
 
-Show exactly:
+Show exactly (substitute the Host and Value with the actual values returned by `POST /api/v2/custom-domains` — the block below uses `login` and `tenant.edge.tenants.auth0.com` only as placeholders):
 
-```
+```text
 Record type: CNAME
 Host / Name: login              (the subdomain portion only, not the full FQDN)
 Value / Points to: tenant.edge.tenants.auth0.com
@@ -42,7 +42,7 @@ Common gotchas across providers:
 
 If NS records don't match any known pattern, output:
 
-```
+```text
 Your DNS appears to be hosted at {nameserver domain}. Log in to that provider's
 dashboard and look for "DNS", "DNS Records", "Advanced DNS", or "Zone Editor".
 Add a new CNAME record with the values above.
