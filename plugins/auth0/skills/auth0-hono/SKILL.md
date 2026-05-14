@@ -20,6 +20,7 @@ Add authentication to Hono web applications using @auth0/auth0-hono.
 
 - Hono application (v3.x or newer)
 - Node.js 20 LTS or newer
+- Project must use ESM (`"type": "module"` in `package.json`) — the SDK is ESM-only
 - Auth0 account and application configured
 - If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
 
@@ -42,7 +43,17 @@ Add authentication to Hono web applications using @auth0/auth0-hono.
 npm install @auth0/auth0-hono hono @hono/node-server
 ```
 
+Verify your `package.json` has `"type": "module"` (SDK is ESM-only). If not:
+
+```bash
+npm pkg set type=module
+```
+
 ### 2. Configure Environment
+
+**For automated setup with Auth0 CLI**, see [Setup Guide](references/setup.md) for complete scripts.
+
+**For manual setup:**
 
 Create `.env`:
 
@@ -132,6 +143,15 @@ Visit `http://localhost:3000` and test the login flow.
 
 ---
 
+## Detailed Documentation
+
+- **[Setup Guide](references/setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage, multi-runtime deployment (Workers, Deno, Bun)
+- **[Integration Guide](references/integration.md)** - Protected routes, sessions, access tokens, silent login, error handling
+- **[API Reference](references/api.md)** - Complete middleware API, configuration options, claims reference
+- **[Examples](references/examples.md)** - Real-world patterns: RBAC, organizations, Cloudflare Workers, custom session stores, hybrid apps
+
+---
+
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -144,6 +164,7 @@ Visit `http://localhost:3000` and test the login flow.
 | Session secret exposed in code | Always use environment variables via `.env`, never hardcode secrets |
 | Domain includes `https://` prefix | Use bare hostname: `tenant.auth0.com` |
 | Using SPA SDK (`@auth0/auth0-react`) | Use `@auth0/auth0-hono` for server-side Hono apps |
+| `ERR_PACKAGE_PATH_NOT_EXPORTED` error | Add `"type": "module"` to `package.json` — SDK is ESM-only |
 
 ---
 
@@ -188,9 +209,14 @@ Visit `http://localhost:3000` and test the login flow.
 **Silent Login:**
 - `attemptSilentLogin()` - Try silent auth before requiresAuth
 - `cancelSilentLogin()` - Skip silent login for specific routes
+- `resumeSilentLogin()` - Resume silent login after cancellation
+- `pauseSilentLogin()` - Temporarily pause silent login
 
 **Standalone Handlers:**
 - `handleLogin()`, `handleLogout()`, `handleCallback()`, `handleBackchannelLogout()`
+
+**Utilities:**
+- `toSafeRedirect(url, baseURL)` - Validate redirect URL against base URL
 
 **Error Types:**
 - `Auth0Error`, `AccessDeniedError`, `LoginRequiredError`, `InvalidGrantError`

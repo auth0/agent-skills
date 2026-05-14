@@ -58,7 +58,7 @@ app.use('*', auth0({
 }))
 ```
 
-Routes become: `/auth/signin`, `/auth/signout`, `/auth/oauth/callback`
+Routes become: `/signin`, `/signout`, `/oauth/callback` (values are used as-is, must start with `/`)
 
 ## Authentication Flow
 

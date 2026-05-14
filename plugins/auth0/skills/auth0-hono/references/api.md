@@ -11,7 +11,7 @@ The `auth0()` middleware accepts an optional configuration object. All values ca
 | `clientID` | `string` | `AUTH0_CLIENT_ID` env | Application client ID |
 | `clientSecret` | `string` | `AUTH0_CLIENT_SECRET` env | Client secret (needed for refresh token flow) |
 | `authRequired` | `boolean` | `true` | Require authentication for all routes |
-| `idpLogout` | `boolean` | `false` | Use IDP's logout endpoint |
+| `idpLogout` | `boolean` | `true` | Use IDP's logout endpoint |
 | `session` | `object` | See below | Session configuration |
 | `session.secret` | `string \| string[]` | `AUTH0_SESSION_ENCRYPTION_KEY` env | Encryption key (32+ characters required) |
 | `session.rolling` | `boolean` | `true` | Reset session expiry on activity |
@@ -24,14 +24,14 @@ The `auth0()` middleware accepts an optional configuration object. All values ca
 | `session.store` | `SessionStore` | — | Custom session store implementation |
 | `customRoutes` | `(keyof Routes)[]` | `[]` | Routes to exclude from auto-mounting |
 | `mountRoutes` | `boolean` | `true` | Whether to mount default auth routes |
-| `routes.login` | `string` | `'/login'` | Login route path (prefixed with `/auth`) |
-| `routes.logout` | `string` | `'/logout'` | Logout route path |
-| `routes.callback` | `string` | `'/callback'` | Callback route path |
-| `routes.backchannelLogout` | `string` | — | Backchannel logout route path |
+| `routes.login` | `string` | `'/auth/login'` | Login route path |
+| `routes.logout` | `string` | `'/auth/logout'` | Logout route path |
+| `routes.callback` | `string` | `'/auth/callback'` | Callback route path |
+| `routes.backchannelLogout` | `string` | `'/auth/backchannel-logout'` | Backchannel logout route path |
 | `authorizationParams` | `object` | See below | Authorization request parameters |
-| `authorizationParams.response_type` | `string` | `'id_token'` | OAuth response type |
+| `authorizationParams.response_type` | `string` | `'code'` | OAuth response type |
 | `authorizationParams.scope` | `string` | `'openid profile email'` | OAuth scopes |
-| `authorizationParams.response_mode` | `string` | `'form_post'` | OAuth response mode |
+| `authorizationParams.response_mode` | `string` | — | OAuth response mode (auto: `'form_post'` when response_type ≠ `'code'`) |
 | `authorizationParams.audience` | `string` | `AUTH0_AUDIENCE` env | API audience for access tokens |
 | `forwardAuthorizationParams` | `string[]` | — | Forward query params to authorization request |
 | `tokenEndpointParams` | `Record<string, string>` | — | Additional token endpoint parameters |
