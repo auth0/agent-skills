@@ -113,6 +113,7 @@ if [ -z "$APP_ID" ]; then
   APP_ID=$(auth0 apps create \
     --name "$APP_NAME" \
     --type spa \
+    --auth-method None \
     --callbacks "http://localhost:3000,http://localhost:5173" \
     --logout-urls "http://localhost:3000,http://localhost:5173" \
     --origins "http://localhost:3000,http://localhost:5173" \
@@ -202,6 +203,7 @@ if ([string]::IsNullOrEmpty($appId)) {
   $appName = Split-Path -Leaf (Get-Location)
   Write-Host "Creating new Auth0 SPA application..."
   $appJson = auth0 apps create --name "$appName-react-app" --type spa `
+    --auth-method None `
     --callbacks "http://localhost:3000,http://localhost:5173" `
     --logout-urls "http://localhost:3000,http://localhost:5173" `
     --origins "http://localhost:3000,http://localhost:5173" `

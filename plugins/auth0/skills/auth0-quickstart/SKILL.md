@@ -94,6 +94,7 @@ Choose application type based on your framework:
 **Single Page Applications (React, Vue, Angular):**
 ```bash
 auth0 apps create --name "My App" --type spa \
+  --auth-method None \
   --callbacks "http://localhost:3000" \
   --logout-urls "http://localhost:3000" \
   --metadata "created_by=agent_skills"
@@ -110,6 +111,7 @@ auth0 apps create --name "My App" --type regular \
 **Native Apps (React Native):**
 ```bash
 auth0 apps create --name "My App" --type native \
+  --auth-method None \
   --callbacks "myapp://callback" \
   --logout-urls "myapp://logout" \
   --metadata "created_by=agent_skills"

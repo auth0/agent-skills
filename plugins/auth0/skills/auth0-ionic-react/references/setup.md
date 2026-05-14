@@ -32,6 +32,7 @@
 > auth0 apps create \
 >   --name "APP_NAME" \
 >   --type native \
+>   --auth-method None \
 >   --callbacks "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
 >   --logout-urls "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
 >   --origins "capacitor://localhost,http://localhost" \

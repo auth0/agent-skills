@@ -44,6 +44,7 @@ if [ -z "$APP_ID" ]; then
   APP_ID=$(auth0 apps create \
     --name "$APP_NAME" \
     --type spa \
+    --auth-method None \
     --callbacks "http://localhost:4200" \
     --logout-urls "http://localhost:4200" \
     --origins "http://localhost:4200" \

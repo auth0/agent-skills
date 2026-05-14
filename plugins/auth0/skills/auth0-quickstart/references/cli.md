@@ -326,7 +326,7 @@ auth0 apps list --json
 auth0 apps list --tenant my-tenant
 
 # Debug mode
-auth0 apps create --debug --name "My App" --type spa
+auth0 apps create --debug --name "My App" --type spa --auth-method None
 ```
 
 ---
