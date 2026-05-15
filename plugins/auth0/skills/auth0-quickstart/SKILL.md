@@ -123,14 +123,14 @@ auth0 apps show <app-id> # Get client ID and secret
 
 **More CLI commands:** See [CLI Reference](references/cli.md)
 
-### Apply Branding (Recommended)
+### Apply Branding (Optional)
 
 After creating your application, apply branding so the Auth0 Universal Login page matches your app:
 
 ```bash
 auth0 ul update \
   --accent "#YOUR_BRAND_COLOR" \
-  --background "#FFFFFF" \
+  --background "#YOUR_BACKGROUND_COLOR" \
   --logo "https://your-app.com/logo.png" \
   --favicon "https://your-app.com/favicon.ico"
 ```
