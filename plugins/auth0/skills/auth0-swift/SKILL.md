@@ -14,11 +14,7 @@ metadata:
 
 Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS). This skill adds complete native authentication to Swift apps using Web Auth (system browser redirect), secure Keychain credential storage via `CredentialsManager`, and optional biometric protection.
 
-> **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
-> ```bash
-> gh api repos/auth0/Auth0.swift/releases/latest --jq '.tag_name'
-> ```
-> Use the returned version in all dependency lines instead of any hardcoded version below. Current known version: `2.18.0`.
+> **Agent instruction:** Use the SDK version specified in this skill file for all dependency lines. Current known version: `2.18.0`.
 
 ## When NOT to Use
 
