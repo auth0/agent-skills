@@ -17,12 +17,6 @@ metadata:
 
 Add authentication to Expo (React Native) applications using `react-native-auth0` with the Expo Config Plugin.
 
-> **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
-> ```bash
-> gh api repos/auth0/react-native-auth0/releases/latest --jq '.tag_name'
-> ```
-> Use the returned version in all dependency lines instead of any hardcoded version below. If the command fails, fall back to checking https://github.com/auth0/react-native-auth0/releases.
-
 ## Prerequisites
 
 - Expo SDK 53 or higher (react-native-auth0 v5.x requires Expo 53+)
@@ -46,74 +40,11 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 
 ## Quick Start Workflow
 
-> **Agent instruction:** Never echo Auth0 credentials (domain, client ID) in your response text. Write them directly into config files using the Write or Edit tool.
->
-> First, check whether the user's prompt already includes both Auth0 **Client ID** and **Domain**.
-> - If both are provided, skip the setup-choice question and proceed directly to **Step 2 (Verify Expo Dev Client)** using those values.
-> - If either value is missing, ask the user using `AskUserQuestion`: _"How would you like to configure Auth0 for this Expo project?"_
->   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create the app, database connection, callback URLs, and writes the plugin config to app.json
->   - **Manual setup** — the user provides their Auth0 Client ID and Domain
->
-> Follow the matching section below based on their choice.
-
 ### 1. Configure Auth0
 
-#### Automatic Setup
+**For automated setup with Auth0 CLI**, see [Setup Guide](./references/setup.md) for complete scripts.
 
-> **Agent instruction:** Do NOT run `auth0 login` from the agent — it is interactive and will hang.
->
-> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, ask user: install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
-> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
->    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
->    - Wait for the user to confirm, then re-run the check to verify. Retry up to 3 times before falling back to Manual Setup.
-> 3. **Confirm active tenant**: Parse the `→` line from the CSV output to identify the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
->    - If yes, proceed.
->    - If no, ask the user to run `auth0 tenants use <tenant-domain>` in their terminal, then re-run step 3 to confirm the new active tenant.
->
-> 4. **Read app.json** to extract `expo.scheme` (custom scheme), `expo.ios.bundleIdentifier`, and `expo.android.package`. If scheme is missing, generate one from the app name (lowercase, no special chars).
->
-> 5. **Summarize the plan and confirm** before making any changes. Tell the user what you will do:
->    - Create a Native Auth0 app named `APP_NAME-expo`
->    - Enable the Username-Password-Authentication connection
->    - Write the plugin config to app.json
->
->    Ask for confirmation using `AskUserQuestion`: _"Here's what I'll configure for Auth0. Proceed?"_
->
-> 6. **Create the Auth0 Native application:**
->    ```bash
->    auth0 apps create \
->      --name "APP_NAME-expo" \
->      --type native \
->      --auth-method none \
->      --callbacks "SCHEME://DOMAIN/ios/BUNDLE_ID/callback,SCHEME://DOMAIN/android/PACKAGE/callback" \
->      --logout-urls "SCHEME://DOMAIN/ios/BUNDLE_ID/callback,SCHEME://DOMAIN/android/PACKAGE/callback" \
->      --json --no-input
->    ```
->    Parse the JSON output to extract `client_id` and `domain`.
->
-> 7. **Enable database connection** (if not already enabled for this client):
->    ```bash
->    auth0 api get "connections" --query "name=Username-Password-Authentication" --no-input
->    ```
->    Parse the response JSON to extract the connection's `id` and its current `enabled_clients` array.
->    If the connection exists, append the new client_id to the existing `enabled_clients` array and patch:
->    ```bash
->    auth0 api patch "connections/CONNECTION_ID" --data '{"enabled_clients":["EXISTING_ID_1","EXISTING_ID_2","NEW_CLIENT_ID"]}' --no-input
->    ```
->    If it doesn't exist, create it:
->    ```bash
->    auth0 api post "connections" --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}' --no-input
->    ```
->
-> 8. **Write the plugin config to app.json** using the agent's Edit tool — add `react-native-auth0` to the plugins array with the domain and custom scheme.
->
-> Proceed to **Step 2 (Verify Expo Dev Client)**.
-
-#### Manual Setup
-
-> **Agent instruction:** If the user has not provided their Auth0 Domain and Client ID, ask them using `AskUserQuestion`. They can find both in the [Auth0 Dashboard](https://manage.auth0.com/) under **Applications > Applications > your app > Settings**. If they don't have an Auth0 app yet, they should create one with type **Native**.
->
-> Once provided, configure the Auth0 plugin in app.json and proceed to **Step 2**.
+**For manual setup**, configure a **Native** application in the [Auth0 Dashboard](https://manage.auth0.com/) and note your Domain and Client ID.
 
 ### 2. Verify Expo Dev Client
 
@@ -161,11 +92,7 @@ Add the react-native-auth0 plugin to `app.json` (or `app.config.js`) with your A
 
 The `customScheme` must be all lowercase with no special characters (e.g., `auth0sample`). See [**Setup Guide**](./references/setup.md) for HTTPS callbacks, multiple domains, EAS Build, and secret management.
 
-> **Agent instruction:** If you used automatic setup (Step 1), you already wrote the plugin config to app.json — verify it's correct. If you used manual setup, write the config now using the user-provided domain and a custom scheme.
-
 ### 5. Configure Callback URLs
-
-> **Agent instruction:** If you used automatic setup (Step 1), callback URLs were already registered via the `--callbacks` and `--logout-urls` flags during app creation. Verify they match the expected pattern but do not re-add them. Only configure manually if you used Manual Setup.
 
 Add to **Allowed Callback URLs** and **Allowed Logout URLs** in the [Auth0 Dashboard](https://manage.auth0.com/):
 
