@@ -42,6 +42,37 @@ This skill validates the **complete attack surface**: how the SDK is configured 
 - **For load testing or DoS** — this tests security logic, not infrastructure capacity
 - **Without authorization** — only test tenants you own or have written permission to test
 
+## Security Policies for This Skill
+
+> **MANDATORY — Agent must follow these rules at all times during execution:**
+
+### Never Echo Credentials to Console
+
+- **NEVER** print, log, or echo values of `client_secret`, `AUTH0_SECRET`, `AUTH0_CLIENT_SECRET`, API signing keys, or any token values to stdout/stderr.
+- When reading `.env`, `Auth0.plist`, `auth0.properties`, or similar config files, only reference the **key names** — never output the values.
+- When running `auth0 apps show <CLIENT_ID> --json`, pipe through `jq` to select only the fields needed (e.g., `jq '{app_type, callbacks}'`) — never dump the full raw JSON which may contain secrets.
+- If a credential value must be verified (e.g., checking if a secret is hardcoded), confirm its **presence/absence** without revealing the value. Example: "Found `AUTH0_CLIENT_SECRET` hardcoded in `src/config.ts:12`" — not the actual secret value.
+- Use `grep -l` (list files only) or `grep -c` (count matches) instead of `grep` with full line output when searching for secrets.
+
+### Confirm Before Executing Tenant-Modifying Commands
+
+- **ALWAYS ask the user for explicit confirmation** before running any Auth0 CLI command that **writes to or modifies** the tenant. This includes:
+  - `auth0 apps update ...`
+  - `auth0 api patch ...`
+  - `auth0 api put ...`
+  - `auth0 api post ...`
+  - `auth0 api delete ...`
+  - Any command that changes app settings, connections, attack protection, or tenant configuration
+- **Read-only commands do NOT require confirmation** (e.g., `auth0 apps show`, `auth0 api get`, `auth0 apis list`).
+- When presenting a remediation command for confirmation, clearly explain:
+  1. What the command will change
+  2. Which Auth0 resource is affected (app name, connection name, etc.)
+  3. The before/after values (without exposing secrets)
+- Wait for the user to explicitly approve (e.g., "yes", "go ahead", "proceed") before executing.
+- If multiple remediation commands are needed, present them all as a numbered list and let the user approve individually or as a batch.
+
+---
+
 ## Threat Simulation Workflow
 
 ### 1. Detect Integration and Gather Context
@@ -132,16 +163,19 @@ Test the token handling across both the SDK configuration and Auth0 tenant setti
 **What:** Client secret leaked in frontend code, version control, or logs.
 
 > **Agent instruction:**
-> - For SPAs: Client secret must NOT exist anywhere in the codebase. Grep for `AUTH0_CLIENT_SECRET`, `client_secret` in frontend files.
+> - For SPAs: Client secret must NOT exist anywhere in the codebase. Search for `AUTH0_CLIENT_SECRET`, `client_secret` in frontend files.
 > - For Regular Web Apps: Secret must be in `.env.local`/`.env` and that file must be in `.gitignore`.
-> - Check: `grep -r "client_secret\|AUTH0_CLIENT_SECRET\|AUTH0_SECRET" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.html" src/ app/ pages/ 2>/dev/null`
-> - Check: `grep -r "AUTH0_SECRET\|AUTH0_CLIENT_SECRET" .env .env.local 2>/dev/null` and verify `.gitignore` contains the env file.
+> - Check (files only — never output secret values): `grep -rl "client_secret\|AUTH0_CLIENT_SECRET\|AUTH0_SECRET" --include="*.ts" --include="*.tsx" --include="*.js" --include="*.jsx" --include="*.html" src/ app/ pages/ 2>/dev/null`
+> - Check presence in env file (count only): `grep -c "AUTH0_SECRET\|AUTH0_CLIENT_SECRET" .env .env.local 2>/dev/null` and verify `.gitignore` contains the env file.
+> - **NEVER echo or print the actual secret values to the console.**
 
 **VULNERABLE if:**
 - Client secret found in frontend/public code
 - `.env` or `.env.local` not in `.gitignore`
+- `Auth0.plist` or `auth0.properties` not in `.gitignore` (iOS/Android)
 - Secret hardcoded (not from environment variable)
 - SPA or Native app has a client secret set in Auth0 (should have `token_endpoint_auth_method: none`)
+- Sensitive config files already tracked in git history
 
 ---
 
@@ -309,9 +343,48 @@ Test the tenant's defenses against credential-based attacks.
 
 ---
 
-### 6. Generate Threat Simulation Report
+### 6. Ensure Sensitive Config Files are Gitignored
 
-> **Agent instruction:** Produce a structured report covering both the app and tenant sides. For each finding, specify whether the fix is app-side (code change), tenant-side (Auth0 CLI/Dashboard), or both:
+> **Agent instruction:** Before generating the report, verify that sensitive configuration files are excluded from version control. Check for the existence of a `.gitignore` file and ensure the following patterns are present. If any are missing, add them:
+>
+> **Check and update `.gitignore`:**
+> ```bash
+> # Verify .gitignore exists
+> test -f .gitignore || touch .gitignore
+>
+> # Check for sensitive Auth0/identity config files
+> grep -qxF '.env' .gitignore || echo '.env' >> .gitignore
+> grep -qxF '.env.local' .gitignore || echo '.env.local' >> .gitignore
+> grep -qxF '.env.*.local' .gitignore || echo '.env.*.local' >> .gitignore
+> grep -qxF 'Auth0.plist' .gitignore || echo 'Auth0.plist' >> .gitignore
+> grep -qxF 'auth0-configuration.plist' .gitignore || echo 'auth0-configuration.plist' >> .gitignore
+> grep -qxF 'auth0.properties' .gitignore || echo 'auth0.properties' >> .gitignore
+> grep -qxF 'auth0-config.json' .gitignore || echo 'auth0-config.json' >> .gitignore
+> ```
+>
+> **Verify no sensitive files are already tracked:**
+> ```bash
+> # Check if any sensitive config files are tracked by git
+> git ls-files --error-unmatch .env Auth0.plist auth0-configuration.plist auth0.properties auth0-config.json 2>/dev/null
+> ```
+> If any files are already tracked, warn the user and recommend:
+> ```bash
+> git rm --cached <file>
+> ```
+>
+> **Platform-specific config files to gitignore:**
+> | Platform | Files |
+> |----------|-------|
+> | iOS/macOS | `Auth0.plist`, `auth0-configuration.plist` |
+> | Android | `auth0.properties`, `src/main/res/values/auth0.xml` (if contains secrets) |
+> | Web / Node.js | `.env`, `.env.local`, `.env.*.local`, `auth0-config.json` |
+> | All | Any file containing `client_secret`, `AUTH0_SECRET`, or API signing keys |
+
+---
+
+### 7. Generate Threat Simulation Report
+
+> **Agent instruction:** Produce a structured report covering both the app and tenant sides. For each finding, specify whether the fix is app-side (code change), tenant-side (Auth0 CLI/Dashboard), or both. Include a section on gitignore compliance:
 
 ```markdown
 # Auth0 Threat Simulation Report
@@ -349,8 +422,8 @@ Test the tenant's defenses against credential-based attacks.
 ### App-Side Fixes
 [Code changes needed in the application]
 
-### Tenant-Side Fixes
-[Auth0 CLI commands to fix tenant configuration]
+### Tenant-Side Fixes (⚠️ Requires User Confirmation Before Execution)
+[Auth0 CLI commands to fix tenant configuration — list each with explanation of what it changes]
 ```
 
 ## Detailed Documentation
@@ -368,6 +441,7 @@ Test the tenant's defenses against credential-based attacks.
 | Checking only the primary callback | Test ALL configured callbacks and logout URLs for manipulation |
 | Assuming latest SDK = secure | SDK must be configured correctly — just installing it isn't enough |
 | Skipping M2M applications | Machine-to-machine apps with broad scopes are high-value targets |
+| Not gitignoring platform config files | `Auth0.plist`, `auth0.properties`, and `.env` files contain credentials — always add to `.gitignore` before first commit |
 
 ## Related Skills
 
