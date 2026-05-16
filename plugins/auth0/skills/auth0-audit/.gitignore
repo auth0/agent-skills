@@ -1,0 +1,5 @@
+.env
+.claudecreds
+.auth0-token-cache
+node_modules/
+.claude

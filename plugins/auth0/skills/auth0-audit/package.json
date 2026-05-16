@@ -1,0 +1,19 @@
+{
+  "name": "hackapalooza-auth0-audit",
+  "version": "1.0.0",
+  "description": "Auth0 security audit plugin for Claude Code — ActionsWhisperer, TokenGraveyard, PasskeysReadiness",
+  "type": "module",
+  "engines": {
+    "node": "^20.19.0 || ^22.12.0 || ^24.0.0"
+  },
+  "scripts": {
+    "passkeys": "node tools/passkeys-readiness.js",
+    "token-graveyard": "node tools/token-graveyard.js",
+    "render-findings": "node tools/render-findings.js",
+    "setup-demo": "node scripts/setup-demo-tenant.js",
+    "teardown-demo": "node scripts/teardown-demo-tenant.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7"
+  }
+}
