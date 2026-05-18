@@ -57,15 +57,15 @@ read -p "Enter app ID (or Enter to create): " APP_ID
 
 if [ -z "$APP_ID" ]; then
   APP_ID=$(auth0 apps create --name "${PWD##*/}-aspnetcore" --type regular \
-    --callbacks "http://localhost:5000/callback" \
-    --logout-urls "http://localhost:5000" \
+    --callbacks "http://localhost:5000/callback,https://localhost:7000/callback" \
+    --logout-urls "http://localhost:5000,https://localhost:7000" \
     --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+    --json-compact | jq -r '.client_id')
 fi
 
 # Get credentials
-DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
 
 echo "Auth0 Domain: $DOMAIN"
 echo "Auth0 Client ID: $CLIENT_ID"
@@ -80,6 +80,7 @@ echo "  dotnet user-secrets set \"Auth0:ClientSecret\" \"YOUR_CLIENT_SECRET\""
 After the script runs, remind the user to:
 1. Replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0.
 2. For production, use environment variables or a secrets manager — never commit the client secret to source control.
+3. Verify the HTTPS port in `Properties/launchSettings.json` and update the Auth0 callback/logout URLs if needed (ASP.NET Core assigns random HTTPS ports in the 7000-7300 range).
 
 ---
 
@@ -140,9 +141,11 @@ Dashboard: Create a Regular Web Application, then copy Domain, Client ID, and Cl
 ### Configure Auth0 Dashboard
 
 In your Auth0 Application settings:
-- **Allowed Callback URLs**: `http://localhost:5000/callback`
-- **Allowed Logout URLs**: `http://localhost:5000`
-- **Allowed Web Origins**: `http://localhost:5000`
+- **Allowed Callback URLs**: `http://localhost:5000/callback, https://localhost:{HTTPS_PORT}/callback`
+- **Allowed Logout URLs**: `http://localhost:5000, https://localhost:{HTTPS_PORT}`
+- **Allowed Web Origins**: `http://localhost:5000, https://localhost:{HTTPS_PORT}`
+
+> Check `Properties/launchSettings.json` for your project's actual HTTPS port (ASP.NET Core assigns a random port in the 7000-7300 range).
 
 Application type must be **Regular Web Application** (not SPA or Native).
 
