@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "auth0": {
+      "command": "node",
+      "args": ["hooks/mcp-server.js"]
+    }
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node hooks/inject-auth0-context.js"
+          }
+        ]
+      }
+    ]
+  }
+}

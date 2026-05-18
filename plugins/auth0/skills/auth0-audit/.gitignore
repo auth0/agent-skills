@@ -2,4 +2,4 @@
 .claudecreds
 .auth0-token-cache
 node_modules/
-.claude
+./claude/settings.local.json
