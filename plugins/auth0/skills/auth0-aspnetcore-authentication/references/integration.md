@@ -147,11 +147,12 @@ Add the audience to `appsettings.json`:
   "Auth0": {
     "Domain": "your-tenant.us.auth0.com",
     "ClientId": "your_client_id",
-    "ClientSecret": "your_client_secret",
     "Audience": "https://your-api-identifier"
   }
 }
 ```
+
+> Store `ClientSecret` in user-secrets (`dotnet user-secrets set "Auth0:ClientSecret" "your_client_secret"`) or environment variables — never commit secrets to source control.
 
 ---
 
@@ -234,7 +235,7 @@ public IActionResult Profile()
 @if (User.Identity.IsAuthenticated)
 {
     <p>Welcome, @User.Identity.Name!</p>
-    <img src="@User.FindFirst(c => c.Type == "picture")?.Value" alt="Profile" />
+    <img src='@User.FindFirst(c => c.Type == "picture")?.Value' alt="Profile" />
 }
 ```
 
@@ -247,7 +248,7 @@ public IActionResult Profile()
 <AuthorizeView>
     <Authorized>
         <p>Welcome, @context.User.Identity?.Name!</p>
-        <img src="@context.User.FindFirst("picture")?.Value" alt="Profile" />
+        <img src='@context.User.FindFirst("picture")?.Value' alt="Profile" />
     </Authorized>
     <NotAuthorized>
         <p>Please <a href="/Login">log in</a>.</p>
@@ -394,7 +395,7 @@ app.UseStatusCodePages(async statusCodeContext =>
 
 | Issue | Solution |
 |-------|----------|
-| "Callback URL mismatch" | Ensure the callback URL in Auth0 Dashboard matches exactly - `http://localhost:5000/callback` |
+| "Callback URL mismatch" | Ensure the callback URL in Auth0 Dashboard matches exactly (include both `http://localhost:5000/callback` and `https://localhost:{HTTPS_PORT}/callback` — check `Properties/launchSettings.json` for the actual port) |
 | User not authenticated after login | Verify `UseAuthentication()` is before `UseAuthorization()` in `Program.cs` |
 | Claims are `null` or missing | Check `Scope` includes `openid profile email` in configuration |
 | Access token is empty | Configure `.WithAccessToken()` with `Audience` in `Program.cs` |
