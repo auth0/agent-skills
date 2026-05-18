@@ -244,11 +244,11 @@ import {
 } from 'express-oauth2-jwt-bearer';
 
 app.use((err, req, res, next) => {
-  if (err instanceof UnauthorizedError || err instanceof InvalidTokenError) {
-    return res.status(401).json({ error: 'unauthorized' });
-  }
   if (err instanceof InsufficientScopeError) {
     return res.status(403).json({ error: 'forbidden' });
+  }
+  if (err instanceof UnauthorizedError || err instanceof InvalidTokenError) {
+    return res.status(401).json({ error: 'unauthorized' });
   }
   next(err);
 });
