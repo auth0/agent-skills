@@ -16,7 +16,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
-> gh api repos/auth0/Auth0.swift/releases/latest --jq '.tag_name'
+> curl -sf https://api.github.com/repos/auth0/Auth0.swift/releases/latest | jq -r '.tag_name'
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below. Current known version: `2.18.0`.
 

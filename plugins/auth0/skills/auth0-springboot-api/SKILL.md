@@ -18,7 +18,7 @@ Protect Spring Boot API endpoints with JWT access token validation using `com.au
 
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
-> gh api repos/auth0/auth0-auth-java/releases/latest --jq '.tag_name'
+> curl -sf https://api.github.com/repos/auth0/auth0-auth-java/releases/latest | jq -r '.tag_name'
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below. If the API call fails (e.g., no releases yet), use `1.0.0-beta.1`.
 

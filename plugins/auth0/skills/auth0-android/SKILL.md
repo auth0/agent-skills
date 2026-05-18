@@ -10,7 +10,6 @@ metadata:
     homepage: https://github.com/auth0/agent-skills
     requires:
       bins:
-        - gh
         - node
 ---
 
@@ -20,7 +19,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```
-> gh api repos/auth0/Auth0.Android/releases/latest --jq '.tag_name'
+> curl -sf https://api.github.com/repos/auth0/Auth0.Android/releases/latest | jq -r '.tag_name'
 > ```
 > Use the returned version in all `implementation` dependency lines instead of any hardcoded version below. If the command fails, fall back to checking https://github.com/auth0/Auth0.Android/releases.
 

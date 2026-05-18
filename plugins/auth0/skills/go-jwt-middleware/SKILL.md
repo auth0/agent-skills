@@ -12,7 +12,6 @@ metadata:
       bins:
         - go
         - auth0
-        - gh
     os:
       - darwin
       - linux
@@ -22,11 +21,6 @@ metadata:
         package: auth0/auth0-cli/auth0
         bins: [auth0]
         label: 'Install Auth0 CLI (brew)'
-      - id: brew
-        kind: brew
-        package: gh
-        bins: [gh]
-        label: 'Install GitHub CLI (brew)'
 ---
 
 # Go JWT Middleware Integration
@@ -35,7 +29,7 @@ Protect Go HTTP API endpoints with JWT access token validation using github.com/
 
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
-> gh api repos/auth0/go-jwt-middleware/releases/latest --jq '.tag_name'
+> curl -sf https://api.github.com/repos/auth0/go-jwt-middleware/releases/latest | jq -r '.tag_name'
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below.
 

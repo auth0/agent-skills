@@ -16,7 +16,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
-> gh api repos/auth0/node-oauth2-jwt-bearer/releases/latest --jq '.tag_name'
+> curl -sf https://api.github.com/repos/auth0/node-oauth2-jwt-bearer/releases/latest | jq -r '.tag_name'
 > ```
 > Use the returned version in all `package.json` dependency lines instead of any hardcoded version below.
 
