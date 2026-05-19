@@ -92,7 +92,7 @@ Initiates the login flow. Returns the authorization URL to redirect the user to.
 $url = $auth0->login(
     ?string $redirectUrl = null,  // override redirectUri for this request
     ?array $params = null         // additional authorization parameters
-): string;
+); // returns string
 ```
 
 **Parameters for `$params`:**
@@ -118,7 +118,7 @@ Shortcut for login with `screen_hint=signup`:
 $url = $auth0->signup(
     ?string $redirectUrl = null,
     ?array $params = null
-): string;
+); // returns string
 ```
 
 #### exchange()
@@ -130,7 +130,7 @@ $success = $auth0->exchange(
     ?string $redirectUri = null,  // override redirectUri
     ?string $code = null,         // authorization code (auto-detected from $_GET)
     ?string $state = null         // state parameter (auto-detected from $_GET)
-): bool;
+); // returns bool
 ```
 
 **Returns:** `true` on success.
@@ -157,7 +157,7 @@ Clears the local session and returns the Auth0 logout URL.
 $url = $auth0->logout(
     ?string $returnUri = null,  // where Auth0 redirects after logout
     ?array $params = null       // additional parameters
-): string;
+); // returns string
 ```
 
 **Example:**
@@ -171,7 +171,7 @@ exit;
 Clears the local session without redirecting to Auth0 (no federated logout).
 
 ```php
-$auth0->clear(bool $transient = true): self;
+$auth0->clear(bool $transient = true); // returns self
 ```
 
 #### renew()
@@ -179,7 +179,7 @@ $auth0->clear(bool $transient = true): self;
 Refreshes the access token using the stored refresh token. Requires `offline_access` scope.
 
 ```php
-$auth0->renew(?array $params = null): self;
+$auth0->renew(?array $params = null); // returns self
 ```
 
 **Throws:** Exception if no refresh token is available or refresh fails.
@@ -193,7 +193,7 @@ $auth0->renew(?array $params = null): self;
 Returns the current session data, or `null` if not authenticated.
 
 ```php
-$credentials = $auth0->getCredentials(): ?object;
+$credentials = $auth0->getCredentials();
 ```
 
 **Returns object with:**
@@ -213,7 +213,7 @@ $credentials = $auth0->getCredentials(): ?object;
 Convenience check for whether a session exists.
 
 ```php
-$isAuth = $auth0->isAuthenticated(): bool;
+$isAuth = $auth0->isAuthenticated(); // returns bool
 ```
 
 #### getUser()
@@ -221,7 +221,7 @@ $isAuth = $auth0->isAuthenticated(): bool;
 Returns user profile array or null.
 
 ```php
-$user = $auth0->getUser(): ?array;
+$user = $auth0->getUser();
 ```
 
 #### getAccessToken()
@@ -229,7 +229,7 @@ $user = $auth0->getUser(): ?array;
 Returns access token string or null.
 
 ```php
-$token = $auth0->getAccessToken(): ?string;
+$token = $auth0->getAccessToken();
 ```
 
 #### getIdToken()
@@ -237,7 +237,7 @@ $token = $auth0->getAccessToken(): ?string;
 Returns ID token string or null.
 
 ```php
-$token = $auth0->getIdToken(): ?string;
+$token = $auth0->getIdToken();
 ```
 
 #### getRefreshToken()
@@ -245,7 +245,7 @@ $token = $auth0->getIdToken(): ?string;
 Returns refresh token string or null.
 
 ```php
-$token = $auth0->getRefreshToken(): ?string;
+$token = $auth0->getRefreshToken();
 ```
 
 ---

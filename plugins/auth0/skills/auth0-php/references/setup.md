@@ -50,6 +50,12 @@ if ! command -v auth0 &> /dev/null; then
   fi
 fi
 
+# Verify jq is available (used to parse JSON from Auth0 CLI)
+if ! command -v jq &> /dev/null; then
+  echo "jq is required but not installed. Install it: https://jqlang.github.io/jq/download/" >&2
+  exit 1
+fi
+
 # Login
 auth0 login 2>/dev/null || auth0 login
 

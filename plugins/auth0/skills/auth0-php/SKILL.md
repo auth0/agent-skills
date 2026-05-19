@@ -625,6 +625,6 @@ if (null === $credentials) {
 ## References
 
 - [auth0/auth0-php on Packagist](https://packagist.org/packages/auth0/auth0-php)
-- [auth0/auth0-php on GitHub](https://github.com/auth0/auth0-PHP)
+- [auth0/auth0-PHP on GitHub](https://github.com/auth0/auth0-PHP)
 - [Auth0 PHP Web App Quickstart](https://auth0.com/docs/quickstart/webapp/php)
 - [PHP Documentation](https://www.php.net/)

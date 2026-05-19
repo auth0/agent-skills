@@ -281,8 +281,9 @@ if (null !== $auth0->getExchangeParameters()) {
         echo "Unable to reach authentication server. Please try again.";
         exit;
     } catch (\Exception $e) {
+        error_log('Auth0 callback error: ' . $e->getMessage());
         http_response_code(400);
-        echo "Authentication error: " . htmlspecialchars($e->getMessage());
+        echo "Authentication failed. Please try again.";
         exit;
     }
 }
