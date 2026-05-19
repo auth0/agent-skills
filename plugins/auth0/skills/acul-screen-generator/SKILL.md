@@ -18,7 +18,7 @@ Generates production-ready, fully themed Auth0 ACUL screen components. Follows a
 
 Always resolve the correct reference for a screen using this priority order. **Before running the CLI**, check if the screen exists in auth0-acul-samples — if it does not, the CLI will fail.
 
-```
+```text
 1. Check auth0-acul-samples availability first  (gate for CLI usage)
    → Read `references/screen-catalog.md` for the Samples column
    → Verify the screen directory exists at:
@@ -195,7 +195,7 @@ Proceed to Phase 3.
 
    Read `references/screen-catalog.md` and check the `Samples (React)` or `Samples (React-JS)` column for the requested screen. Then fetch the GitHub directory listing to **confirm** the screen actually exists at the expected path:
 
-   ```
+   ```text
    React:    https://github.com/auth0-samples/auth0-acul-samples/tree/main/react/src/screens/<screen-name>
    React-JS: https://github.com/auth0-samples/auth0-acul-samples/tree/main/react-js/src/screens/<screen-name>
    ```
@@ -452,7 +452,7 @@ If lint or build produces errors, parse each error and apply the appropriate fix
 ### Common pitfalls this phase catches
 
 - `import Component from './Component'` when the file uses `export const Component` (named export) — fix: `import { Component } from './Component'`
-- `import { useLoginId } from '@auth0/auth0-acul-react'` instead of the screen-specific path `@auth0/auth0-acul-react/login-id'` — fix: use the correct sub-path import
+- `import { useLoginId } from '@auth0/auth0-acul-react'` instead of the screen-specific path `@auth0/auth0-acul-react/login-id` — fix: use the correct sub-path import
 - Using `<ULThemeCard title={...}>` when `ULThemeCard` doesn't accept a `title` prop — fix: remove the invalid prop and use a `<Header>` child component instead
 - Importing a theme utility from a path that doesn't exist in the project — fix: verify the actual path in the project tree
 - Using `applyAuth0Theme` as a named import when it's a default export (or vice versa) — fix: match the module's actual export style
