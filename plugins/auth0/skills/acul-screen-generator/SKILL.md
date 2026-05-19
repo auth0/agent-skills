@@ -395,7 +395,7 @@ Submit button → Passkey button (conditional) → Social divider + buttons
 - Action function names and payload shapes sourced from the CLI-generated code or reference
 - Error state uses SDK source (`hasErrors` / `getErrors()`) — never local-only error state
 - No hardcoded UI strings — use `screen.texts.*` with locale fallback
-- `applyAuth0Theme()` called in index.tsx for Path B screens
+- `applyAuth0Theme()` called in index.tsx when using modular architecture (Path A, Path B)
 
 **All-screens scope:** repeat Path A, B, or C (whichever applies per screen) for every screen in the project, all importing from the shared theme file. Consistent component structure within each path.
 
