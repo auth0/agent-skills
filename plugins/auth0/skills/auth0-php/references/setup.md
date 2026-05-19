@@ -21,13 +21,13 @@ test -f .env.local && echo "ENV_LOCAL_EXISTS" || echo "ENV_LOCAL_NOT_FOUND"
 test -f .env && echo "ENV_EXISTS" || echo "ENV_NOT_FOUND"
 ```
 
-Then ask the user for explicit confirmation before proceeding - do not continue until the user confirms:
+Then determine the target file using this precedence: `.env.local` (if present), otherwise `.env`. Ask the user for explicit confirmation before proceeding - do not continue until the user confirms:
 
-- If `.env` exists, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
+- If the target file (`.env.local` or `.env`) exists, ask:
+  - Question: "A `<target file>` already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials without modifying existing content. Do you want to proceed?"
+  - Options: "Yes, append to existing `<target file>`" / "No, I'll update it manually"
 
-- If `.env` does **not** exist, ask:
+- If neither file exists, ask:
   - Question: "This setup will create a `.env` file containing Auth0 credentials (AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_COOKIE_SECRET, AUTH0_REDIRECT_URI) and a placeholder for AUTH0_CLIENT_SECRET. Do you want to proceed?"
   - Options: "Yes, create .env" / "No, I'll configure it manually"
 
