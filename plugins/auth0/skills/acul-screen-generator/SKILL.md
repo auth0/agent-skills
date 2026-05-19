@@ -253,7 +253,7 @@ Proceed to Phase 3.
 
 3. Read the existing screen file from the customer's codebase. **The local code is your primary reference.** Understand its current structure, SDK imports, and hook patterns before making any changes.
 
-4. Only fetch from GitHub references if the local code is missing critical SDK patterns (e.g., wrong hook pattern, missing action functions) and you cannot determine the correct pattern from the existing codebase. Use the Reference Hierarchy (CLI first → samples → SDK examples) to validate.
+4. Only fetch from GitHub references if the local code is missing critical SDK patterns (e.g., wrong hook pattern, missing action functions) and you cannot determine the correct pattern from the existing codebase. Use the Reference Hierarchy (samples availability → CLI scaffolded code when supported → SDK examples) to validate.
 
 ---
 
@@ -447,7 +447,7 @@ If lint or build produces errors, parse each error and apply the appropriate fix
 5. Re-run `npm run build 2>&1`.
 6. Repeat from step 1 until the build succeeds.
 
-**Iteration cap:** Default to **5 iterations**. For projects with many screens or complex interdependencies, increase to **10 iterations** if each iteration is making measurable progress (i.e., the error count is decreasing). If errors plateau (same count or same errors across 2 consecutive iterations), stop immediately regardless of the cap. When the cap is reached and errors remain, present the remaining errors to the customer and ask for guidance rather than continuing to modify code.
+**Iteration cap:** Use a hard cap of **5 iterations**. If errors plateau (same count or same errors across 2 consecutive iterations), stop immediately before the cap. When the cap is reached and errors remain, present the remaining errors to the customer and ask for guidance rather than continuing to modify code.
 
 ### Common pitfalls this phase catches
 
