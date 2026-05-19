@@ -144,7 +144,7 @@ $success = $auth0->exchange(
 Checks whether the current request contains authorization code parameters (code + state).
 
 ```php
-$params = $auth0->getExchangeParameters(): ?object;
+$params = $auth0->getExchangeParameters();
 ```
 
 **Returns:** Object with `code` and `state` properties, or `null` if not a callback request.

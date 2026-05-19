@@ -127,6 +127,11 @@ $configuration = new SdkConfiguration(
 // Later, when making API calls:
 $credentials = $auth0->getCredentials();
 
+if (null === $credentials) {
+    header('Location: /login');
+    exit;
+}
+
 if ($credentials->accessTokenExpired) {
     try {
         $auth0->renew();

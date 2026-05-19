@@ -62,16 +62,23 @@ if [ -z "$APP_ID" ]; then
     --callbacks "http://localhost:3000/callback" \
     --logout-urls "http://localhost:3000" \
     --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+    --json | jq -r '.client_id')
 fi
 
 # Get credentials
-DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+APP_JSON=$(auth0 apps show "$APP_ID" --json)
+DOMAIN=$(printf '%s' "$APP_JSON" | jq -r '.domain')
+CLIENT_ID=$(printf '%s' "$APP_JSON" | jq -r '.client_id')
+if [ -z "$DOMAIN" ] || [ "$DOMAIN" = "null" ] || [ -z "$CLIENT_ID" ] || [ "$CLIENT_ID" = "null" ]; then
+  echo "Failed to resolve Auth0 app credentials from CLI output" >&2
+  exit 1
+fi
 COOKIE_SECRET=$(openssl rand -hex 32)
 
 # Determine target env file
-if [ -f .env ]; then
+if [ -f .env.local ]; then
+  TARGET_FILE=".env.local"
+elif [ -f .env ]; then
   TARGET_FILE=".env"
 else
   TARGET_FILE=".env"
