@@ -467,7 +467,7 @@ $user = $credentials->user;
             <table class="info-table">
                 <tr>
                     <td class="label">Expires</td>
-                    <td class="value"><?= date('Y-m-d H:i:s', $credentials->accessTokenExpiration) ?> (<?= $credentials->accessTokenExpired ? 'EXPIRED' : 'valid' ?>)</td>
+                    <td class="value"><?= $credentials->accessTokenExpiration ? date('Y-m-d H:i:s', $credentials->accessTokenExpiration) . ' (' . ($credentials->accessTokenExpired ? 'EXPIRED' : 'valid') . ')' : 'N/A' ?></td>
                 </tr>
                 <tr>
                     <td class="label">Scopes</td>
