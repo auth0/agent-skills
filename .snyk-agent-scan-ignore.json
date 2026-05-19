@@ -1,7 +1,6 @@
 [
   {
     "code": "W012",
-    "skills": ["auth0-android", "auth0-angular", "auth0-aspnetcore-authentication", "auth0-express", "auth0-flask", "auth0-ionic-angular", "auth0-ionic-vue", "auth0-nextjs", "auth0-quickstart", "auth0-react", "auth0-spa-js", "auth0-vue"],
     "url": "https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh",
     "reason": "First-party Auth0 CLI install script from Auth0-owned repository"
   },
@@ -25,7 +24,6 @@
   },
   {
     "code": "W012",
-    "skills": ["auth0-java-mvc-common", "auth0-expo", "auth0-springboot-api", "express-oauth2-jwt-bearer", "go-jwt-middleware"],
     "url_pattern": "https://api\\.github\\.com/repos/auth0/[^/]+/releases/latest",
     "reason": "First-party Auth0 repo API call to fetch latest release version"
   }
