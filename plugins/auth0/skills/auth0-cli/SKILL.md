@@ -33,7 +33,7 @@ The Auth0 CLI (`auth0`) lets you manage your tenant from the terminal. Install w
 ```bash
 auth0 login                          # interactive device-code login
 auth0 login --scopes "read:client_grants"  # request extra scopes if 403
-auth0 login --domain <tenant>.auth0.com --client-id <id> --client-secret <secret>  # CI/CD
+auth0 login --domain <tenant>.auth0.com --client-id <id> --client-secret "$AUTH0_CLIENT_SECRET"  # CI/CD
 ```
 
 See [Authentication Details](references/cli.md#authentication) for machine login with JWT, tenant management, and logout.
@@ -72,12 +72,13 @@ Create or inspect Auth0 applications (client ID, secret, callback URLs, app type
 
 ```bash
 auth0 apps create --name "My SPA" --type spa \
+  --auth-method None \
   --callbacks "http://localhost:3000" \
   --logout-urls "http://localhost:3000" \
   --origins "http://localhost:3000" --json
 
 auth0 apps list --json-compact
-auth0 apps show <client-id> --reveal-secrets --json
+auth0 apps show <client-id> --json
 auth0 apps update <client-id> --callbacks "http://localhost:3000,https://myapp.com" --json
 auth0 apps delete <client-id> --force
 ```
@@ -110,7 +111,7 @@ Create, search, inspect, import, and manage users in your tenant.
 auth0 users search --query "email:user@example.com" --json
 auth0 users search-by-email user@example.com --json-compact
 auth0 users create --connection-name "Username-Password-Authentication" \
-  --email "test@example.com" --password "SecureP@ss!" --json
+  --email "test@example.com" --password "$USER_PASSWORD" --json
 auth0 users show <user-id> --json
 auth0 users blocks list <email> --json
 auth0 users blocks unblock <email>

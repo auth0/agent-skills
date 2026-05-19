@@ -1,5 +1,5 @@
 """
-Custom claudelint rules for agent-skills repository, enforcing Agent Skills specification and marketplace conventions.
+Custom skillsaw rules for agent-skills repository, enforcing Agent Skills specification and marketplace conventions.
 """
 
 import re
@@ -7,18 +7,7 @@ import yaml
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
-try:
-    # Try importing from claudelint package (when installed via pip/uvx)
-    from claudelint.src.rule import Rule, RuleViolation, Severity
-    from claudelint.src.context import RepositoryContext
-except ImportError:
-    try:
-        # Fallback for development environment
-        from src.rule import Rule, RuleViolation, Severity
-        from src.context import RepositoryContext
-    except ImportError:
-        # Final fallback
-        from claudelint import Rule, RuleViolation, Severity, RepositoryContext
+from skillsaw import Rule, RuleViolation, Severity, RepositoryContext
 
 
 class SkillDirectoryStructureRule(Rule):

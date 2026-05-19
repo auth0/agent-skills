@@ -37,8 +37,6 @@ Auth0 is on the [Cursor marketplace](https://cursor.com/marketplace/auth0). Open
 
 You can also install via `Cursor Settings → Rules → Add Rule → Remote Rule (GitHub)` and enter this repository URL.
 
-### GitHub Copilot
-
 ```bash
 npx skills add auth0/agent-skills --agent github-copilot
 ```
@@ -62,7 +60,7 @@ npx skills add auth0/agent-skills --agent claude-code cursor
 Install individual skills from [ClawHub.ai](https://clawhub.ai/search?q=auth0):
 
 ```bash
-# Install each Auth0 skill separatly.
+# Install each Auth0 skill separately.
 npx clawhub install auth0-quickstart
 npx clawhub install auth0-migration
 npx clawhub install auth0-mfa
@@ -76,7 +74,11 @@ npx clawhub install auth0-fastify
 npx clawhub install auth0-fastify-api
 npx clawhub install auth0-react-native
 npx clawhub install auth0-android
+npx clawhub install auth0-swift
 npx clawhub install auth0-aspnetcore-api
+npx clawhub install auth0-ionic-react
+npx clawhub install auth0-ionic-angular
+npx clawhub install auth0-ionic-vue
 ```
 
 Or browse and install from the [ClawHub web UI](https://clawhub.ai) — search for "auth0".
@@ -94,7 +96,7 @@ You don't pick skills manually — framework detection handles it.
 
 ## Skills
 
-23 skills covering web, mobile, and API authentication.
+26 skills covering web, mobile, and API authentication.
 
 | Skill | SDK | Frameworks |
 |-------|-----|------------|
@@ -117,6 +119,9 @@ You don't pick skills manually — framework detection handles it.
 | **FastAPI** | [`auth0-fastapi-api`](https://github.com/auth0/auth0-fastapi-api) | Python FastAPI |
 | **Spring Boot API** | [`auth0-springboot-api`](https://github.com/auth0/auth0-auth-java) | Spring Boot |
 | **ASP.NET Core API** | [`Auth0.AspNetCore.Authentication`](https://github.com/auth0/auth0-aspnetcore-authentication) | ASP.NET Core |
+| **Ionic Angular** | [`@auth0/auth0-angular`](https://github.com/auth0/auth0-angular) + Capacitor | Ionic Angular + Capacitor (iOS/Android) |
+| **Ionic Vue** | [`@auth0/auth0-vue`](https://github.com/auth0/auth0-vue) | Ionic Vue + Capacitor (iOS/Android) |
+| **Ionic React** | [`@auth0/auth0-react`](https://github.com/auth0/auth0-react) + Capacitor | Ionic React + Capacitor (iOS/Android) |
 | **React Native** | [`react-native-auth0`](https://github.com/auth0/react-native-auth0) | React Native CLI (bare workflow) |
 | **Expo** | [`react-native-auth0`](https://github.com/auth0/react-native-auth0) | Expo (managed workflow) |
 | **Android** | [`Auth0.Android`](https://github.com/auth0/Auth0.Android) | Android (Kotlin/Java) |

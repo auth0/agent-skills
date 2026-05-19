@@ -1,5 +1,5 @@
-# claudelint configuration
-# See https://github.com/stbenjam/claudelint for more information
+# skillsaw configuration
+# See https://github.com/stbenjam/skillsaw for more information
 
 # Enable/disable rules with configurable severity levels
 rules:
@@ -15,16 +15,6 @@ rules:
   plugin-naming:
     enabled: true
     severity: warning
-
-  # Disabled for skills-only marketplace
-  commands-dir-required:
-    enabled: false
-    severity: warning
-
-  # Require at least one command file; start as info locally
-  commands-exist:
-    enabled: true
-    severity: info
 
   plugin-readme:
     enabled: true
@@ -90,7 +80,7 @@ rules:
 
 # Custom rules for marketplace-specific validation
 custom-rules:
-  - ./.claudelint/rules.py
+  - ./.skillsaw/rules.py
 
 # Exclusions
 exclude:
