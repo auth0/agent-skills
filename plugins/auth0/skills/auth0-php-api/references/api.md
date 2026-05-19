@@ -219,7 +219,7 @@ use Auth0\SDK\Token;
 | `getIssued()` | `?int` | `iat` | Issued-at Unix timestamp |
 | `getAuthTime()` | `?int` | `auth_time` | Authentication time |
 | `getNonce()` | `?string` | `nonce` | Token nonce (ID tokens) |
-| `getOrganization()` | `?string` | `org_id`/`org_name` | Organization identifier |
+| `getOrganization()` | `?string` | `org_id` | Organization identifier |
 | `getOrganizationId()` | `?string` | `org_id` | Organization ID |
 | `getOrganizationName()` | `?string` | `org_name` | Organization name |
 | `getAuthorizedParty()` | `?string` | `azp` | Authorized party |
@@ -287,11 +287,12 @@ When `getBearerToken()` or `decode()` is called, the SDK performs:
 
 ### JWKS Caching Behavior
 
-- Cache key: SHA-256 hash of the JWKS URI
-- On cache miss: HTTP GET to `https://{domain}/.well-known/jwks.json`
+- Cache key: Derived from the JWKS URI (`https://{domain}/.well-known/jwks.json`)
+- On cache miss: HTTP GET to the JWKS endpoint
 - On cache hit: Uses cached keyset directly
 - Cache TTL: Controlled by `tokenCacheTtl` (default 60 seconds)
 - Keys are stored as the full JWKS response (all keys)
+- If the expected `kid` is not in the cached response, the cache is invalidated and JWKS is re-fetched
 
 ---
 
