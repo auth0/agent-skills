@@ -19,7 +19,7 @@ def ignored_reason(code, message, ignores, skill=None):
         if entry.get('code') != code:
             continue
         entry_skills = entry.get('skills')
-        if entry_skills and skill and skill not in entry_skills:
+        if entry_skills and (not skill or skill not in entry_skills):
             continue
         url = entry.get('url', '')
         url_pattern = entry.get('url_pattern', '')
@@ -42,7 +42,8 @@ def check_findings(report_glob='snyk-agent-scan-*.json', ignores=None):
             with open(path) as f:
                 data = json.load(f)
         except Exception as e:
-            print(f'WARNING: could not parse {path}: {e}')
+            print(f'ERROR: could not parse {path}: {e}')
+            failed = True
             continue
 
         # Extract skill name from filename (e.g. "snyk-agent-scan-skill-plugins-auth0-skills-auth0-expo.json" -> "auth0-expo")
