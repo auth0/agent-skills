@@ -4,12 +4,14 @@
 
 > **Agent instruction:**
 >
-> **IMPORTANT — Never display credentials:** After obtaining credentials from the CLI or user input, write them directly into config files. Do NOT echo, print, or display the domain, client ID, or any credential values in conversation output.
+> **SECURITY RULES:**
+> 1. **Never echo credentials** (domain, client_id) in your response text, console output, or tool output. When the agent obtains credentials (from CLI output or user input), write them directly into config files using the Write or Edit tool with no intermediate display.
+> 2. **Never display CLI output containing credentials** to the user. Suppress or redirect output so credential values are not visible in conversation.
 >
 > Always ask the user to choose between automatic and manual setup using `AskUserQuestion`:
 > _"How would you like to configure Auth0 for this Ionic Vue project?"_
->   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create a Native application, configure callback URLs, and store credentials in the project `.env` file automatically
->   - **Manual setup** — you provide an existing `.env` file or Auth0 credentials (domain, client ID) and the agent writes them to the project config
+>   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create a Native application, configure callback URLs, and write credentials directly to project `.env` file
+>   - **Manual setup** — you provide an existing `.env` file, `auth0.plist`, or Auth0 credentials (domain, client ID) from the Dashboard
 >
 > **If credentials are already provided in the user's prompt:** Use them directly — skip to "SDK Installation" below. Do NOT call `AskUserQuestion` to re-confirm.
 
@@ -29,7 +31,6 @@
 > ```bash
 > brew install auth0/auth0-cli/auth0
 > ```
-> On Linux: `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh`
 >
 > ---
 >
@@ -51,13 +52,6 @@
 > #### Step C — Detect active Auth0 tenant domain
 >
 > Parse the CSV output from Step B. The active tenant line contains `→` (Unicode arrow U+2192).
->
-> ```
-> Example output:
->   ACTIVE,DOMAIN
->   →,dev-example.us.auth0.com
->     ,dev-other.us.auth0.com
-> ```
 >
 > Extract the domain from the second column of the `→` line (e.g., `dev-example.us.auth0.com`).
 >
@@ -99,15 +93,7 @@
 >
 > Replace `APP_NAME`, `PACKAGE_ID`, and `AUTH0_DOMAIN` with the actual values from Steps C and D.
 >
-> **Parse the JSON output** to extract `client_id`. Example response:
-> ```json
-> {
->   "client_id": "abc123def456...",
->   "name": "my-app",
->   "app_type": "native",
->   ...
-> }
-> ```
+> Parse the JSON output internally to extract `client_id`. **Do NOT echo or display the client_id or any credential values in conversation output.**
 >
 > Store `client_id` as `AUTH0_CLIENT_ID`.
 >
@@ -115,9 +101,9 @@
 >
 > ---
 >
-> #### Step F — Write `.env` with real credentials
+> #### Step F — Write `.env` with credentials (never display them)
 >
-> Write (or update) the `.env` file in the project root with the actual values from Steps C–E:
+> Write (or update) the `.env` file in the project root using the Write or Edit tool:
 >
 > ```bash
 > VITE_AUTH0_DOMAIN=AUTH0_DOMAIN
@@ -131,6 +117,8 @@
 > - **If `.env` does not exist:** Create the file.
 > - **If `.gitignore` does not include `.env`:** Add `.env` to `.gitignore`.
 >
+> **Do NOT echo credential values in conversation output.**
+>
 > ---
 >
 > #### Step G — Update `src/main.ts` to use env vars
@@ -138,9 +126,9 @@
 > Read `src/main.ts` and wire it to read credentials from `import.meta.env`:
 >
 > **If `createAuth0()` already exists in the file:**
-> - Replace any hardcoded `domain` value (e.g., `"YOUR_AUTH0_DOMAIN"` or a real domain string) with `import.meta.env.VITE_AUTH0_DOMAIN`.
+> - Replace any hardcoded `domain` value with `import.meta.env.VITE_AUTH0_DOMAIN`.
 > - Replace any hardcoded `clientId` value with `import.meta.env.VITE_AUTH0_CLIENT_ID`.
-> - Replace the `redirect_uri` value with `` `${packageId}://${import.meta.env.VITE_AUTH0_DOMAIN}/capacitor/${packageId}/callback` `` (where `packageId` is read from the Capacitor config or hardcoded if it never changes).
+> - Replace the `redirect_uri` value with `` `${packageId}://${import.meta.env.VITE_AUTH0_DOMAIN}/capacitor/${packageId}/callback` ``.
 >
 > **If `createAuth0()` does NOT exist in the file:**
 > 1. Add the import: `import { createAuth0 } from '@auth0/auth0-vue';`
@@ -179,10 +167,10 @@
 ### Manual Setup (User-Provided Configuration)
 
 > **Agent instruction:** Ask the user to provide their Auth0 configuration. Accept either:
-> - **An `.env` file path** — read the file to extract the Auth0 domain and client ID, then copy or reference it in the project.
-> - **Direct credentials** — ask using `AskUserQuestion`: _"Please provide your Auth0 Domain and Client ID."_
+> - **An `.env` file path or `auth0.plist` file** — read the file to extract the Auth0 domain and client ID, then copy or reference it in the project.
+> - **Direct credentials** — ask using `AskUserQuestion`: _"Please provide your Auth0 Domain and Client ID (from the Auth0 Dashboard)."_
 >
-> Once credentials are obtained, write them to the project `.env` file using `VITE_AUTH0_DOMAIN` and `VITE_AUTH0_CLIENT_ID` variable names. **Do NOT display the credentials in conversation output.**
+> Once credentials are obtained, write them to the project `.env` file using the Write or Edit tool with `VITE_AUTH0_DOMAIN` and `VITE_AUTH0_CLIENT_ID` variable names. **Do NOT echo the credentials in conversation output.**
 
 ### Callback URL Format
 

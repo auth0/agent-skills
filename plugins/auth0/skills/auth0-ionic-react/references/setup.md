@@ -4,12 +4,14 @@
 
 > **Agent instruction:**
 >
-> **IMPORTANT — Never display credentials:** After obtaining credentials from the CLI or user input, write them directly into config files. Do NOT echo, print, or display the domain, client ID, or any credential values in conversation output.
+> **SECURITY RULES:**
+> 1. **Never echo credentials** (domain, client_id) in your response text, console output, or tool output. When the agent obtains credentials (from CLI output or user input), write them directly into config files using the Write or Edit tool with no intermediate display.
+> 2. **Never display CLI output containing credentials** to the user. Suppress or redirect output so credential values are not visible in conversation.
 >
 > Always ask the user to choose between automatic and manual setup using `AskUserQuestion`:
 > _"How would you like to configure Auth0 for this Ionic React project?"_
->   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create a Native application, configure callback URLs, and store credentials in the project config files automatically
->   - **Manual setup** — you provide an existing `.env` file or Auth0 credentials (domain, client ID) and the agent writes them to the project config
+>   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create a Native application, configure callback URLs, and write credentials directly to project config files
+>   - **Manual setup** — you provide an existing `.env` file or Auth0 credentials (domain, client ID) from the Dashboard
 
 ### Automatic Setup (Auth0 CLI)
 
@@ -39,10 +41,10 @@
 >   --json \
 >   --no-input
 > ```
-> Parse the JSON output to extract `client_id` and `domain` (the tenant domain).
+> Parse the JSON output internally to extract `client_id` and `domain` (the tenant domain). **Do NOT echo these values in conversation output.**
 >
 > **Step C — Write credentials to config files (never display them):**
-> Write the `client_id` and `domain` from Step B directly into the project `.env` file. Detect whether the project uses Vite (`VITE_` prefix) or CRA (`REACT_APP_` prefix) and use the appropriate variable names. **Do NOT echo, print, or display the domain, client ID, or any credential values in your conversation output.** Simply confirm that the Auth0 app was created and credentials were saved, without showing the actual values.
+> Write the `client_id` and `domain` from Step B directly into the project `.env` file using the Write or Edit tool. Detect whether the project uses Vite (`VITE_` prefix) or CRA (`REACT_APP_` prefix) and use the appropriate variable names. **Do NOT echo, print, or display the domain, client ID, or any credential values in your conversation output.** Simply confirm that the Auth0 app was created and credentials were saved.
 >
 > If any CLI command fails due to session expiry, ask the user to run `auth0 login` again, then retry. Retry up to 3 times.
 > Only if the CLI keeps failing after retries: fall back to **Manual Setup** below.
@@ -50,10 +52,10 @@
 ### Manual Setup (User-Provided Configuration)
 
 > **Agent instruction:** Ask the user to provide their Auth0 configuration. Accept either:
-> - **An `.env` file path** — read the file to extract the Auth0 domain and client ID, then copy or reference it in the project.
-> - **Direct credentials** — ask using `AskUserQuestion`: _"Please provide your Auth0 Domain and Client ID."_
+> - **An `.env` file path or `auth0.plist` file** — read the file to extract the Auth0 domain and client ID, then copy or reference it in the project.
+> - **Direct credentials** — ask using `AskUserQuestion`: _"Please provide your Auth0 Domain and Client ID (from the Auth0 Dashboard)."_
 >
-> Once credentials are obtained, write them to the project `.env` file. Detect whether the project uses Vite (`VITE_` prefix) or CRA (`REACT_APP_` prefix) and use the appropriate variable names. **Do NOT display the credentials in conversation output.**
+> Once credentials are obtained, write them to the project `.env` file using the Write or Edit tool. Detect whether the project uses Vite (`VITE_` prefix) or CRA (`REACT_APP_` prefix) and use the appropriate variable names. **Do NOT echo the credentials in conversation output.**
 
 ### Callback URL Format
 
