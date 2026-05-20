@@ -22,7 +22,10 @@ def ignored_reason(code, message, ignores, skill=None):
         if entry_skills and skill and skill not in entry_skills:
             continue
         url = entry.get('url', '')
+        url_pattern = entry.get('url_pattern', '')
         if url and re.search(r'(?<![/\w])' + re.escape(url) + r'(?![a-zA-Z0-9_/\-])', message):
+            return entry.get('reason', 'no reason given')
+        if url_pattern and re.search(url_pattern, message):
             return entry.get('reason', 'no reason given')
     return None
 
