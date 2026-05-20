@@ -24,7 +24,7 @@ metadata:
 
 # Auth0 CLI — Command Reference
 
-The Auth0 CLI (`auth0`) lets you manage your tenant from the terminal. Install with `brew install auth0/auth0-cli/auth0`. For complete flag definitions and examples, see the [Full CLI Reference](references/cli.md).
+The Auth0 CLI (`auth0`) lets you manage your tenant from the terminal. Install it via Homebrew (`brew install auth0/auth0-cli/auth0`). For complete flag definitions and examples, see the [Full CLI Reference](references/cli.md).
 
 ---
 

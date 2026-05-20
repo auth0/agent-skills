@@ -63,7 +63,7 @@ auth0 apps list
 read -p "Enter app ID (or Enter to create): " APP_ID
 
 if [ -z "$APP_ID" ]; then
-  APP_URL=$(grep -m1 "^APP_URL=" .env 2>/dev/null | cut -d= -f2 || echo "http://localhost:8000")
+  APP_URL="http://localhost:8000"
   APP_ID=$(auth0 apps create --name "${PWD##*/}-laravel" --type regular \
     --callbacks "${APP_URL}/callback" \
     --logout-urls "${APP_URL}" \
@@ -79,11 +79,6 @@ CLIENT_ID=$(printf '%s' "$APP_JSON" | jq -r '.client_id')
 if [ -z "$DOMAIN" ] || [ "$DOMAIN" = "null" ] || [ -z "$CLIENT_ID" ] || [ "$CLIENT_ID" = "null" ]; then
   echo "Failed to resolve Auth0 app credentials from CLI output" >&2
   exit 1
-fi
-
-# Ensure APP_URL has port
-if ! grep -q "APP_URL=http://localhost:8000" .env 2>/dev/null; then
-  sed -i.bak 's|APP_URL=http://localhost|APP_URL=http://localhost:8000|' .env
 fi
 
 # Append Auth0 credentials to .env
@@ -227,5 +222,5 @@ The published `config/auth0.php` contains:
 | "Redirect URL mismatch" | `AUTH0_REDIRECT_URI` must match Allowed Callback URLs in Auth0 Dashboard exactly |
 | Session not persisting | Ensure `APP_KEY` is set (`php artisan key:generate`) |
 | "Class Auth0\Laravel\ServiceProvider not found" | Run `composer dump-autoload` |
-| CSRF token mismatch on callback | Add `/callback` to `VerifyCsrfToken` middleware exceptions or rely on auto-registered routes which handle this |
+| CSRF token mismatch on callback | Use the SDK's auto-registered routes (they handle CSRF correctly). Do not add CSRF exceptions manually |
 | Login redirects back to login page | Check that `config/auth.php` uses `auth0.authenticator` driver |

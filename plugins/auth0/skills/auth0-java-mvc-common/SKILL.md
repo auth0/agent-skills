@@ -44,7 +44,13 @@ Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-a
 
 ## Quick Start Workflow
 
-> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, client ID, client secret), use them directly — skip the bootstrap script and credential questions. Only offer setup options when credentials are missing.
+> **Agent instruction:** Do not write or echo credential values (domain, client ID, client secret) yourself. If the user's prompt already provides Auth0 credentials, skip the credential questions and instruct the user to populate their `.env` file — provide the variable names and file path but use placeholders (`<YOUR_DOMAIN>`, `<YOUR_CLIENT_ID>`, `<YOUR_CLIENT_SECRET>`), never actual values. Never repeat credentials back in responses.
+
+> **Secret handling rules:**
+> - Never retrieve or parse `client_secret` from Auth0 CLI output.
+> - Never write actual credential values into any file using the Write or Edit tool — always use placeholders and instruct the user to substitute their real values.
+> - Do NOT read `.env` files (to avoid exposing existing secrets in context).
+> - Always ensure `.env` is in `.gitignore` — add the entry automatically if missing.
 
 ### 1. Install SDK
 
@@ -73,14 +79,14 @@ You need a **Regular Web Application** (not SPA or Native) in Auth0.
 > Ask exactly this question and wait for their answer before doing anything else:
 >
 > > "How would you like to create the Auth0 application?
-> > 1. **Automated** — I'll run Auth0 CLI scripts that create the application and write the values to your config automatically.
+> > 1. **Automated** — I'll run Auth0 CLI commands that create the application and write the values to your config automatically.
 > > 2. **Manual** — You create the application yourself in the Auth0 Dashboard (or via `auth0 apps create`) and provide me the Domain, Client ID, and Client Secret.
 > >
 > > Which do you prefer? (1 = Automated / 2 = Manual)"
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for complete CLI scripts. The automated path writes configuration for you — skip Step 3 below and proceed directly to Step 4.
+**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for the complete Auth0 CLI steps. The automated path writes configuration for you — skip Step 3 below and proceed directly to Step 4.
 
 **If the user chose Manual**, follow the [Setup Guide](references/setup.md) (Manual Setup section). Then continue with Step 3.
 
@@ -115,7 +121,9 @@ AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 ```
 
-> **Agent instruction:** Java does not auto-load `.env` files. `System.getenv()` only reads OS-level environment variables. If you generate a `.env` file, you must also either: (1) add [dotenv-java](https://github.com/cdimascio/dotenv-java) as a dependency and use `Dotenv.load().get("AUTH0_DOMAIN")` instead of `System.getenv()`, or (2) instruct the user to run `source .env` before starting the server. Do not generate code that uses both a `.env` file and `System.getenv()` without a loading mechanism — the values will be `null`.
+> **Agent instruction:** Never write actual credential values to files. Instead, instruct the user to create or update `.env` with their credentials. Provide the template with placeholders only. Always add `.env` to `.gitignore` if not already present. Warn the user: _"Check your `.env` for duplicate Auth0 entries if you've configured it previously."_
+>
+> Java does not auto-load `.env` files. `System.getenv()` only reads OS-level environment variables. If you generate a `.env` file, you must also either: (1) add [dotenv-java](https://github.com/cdimascio/dotenv-java) as a dependency and use `Dotenv.load().get("AUTH0_DOMAIN")` instead of `System.getenv()`, or (2) instruct the user to run `source .env` before starting the server. Do not generate code that uses both a `.env` file and `System.getenv()` without a loading mechanism — the values will be `null`.
 
 **Important:** Domain must NOT include `https://`. The library constructs the issuer URL automatically.
 

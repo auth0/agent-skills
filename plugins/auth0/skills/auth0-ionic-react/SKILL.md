@@ -14,12 +14,6 @@ metadata:
 
 Add Auth0 authentication to Ionic React applications using Capacitor. This skill covers native mobile authentication using the `@auth0/auth0-react` SDK combined with `@capacitor/browser` and `@capacitor/app` plugins for deep link handling on iOS and Android.
 
-> **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
-> ```bash
-> gh api repos/auth0/auth0-react/releases/latest --jq '.tag_name'
-> ```
-> Use the returned version in all dependency lines instead of any hardcoded version below.
-
 ## Prerequisites
 
 - Node.js 18+
@@ -45,52 +39,11 @@ Add Auth0 authentication to Ionic React applications using Capacitor. This skill
 
 ## Quick Start Workflow
 
-> **Agent instruction:** Follow these steps in order. Always ask the user to choose between automatic and manual setup before configuring Auth0.
->
-> **IMPORTANT — Never display credentials:** After obtaining Auth0 credentials (domain, client ID) from the CLI or user input, write them directly into the project config files (`.env`, source code, etc.). Do NOT echo, print, or display the domain, client ID, or any other credential values in your conversation output. Simply confirm that the Auth0 application was created and credentials were saved to the config file, without showing the actual values.
-
-> **Agent instruction:** Check if the codebase already has an existing provider or auth wrapper. Search for existing login/logout handlers, auth buttons, or authentication-related UI to reuse. If found, integrate Auth0 into those existing components rather than creating new ones.
-
 ### Step 1: Configure Auth0
 
-> **Agent instruction:** Always ask the user how they want to configure Auth0 using `AskUserQuestion`:
-> _"How would you like to configure Auth0 for this Ionic React project?"_
->   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create a Native application, configure callback URLs, and store credentials in the project config files automatically
->   - **Manual setup** — you provide an existing `.env` file or Auth0 credentials (domain, client ID) and the agent writes them to the project config
->
-> Follow the matching section below based on their choice.
+**For automated setup with Auth0 CLI**, see [Setup Guide](./references/setup.md) for complete scripts.
 
-#### Automatic Setup
-
-> **Agent instruction:** Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and CLI commands.
->
-> 1. Detect the package ID from `capacitor.config.ts` (`appId` field).
-> 2. Get the Auth0 domain from the active tenant: `auth0 tenants list --csv --no-input` (parse the `→` line).
-> 3. Create a Native application:
->    ```bash
->    auth0 apps create \
->      --name "APP_NAME" \
->      --type native \
->      --auth-method None \
->      --callbacks "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
->      --logout-urls "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
->      --origins "capacitor://localhost,http://localhost" \
->      --json \
->      --no-input
->    ```
->    Parse the JSON output to extract `client_id`. **Do NOT display the extracted credentials (domain, client ID) in your response — write them directly into the project config files.**
-> 4. Write the extracted `domain` and `client_id` to the project `.env` file. Detect whether the project uses Vite (`VITE_` prefix) or CRA (`REACT_APP_` prefix) and use the appropriate variable names.
->
-> If any CLI command fails due to session expiry, ask the user to run `auth0 login` again, then retry up to 3 times.
-> Only if the CLI keeps failing after retries: fall back to **Manual Setup** below.
-
-#### Manual Setup
-
-> **Agent instruction:** Ask the user to provide their Auth0 configuration. Accept either:
-> - **An `.env` file path** — read the file to extract the Auth0 domain and client ID, then copy or reference it in the project.
-> - **Direct credentials** — ask using `AskUserQuestion`: _"Please provide your Auth0 Domain and Client ID."_
->
-> Once credentials are obtained, write them to the project `.env` file. Detect whether the project uses Vite (`VITE_` prefix) or CRA (`REACT_APP_` prefix) and use the appropriate variable names. **Do NOT display the credentials in conversation output.**
+**For manual setup**, configure a **Native** application in the [Auth0 Dashboard](https://manage.auth0.com/) and note your Domain and Client ID.
 
 ### Step 2: Install Dependencies
 
