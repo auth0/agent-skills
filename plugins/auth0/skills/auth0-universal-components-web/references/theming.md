@@ -1,6 +1,6 @@
 # Theming Guide
 
-Match Auth0 universal components to your app's design system using CSS variables.
+Reference for theming Auth0 universal components beyond what `apply-theme.mjs` writes by default. The standard skill flow already runs apply-theme during Step 6 — read this guide only when the user wants finer control (per-component overrides, additional `--auth0-*` variables, theme presets).
 
 ---
 
@@ -8,7 +8,7 @@ Match Auth0 universal components to your app's design system using CSS variables
 
 Auth0 components render inside `.auth0-universal` with `all: revert-layer` — your app's CSS doesn't bleed in, Auth0 styles don't bleed out. You must explicitly set CSS variables for brand matching.
 
-**Primary mechanism:** `:root` CSS variables (works at all mount timings, avoids late-mount timing issues with provider-level `themeSettings.variables`).
+**Two-part theming.** Color overrides go in CSS (`:root` for the Tailwind path or `--auth0-*` bridge variables for the scoped path), but **border radius MUST live on the provider** via `themeSettings.variables.common`. Radius can't be set in CSS because the theme's `[data-theme='default']` selector has higher specificity than `:root` and silently overwrites it. `apply-theme.mjs` handles both halves; this file documents what each side covers if you need to extend it.
 
 ---
 

@@ -12,6 +12,11 @@ const BOOTSTRAP_SCOPES = [
   "read:client_grants", "create:client_grants", "update:client_grants", "delete:client_grants",
   "read:connections", "create:connections", "update:connections",
   "create:organization_connections", "create:organization_members", "create:organization_member_roles",
+  // read:organization_members lets bootstrap check whether the demo org
+  // already has an admin before deciding to prompt for new credentials.
+  "read:organization_members",
+  // read:users + create:users power the conditional demo admin user step.
+  "read:users", "create:users",
   "read:clients", "create:clients", "update:clients", "read:client_keys",
   "read:roles", "create:roles", "update:roles",
   "read:resource_servers", "create:resource_servers", "update:resource_servers",

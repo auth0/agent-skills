@@ -212,6 +212,125 @@ export function ensureOrganization(orgs, connectionId) {
   return { action: "skip", data: existing };
 }
 
+/**
+ * Make sure the demo org has at least one member with the admin role so the
+ * my-org components have someone they can render for. The function is
+ * deliberately conservative:
+ *
+ *   - If any existing member already holds adminRoleId, we're done. We do
+ *     NOT touch anyone's role assignments.
+ *   - If no member has admin AND the agent didn't pass --admin-email /
+ *     --admin-password, we return action "needs-admin". Bootstrap turns this
+ *     into a `partial` JSON response so the agent can prompt the developer
+ *     for credentials and re-run.
+ *   - If no member has admin AND credentials were passed, we look up (or
+ *     create) the user on the demo connection, add them to the org, and
+ *     assign the admin role.
+ *
+ * The "create a fresh demo user" path mirrors the upstream reference script
+ * in auth0-ui-components/examples/scripts/utils/members.mjs — the user is a
+ * demo resource the skill owns, distinct from the developer's existing
+ * tenant users.
+ */
+export function ensureOrgAdminMember(orgId, connectionName, adminRoleId, adminEmail, adminPassword) {
+  if (!adminRoleId) return { action: "skip", reason: "no admin role id provided" };
+
+  // Look for any member that already holds the admin role. We use the
+  // members?fields=user_id,roles list endpoint so we can decide without
+  // pulling every role for every member individually.
+  const membersResult = auth0ApiCall(
+    "get",
+    `organizations/${orgId}/members?fields=user_id,email,roles&include_fields=true`,
+  );
+  if (membersResult.ok && Array.isArray(membersResult.data)) {
+    const adminMember = membersResult.data.find((m) =>
+      Array.isArray(m.roles) && m.roles.some((r) => r.id === adminRoleId),
+    );
+    if (adminMember) {
+      return { action: "exists", data: { email: adminMember.email, user_id: adminMember.user_id } };
+    }
+  }
+
+  // No admin found. If the agent didn't pass credentials, bail out with a
+  // sentinel the bootstrap script can translate to a partial response.
+  if (!adminEmail || !adminPassword) {
+    return {
+      action: "needs-admin",
+      reason: "demo-org has no member with the admin role; pass --admin-email and --admin-password to create a dedicated demo admin user, or assign the admin role to an existing org member manually.",
+    };
+  }
+
+  // Reuse an existing user on the demo connection if there is one; otherwise
+  // create a fresh user. We don't reach across connections — a user with the
+  // same email on a different connection would still get a new account here,
+  // matching upstream behavior.
+  let userId = null;
+  let userEmail = adminEmail;
+  const lookup = auth0Exec(
+    ["users", "search-by-email", adminEmail, "--json", "--no-input"],
+    { timeout: 15000 },
+  );
+  if (lookup.ok) {
+    try {
+      const candidates = JSON.parse(lookup.stdout) || [];
+      const onConnection = candidates.find((u) =>
+        u.email === adminEmail &&
+        Array.isArray(u.identities) &&
+        u.identities.some((i) => i.connection === connectionName),
+      );
+      if (onConnection) userId = onConnection.user_id;
+    } catch { /* parsing failure → just fall through to create */ }
+  }
+
+  if (!userId) {
+    const createArgs = [
+      "users", "create",
+      "--connection-name", connectionName,
+      "--email", adminEmail,
+      "--password", adminPassword,
+      "--json", "--no-input",
+    ];
+    const createResult = auth0Exec(createArgs, { timeout: 20000 });
+    if (!createResult.ok) {
+      return {
+        action: "error",
+        error: `Failed to create admin user "${adminEmail}" on connection "${connectionName}": ${createResult.stderr || createResult.error || "unknown"}`,
+      };
+    }
+    try {
+      const user = JSON.parse(createResult.stdout);
+      userId = user.user_id;
+    } catch (e) {
+      return { action: "error", error: `Could not parse created user response: ${e.message}` };
+    }
+  }
+
+  if (!userId) return { action: "error", error: "Resolved user has no user_id" };
+
+  // Add user as a member of the org. Idempotent — Auth0 returns 204 if
+  // already a member.
+  const addMember = auth0ApiCall("post", `organizations/${orgId}/members`, { members: [userId] });
+  if (!addMember.ok) {
+    // Don't fail outright if the user is already a member; the role
+    // assignment below is what we really care about.
+    const msg = String(addMember.error || "");
+    if (!/already a member|already exists/i.test(msg)) {
+      return { action: "error", error: `Failed to add ${userId} to org ${orgId}: ${msg}` };
+    }
+  }
+
+  const assignRole = auth0ApiCall(
+    "post",
+    `organizations/${orgId}/members/${encodeURIComponent(userId)}/roles`,
+    { roles: [adminRoleId] },
+  );
+  if (!assignRole.ok) {
+    return { action: "error", error: `Failed to assign admin role to ${userId}: ${assignRole.error}` };
+  }
+
+  return { action: "created", data: { email: userEmail, user_id: userId } };
+}
+
 // --- Tenant config operations ---
 
 export function ensureTenantSettings() {

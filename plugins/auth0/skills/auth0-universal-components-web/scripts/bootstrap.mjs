@@ -9,6 +9,7 @@ import { discoverExistingResources } from "./utils/discovery.mjs";
 import {
   MYORG_API_SCOPES,
   MYACCOUNT_API_SCOPES,
+  DEFAULT_CONNECTION_NAME,
   getAvailableMyAccountScopes,
   ensureMyOrgResourceServer,
   ensureMyAccountResourceServer,
@@ -17,6 +18,7 @@ import {
   ensureConnection,
   ensureAdminRole,
   ensureOrganization,
+  ensureOrgAdminMember,
   ensureTenantSettings,
   ensurePromptSettings,
 } from "./utils/resources.mjs";
@@ -24,15 +26,25 @@ import { ensureClient, ensureClientGrant } from "./utils/clients.mjs";
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const opts = { domain: null, features: "full", framework: "react-spa", appName: "Universal Components Demo", port: "3000" };
+  const opts = {
+    domain: null,
+    features: "full",
+    framework: "react-spa",
+    appName: "Universal Components Demo",
+    port: "3000",
+    adminEmail: null,
+    adminPassword: null,
+  };
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--domain" && args[i + 1]) opts.domain = args[++i];
     else if (args[i] === "--features" && args[i + 1]) opts.features = args[++i];
     else if (args[i] === "--framework" && args[i + 1]) opts.framework = args[++i];
     else if (args[i] === "--app-name" && args[i + 1]) opts.appName = args[++i];
     else if (args[i] === "--port" && args[i + 1]) opts.port = args[++i];
+    else if (args[i] === "--admin-email" && args[i + 1]) opts.adminEmail = args[++i];
+    else if (args[i] === "--admin-password" && args[i + 1]) opts.adminPassword = args[++i];
     else if (args[i] === "--help") {
-      console.log("Usage: node bootstrap.mjs --domain <tenant.auth0.com> --features full|myorg|myaccount --framework nextjs|react-spa [--port 3000]");
+      console.log("Usage: node bootstrap.mjs --domain <tenant.auth0.com> --features full|myorg|myaccount --framework nextjs|react-spa [--port 3000] [--admin-email <email> --admin-password <password>]");
       process.exit(0);
     }
   }
@@ -195,6 +207,7 @@ const connectionId = connectionResult.data?.id;
 completedSteps.push("connection");
 
 // Step 10: Roles
+let adminRoleId = null;
 if (features.enableMyOrg) {
   const roleResult = ensureAdminRole(resources.roles, opts.domain);
   if (roleResult.action === "error") {
@@ -202,10 +215,12 @@ if (features.enableMyOrg) {
       "Failed to create/update admin role. Re-run the script."
     );
   }
+  adminRoleId = roleResult.data?.id || null;
   completedSteps.push("roles");
 }
 
 // Step 11: Organization
+let demoOrgId = null;
 if (features.enableMyOrg) {
   const orgResult = ensureOrganization(resources.orgs, connectionId);
   if (orgResult.action === "error") {
@@ -213,7 +228,45 @@ if (features.enableMyOrg) {
       "Failed to create demo organization. Re-run the script."
     );
   }
+  demoOrgId = orgResult.data?.id || null;
   completedSteps.push("organization");
+}
+
+// Step 12: Org admin member. Skipped when the org already has any member
+// holding the admin role. When no admin exists, the agent must collect an
+// email + password from the developer and re-run with --admin-email /
+// --admin-password. Without that, my-org components will throw "Missing
+// requested scopes after refresh" at runtime.
+let demoAdminInfo = null;
+if (features.enableMyOrg && demoOrgId && adminRoleId) {
+  const memberResult = ensureOrgAdminMember(
+    demoOrgId,
+    DEFAULT_CONNECTION_NAME,
+    adminRoleId,
+    opts.adminEmail,
+    opts.adminPassword,
+  );
+  if (memberResult.action === "needs-admin") {
+    output({
+      status: "partial",
+      completed_steps: completedSteps,
+      data: { demo_org_id: demoOrgId, admin_role_id: adminRoleId },
+      error: {
+        code: "ADMIN_MEMBER_REQUIRED",
+        message: memberResult.reason,
+        failed_at: "demo_admin_member",
+        fallback_instructions:
+          "demo-org has no member holding the admin role, so my-org components can't render. Ask the developer for an email and password for a dedicated demo admin user, then re-run bootstrap with `--admin-email <email> --admin-password <password>`. The skill will create the user on the Universal-Components-Demo connection, add them to demo-org, and assign the admin role. Alternatively, the developer can pick an existing tenant user, add them to demo-org, and assign the admin role manually in the Auth0 dashboard.",
+      },
+    });
+  }
+  if (memberResult.action === "error") {
+    errorAt("demo_admin_member", completedSteps, "ADMIN_MEMBER_FAILED", memberResult.error,
+      "Failed to create or assign the demo admin user. Verify --admin-email / --admin-password are valid and re-run."
+    );
+  }
+  demoAdminInfo = memberResult.data || null;
+  completedSteps.push("demo_admin_member");
 }
 
 // Build env vars output
@@ -248,5 +301,6 @@ output({
     domain: opts.domain,
     env_vars: envVars,
     scopes: scopes.join(" "),
+    demo_admin: demoAdminInfo,
   },
 });

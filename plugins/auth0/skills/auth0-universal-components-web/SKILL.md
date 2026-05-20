@@ -91,6 +91,25 @@ node <skill-path>/scripts/bootstrap.mjs \
 
 On success, write `data.env_vars` to the project's `.env.local` file. Do NOT overwrite existing values — merge only new keys.
 
+**Demo admin user (only when needed).** When organization features are enabled, bootstrap checks whether the demo org already has any member with the admin role. If it does, the step is a no-op. If it doesn't, bootstrap returns `status: "partial"` with `error.code: "ADMIN_MEMBER_REQUIRED"` — that's a signal, not a failure. Handle it like this:
+
+1. Use `AskUserQuestion` to collect an email and a password from the developer for a dedicated demo admin user. Tell them this user is a fresh account scoped to the Universal-Components-Demo connection — it isn't reused from any existing tenant identity.
+2. Re-run bootstrap with the credentials appended:
+
+   ```bash
+   node <skill-path>/scripts/bootstrap.mjs \
+     --domain <tenant-domain> \
+     --features full|myorg|myaccount \
+     --framework nextjs|react-spa \
+     --port <dev-server-port> \
+     --admin-email <email> \
+     --admin-password <password>
+   ```
+
+3. On success, `data.demo_admin` contains `{ email, user_id }` for the user the developer should sign in with. The previous re-runs of bootstrap will see the now-existing admin and skip the step — no need to keep passing the flags.
+
+If the developer prefers to use an existing tenant user, they can skip this prompt by adding the user to demo-org and assigning the admin role manually in the Auth0 dashboard, then re-running bootstrap (which will see the admin and continue past the step).
+
 ### Step 4: Install Component Package
 
 The Auth0 SDK is already installed (handled by Step 1.5 or already present). Now install the components:
@@ -115,33 +134,43 @@ Read the appropriate reference file based on `data.framework`:
 
 Follow the reference file exactly. It contains the code to generate for each framework.
 
-### Step 6: Theme Integration
+### Step 6: Apply Theme
+
+Theme integration has two parts that both must land for components to render correctly:
+1. A complete CSS override block (so colors inherit from the host app's tokens).
+2. `themeSettings.variables` set on `<Auth0ComponentProvider>` — radius lives here, not in CSS, because the theme's `[data-theme='default']` selector has higher specificity than `:root` and silently overwrites CSS-level radius.
+
+`apply-theme.mjs` does both in one shot. It calls `extract-theme.mjs` internally, then writes the changes:
 
 ```bash
-node <skill-path>/scripts/extract-theme.mjs --css-file <project-root>/<mainCssFile> --css-path <cssPath>
+node <skill-path>/scripts/apply-theme.mjs \
+  --project-root <project-root> \
+  --css-file <data.mainCssFile from Step 1> \
+  --css-path <data.cssPath> \
+  --framework <data.framework>
 ```
 
-The script outputs two things that BOTH must be applied:
+You can pass `--provider-file <path>` to be explicit, but the script auto-detects the file containing `<Auth0ComponentProvider>` from the conventional locations (`src/App.tsx` for SPA, `src/providers/client-provider.tsx` for Next.js).
 
-1. **`data.generatedOverrideBlock`** — CSS color variables. Apply **verbatim** to the project's main CSS file (inside `:root`). This sets all required Auth0 color bridge variables. Without the full set (especially `--auth0-background`, `--auth0-foreground`, `--auth0-card`), components render with a dark/black theme.
+What the script does:
+- **CSS:** inserts/replaces a managed block (between `/* @auth0-universal-components:start */` and `:end` markers) carrying the full color set with sensible defaults for any variable the project doesn't define. For Tailwind v4 (`cssPath === "tailwind"`), it also ensures `@import "@auth0/universal-components-core/styles/globals.css"` and an `@theme inline` block mapping `--color-*` to the bare variables.
+- **Provider:** patches `themeSettings.variables` with the extracted radius/color values. If the file has an empty placeholder it's replaced; if user customizations are already there, the script returns `action: "needs-manual-merge"` with a `manualSteps` entry instead of clobbering.
 
-2. **`data.themeSettingsVariables`** — A JSON object to pass as `themeSettings.variables` on `Auth0ComponentProvider`. This includes border radius (and optionally colors for programmatic control). **Border radius MUST be set here** — CSS `:root` declarations do NOT work for radius because the internal `[data-theme='default']` selector has higher specificity and overwrites them.
+The script is idempotent — re-running on an already-patched project produces a byte-identical result. Marker comments inside the managed CSS block and the `variables` object let it recognize its own previous output.
 
-Apply the CSS block to the main CSS file. Then set `themeSettings.variables` on the provider:
+**Verification gate.** After running apply-theme, confirm with the theme-only verify pass before moving on:
 
-```tsx
-<Auth0ComponentProvider
-  themeSettings={{
-    theme: 'default',
-    mode: isDarkMode ? 'dark' : 'light',
-    variables: /* paste data.themeSettingsVariables here */,
-  }}
->
+```bash
+node <skill-path>/scripts/verify-setup.mjs \
+  --project-root <project-root> \
+  --framework <framework> \
+  --css-path <cssPath> \
+  --only theme
 ```
 
-If the project already has an Auth0 override section in CSS, **replace it entirely** with the generated block.
+All theme checks must show `pass: true`. If any fails, the output's `command` field will point you back at apply-theme; fix any `manualSteps` first, then re-run verify.
 
-Read `references/theming.md` for the full variable reference if the user wants more control.
+Read `references/theming.md` if the user wants more control beyond what apply-theme writes (per-component overrides, additional `--auth0-*` variables, etc.).
 
 ### Step 7: Add a Component
 
@@ -166,7 +195,33 @@ Place components inside a simple container — they manage their own internal la
 </div>
 ```
 
-### Step 8: Verify
+**Mind the host's existing page chrome.** Most apps already have their own page header (a sidebar item label, a top bar with the page title, breadcrumbs, etc.). The Auth0 components render their own page-level header AND inner section subheads (e.g. `OrganizationDetailsEdit` renders the org's display name as a big page title plus "Settings" and "Branding" sections). Drop a component into a host page that's already titled "Settings" and you'll see "Settings" twice on screen even after `hideHeader` — the section subhead survives `hideHeader`.
+
+Run this checklist after rendering the component, before moving on:
+
+1. **Read the host page** (the route file, the page component, the layout) and write down the exact title text the host already shows for this area — e.g. the host's TopBar lookup for `settings` returns title `"Settings"`.
+
+2. **Pass `hideHeader`** (or the equivalent prop from `references/component-reference.md`) whenever the host has any page-level header at all. This kills the component's page-level title (the one usually showing the org/provider name).
+
+3. **Compare the host's title text against the component's "Default Headings Rendered" row in `references/component-reference.md`.** Do a verbatim string match. Any match — including section subheads, not just page titles — means the page will display the same word twice. When that happens, pass `customMessages` to rename the matching section. Don't reason your way out of this with "different hierarchy levels"; if the literal text matches, rename it. The exact `customMessages` path is in the same row of the table.
+
+   **Example.** Host TopBar says "Settings". `OrganizationDetailsEdit` renders a "Settings" section subhead. Even with `hideHeader`, the subhead remains. Required fix:
+   ```tsx
+   <OrganizationDetailsEdit
+     hideHeader
+     customMessages={{
+       details: { sections: { settings: { title: 'Organization Profile' } } },
+     }}
+   />
+   ```
+
+4. **Match the host's container.** If the host uses a centered max-width column (`max-w-2xl`, `.settings-org-profile`), wrap the component in the same. Don't introduce a new container shape.
+
+These checks prevent the most common visual integration regression: stacked or repeated headings that make the embedded component feel bolted-on rather than part of the app.
+
+### Step 8: Final Verification
+
+The theme-only verify already ran in Step 6. Now run the full battery to confirm env vars, packages, providers, and middleware are all in place:
 
 ```bash
 node <skill-path>/scripts/verify-setup.mjs \
@@ -175,10 +230,10 @@ node <skill-path>/scripts/verify-setup.mjs \
   --css-path <cssPath>
 ```
 
-Fix any failing checks using the `fix` field in the output. Then start the dev server and verify in a browser:
+Each failing check has a `fix` describing the remediation, and (where applicable) a `command` field naming the script to re-run. Then start the dev server and verify in a browser:
 1. Component renders without console errors
 2. Authentication flow completes
-3. Colors and radii match the host app
+3. Colors AND border radii match the host app — radii are the canary for "did themeSettings.variables get set?"
 
 ---
 
@@ -190,7 +245,8 @@ Fix any failing checks using the `fix` field in the output. Then start the dev s
 | validate-auth0 | 30s | Run `auth0 --version` directly to check CLI | Run `auth0 login` command from `fallback_instructions` directly (120s timeout, opens browser) |
 | bootstrap | 120s | Re-run (idempotent, skips completed work) | Follow `error.fallback_instructions`, then re-run |
 | extract-theme | 10s | Read CSS file directly, find `:root` block | Ask user for primary color, write minimal override |
-| verify-setup | 15s | Check each item manually (env file, node_modules, CSS imports) | Fix reported failures using `fix` field |
+| apply-theme | 15s | Re-run (idempotent — managed markers prevent duplication) | Read `data.manualSteps`; if `provider.themeSettings.action === "needs-manual-merge"`, merge the proposed object into existing `themeSettings.variables` by hand |
+| verify-setup | 15s | Check each item manually (env file, node_modules, CSS imports) | Fix reported failures using `fix` and `command` fields |
 
 ---
 
@@ -206,7 +262,15 @@ Fix any failing checks using the `fix` field in the output. Then start the dev s
 | Missing middleware (Next.js) | Create `src/middleware.ts` with Auth0 middleware |
 | Missing `AUTH0_SECRET` (Next.js) | Generate with `openssl rand -hex 32` |
 | Forgot stylesheet import | Import `@auth0/universal-components-react/styles` or `/tailwind` |
-| Components use wrong colors | CSS variables not set — run extract-theme or add `--primary` to `:root` |
+| Components use wrong colors | CSS variables not set — run apply-theme.mjs (or, for manual control, extract-theme + paste the override block) |
+| Border radius doesn't apply | Radius can't be set via `:root` — the theme's `[data-theme='default']` selector wins. Set radius keys under `themeSettings.variables.common`; apply-theme.mjs does this automatically |
+| Components render with dark/black background on a light app | Missing `--auth0-background`/`--auth0-card`/`--auth0-foreground`. Apply the full override block via apply-theme.mjs — partial sets fall through to internal dark defaults |
+| Tailwind utility classes (`text-foreground`, `bg-card`) don't pick up your colors | Missing `@theme inline` block mapping `--color-*` to bare vars. apply-theme.mjs adds these for Tailwind v4 projects |
+| Re-running apply-theme refuses to update variables | Means the file already has user customizations (the managed marker is gone). Read `data.manualSteps` and merge by hand |
+| Create / edit / delete buttons in a table do nothing on click | You passed `onClick` on a `*Action` prop. `createAction`, `editAction`, `deleteAction`, `saveAction`, `cancelAction`, `verifyAction`, etc. are typed `ComponentAction` — they accept `onBefore` and `onAfter`, not `onClick`. `onClick` is silently dropped. Switch to `onAfter`. Only `backButton` (and standalone `ActionButton` slots) use `onClick`. See "Action Prop Shapes" in `references/component-reference.md` |
+| Duplicate "page" headers stacked above the component | Host already has a page title (TopBar, breadcrumb, etc.) AND the component is rendering its own. Pass `hideHeader` to the component (check the prop table in `references/component-reference.md`). For section-title clashes, use `customMessages` to rename the section |
+| Same word appears twice on the page (e.g. host title "Settings" + component section subhead "Settings") | `hideHeader` only suppresses the component's *page-level* header — section subheads survive. Verbatim-match the host's title against the "Default Headings Rendered" table in `references/component-reference.md`; if any default subhead matches, rename it via `customMessages` (the path is listed in the same row). Don't argue that "different hierarchy levels" makes it OK — same word on the same page reads as redundant |
+| `Missing requested scopes after refresh (audience: ...my-org/, missing scope: read:my_org:details)` | The user authenticated successfully, but isn't a member of an organization OR has no role granting the my-org permissions. Bootstrap creates the `admin` role and the demo org as resources — assigning users to the org and granting them roles is a developer responsibility. Fix in Auth0 Dashboard → Organizations → demo-org → Members: add the test user, then assign the `admin` role to that membership. (Or via CLI: `auth0 api post "organizations/<org_id>/members" --data '{"members":["<user_id>"]}'` then `auth0 api post "organizations/<org_id>/members/<user_id>/roles" --data '{"roles":["<admin_role_id>"]}'`.) After role assignment, the user must sign out and sign back in for the new role to be reflected in the access token |
 | Missing `audience` in Auth0Provider (SPA) | Organization components need `audience` set to `https://{domain}/my-org/` |
 | `AUTH0_DOMAIN` vs `NEXT_PUBLIC_AUTH0_DOMAIN` | Server-side uses `AUTH0_DOMAIN`, client-side uses `NEXT_PUBLIC_AUTH0_DOMAIN` |
 | Organization components return 403 | Ensure user has admin role in the organization |
@@ -222,7 +286,7 @@ Read these as needed during the workflow:
 
 - **`references/setup-nextjs.md`** — Read during Step 5 when `framework === "nextjs"`. Contains: env vars, Auth0Client, middleware, proxy provider, layout.
 - **`references/setup-react-spa.md`** — Read during Step 5 when `framework === "react-spa"`. Contains: env vars, Auth0Provider, Auth0ComponentProvider, stylesheet.
-- **`references/theming.md`** — Read during Step 6 for full CSS variable reference. Contains: all ~80+ variables, dark mode, presets, per-component styling.
+- **`references/theming.md`** — Read during Step 6 only when the user wants control beyond what apply-theme.mjs writes (per-component styling, additional `--auth0-*` overrides, presets). For the standard flow you don't need to read this file.
 - **`references/component-reference.md`** — Read during Step 7. Contains: all 6 components with props, types, import paths.
 - **`references/integration.md`** — Read during Step 7. Contains: provider patterns, callbacks, i18n, error handling, protected routes.
 

@@ -12,6 +12,85 @@ Props, types, and import paths for all 6 universal components.
 
 The `/spa` and `/rwa` sub-paths export **only** `Auth0ComponentProvider`. All components come from the main entry `@auth0/universal-components-react`.
 
+## Default Headings Rendered
+
+Each component renders text headings inside its scope. When the host page already has a title matching any of these (e.g. a TopBar showing "Settings"), `hideHeader` alone won't fix the duplicate — you also need `customMessages` to rename the matching section. **Run a verbatim string comparison between the host's page title and this list before declaring placement done.**
+
+| Component | Default headings (en-US) | `customMessages` path to rename |
+|---|---|---|
+| `UserMFAMgmt` | "Multi-Factor Authentication methods" | `customMessages={{ title: '...' }}` (flat) |
+| `OrganizationDetailsEdit` | Page header: org display name. Sections: "Settings", "Branding" | `customMessages.details.sections.settings.title` / `...branding.title` |
+| `SsoProviderTable` | "Single Sign-On" | `customMessages.tab.title` (check `SsoProviderTabMessages`) |
+| `SsoProviderCreate` | "Add a Provider", "Select Your Identity Provider", "Provider Details", "Configure Provider", "Advanced Settings", "Mapping" | `customMessages.<step>.title` (check `SsoProviderCreateMessages`) |
+| `SsoProviderEdit` | Page header: provider name. Sections: "Provider Details", "Configure Provider", "Mapping", "Provisioning" | `customMessages.<section>.title` (check `SsoProviderEditMessages`) |
+| `DomainTable` | "Domains" | `customMessages.title` (check `DomainTableMessages`) |
+
+When the exact override path isn't shown above, find it with:
+```bash
+grep -B 1 -A 30 "interface <Name>Messages" \
+  node_modules/@auth0/universal-components-core/dist/index.d.mts
+```
+
+---
+
+## Action Prop Shapes (Read This First)
+
+Three different action shapes exist — passing the wrong handler key (`onClick` vs `onAfter`) silently no-ops. The component does nothing on click and you'll waste a debug cycle inspecting the bundle.
+
+```typescript
+// Used by: createAction, editAction, deleteAction, saveAction, cancelAction,
+// verifyAction, associateToProviderAction, deleteFromProviderAction, etc.
+// — basically every "*Action" prop on the component prop tables below.
+interface ComponentAction<Item = void, Context = void> {
+  disabled?: boolean;
+  onBefore?: (item: Item, context?: Context) => boolean;             // return false to cancel default
+  onAfter?: (item: Item, context?: Context) => void | boolean | Promise<boolean>;
+}
+
+// Used by: backButton (only this).
+interface BackButton {
+  icon?: unknown;
+  onClick: (e: Event) => void;
+}
+
+// Used by: standalone action buttons inside table rows / headers when you build them yourself.
+interface ActionButton<Item = void> {
+  label: string;
+  variant?: 'primary' | 'outline' | 'ghost' | 'destructive' | 'link';
+  size?: 'default' | 'xs' | 'sm' | 'lg' | 'icon';
+  icon?: unknown;
+  onClick: Item extends void ? (event: Event) => void : (data: Item) => void | boolean | Promise<boolean>;
+  disabled?: boolean;
+  className?: string;
+  type?: 'button' | 'submit';
+}
+```
+
+**Rule of thumb.** If the prop name ends with `Action` and isn't `backButton`, it's a `ComponentAction` — use `onAfter` for "navigate after the click", `onBefore` to gate or cancel the default. Only `backButton` and explicit `ActionButton` slots use `onClick`.
+
+```tsx
+// CORRECT — table create/edit
+<SsoProviderTable
+  createAction={{ onAfter: () => navigate('/sso/new') }}
+  editAction={{ onAfter: (provider) => navigate(`/sso/${provider.id}`) }}
+/>
+
+// CORRECT — back button
+<SsoProviderEdit
+  connectionId={id}
+  backButton={{ onClick: () => navigate('/sso') }}
+/>
+
+// WRONG — silently ignored
+<SsoProviderTable createAction={{ onClick: () => navigate('/sso/new') }} />
+```
+
+When in doubt, grep the type:
+```bash
+grep -B 1 -A 10 "interface ComponentAction\|interface BackButton" \
+  node_modules/@auth0/universal-components-core/dist/index.d.mts
+```
+
 ---
 
 ## UserMFAMgmt
@@ -62,9 +141,9 @@ import { OrganizationDetailsEdit } from '@auth0/universal-components-react';
 | `styling` | `StylingConfig` | — | Styling |
 | `readOnly` | `boolean` | `false` | View-only |
 | `hideHeader` | `boolean` | `false` | Hide header |
-| `saveAction` | `{ onClick?: () => void }` | — | Custom save action |
-| `cancelAction` | `{ onClick?: () => void }` | — | Custom cancel action |
-| `backButton` | `{ onClick?: () => void }` | — | Back navigation |
+| `saveAction` | `ComponentAction` | — | `onBefore` to gate save; `onAfter` to react after a successful save (e.g. show a toast) |
+| `cancelAction` | `ComponentAction` | — | `onAfter` runs when the user cancels |
+| `backButton` | `BackButton` (uses `onClick`) | — | Back navigation |
 | `onErrorAction` | `(error: Error, action: string) => void` | — | Error callback |
 | `onBeforeAction` | `(action: string) => boolean` | — | Pre-action hook |
 
@@ -85,7 +164,7 @@ import { SsoProviderCreate } from '@auth0/universal-components-react';
 |---|---|---|---|
 | `customMessages` | `Partial<SsoCreateMessages>` | `{}` | i18n text |
 | `styling` | `StylingConfig` | — | Styling |
-| `backButton` | `{ onClick?: () => void }` | — | Back navigation |
+| `backButton` | `BackButton` (uses `onClick`) | — | Back navigation |
 | `onErrorAction` | `(error: Error, action: string) => void` | — | Error callback |
 | `onBeforeAction` | `(action: string) => boolean` | — | Pre-action hook |
 
@@ -105,7 +184,7 @@ import { SsoProviderEdit } from '@auth0/universal-components-react';
 | `connectionId` | `string` | **Required** | SSO connection ID to edit |
 | `customMessages` | `Partial<SsoEditMessages>` | `{}` | i18n text |
 | `styling` | `StylingConfig` | — | Styling |
-| `backButton` | `{ onClick?: () => void }` | — | Back navigation |
+| `backButton` | `BackButton` (uses `onClick`) | — | Back navigation |
 | `onErrorAction` | `(error: Error, action: string) => void` | — | Error callback |
 | `onBeforeAction` | `(action: string) => boolean` | — | Pre-action hook |
 
@@ -125,8 +204,8 @@ import { SsoProviderTable } from '@auth0/universal-components-react';
 | `customMessages` | `Partial<SsoTableMessages>` | `{}` | i18n text |
 | `styling` | `StylingConfig` | — | Styling |
 | `readOnly` | `boolean` | `false` | View-only |
-| `createAction` | `{ onClick?: () => void }` | — | Create provider action |
-| `editAction` | `{ onClick?: (provider: SsoProvider) => void }` | — | Edit provider action |
+| `createAction` | `ComponentAction` | — | Use `onAfter: () => navigate('/sso/new')` to send the user to a create view. `onClick` does NOT exist here |
+| `editAction` | `ComponentAction<SsoProvider>` | — | Use `onAfter: (provider) => navigate(...)`. `onClick` does NOT exist here |
 | `onErrorAction` | `(error: Error, action: string) => void` | — | Error callback |
 | `onBeforeAction` | `(action: string) => boolean` | — | Pre-action hook |
 
@@ -146,11 +225,11 @@ import { DomainTable } from '@auth0/universal-components-react';
 | `customMessages` | `Partial<DomainMessages>` | `{}` | i18n text |
 | `styling` | `StylingConfig` | — | Styling |
 | `readOnly` | `boolean` | `false` | View-only |
-| `createAction` | `{ onClick?: () => void }` | — | Add domain |
-| `verifyAction` | `{ onClick?: (domain: Domain) => void }` | — | Verify domain |
-| `deleteAction` | `{ onClick?: (domain: Domain) => void }` | — | Delete domain |
-| `associateToProviderAction` | `{ onClick?: (domain: Domain) => void }` | — | Associate to SSO |
-| `deleteFromProviderAction` | `{ onClick?: (domain: Domain) => void }` | — | Remove from SSO |
+| `createAction` | `ComponentAction` | — | Use `onAfter` (not `onClick`) — see Action Prop Shapes |
+| `verifyAction` | `ComponentAction<Domain>` | — | `onBefore`/`onAfter` |
+| `deleteAction` | `ComponentAction<Domain>` | — | `onBefore`/`onAfter` |
+| `associateToProviderAction` | `ComponentAction<Domain>` | — | `onBefore`/`onAfter` |
+| `deleteFromProviderAction` | `ComponentAction<Domain>` | — | `onBefore`/`onAfter` |
 | `onErrorAction` | `(error: Error, action: string) => void` | — | Error callback |
 | `onBeforeAction` | `(action: string) => boolean` | — | Pre-action hook |
 
@@ -159,6 +238,18 @@ import { DomainTable } from '@auth0/universal-components-react';
 ## Common Types
 
 ```typescript
+// Action prop shapes — see "Action Prop Shapes" section above for usage examples.
+interface ComponentAction<Item = void, Context = void> {
+  disabled?: boolean;
+  onBefore?: (item: Item, context?: Context) => boolean;
+  onAfter?: (item: Item, context?: Context) => void | boolean | Promise<boolean>;
+}
+
+interface BackButton {
+  icon?: unknown;
+  onClick: (e: Event) => void;
+}
+
 interface StylingConfig {
   variables?: {
     common?: Record<string, string>;

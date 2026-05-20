@@ -60,6 +60,8 @@ function SecurityPage() {
 
 ### SsoProviderTable + Create + Edit (Navigation Pattern)
 
+`createAction` and `editAction` are typed `ComponentAction`, not click handlers. Use `onAfter` for the navigation step. `onClick` is silently ignored — the table will appear unresponsive. (See `references/component-reference.md` → "Action Prop Shapes" for the full distinction between `ComponentAction`, `BackButton`, and `ActionButton`.)
+
 ```tsx
 // React SPA with react-router
 import { SsoProviderTable } from '@auth0/universal-components-react';
@@ -69,8 +71,8 @@ function SsoPage() {
   const navigate = useNavigate();
   return (
     <SsoProviderTable
-      createAction={{ onClick: () => navigate('/sso/create') }}
-      editAction={{ onClick: (provider) => navigate(`/sso/edit/${provider.id}`) }}
+      createAction={{ onAfter: () => navigate('/sso/create') }}
+      editAction={{ onAfter: (provider) => navigate(`/sso/edit/${provider.id}`) }}
     />
   );
 }
@@ -86,14 +88,16 @@ export default function SsoPage() {
   const router = useRouter();
   return (
     <SsoProviderTable
-      createAction={{ onClick: () => router.push('/sso/create') }}
-      editAction={{ onClick: (provider) => router.push(`/sso/edit/${provider.id}`) }}
+      createAction={{ onAfter: () => router.push('/sso/create') }}
+      editAction={{ onAfter: (provider) => router.push(`/sso/edit/${provider.id}`) }}
     />
   );
 }
 ```
 
 ### SsoProviderEdit (Dynamic Route)
+
+`backButton` IS typed for click handlers — use `onClick` here.
 
 ```tsx
 // Next.js: src/app/sso/edit/[id]/page.tsx
@@ -161,6 +165,31 @@ Override specific strings per component:
   }}
 />
 ```
+
+The `customMessages` shape varies per component — flat for some, nested for others. Reach for it whenever a default label collides with the host's existing copy (e.g. the host page is already titled "Settings" and the component renders a "Settings" section subhead).
+
+**`OrganizationDetailsEdit`** (nested under `details.sections.<section>.title`):
+```tsx
+<OrganizationDetailsEdit
+  hideHeader
+  customMessages={{
+    header: { title: 'Manage Organization' },
+    details: {
+      sections: {
+        settings: { title: 'Organization Profile' },  // default: "Settings"
+        branding: { title: 'Brand Identity' },        // default: "Branding"
+      },
+    },
+  }}
+/>
+```
+
+**`SsoProviderEdit` / `SsoProviderCreate`** — also nested. Read the type alias for the component you're rendering:
+```bash
+grep -A 30 "interface <ComponentName>Messages" \
+  node_modules/@auth0/universal-components-core/dist/index.d.mts
+```
+Or open the file in an editor — every component exports a `<Name>Messages` interface that lists every overridable string with its nested location.
 
 ---
 
