@@ -61,13 +61,29 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 ### Step 2 — Configure Auth0
 
 > **Agent instruction:**
+> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write `Auth0.plist` directly with those values — do NOT ask the user any questions, and do NOT hardcode them in Swift source files. Then proceed to Step 3.
 > - **If an `Auth0.plist` file already exists in the project:** Read it to extract `ClientId` and `Domain`, then proceed to Step 3.
-> - **If no `Auth0.plist` exists:** Ask the user via `AskUserQuestion`: _"How would you like to configure Auth0?"_
+> - **If no `Auth0.plist` exists and no credentials were provided:** Ask the user via `AskUserQuestion`: _"How would you like to configure Auth0?"_
 >   - **Automatic (Auth0 CLI)** — I'll create the application, set callback URLs, and configure everything using the Auth0 CLI.
 >   - **Manual** — You provide a pre-configured `Auth0.plist` file and I'll add it to your project.
 >
 > If the user chooses **automatic**: Follow [Setup Guide — Automated Setup via Auth0 CLI](./references/setup.md#automated-setup-via-auth0-cli).
 > If the user chooses **manual**: Follow [Setup Guide — Manual Setup](./references/setup.md#manual-setup-user-provided-auth0plist).
+>
+> **`Auth0.plist` format:**
+> ```xml
+> <?xml version="1.0" encoding="UTF-8"?>
+> <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+> <plist version="1.0">
+> <dict>
+>   <key>ClientId</key>
+>   <string>YOUR_CLIENT_ID</string>
+>   <key>Domain</key>
+>   <string>YOUR_DOMAIN</string>
+> </dict>
+> </plist>
+> ```
+> Place `Auth0.plist` in the same directory as the app's Swift source files so the SDK can find it automatically.
 
 ### Step 3 — Configure Callback URLs
 
@@ -155,9 +171,16 @@ import Combine
 
 class AuthenticationService: ObservableObject {
     @Published var isAuthenticated = false
+    @Published var userName: String?
+    @Published var userEmail: String?
     private let credentialsManager = CredentialsManager(authentication: Auth0.authentication())
 
-    init() { isAuthenticated = credentialsManager.canRenew() }
+    init() {
+        isAuthenticated = credentialsManager.canRenew()
+        // credentialsManager.user is a UserInfo? decoded from the stored ID token
+        userName = credentialsManager.user?.name
+        userEmail = credentialsManager.user?.email
+    }
 
     func login() async {
         do {
@@ -167,7 +190,11 @@ class AuthenticationService: ObservableObject {
                 .scope("openid profile email offline_access")
                 .start()
             _ = credentialsManager.store(credentials: credentials)
-            await MainActor.run { isAuthenticated = true }
+            await MainActor.run {
+                isAuthenticated = true
+                userName = credentialsManager.user?.name
+                userEmail = credentialsManager.user?.email
+            }
         } catch WebAuthError.userCancelled { }
         catch { print("Login failed: \(error)") }
     }
@@ -176,7 +203,11 @@ class AuthenticationService: ObservableObject {
         do { try await Auth0.webAuth().useHTTPS().clearSession() }
         catch { print("Logout failed: \(error)") }
         _ = credentialsManager.clear()
-        await MainActor.run { isAuthenticated = false }
+        await MainActor.run {
+            isAuthenticated = false
+            userName = nil
+            userEmail = nil
+        }
     }
 }
 ```
@@ -205,6 +236,8 @@ class AuthenticationService {
     private let credentialsManager = CredentialsManager(authentication: Auth0.authentication())
 
     var isAuthenticated: Bool { credentialsManager.canRenew() }
+    // credentialsManager.user is a UserInfo? decoded from the stored ID token
+    var user: UserInfo? { credentialsManager.user }
 
     func login() async throws {
         let credentials = try await Auth0
@@ -274,6 +307,8 @@ private let auth = AuthenticationService()
 | Opening `.xcodeproj` instead of `.xcworkspace` (CocoaPods) | Always open the `.xcworkspace` file after `pod install` |
 | Not calling `clearSession()` on logout | Always call `clearSession()` to remove the Auth0 session cookie from the browser |
 | Build error "No such module 'Auth0'" | Verify the package is added to the correct target; for CocoaPods, open `.xcworkspace` |
+| Hardcoding domain/clientId in Swift source when they're in the prompt | Write them into `Auth0.plist` and call `Auth0.webAuth()` with no arguments — the SDK reads the plist automatically |
+| Using `IDTokenClaimsValidation()` or similar to read user profile | Use `credentialsManager.user` — it returns a `UserInfo?` with `.name`, `.email`, `.picture`, etc., decoded from the stored ID token |
 
 ## Related Skills
 
