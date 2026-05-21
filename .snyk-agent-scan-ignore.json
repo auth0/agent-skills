@@ -1,0 +1,41 @@
+[
+  {
+    "code": "W012",
+    "url": "https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh",
+    "reason": "First-party Auth0 CLI install script from Auth0-owned repository"
+  },
+  {
+    "code": "W012",
+    "url": "https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh",
+    "reason": "Homebrew install script"
+  },
+  {
+    "code": "W012",
+    "skills": ["auth0-swift"],
+    "url": "https://github.com/auth0/Auth0.swift",
+    "reason": "First-party Auth0 Swift SDK repository"
+  },
+  {
+    "code": "W012",
+    "skills": ["acul-screen-generator"],
+    "url": "https://github.com/auth0-samples/auth0-acul-samples/tree/main/react/src/screens/<screen-name>",
+    "reason": "First-party Auth0 samples repository for ACUL screen examples"
+  },
+  {
+    "code": "W012",
+    "skills": ["acul-screen-generator"],
+    "url": "https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-react/examples/<screen-name>",
+    "reason": "First-party Auth0 universal-login repository"
+  },
+  {
+    "code": "W012",
+    "url_pattern": "https://api\\.github\\.com/repos/auth0/[^/]+/releases/latest",
+    "reason": "First-party Auth0 repo API call to fetch latest release version"
+  },
+  {
+    "code": "W012",
+    "skills": ["auth0-custom-domains"],
+    "url": "https://mcp.cloudflare.com/mcp",
+    "reason": "The skill sets up custom domains for Auth0 tenants, and uses Cloudflare's MCP to write the CNAME record for the custom domain."
+  }
+]

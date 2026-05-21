@@ -18,12 +18,6 @@ metadata:
 
 Add Auth0 authentication to Ionic Vue applications using Capacitor. This skill covers native mobile authentication using the `@auth0/auth0-vue` SDK combined with `@capacitor/browser` and `@capacitor/app` plugins for deep link handling on iOS and Android.
 
-> **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
-> ```bash
-> gh api repos/auth0/auth0-vue/releases/latest --jq '.tag_name'
-> ```
-> Use the returned version in all dependency lines instead of any hardcoded version below.
-
 ## Prerequisites
 
 - Node.js 18+
@@ -51,42 +45,11 @@ Add Auth0 authentication to Ionic Vue applications using Capacitor. This skill c
 
 ## Quick Start Workflow
 
-> **Agent instruction:** Follow these steps in order. Always ask the user to choose between automatic and manual setup before configuring Auth0.
->
-> **IMPORTANT — Never display credentials:** After obtaining Auth0 credentials (domain, client ID) from the CLI or user input, write them directly into the project config files (`.env`, source code, etc.). Do NOT echo, print, or display the domain, client ID, or any other credential values in your conversation output. Simply confirm that the Auth0 application was created and credentials were saved to the config file, without showing the actual values.
-
-> **Agent instruction:** Check if the codebase already has an existing provider or auth wrapper. Search for existing login/logout handlers, auth buttons, or authentication-related UI to reuse. If found, integrate Auth0 into those existing components rather than creating new ones.
-
 ### Step 1: Configure Auth0
 
-> **Agent instruction:** Always ask the user how they want to configure Auth0 using `AskUserQuestion`:
-> _"How would you like to configure Auth0 for this Ionic Vue project?"_
->   - **Automatic setup (Recommended)** — uses the Auth0 CLI to create a Native application, configure callback URLs, and store credentials in the project `.env` file automatically
->   - **Manual setup** — you provide an existing `.env` file or Auth0 credentials (domain, client ID) and the agent writes them to the project config
->
-> Follow the matching section below based on their choice.
+**For automated setup with Auth0 CLI**, see [Setup Guide](./references/setup.md) for complete scripts.
 
-#### Automatic Setup
-
-> **Agent instruction:** Follow the automated setup in [Setup Guide — Auth0 CLI Automated Setup](./references/setup.md#auth0-cli-automated-setup) to:
->   1. Verify the Auth0 CLI is installed (install if missing).
->   2. Verify the user is logged in to the Auth0 CLI (prompt to run `auth0 login` if not).
->   3. Detect the active Auth0 tenant domain.
->   4. Read `capacitor.config.ts` to get the app's package ID.
->   5. Create a Native Auth0 application via `auth0 apps create` with proper callback URLs.
->   6. Extract `client_id` and `domain` from the CLI output. **Do NOT display these values in your response.**
->   7. Write `.env` with `VITE_AUTH0_DOMAIN`, `VITE_AUTH0_CLIENT_ID`, and `VITE_AUTH0_CALLBACK_URI`.
->   8. Update `src/main.ts` to read credentials from `import.meta.env`.
->
-> If any CLI command fails after 3 retries, fall back to **Manual Setup** below.
-
-#### Manual Setup
-
-> **Agent instruction:** Ask the user to provide their Auth0 configuration. Accept either:
-> - **An `.env` file path** — read the file to extract the Auth0 domain and client ID, then copy or reference it in the project.
-> - **Direct credentials** — ask using `AskUserQuestion`: _"Please provide your Auth0 Domain and Client ID."_
->
-> Once credentials are obtained, write them to the project `.env` file using `VITE_AUTH0_DOMAIN` and `VITE_AUTH0_CLIENT_ID` variable names. **Do NOT display the credentials in conversation output.**
+**For manual setup**, configure a **Native** application in the [Auth0 Dashboard](https://manage.auth0.com/) and note your Domain and Client ID.
 
 ### Step 2: Install Dependencies
 

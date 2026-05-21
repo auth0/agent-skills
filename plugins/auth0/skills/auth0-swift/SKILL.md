@@ -14,12 +14,6 @@ metadata:
 
 Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS). This skill adds complete native authentication to Swift apps using Web Auth (system browser redirect), secure Keychain credential storage via `CredentialsManager`, and optional biometric protection.
 
-> **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
-> ```bash
-> gh api repos/auth0/Auth0.swift/releases/latest --jq '.tag_name'
-> ```
-> Use the returned version in all dependency lines instead of any hardcoded version below. Current known version: `2.18.0`.
-
 ## When NOT to Use
 
 - **Android apps**: Use [auth0-android](/auth0-android)
@@ -34,12 +28,17 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 - **Xcode** 16.x
 - **Swift** 6.0+
 - Auth0 account — [Sign up free](https://auth0.com/signup)
-- Node.js 20+ (for bootstrap script automation)
-- Auth0 CLI — `brew install auth0/auth0-cli/auth0` (for bootstrap script)
+- Auth0 CLI — `brew install auth0/auth0-cli/auth0` (for automated setup)
 
 ## Quick Start Workflow
 
 > **Agent instruction:** Follow these steps in order. If you encounter an error at any step, attempt to fix it up to 5 times before calling `AskUserQuestion` to ask the user for guidance. Always search existing code first — if there are existing login/logout handlers, hook into them rather than creating new ones.
+>
+> **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands that produce output containing these values, redirect output to a file and read it programmatically. For example:
+> ```bash
+> auth0 apps create ... --json --no-input > /tmp/auth0-output.json 2>&1
+> ```
+> Then use the Read tool on `/tmp/auth0-output.json` to extract needed values and write them directly into `Auth0.plist` or other config files — never echo them in response text or terminal. When confirming the active tenant with the user, use a masked format (e.g., `your-te****.us.auth0.com`).
 
 ### Step 1 — Install SDK
 
@@ -62,10 +61,13 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 ### Step 2 — Configure Auth0
 
 > **Agent instruction:**
-> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write `Auth0.plist` directly with those values and proceed to Step 3.
-> - **If no credentials are provided:** Run the bootstrap script — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
+> - **If an `Auth0.plist` file already exists in the project:** Read it to extract `ClientId` and `Domain`, then proceed to Step 3.
+> - **If no `Auth0.plist` exists:** Ask the user via `AskUserQuestion`: _"How would you like to configure Auth0?"_
+>   - **Automatic (Auth0 CLI)** — I'll create the application, set callback URLs, and configure everything using the Auth0 CLI.
+>   - **Manual** — You provide a pre-configured `Auth0.plist` file and I'll add it to your project.
 >
-> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and the script command.
+> If the user chooses **automatic**: Follow [Setup Guide — Automated Setup via Auth0 CLI](./references/setup.md#automated-setup-via-auth0-cli).
+> If the user chooses **manual**: Follow [Setup Guide — Manual Setup](./references/setup.md#manual-setup-user-provided-auth0plist).
 
 ### Step 3 — Configure Callback URLs
 
@@ -80,13 +82,23 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 
 #### Path A — Custom Scheme
 
-> **Agent instruction:** Register the callback URLs using the Auth0 CLI (substitute real values for `CLIENT_ID`, `BUNDLE_ID`, `DOMAIN`):
+> **Agent instruction:** Register the callback URLs using the Auth0 CLI (substitute real values for `CLIENT_ID`, `BUNDLE_ID`, `DOMAIN`).
+>
+> First, retrieve existing callback and logout URLs to avoid overwriting them:
+> ```bash
+> auth0 apps show CLIENT_ID --json --no-input > /tmp/auth0-app-info.json 2>&1
+> ```
+> Read `/tmp/auth0-app-info.json` to extract existing `callbacks` and `allowed_logout_urls` arrays.
+>
+> Then include any existing URLs as a comma-separated list alongside the new ones:
 > ```bash
 > auth0 apps update CLIENT_ID \
->   --callbacks "BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
->   --logout-urls "BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
->   --no-input
+>   --callbacks "EXISTING_CALLBACKS,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>   --logout-urls "EXISTING_LOGOUT_URLS,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>   --no-input > /dev/null 2>&1
 > ```
+> If there are no existing URLs, omit the `EXISTING_` prefix and use only the new URL.
+>
 > Then follow the [URL scheme registration steps in Setup Guide](./references/setup.md#register-url-scheme-required-for-custom-scheme-callbacks) to register `$(PRODUCT_BUNDLE_IDENTIFIER)` as a URL type in Xcode.
 
 #### Path B — HTTPS Universal Links
@@ -94,22 +106,31 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 > **Agent instruction:** All four steps below are required — skipping any one will cause the callback redirect to fail silently after login.
 >
 > **Step B1 — Register callback URLs via Auth0 CLI:**
-> Register both HTTPS and custom scheme so the app works in all scenarios:
+> Register both HTTPS and custom scheme so the app works in all scenarios.
+>
+> First, retrieve existing callback and logout URLs to avoid overwriting them:
+> ```bash
+> auth0 apps show CLIENT_ID --json --no-input > /tmp/auth0-app-info.json 2>&1
+> ```
+> Read `/tmp/auth0-app-info.json` to extract existing `callbacks` and `allowed_logout_urls` arrays.
+>
+> Then include any existing URLs as a comma-separated list alongside the new ones:
 > ```bash
 > auth0 apps update CLIENT_ID \
->   --callbacks "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
->   --logout-urls "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
->   --no-input
+>   --callbacks "EXISTING_CALLBACKS,https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>   --logout-urls "EXISTING_LOGOUT_URLS,https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
+>   --no-input > /dev/null 2>&1
 > ```
+> If there are no existing URLs, omit the `EXISTING_` prefix and use only the new URLs.
 >
 > **Step B2 — Configure Device Settings via Auth0 CLI:**
 > Extract `DEVELOPMENT_TEAM` from `project.pbxproj` (10-character value, e.g. `ABC12DE34F`). If not found, ask via `AskUserQuestion`: _"What is your Apple Team ID? (developer.apple.com → Account → Membership Details)"_
 > ```bash
 > auth0 api patch applications/CLIENT_ID \
 >   --data '{"mobile":{"ios":{"team_id":"TEAM_ID","app_bundle_identifier":"BUNDLE_ID"}}}' \
->   --no-input
+>   --no-input > /dev/null 2>&1
 > ```
-> Auth0 will now host `https://DOMAIN/.well-known/apple-app-site-association` automatically — required for Universal Links to work on device.
+> Auth0 will now host the `apple-app-site-association` file automatically — required for Universal Links to work on device.
 >
 > **Step B3 — Add Associated Domains entitlement in Xcode:**
 > Add `com.apple.developer.associated-domains` to the app's `.entitlements` file with both `applinks:` and `webcredentials:` entries for the Auth0 domain. See [Setup Guide — Associated Domains](./references/setup.md#associated-domains-setup-https-universal-links) for the complete entitlements XML, Xcode capability steps, and build settings verification.
@@ -236,7 +257,7 @@ private let auth = AuthenticationService()
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 Dashboard configuration, bootstrap script, manual setup, URL scheme registration, CocoaPods/SPM/Carthage install
+- **[Setup Guide](./references/setup.md)** — Auth0 CLI configuration, Auth0.plist, URL scheme registration, Associated Domains, CocoaPods/SPM/Carthage install
 - **[Integration Patterns](./references/integration.md)** — Web Auth login/logout, CredentialsManager, biometric protection, MFA, organizations, error handling, SwiftUI/UIKit patterns
 - **[API Reference & Testing](./references/api.md)** — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
 

@@ -42,19 +42,21 @@ Run this script to automatically set up everything:
 # Detect OS and install Auth0 CLI if needed
 if ! command -v auth0 &> /dev/null; then
   echo "Installing Auth0 CLI..."
-  if [[ "$OSTYPE" == "darwin"* ]]; then
+  if [[ "$OSTYPE" == "darwin"* || "$OSTYPE" == "linux-gnu"* ]]; then
+    if ! command -v brew &> /dev/null; then
+      echo "❌ Homebrew is required to install the Auth0 CLI."
+      echo "   Install Homebrew: https://brew.sh"
+      echo "   Then re-run this script, or install the CLI manually:"
+      echo "   https://github.com/auth0/auth0-cli#installation"
+      exit 1
+    fi
     brew install auth0/auth0-cli/auth0
-  elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    # Download and review the install script before executing
-    curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh
-    echo "⚠️  Review the install script at /tmp/auth0-install.sh before running"
-    sh /tmp/auth0-install.sh -b /usr/local/bin
-    rm /tmp/auth0-install.sh
   elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
     echo "Please install Auth0 CLI: https://github.com/auth0/auth0-cli#installation"
     exit 1
   fi
 fi
+
 
 # Check if logged in to Auth0
 if ! auth0 tenants list &> /dev/null; then
@@ -248,12 +250,10 @@ npm install @auth0/auth0-react
 brew install auth0/auth0-cli/auth0
 ```
 
-**Linux (review script before executing):**
+**Linux (via Homebrew):**
 ```bash
-curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh
-# Review the script before running: cat /tmp/auth0-install.sh
-sh /tmp/auth0-install.sh
-rm /tmp/auth0-install.sh
+# Requires Homebrew on Linux: https://brew.sh
+brew install auth0/auth0-cli/auth0
 ```
 
 **Windows:**
