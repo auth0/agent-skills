@@ -407,22 +407,11 @@ After generating or modifying screen code, **always** validate the output before
 
 ### Step 1 — Install new dependencies (if any)
 
-If the generated or modified code introduced **new dependencies** in `package.json` (or new entries appear under `dependencies` / `devDependencies` that aren't already in the lockfile), run the project's package install before linting/building. Skip this step if no new packages were added.
-
-Detect the package manager from the lockfile present in the project root:
-
-| Lockfile | Package manager | Install command |
-|----------|-----------------|-----------------|
-| `pnpm-lock.yaml` | pnpm | `pnpm install` |
-| `yarn.lock` | Yarn | `yarn install` |
-| `package-lock.json` | npm | `npm install` |
-| `bun.lockb` / `bun.lock` | Bun | `bun install` |
-
-If multiple lockfiles exist, prefer in this priority: `pnpm-lock.yaml` → `yarn.lock` → `package-lock.json` → `bun.lock(b)`. If none exist, default to `npm install`.
+If the generated or modified code introduced **new dependencies** in `package.json` (entries under `dependencies` / `devDependencies` that aren't already installed in `node_modules`), run `npm install` from the project root before linting/building. Skip this step if no new packages were added.
 
 ```bash
 # Run from the project root
-<detected-install-command>
+npm install
 ```
 
 If install fails (peer-dependency conflict, registry error, version mismatch), surface the error to the customer and stop — do not proceed to lint/build until resolved.
