@@ -405,7 +405,29 @@ Submit button → Passkey button (conditional) → Social divider + buttons
 
 After generating or modifying screen code, **always** validate the output before moving on. Generated code may contain incorrect import paths, wrong import styles (default vs named), invalid component props, or references to non-existent exports. This phase catches and fixes those issues automatically.
 
-### Step 1 — Run lint
+### Step 1 — Install new dependencies (if any)
+
+If the generated or modified code introduced **new dependencies** in `package.json` (or new entries appear under `dependencies` / `devDependencies` that aren't already in the lockfile), run the project's package install before linting/building. Skip this step if no new packages were added.
+
+Detect the package manager from the lockfile present in the project root:
+
+| Lockfile | Package manager | Install command |
+|----------|-----------------|-----------------|
+| `pnpm-lock.yaml` | pnpm | `pnpm install` |
+| `yarn.lock` | Yarn | `yarn install` |
+| `package-lock.json` | npm | `npm install` |
+| `bun.lockb` / `bun.lock` | Bun | `bun install` |
+
+If multiple lockfiles exist, prefer in this priority: `pnpm-lock.yaml` → `yarn.lock` → `package-lock.json` → `bun.lock(b)`. If none exist, default to `npm install`.
+
+```bash
+# Run from the project root
+<detected-install-command>
+```
+
+If install fails (peer-dependency conflict, registry error, version mismatch), surface the error to the customer and stop — do not proceed to lint/build until resolved.
+
+### Step 2 — Run lint
 
 Run the project's linter to surface import errors, type mismatches, and invalid props:
 
@@ -420,13 +442,13 @@ If the project uses TypeScript, also run the type checker:
 npx tsc --noEmit 2>&1
 ```
 
-### Step 2 — Run build
+### Step 3 — Run build
 
 ```bash
 npm run build 2>&1
 ```
 
-### Step 3 — Parse errors and fix iteratively
+### Step 4 — Parse errors and fix iteratively
 
 If lint or build produces errors, parse each error and apply the appropriate fix:
 
