@@ -1,15 +1,19 @@
 # Migration Process — Edge Cases & Procedures
 
+This skill migrates developers to the **latest major version** of Auth0.swift. It detects the currently installed version, determines the latest stable release, and applies all breaking changes iteratively until the project builds successfully.
+
 Detailed guidance for scenarios that go beyond the standard 8-step workflow.
 
 ---
 
 ## Multi-Major-Version Jumps
 
-When migrating across multiple major versions (e.g., v1 → v3), apply migrations sequentially:
+The goal is always to reach the **latest stable major version**. When the project is multiple major versions behind (e.g., v1 when latest is v3), apply migrations sequentially:
 
 1. Migrate v1 → v2 (fetch v2 guide, apply, build)
 2. Migrate v2 → v3 (fetch v3 guide, apply, build)
+
+Each intermediate migration must produce a successful build before proceeding to the next.
 
 **Why sequential?** Each major version's migration guide assumes you're coming from the immediately prior version. Skipping versions may miss intermediate renames or behavioral changes that compound.
 

@@ -1,6 +1,6 @@
 ---
 name: auth0-swift-major-migration
-description: Use when upgrading Auth0.swift to the next major version in an iOS, macOS, tvOS, watchOS, or visionOS app — detects current version, fetches the official migration guide, applies breaking changes iteratively, and builds until successful.
+description: Use when upgrading Auth0.swift to the latest major version in an iOS, macOS, tvOS, watchOS, or visionOS app — detects current version, fetches the official migration guide, applies breaking changes iteratively, and builds until successful.
 license: Proprietary
 metadata:
   author: Auth0 <support@auth0.com>

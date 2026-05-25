@@ -142,7 +142,7 @@ You don't pick skills manually — framework detection handles it.
 | **.NET iOS** | [`Auth0.OidcClient.iOS`](https://github.com/auth0/auth0-oidc-client-net) | .NET iOS (Xamarin) |
 | **.NET Winforms** | [`Auth0.OidcClient.WinForms`](https://github.com/auth0/auth0-oidc-client-net) | .NET WinForms applications |
 | **WPF** | [`Auth0.OidcClient.WPF`](https://github.com/auth0/Auth0.OidcClient.WPF) | .NET WPF |
-| **iOS/macOS Migration** | [`Auth0.swift`](https://github.com/auth0/Auth0.swift) | Major version upgrades for Auth0.swift |
+| **iOS/macOS Migration** | [`Auth0.swift`](https://github.com/auth0/Auth0.swift) | Upgrade to the latest major version of Auth0.swift |
 
 ## Example prompts
 
