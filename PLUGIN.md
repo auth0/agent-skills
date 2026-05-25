@@ -58,6 +58,7 @@ Mobile skills:
 - `auth0-ionic-vue` - Ionic Vue + Capacitor (iOS/Android)
 - `auth0-android` - Android (Kotlin/Java)
 - `auth0-swift` - iOS/macOS (Swift)
+- `auth0-swift-major-migration` - Auth0.swift major version upgrades
 - `auth0-react-native` - React Native CLI (bare workflow)
 - `auth0-expo` - Expo (managed workflow)
 - `auth0-maui` - .NET MAUI cross-platform (iOS, Android, macOS, Windows)
@@ -120,6 +121,7 @@ auth0/agent-skills/
 │           ├── auth0-winforms/
 │           ├── auth0-net-ios/
 │           └── auth0-wpf/
+│           └── auth0-swift-major-migration/
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
