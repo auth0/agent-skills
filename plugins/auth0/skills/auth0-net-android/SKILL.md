@@ -56,7 +56,7 @@ Add Auth0 authentication to .NET Android applications. This skill integrates the
 > **Agent instruction:** When writing the Auth0Client configuration:
 > - Pass `this` (the Activity) as the second argument to `Auth0Client` constructor.
 > - **Always set `Scope = "openid profile email offline_access"`** — the `offline_access` scope is required to receive refresh tokens, enabling silent token renewal without re-prompting the user.
-> - The callback URL format is `YOUR_ANDROID_PACKAGE_NAME://{domain}/android/YOUR_ANDROID_PACKAGE_NAME/callback` — all lowercase.
+> - The callback URL format is `YOUR_ANDROID_PACKAGE_NAME://YOUR_AUTH0_DOMAIN/android/YOUR_ANDROID_PACKAGE_NAME/callback` — all lowercase.
 > - The `DataScheme` in the `IntentFilter` must be lowercase or Android will not receive callbacks.
 > - Set `LaunchMode = LaunchMode.SingleTask` on the Activity to prevent duplicate instances. Do NOT use `SingleTop` — it does not correctly handle the callback redirect and will create duplicate Activity instances.
 > - The Activity should either extend `Auth0ClientActivity` OR manually override `OnNewIntent` and call `ActivityMediator.Instance.Send(intent.DataString)`.
