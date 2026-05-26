@@ -47,6 +47,7 @@ Backend/fullstack framework skills:
 - `auth0-fastapi-api` - FastAPI API authentication
 - `auth0-java-mvc-common` - Java Servlet web applications
 - `auth0-springboot-api` - Spring Boot API authentication
+- `auth0-aspnetcore-authentication` - ASP.NET Core MVC, Razor Pages, Blazor Server web applications
 - `auth0-aspnetcore-api` - ASP.NET Core API authentication
 - `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
 
@@ -59,6 +60,7 @@ Mobile skills:
 - `auth0-react-native` - React Native CLI (bare workflow)
 - `auth0-expo` - Expo (managed workflow)
 - `auth0-maui` - .NET MAUI cross-platform (iOS, Android, macOS, Windows)
+- `auth0-net-android` - .NET Android (Xamarin)
 
 ---
 
@@ -97,6 +99,7 @@ auth0/agent-skills/
 │           ├── auth0-fastapi-api/
 │           ├── auth0-java-mvc-common/
 │           ├── auth0-springboot-api/
+│           ├── auth0-aspnetcore-authentication/
 │           ├── auth0-aspnetcore-api/
 │           ├── express-oauth2-jwt-bearer/
 │           ├── auth0-ionic-angular/
@@ -106,7 +109,8 @@ auth0/agent-skills/
 │           ├── auth0-expo/
 │           ├── auth0-android/
 │           ├── auth0-swift/
-│           └── auth0-maui/
+│           ├── auth0-maui/
+│           └── auth0-net-android/
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
@@ -175,7 +179,7 @@ cp -r plugins/auth0/skills/* ~/.claude/skills/
 ## Use Cases
 
 ### Install Everything (Most Common)
-User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 27 skills.
+User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 28 skills.
 
 ### Install One Framework
 Developer working on React app -> uses CLI to install just `auth0-react` skill.
