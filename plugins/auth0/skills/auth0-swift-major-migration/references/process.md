@@ -1,6 +1,8 @@
 # Migration Process — Edge Cases & Procedures
 
-This skill migrates developers to the **latest major version** of Auth0.swift. It detects the currently installed version, determines the latest stable release, and applies all breaking changes iteratively until the project builds successfully.
+This skill migrates developers to the **latest major version** of Auth0.swift. It detects the currently installed version, determines the latest stable release, analyzes the new SDK's actual source code, and applies changes based on the project's existing architecture and Apple-recommended standards — not by mechanically following a migration guide.
+
+**Core principle:** Code changes must respect the project's design patterns (MVVM, MVC, TCA, VIPER, etc.), concurrency model (async/await, Combine, completion handlers), and platform conventions (SwiftUI, UIKit, Swift 6 strict concurrency, `@Sendable`, actor isolation).
 
 Detailed guidance for scenarios that go beyond the standard 8-step workflow.
 
@@ -97,14 +99,14 @@ For Carthage users migrating to a version that ships XCFrameworks:
 
 ---
 
-## When the Migration Guide is Missing
+## Primary Approach: SDK Source Analysis
 
-If no official migration guide exists for the target version:
+The primary method for determining what needs to change is analyzing the new SDK's actual source code:
 
-1. **Check the CHANGELOG** for breaking changes listed under the major version
-2. **Compare release notes** between current and target versions
-3. **Use build errors as the guide** — bump the version, build, and fix errors one by one
-4. **Check API diff** if available:
+1. **Fetch the public API surface** of the target version from the repository
+2. **Compare with the APIs used in the project** to identify what's renamed, removed, or changed
+3. **Use build errors as validation** — bump the version, build, and fix errors guided by your understanding of the new API
+4. **Check API diff** between versions:
    ```bash
    # Compare public API between tags
    curl -s "https://api.github.com/repos/auth0/Auth0.swift/compare/CURRENT_TAG...TARGET_TAG" | python3 -c "
@@ -115,6 +117,8 @@ If no official migration guide exists for the target version:
            print(f['filename'], f['status'])
    "
    ```
+
+The migration guide (if available) is a supplementary reference for understanding _why_ changes were made, but it must not dictate _how_ you write the replacement code. The replacement code must match the project's architecture and Apple platform conventions.
 
 ---
 

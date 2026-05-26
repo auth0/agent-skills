@@ -1,6 +1,6 @@
 ---
 name: auth0-swift-major-migration
-description: Use when upgrading Auth0.swift to the latest major version in an iOS, macOS, tvOS, watchOS, or visionOS app — detects current version, fetches the official migration guide, applies breaking changes iteratively, and builds until successful.
+description: Use when upgrading Auth0.swift to the latest major version in an iOS, macOS, tvOS, watchOS, or visionOS app — detects current version, analyzes the new SDK's source code, applies changes based on the project's architecture and Apple-recommended standards, and builds until successful.
 license: Proprietary
 metadata:
   author: Auth0 <support@auth0.com>
@@ -12,7 +12,9 @@ metadata:
 
 # Auth0.swift Major Version Migration
 
-Migrates an existing Auth0.swift integration to the latest major version. This skill is version-agnostic — it dynamically discovers the current and target versions, fetches the official migration guide from the Auth0.swift repository, and applies changes iteratively until the project builds successfully.
+Migrates an existing Auth0.swift integration to the latest major version. This skill is version-agnostic — it dynamically discovers the current and target versions, analyzes the new SDK's actual source code, and applies changes based on the project's existing architecture and Apple-recommended standards. Changes are applied iteratively until the project builds successfully.
+
+The migration is driven by the SDK's real public API surface and the project's code — not by mechanically following a migration guide. The agent adapts its approach to match the app's design patterns (MVVM, TCA, etc.), concurrency model (async/await, Combine, callbacks), and platform conventions (SwiftUI, UIKit, Swift 6 strict concurrency).
 
 ## When NOT to Use
 
@@ -94,50 +96,57 @@ Migrates an existing Auth0.swift integration to the latest major version. This s
 
 ---
 
-### Step 3 — Fetch Official Migration Guide
+### Step 3 — Analyze Target SDK Source
 
-> **Agent instruction:** Fetch the migration guide from the Auth0.swift repository. The guide filename follows the pattern `V{N}_MIGRATION_GUIDE.md` where N is the target major version.
+> **Agent instruction:** Understand what changed in the target major version by examining the actual source code of the new SDK, not just a migration guide.
 >
-> 1. **Try to fetch the guide from the release tag:**
+> 1. **Fetch the public API surface of the target version:**
 >    ```bash
->    curl -sf "https://raw.githubusercontent.com/auth0/Auth0.swift/{TAG}/V{N}_MIGRATION_GUIDE.md"
+>    # Get the source tree listing for the target tag
+>    curl -s "https://api.github.com/repos/auth0/Auth0.swift/git/trees/{TAG}?recursive=1" | python3 -c "
+>    import sys, json
+>    tree = json.load(sys.stdin).get('tree', [])
+>    for item in tree:
+>        if item['path'].startswith('Auth0/') and item['path'].endswith('.swift'):
+>            print(item['path'])
+>    "
 >    ```
->    Where `{TAG}` is the target version tag (e.g., `3.0.0`) and `{N}` is the major version number.
 >
-> 2. **If not found, try the main branch:**
+> 2. **Fetch key public API files** to understand renamed, removed, or changed interfaces:
 >    ```bash
+>    # Fetch core public types (adjust paths based on tree listing)
+>    curl -sf "https://raw.githubusercontent.com/auth0/Auth0.swift/{TAG}/Auth0/WebAuth.swift"
+>    curl -sf "https://raw.githubusercontent.com/auth0/Auth0.swift/{TAG}/Auth0/CredentialsManager.swift"
+>    curl -sf "https://raw.githubusercontent.com/auth0/Auth0.swift/{TAG}/Auth0/Authentication.swift"
+>    ```
+>
+> 3. **Optionally fetch the migration guide** as a supplementary reference (not the primary source of truth):
+>    ```bash
+>    curl -sf "https://raw.githubusercontent.com/auth0/Auth0.swift/{TAG}/V{N}_MIGRATION_GUIDE.md" || \
 >    curl -sf "https://raw.githubusercontent.com/auth0/Auth0.swift/main/V{N}_MIGRATION_GUIDE.md"
 >    ```
+>    Use this for context on _why_ changes were made, but base your code modifications on the actual SDK source and the project's architecture.
 >
-> 3. **If not found, try the CHANGELOG:**
->    ```bash
->    curl -sf "https://raw.githubusercontent.com/auth0/Auth0.swift/{TAG}/CHANGELOG.md"
->    ```
->    Extract the breaking changes section for the target major version.
->
-> 4. **If no guide is found**, check the GitHub release notes:
->    ```bash
->    curl -s "https://api.github.com/repos/auth0/Auth0.swift/releases/tags/{TAG}" | python3 -c "import sys,json; print(json.load(sys.stdin).get('body',''))"
->    ```
->
-> 5. **If still nothing found**, ask the user: _"I couldn't find the official migration guide for vN. Do you have a link to it, or would you like me to proceed by analyzing the build errors after the version bump?"_
->
-> **Store the migration guide content** — you will reference it throughout the remaining steps.
+> **Key principle:** The migration guide is informational. The actual code changes you apply must be driven by the SDK's real public API surface and the project's existing architecture.
 
 ---
 
-### Step 4 — Audit Project Usage
+### Step 4 — Audit Project Architecture & Usage
 
-> **Agent instruction:** Before making any changes, build a complete inventory of Auth0.swift usage across the project.
+> **Agent instruction:** Before making any changes, understand the project's architecture, patterns, and Auth0 usage in depth.
 >
 > 1. **Find all files importing Auth0:**
 >    ```bash
 >    grep -rl "import Auth0" --include="*.swift" .
 >    ```
 >
-> 2. **For each file**, read it and note which Auth0 APIs are used.
+> 2. **Understand the project's architecture:**
+>    - Identify the app's design pattern (MVVM, MVC, VIPER, TCA, etc.)
+>    - Note how Auth0 is integrated (singleton service, dependency injection, protocol abstraction, etc.)
+>    - Check Swift concurrency usage (async/await, Combine, completion handlers, actors)
+>    - Check minimum deployment target and Swift version
 >
-> 3. **Cross-reference with the migration guide** — identify which breaking changes affect this project. Create a mental checklist of only the relevant changes.
+> 3. **For each file**, read it and note which Auth0 APIs are used and how they fit into the project's architecture.
 >
 > 4. **Check for custom protocol implementations** (custom `CredentialsStorage`, `Logger`, `WebAuth` conformances) — these often have signature changes in major versions.
 >
@@ -146,7 +155,14 @@ Migrates an existing Auth0.swift integration to the latest major version. This s
 >    grep -rl "import Auth0\|@testable import" --include="*.swift" . | grep -i test
 >    ```
 >
-> **Important:** Do NOT start modifying code yet. This step is read-only reconnaissance.
+> 6. **Identify Apple platform patterns** the project uses:
+>    - SwiftUI vs UIKit/AppKit
+>    - Swift 6 strict concurrency / `@Sendable` / actor isolation
+>    - Structured concurrency (TaskGroup, async let)
+>    - Observation framework (`@Observable`) vs ObservableObject
+>    - App Intents, WidgetKit, or extension targets sharing credentials
+>
+> **Important:** Do NOT start modifying code yet. This step is read-only reconnaissance. The goal is to understand how the project is structured so that migrated code respects the existing architecture and Apple-recommended standards.
 
 ---
 
@@ -180,28 +196,41 @@ Migrates an existing Auth0.swift integration to the latest major version. This s
 
 ---
 
-### Step 6 — Apply Breaking Changes
+### Step 6 — Apply Code Changes
 
-> **Agent instruction:** Using the migration guide from Step 3 and the usage audit from Step 4, systematically apply each breaking change.
+> **Agent instruction:** Using the SDK source analysis from Step 3 and the architecture audit from Step 4, systematically update the project's Auth0 integration. Changes must respect the project's existing architecture and follow Apple-recommended standards.
+>
+> **Principles:**
+> - **Architecture-first:** Match the project's existing patterns. If the app uses MVVM with async/await, migrate to async APIs. If it uses Combine, use Combine publishers. Do not force a pattern the project doesn't use.
+> - **Apple standards:** Follow current Apple platform conventions — structured concurrency, `@Sendable` correctness, actor isolation where appropriate, `@MainActor` for UI-bound code.
+> - **Minimal disruption:** Change only what the new SDK requires. Do not refactor surrounding code unless it's necessary for compilation.
+> - **Project consistency:** New code should look like it belongs in this project, not like it was copy-pasted from a migration guide.
 >
 > **Rules:**
-> - Work through one breaking change category at a time
+> - Work through one API change category at a time
 > - For each category, search the ENTIRE project (app code + tests + extensions) for affected patterns
 > - Apply the fix to ALL occurrences before moving to the next category
 > - If a change is ambiguous or has multiple valid approaches, ask the user before proceeding
 > - Never remove functionality — migrate it to the new API equivalent
 > - If an API is removed with no direct replacement, add a `// TODO:` comment explaining what backend work is needed and inform the user
 >
-> **Pattern for each breaking change:**
+> **Pattern for each change:**
 > 1. Search for the old pattern across all Swift files
-> 2. For each occurrence, apply the migration guide's recommended replacement
-> 3. Verify the replacement is semantically equivalent (preserves behavior)
+> 2. Determine the correct replacement based on the new SDK's public API and the project's architecture
+> 3. Apply the replacement in a way that is consistent with the project's style and Apple platform conventions
+> 4. Verify the replacement is semantically equivalent (preserves behavior)
+>
+> **Apple platform considerations:**
+> - If the project targets Swift 6, ensure all Auth0 interactions are `@Sendable`-correct and respect actor boundaries
+> - If using SwiftUI, prefer `@MainActor`-isolated view models over manual `DispatchQueue.main` calls
+> - If using structured concurrency, prefer `async throws` over completion handler patterns even if both are available in the new SDK
+> - Respect the project's error handling strategy (typed throws, Result, do-catch patterns)
 >
 > **Security rules:**
 > - Never hardcode tokens, secrets, or credentials during migration
 > - If migration involves auth flow changes, preserve existing security properties (PKCE, secure storage, etc.)
 > - Never downgrade from CredentialsManager/Keychain to UserDefaults or in-memory storage
-> - If the migration guide suggests new security features, mention them to the user as optional improvements
+> - If the new SDK offers improved security features, mention them to the user as optional improvements
 
 ---
 
