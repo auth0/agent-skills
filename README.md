@@ -75,6 +75,7 @@ npx clawhub install auth0-fastify-api
 npx clawhub install auth0-react-native
 npx clawhub install auth0-android
 npx clawhub install auth0-swift
+npx clawhub install auth0-maui
 npx clawhub install auth0-aspnetcore-api
 npx clawhub install auth0-ionic-react
 npx clawhub install auth0-ionic-angular
@@ -96,7 +97,7 @@ You don't pick skills manually — framework detection handles it.
 
 ## Skills
 
-26 skills covering web, mobile, and API authentication.
+27 skills covering web, mobile, and API authentication.
 
 | Skill | SDK | Frameworks |
 |-------|-----|------------|
@@ -126,6 +127,7 @@ You don't pick skills manually — framework detection handles it.
 | **Expo** | [`react-native-auth0`](https://github.com/auth0/react-native-auth0) | Expo (managed workflow) |
 | **Android** | [`Auth0.Android`](https://github.com/auth0/Auth0.Android) | Android (Kotlin/Java) |
 | **iOS/macOS** | [`Auth0.swift`](https://github.com/auth0/Auth0.swift) | Swift (iOS, macOS, tvOS, watchOS, visionOS) |
+| **.NET MAUI** | [`Auth0.OidcClient.MAUI`](https://github.com/auth0/auth0-oidc-client-net) | .NET MAUI (iOS, Android, macOS, Windows) |
 
 ## Example prompts
 

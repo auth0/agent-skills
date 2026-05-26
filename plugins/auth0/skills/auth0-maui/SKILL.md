@@ -14,9 +14,9 @@ metadata:
 
 Add Auth0 authentication to .NET MAUI applications targeting iOS, Android, macOS, and Windows. This skill integrates the `Auth0.OidcClient.MAUI` NuGet package which uses the system browser via MAUI's `WebAuthenticator` for secure OIDC-based login and logout flows with PKCE.
 
-> **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
+> **Agent instruction:** Before providing SDK setup instructions, fetch the latest MAUI release version by running:
 > ```bash
-> gh api repos/auth0/auth0-oidc-client-net/releases/latest --jq '.tag_name' 2>/dev/null || gh api repos/auth0/auth0-oidc-client-net/releases --jq '[.[] | select(.tag_name | startswith("maui-")) | .tag_name | ltrimstr("maui-")] | .[0]'
+> gh api repos/auth0/auth0-oidc-client-net/releases --jq '[.[] | select(.tag_name | startswith("maui-")) | .tag_name | ltrimstr("maui-")] | .[0]'
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below.
 
@@ -55,7 +55,7 @@ Add Auth0 authentication to .NET MAUI applications targeting iOS, Android, macOS
    - **IMPORTANT:** Always set `Scope = "openid profile email offline_access"` — the `offline_access` scope is required to receive a refresh token for silent token renewal.
 4. **Persist tokens with SecureStorage**: After login, store the refresh token using `await SecureStorage.Default.SetAsync("refresh_token", loginResult.RefreshToken)`. On app startup, restore the session with `RefreshTokenAsync`. Clear on logout with `SecureStorage.Default.Remove("refresh_token")`.
 5. **Register URL scheme**: Configure platform-specific callback handling:
-   - Android: Create `WebAuthenticatorCallbackActivity` with IntentFilter for your custom scheme (e.g., `myapp`)
+   - Android: Create `WebAuthenticatorActivity` with IntentFilter for your custom scheme (e.g., `myapp`)
    - Windows (two steps required): (1) Add `<uap:Extension Category="windows.protocol"><uap:Protocol Name="myapp"/></uap:Extension>` to `Platforms/Windows/Package.appxmanifest`, AND (2) call `Activator.Default.CheckRedirectionActivation()` in `Platforms/Windows/App.xaml.cs`
    - iOS/macOS: No extra configuration needed
 6. **Build and verify**: `dotnet build`

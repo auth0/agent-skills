@@ -228,7 +228,7 @@ if (loginResult.IsError)
 {
     switch (loginResult.Error)
     {
-        case "a]ccess_denied":
+        case "access_denied":
             // User denied consent or was blocked by a rule
             await DisplayAlert("Access Denied", "You do not have permission to access this application.", "OK");
             break;

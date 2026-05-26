@@ -29,6 +29,7 @@ Core skills:
 - `auth0-quickstart` - Framework detection and routing
 - `auth0-migration` - Migrate from other auth providers
 - `auth0-mfa` - Multi-Factor Authentication
+- `acul-screen-generator` - Custom Universal Login screens and theming
 
 Frontend framework skills:
 - `auth0-react` - React SPAs
@@ -57,6 +58,7 @@ Mobile skills:
 - `auth0-swift` - iOS/macOS (Swift)
 - `auth0-react-native` - React Native CLI (bare workflow)
 - `auth0-expo` - Expo (managed workflow)
+- `auth0-maui` - .NET MAUI cross-platform (iOS, Android, macOS, Windows)
 
 ---
 
@@ -81,6 +83,7 @@ auth0/agent-skills/
 │           ├── auth0-quickstart/
 │           ├── auth0-migration/
 │           ├── auth0-mfa/
+│           ├── acul-screen-generator/
 │           ├── auth0-react/
 │           ├── auth0-vue/
 │           ├── auth0-angular/
@@ -102,7 +105,8 @@ auth0/agent-skills/
 │           ├── auth0-react-native/
 │           ├── auth0-expo/
 │           ├── auth0-android/
-│           └── auth0-swift/
+│           ├── auth0-swift/
+│           └── auth0-maui/
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
@@ -171,7 +175,7 @@ cp -r plugins/auth0/skills/* ~/.claude/skills/
 ## Use Cases
 
 ### Install Everything (Most Common)
-User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 26 skills.
+User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 27 skills.
 
 ### Install One Framework
 Developer working on React app -> uses CLI to install just `auth0-react` skill.
