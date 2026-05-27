@@ -65,6 +65,7 @@ Mobile skills:
 
 Desktop Application skills:
 - `auth0-winforms` - .NET WinForms applications
+- `auth0-wpf` - .NET WPF applications
 ---
 
 ## Directory Structure
@@ -115,7 +116,8 @@ auth0/agent-skills/
 │           ├── auth0-maui/
 │           ├── auth0-net-android/
 │           ├── auth0-winforms/
-│           └── auth0-net-ios/
+│           ├── auth0-net-ios/
+│           └── auth0-wpf/
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
@@ -184,7 +186,7 @@ cp -r plugins/auth0/skills/* ~/.claude/skills/
 ## Use Cases
 
 ### Install Everything (Most Common)
-User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 30 skills.
+User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 31 skills.
 
 ### Install One Framework
 Developer working on React app -> uses CLI to install just `auth0-react` skill.

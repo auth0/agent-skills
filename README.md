@@ -84,6 +84,7 @@ npx clawhub install auth0-aspnetcore-authentication
 npx clawhub install auth0-net-android
 npx clawhub install auth0-net-ios
 npx clawhub install auth0-winforms
+npx clawhub install auth0-wpf
 ```
 
 Or browse and install from the [ClawHub web UI](https://clawhub.ai) — search for "auth0".
@@ -101,7 +102,7 @@ You don't pick skills manually — framework detection handles it.
 
 ## Skills
 
-30 skills covering web, mobile, and API authentication.
+31 skills covering web, mobile, and API authentication.
 
 | Skill | SDK | Frameworks |
 |-------|-----|------------|
@@ -136,6 +137,7 @@ You don't pick skills manually — framework detection handles it.
 | **.NET Android** | [`Auth0.OidcClient.AndroidX`](https://github.com/auth0/auth0-oidc-client-net) | .NET Android (Xamarin) |
 | **.NET iOS** | [`Auth0.OidcClient.iOS`](https://github.com/auth0/auth0-oidc-client-net) | .NET iOS (Xamarin) |
 | **.NET Winforms** | [`Auth0.OidcClient.WinForms`](https://github.com/auth0/auth0-oidc-client-net) | .NET WinForms applications |
+| **WPF** | [`Auth0.OidcClient.WPF`](https://github.com/auth0/Auth0.OidcClient.WPF) | .NET WPF |
 
 ## Example prompts
 
