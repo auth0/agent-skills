@@ -69,8 +69,30 @@ fi
 echo "Using Auth0 tenant: $DOMAIN"
 echo ""
 
-# Set bundle identifier (replace with actual bundle ID)
-BUNDLE_ID="com.mycompany.myapplication"
+# Attempt to extract bundle identifier from project files
+BUNDLE_ID=""
+
+# Try .csproj ApplicationId first (most common in .NET iOS projects)
+if [ -z "$BUNDLE_ID" ]; then
+    BUNDLE_ID=$(grep -rh '<ApplicationId>' --include="*.csproj" . 2>/dev/null | head -1 | sed 's/.*<ApplicationId>\(.*\)<\/ApplicationId>.*/\1/' | xargs)
+fi
+
+# Try Info.plist CFBundleIdentifier
+if [ -z "$BUNDLE_ID" ]; then
+    BUNDLE_ID=$(grep -A1 'CFBundleIdentifier' --include="*.plist" -r . 2>/dev/null | grep '<string>' | head -1 | sed 's/.*<string>\(.*\)<\/string>.*/\1/' | xargs)
+fi
+
+# If still not found, prompt the user
+if [ -z "$BUNDLE_ID" ] || [[ "$BUNDLE_ID" == *'$('* ]]; then
+    echo "Could not detect Bundle Identifier from project files."
+    read -p "Enter your Bundle Identifier (e.g., com.mycompany.myapplication): " BUNDLE_ID
+    if [ -z "$BUNDLE_ID" ]; then
+        echo "Error: Bundle Identifier is required."
+        exit 1
+    fi
+fi
+
+echo "Using Bundle Identifier: $BUNDLE_ID"
 
 # Construct callback URL
 CALLBACK_URL="$BUNDLE_ID://$DOMAIN/ios/$BUNDLE_ID/callback"
