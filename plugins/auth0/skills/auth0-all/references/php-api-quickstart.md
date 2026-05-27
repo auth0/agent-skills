@@ -49,9 +49,9 @@ You need an **API** (not Application) in Auth0.
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for complete CLI scripts. The automated path writes `.env` for you - skip Step 3 below and proceed directly to Step 4.
+**If the user chose Automated**, follow the [Setup Guide](php-api-setup.md) for complete CLI scripts. The automated path writes `.env` for you - skip Step 3 below and proceed directly to Step 4.
 
-**If the user chose Manual**, follow the [Setup Guide](references/setup.md) (Manual Setup section) for full instructions. Then continue with Step 3 below.
+**If the user chose Manual**, follow the [Setup Guide](php-api-setup.md) (Manual Setup section) for full instructions. Then continue with Step 3 below.
 
 Quick reference for manual API creation:
 
@@ -488,16 +488,16 @@ $token = $auth0->decode(
 **Common Use Cases:**
 - Protect routes -> `requireAuth($auth0)` (see Step 5)
 - Scope enforcement -> `requireAuth($auth0, ['read:messages'])` (see Step 5)
-- CORS setup -> [Integration Guide](references/integration.md#cors-configuration)
-- Multi-audience validation -> [Integration Guide](references/integration.md#multi-audience-validation)
-- Advanced configuration -> [API Reference](references/api.md)
+- CORS setup -> [Integration Guide](php-api-integration.md#cors-configuration)
+- Multi-audience validation -> [Integration Guide](php-api-integration.md#multi-audience-validation)
+- Advanced configuration -> [API Reference](php-api-api.md)
 
 
 ## Detailed Documentation
 
-- **[Setup Guide](references/setup.md)** - Auth0 CLI setup, environment configuration, getting test tokens
-- **[Integration Guide](references/integration.md)** - Scopes, permissions, middleware, multi-audience, CORS, error handling
-- **[API Reference](references/api.md)** - Complete SDK API for API mode, configuration options, token methods
+- **[Setup Guide](php-api-setup.md)** - Auth0 CLI setup, environment configuration, getting test tokens
+- **[Integration Guide](php-api-integration.md)** - Scopes, permissions, middleware, multi-audience, CORS, error handling
+- **[API Reference](php-api-api.md)** - Complete SDK API for API mode, configuration options, token methods
 
 
 ## References

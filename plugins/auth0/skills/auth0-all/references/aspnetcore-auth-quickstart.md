@@ -434,9 +434,9 @@ public IActionResult Profile() { return View(); }
 
 ## Detailed Documentation
 
-- **[Setup Guide](references/setup.md)** - Automated setup scripts, credential configuration, Auth0 CLI usage
-- **[Integration Guide](references/integration.md)** - Protected routes, calling APIs, Blazor patterns, error handling
-- **[API Reference](references/api.md)** - Complete SDK configuration, builder options, claims reference
+- **[Setup Guide](aspnetcore-auth-setup.md)** - Automated setup scripts, credential configuration, Auth0 CLI usage
+- **[Integration Guide](aspnetcore-auth-integration.md)** - Protected routes, calling APIs, Blazor patterns, error handling
+- **[API Reference](aspnetcore-auth-api.md)** - Complete SDK configuration, builder options, claims reference
 
 
 ## References

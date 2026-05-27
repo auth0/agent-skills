@@ -350,9 +350,9 @@ if user is None:
 
 ## Detailed Documentation
 
-- **[Setup Guide](references/setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
-- **[Integration Guide](references/integration.md)** - Protected routes, calling APIs, session management, error handling
-- **[API Reference](references/api.md)** - Complete ServerClient API, configuration options, store implementation, security
+- **[Setup Guide](flask-setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
+- **[Integration Guide](flask-integration.md)** - Protected routes, calling APIs, session management, error handling
+- **[API Reference](flask-api.md)** - Complete ServerClient API, configuration options, store implementation, security
 
 
 ## References

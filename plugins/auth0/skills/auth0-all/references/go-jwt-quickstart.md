@@ -51,7 +51,7 @@ You need an **API** (not Application) in Auth0.
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for the "Initial Setup" section (steps 1–6). The automated path writes `.env` for you — skip Step 3 below and proceed directly to Step 4.
+**If the user chose Automated**, follow the [Setup Guide](go-jwt-setup.md) for the "Initial Setup" section (steps 1–6). The automated path writes `.env` for you — skip Step 3 below and proceed directly to Step 4.
 
 > **Agent instruction (Automated path checkpoints):**
 >
@@ -68,7 +68,7 @@ You need an **API** (not Application) in Auth0.
 > 9. **Add `.env` to `.gitignore`** — if not already present.
 > 10. **Proceed to code integration** — skip Step 3 (already done) and go directly to Step 4 to write the middleware code.
 
-**If the user chose Manual**, follow the [Setup Guide](references/setup.md) (Manual Setup section) for full instructions. Then continue with Step 3 below.
+**If the user chose Manual**, follow the [Setup Guide](go-jwt-setup.md) (Manual Setup section) for full instructions. Then continue with Step 3 below.
 
 Quick reference for manual API creation:
 
@@ -413,7 +413,7 @@ curl -s http://localhost:8080/api/private -H "Authorization: Bearer $TEST_TOKEN"
 
 ## Scope-Based Authorization
 
-See [Integration Guide](references/integration.md) for defining and enforcing scope and permission policies.
+See [Integration Guide](go-jwt-integration.md) for defining and enforcing scope and permission policies.
 
 
 ## CORS Configuration
@@ -442,12 +442,12 @@ handler := corsMiddleware(mux)
 log.Fatal(http.ListenAndServe(":8080", handler))
 ```
 
-See [Integration Guide](references/integration.md) for detailed CORS patterns.
+See [Integration Guide](go-jwt-integration.md) for detailed CORS patterns.
 
 
 ## DPoP Support
 
-Built-in proof-of-possession token binding per RFC 9449. See [Integration Guide](references/integration.md) for configuration.
+Built-in proof-of-possession token binding per RFC 9449. See [Integration Guide](go-jwt-integration.md) for configuration.
 
 
 ## Related Skills
@@ -474,17 +474,17 @@ Built-in proof-of-possession token binding per RFC 9449. See [Integration Guide]
 
 **Common Use Cases:**
 - Protect routes → `middleware.CheckJWT(handler)` (see Step 5)
-- Permission enforcement → [Integration Guide](references/integration.md)
-- DPoP token binding → [Integration Guide](references/integration.md)
-- Framework adapters (Gin, Echo) → [Integration Guide](references/integration.md)
-- Advanced JWT config → [API Reference](references/api.md)
+- Permission enforcement → [Integration Guide](go-jwt-integration.md)
+- DPoP token binding → [Integration Guide](go-jwt-integration.md)
+- Framework adapters (Gin, Echo) → [Integration Guide](go-jwt-integration.md)
+- Advanced JWT config → [API Reference](go-jwt-api.md)
 
 
 ## Detailed Documentation
 
-- **[Setup Guide](references/setup.md)** - Auth0 CLI setup, environment configuration
-- **[Integration Guide](references/integration.md)** - Scope policies, DPoP, framework adapters, error handling
-- **[API Reference](references/api.md)** - Complete configuration options and validator/middleware reference
+- **[Setup Guide](go-jwt-setup.md)** - Auth0 CLI setup, environment configuration
+- **[Integration Guide](go-jwt-integration.md)** - Scope policies, DPoP, framework adapters, error handling
+- **[API Reference](go-jwt-api.md)** - Complete configuration options and validator/middleware reference
 
 
 ## References

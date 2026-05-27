@@ -51,7 +51,7 @@ scoop install auth0
 # Or: choco install auth0-cli
 ```
 
-**Full installation guide:** See [CLI Reference](references/cli.md#installation)
+**Full installation guide:** See [CLI Reference](quickstart-cli.md#installation)
 
 ### Login to Auth0
 
@@ -98,7 +98,7 @@ auth0 apps list          # Find your app
 auth0 apps show <app-id> # Get client ID and secret
 ```
 
-**More CLI commands:** See [CLI Reference](references/cli.md)
+**More CLI commands:** See [CLI Reference](quickstart-cli.md)
 
 ### Apply Branding (Optional)
 
@@ -177,25 +177,25 @@ The migration skill covers:
 
 ### Environment Variables
 Framework-specific environment variable setup:
-- [Vite, Create React App, Angular](references/environments.md#single-page-applications-spas)
-- [Next.js, Express](references/environments.md#server-side-applications)
-- [React Native, Expo](references/environments.md#mobile-applications)
+- [Vite, Create React App, Angular](quickstart-environments.md#single-page-applications-spas)
+- [Next.js, Express](quickstart-environments.md#server-side-applications)
+- [React Native, Expo](quickstart-environments.md#mobile-applications)
 
 ### Auth0 Concepts
 Core concepts and troubleshooting:
-- [Application Types](references/concepts.md#application-types)
-- [Key Terms](references/concepts.md#key-terms)
-- [OAuth Flows](references/concepts.md#oauth-flows)
-- [Troubleshooting](references/concepts.md#troubleshooting)
-- [Security Best Practices](references/concepts.md#security-best-practices)
+- [Application Types](quickstart-concepts.md#application-types)
+- [Key Terms](quickstart-concepts.md#key-terms)
+- [OAuth Flows](quickstart-concepts.md#oauth-flows)
+- [Troubleshooting](quickstart-concepts.md#troubleshooting)
+- [Security Best Practices](quickstart-concepts.md#security-best-practices)
 
 ### CLI Commands
 Complete Auth0 CLI reference:
-- [CLI Installation](references/cli.md#installation)
-- [Creating Applications](references/cli.md#creating-applications)
-- [User Management](references/cli.md#user-management)
-- [Testing & Debugging](references/cli.md#testing--debugging)
-- [Command Quick Reference](references/cli.md#command-quick-reference)
+- [CLI Installation](quickstart-cli.md#installation)
+- [Creating Applications](quickstart-cli.md#creating-applications)
+- [User Management](quickstart-cli.md#user-management)
+- [Testing & Debugging](quickstart-cli.md#testing--debugging)
+- [Command Quick Reference](quickstart-cli.md#command-quick-reference)
 
 
 ## Common Mistakes

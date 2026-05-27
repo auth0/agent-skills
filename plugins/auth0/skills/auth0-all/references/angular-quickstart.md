@@ -27,7 +27,7 @@ npm install @auth0/auth0-angular
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](references/setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see [Setup Guide](angular-setup.md) for complete scripts.
 
 **For manual setup:**
 
@@ -142,9 +142,9 @@ ng serve
 
 ## Detailed Documentation
 
-- **[Setup Guide](references/setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
-- **[Integration Guide](references/integration.md)** - Protected routes with guards, HTTP interceptors, error handling
-- **[API Reference](references/api.md)** - Complete SDK API, configuration options, services reference, testing strategies
+- **[Setup Guide](angular-setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
+- **[Integration Guide](angular-integration.md)** - Protected routes with guards, HTTP interceptors, error handling
+- **[API Reference](angular-api.md)** - Complete SDK API, configuration options, services reference, testing strategies
 
 
 ## Common Mistakes
@@ -155,7 +155,7 @@ ng serve
 | Not configuring AuthModule properly | Must call `AuthModule.forRoot()` in NgModule or `provideAuth0()` in standalone config |
 | Accessing auth before initialization | Use `isLoading$` observable to wait for SDK initialization |
 | Storing tokens manually | Never manually store tokens - SDK handles secure storage automatically |
-| No token sent to API | Use either `authHttpInterceptorFn` for automatic token attachment, or `getAccessTokenSilently()` for manual control — see [Integration Guide](references/integration.md#calling-a-protected-api) |
+| No token sent to API | Use either `authHttpInterceptorFn` for automatic token attachment, or `getAccessTokenSilently()` for manual control — see [Integration Guide](angular-integration.md#calling-a-protected-api) |
 | Route guard not protecting routes | Apply `AuthGuard` (or `authGuardFn`) to protected routes in routing config |
 
 
@@ -179,9 +179,9 @@ ng serve
 
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
-- Protected routes with guards → [Integration Guide](references/integration.md#protected-routes)
-- Calling a protected API → [Integration Guide](references/integration.md#calling-a-protected-api)
-- Error handling → [Integration Guide](references/integration.md#error-handling)
+- Protected routes with guards → [Integration Guide](angular-integration.md#protected-routes)
+- Calling a protected API → [Integration Guide](angular-integration.md#calling-a-protected-api)
+- Error handling → [Integration Guide](angular-integration.md#error-handling)
 
 
 ## References

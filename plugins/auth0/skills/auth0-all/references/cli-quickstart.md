@@ -1,7 +1,7 @@
 
 # Auth0 CLI — Command Reference
 
-The Auth0 CLI (`auth0`) lets you manage your tenant from the terminal. Install it via Homebrew (`brew install auth0/auth0-cli/auth0`). For complete flag definitions and examples, see the [Full CLI Reference](references/cli.md).
+The Auth0 CLI (`auth0`) lets you manage your tenant from the terminal. Install it via Homebrew (`brew install auth0/auth0-cli/auth0`). For complete flag definitions and examples, see the [Full CLI Reference](cli-cli.md).
 
 
 ## Before You Start: Authenticate
@@ -12,7 +12,7 @@ auth0 login --scopes "read:client_grants"  # request extra scopes if 403
 auth0 login --domain <tenant>.auth0.com --client-id <id> --client-secret "$AUTH0_CLIENT_SECRET"  # CI/CD
 ```
 
-See [Authentication Details](references/cli.md#authentication) for machine login with JWT, tenant management, and logout.
+See [Authentication Details](cli-cli.md#authentication) for machine login with JWT, tenant management, and logout.
 
 
 ## Quick Decision Guide
@@ -59,7 +59,7 @@ auth0 apps delete <client-id> --force
 
 App types: `spa`, `regular`, `m2m`, `native`, `resource_server`
 
-Full details: [Apps Reference](references/cli.md#apps)
+Full details: [Apps Reference](cli-cli.md#apps)
 
 ### APIs — Manage API Resources
 
@@ -75,7 +75,7 @@ auth0 apis scopes list <api-id> --json
 
 **Key distinction:** `apps` = the client requesting tokens. `apis` = the resource accepting tokens.
 
-Full details: [APIs Reference](references/cli.md#apis)
+Full details: [APIs Reference](cli-cli.md#apis)
 
 ### Users — Manage Users
 
@@ -93,7 +93,7 @@ auth0 users import --connection-name "Username-Password-Authentication" \
   --users '[...]' --upsert --json
 ```
 
-Full details: [Users Reference](references/cli.md#users)
+Full details: [Users Reference](cli-cli.md#users)
 
 ### Roles — Manage RBAC Roles
 
@@ -106,7 +106,7 @@ auth0 users roles assign <user-id> --roles <role-id>
 auth0 users roles show <user-id> --json-compact
 ```
 
-Full details: [Roles Reference](references/cli.md#roles)
+Full details: [Roles Reference](cli-cli.md#roles)
 
 ### Organizations — B2B Multi-Tenancy
 
@@ -120,7 +120,7 @@ auth0 orgs invitations create --org-id <org-id> --invitee-email "new@acme.com" \
   --inviter-name "Admin" --client-id <id> --json
 ```
 
-Full details: [Organizations Reference](references/cli.md#organizations)
+Full details: [Organizations Reference](cli-cli.md#organizations)
 
 ### Actions — Serverless Auth Pipeline
 
@@ -136,7 +136,7 @@ Triggers: `post-login`, `credentials-exchange`, `pre-user-registration`, `post-u
 
 **Important:** You must `deploy` after creating or updating for changes to take effect.
 
-Full details: [Actions Reference](references/cli.md#actions)
+Full details: [Actions Reference](cli-cli.md#actions)
 
 ### Logs — Debugging & Monitoring
 
@@ -147,7 +147,7 @@ auth0 logs list --filter "type:f" --number 20 --json-compact  # historical
 
 Common codes: `s` (success), `f` (failed login), `slo` (logout), `fs` (silent auth failure)
 
-Full details: [Logs Reference](references/cli.md#logs)
+Full details: [Logs Reference](cli-cli.md#logs)
 
 ### Domains — Custom Domains
 
@@ -156,7 +156,7 @@ auth0 domains create --domain "auth.myapp.com" --type "auth0_managed_certs" --js
 auth0 domains verify <domain-id> --json
 ```
 
-Full details: [Domains Reference](references/cli.md#domains)
+Full details: [Domains Reference](cli-cli.md#domains)
 
 ### Universal Login — Branding
 
@@ -165,7 +165,7 @@ auth0 ul update --accent "#FF6600" --background "#FFFFFF" \
   --logo "https://myapp.com/logo.png" --json
 ```
 
-Full details: [Universal Login Reference](references/cli.md#universal-login)
+Full details: [Universal Login Reference](cli-cli.md#universal-login)
 
 ### Terraform — Export as IaC
 
@@ -173,7 +173,7 @@ Full details: [Universal Login Reference](references/cli.md#universal-login)
 auth0 terraform generate --output-dir ./terraform --resources "auth0_client,auth0_connection"
 ```
 
-Full details: [Terraform Reference](references/cli.md#terraform)
+Full details: [Terraform Reference](cli-cli.md#terraform)
 
 ### Test — Verify Login Flows
 
@@ -182,7 +182,7 @@ auth0 test login <client-id>
 auth0 test login <client-id> --audience "https://api.myapp.com" --scopes "openid profile email"
 ```
 
-Full details: [Test Reference](references/cli.md#test)
+Full details: [Test Reference](cli-cli.md#test)
 
 ### Attack Protection — Security Hardening
 
@@ -192,7 +192,7 @@ auth0 protection breached-password-detection update --enabled true
 auth0 protection bot-detection update --enabled true
 ```
 
-Full details: [Attack Protection Reference](references/cli.md#attack-protection)
+Full details: [Attack Protection Reference](cli-cli.md#attack-protection)
 
 ### Log Streams — External Routing
 
@@ -204,7 +204,7 @@ auth0 logs streams list --json
 
 Supported: eventbridge, eventgrid, http, datadog, splunk, sumo
 
-Full details: [Log Streams Reference](references/cli.md#log-streams)
+Full details: [Log Streams Reference](cli-cli.md#log-streams)
 
 ### Raw API Mode — Direct Management API Access
 
@@ -216,7 +216,7 @@ auth0 api post client-grants --data '{"client_id":"...","audience":"...","scope"
 auth0 api get stats/daily -q "from=20240101" -q "to=20240131"
 ```
 
-Full details: [Raw API Reference](references/cli.md#raw-api-mode)
+Full details: [Raw API Reference](cli-cli.md#raw-api-mode)
 
 
 ## Output Formatting
@@ -235,30 +235,30 @@ auth0 users show <user-id> --json-compact | jq '{id: .user_id, email: .email}'
 auth0 roles list --json-compact | jq '.[].name'
 ```
 
-Full details: [Output Formatting Reference](references/cli.md#output-formatting)
+Full details: [Output Formatting Reference](cli-cli.md#output-formatting)
 
 
 ## Reference Documentation
 
 Complete CLI reference with all flags, examples, and usage patterns:
-- [Setup Guide](references/setup.md) — installation, authentication, CI/CD configuration
-- [Authentication](references/cli.md#authentication) — login modes, tenant management, scopes
-- [Apps](references/cli.md#apps) — create, list, show, update, delete, session-transfer
-- [APIs](references/cli.md#apis) — create, scopes, token lifetime
-- [Users](references/cli.md#users) — search, create, import, blocks, roles
-- [Roles](references/cli.md#roles) — RBAC setup, permissions management
-- [Organizations](references/cli.md#organizations) — B2B, members, invitations
-- [Actions](references/cli.md#actions) — pipeline triggers, deploy workflow
-- [Logs](references/cli.md#logs) — tail, list, type codes
-- [Domains](references/cli.md#domains) — custom domains, verification
-- [Universal Login](references/cli.md#universal-login) — branding, templates, prompts
-- [Terraform](references/cli.md#terraform) — IaC export
-- [Test](references/cli.md#test) — login flow verification
-- [Attack Protection](references/cli.md#attack-protection) — brute-force, breach, bot detection
-- [Log Streams](references/cli.md#log-streams) — external service routing
-- [Raw API Mode](references/cli.md#raw-api-mode) — direct Management API access
-- [Output Formatting](references/cli.md#output-formatting) — --json, --json-compact, --csv
-- [Shared Flags](references/cli.md#shared-flags) — --tenant, --no-input, --debug
+- [Setup Guide](cli-setup.md) — installation, authentication, CI/CD configuration
+- [Authentication](cli-cli.md#authentication) — login modes, tenant management, scopes
+- [Apps](cli-cli.md#apps) — create, list, show, update, delete, session-transfer
+- [APIs](cli-cli.md#apis) — create, scopes, token lifetime
+- [Users](cli-cli.md#users) — search, create, import, blocks, roles
+- [Roles](cli-cli.md#roles) — RBAC setup, permissions management
+- [Organizations](cli-cli.md#organizations) — B2B, members, invitations
+- [Actions](cli-cli.md#actions) — pipeline triggers, deploy workflow
+- [Logs](cli-cli.md#logs) — tail, list, type codes
+- [Domains](cli-cli.md#domains) — custom domains, verification
+- [Universal Login](cli-cli.md#universal-login) — branding, templates, prompts
+- [Terraform](cli-cli.md#terraform) — IaC export
+- [Test](cli-cli.md#test) — login flow verification
+- [Attack Protection](cli-cli.md#attack-protection) — brute-force, breach, bot detection
+- [Log Streams](cli-cli.md#log-streams) — external service routing
+- [Raw API Mode](cli-cli.md#raw-api-mode) — direct Management API access
+- [Output Formatting](cli-cli.md#output-formatting) — --json, --json-compact, --csv
+- [Shared Flags](cli-cli.md#shared-flags) — --tenant, --no-input, --debug
 
 
 ## Related Skills

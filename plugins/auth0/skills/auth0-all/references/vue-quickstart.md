@@ -28,7 +28,7 @@ npm install @auth0/auth0-vue
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](references/setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see [Setup Guide](vue-setup.md) for complete scripts.
 
 **For manual setup:**
 
@@ -104,9 +104,9 @@ npm run dev
 
 ## Detailed Documentation
 
-- **[Setup Guide](references/setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
-- **[Integration Guide](references/integration.md)** - Protected routes, API calls, error handling, composables
-- **[API Reference](references/api.md)** - Complete SDK API, configuration options, composables reference, testing strategies
+- **[Setup Guide](vue-setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
+- **[Integration Guide](vue-integration.md)** - Protected routes, API calls, error handling, composables
+- **[API Reference](vue-api.md)** - Complete SDK API, configuration options, composables reference, testing strategies
 
 
 ## Common Mistakes
@@ -141,9 +141,9 @@ npm run dev
 
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
-- Protected routes with navigation guards → [Integration Guide](references/integration.md#protected-routes)
-- API calls with tokens → [Integration Guide](references/integration.md#calling-apis)
-- Error handling → [Integration Guide](references/integration.md#error-handling)
+- Protected routes with navigation guards → [Integration Guide](vue-integration.md#protected-routes)
+- API calls with tokens → [Integration Guide](vue-integration.md#calling-apis)
+- Error handling → [Integration Guide](vue-integration.md#error-handling)
 
 
 ## References

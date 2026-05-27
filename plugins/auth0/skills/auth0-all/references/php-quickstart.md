@@ -597,9 +597,9 @@ if (null === $credentials) {
 
 ## Detailed Documentation
 
-- **[Setup Guide](references/setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
-- **[Integration Guide](references/integration.md)** - Protected routes, calling APIs, session management, error handling
-- **[API Reference](references/api.md)** - Complete Auth0 SDK API, configuration options, session storage, security
+- **[Setup Guide](php-setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
+- **[Integration Guide](php-integration.md)** - Protected routes, calling APIs, session management, error handling
+- **[API Reference](php-api.md)** - Complete Auth0 SDK API, configuration options, session storage, security
 
 
 ## References

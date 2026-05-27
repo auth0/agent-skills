@@ -34,12 +34,12 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 2. **Configure Auth0**:
 
    > **Agent instruction:** Check whether the user prompt already includes both Auth0 **Client ID** and **Domain**.
-   > - If both are provided, proceed directly to **Manual Setup** in [**Setup Guide**](references/setup.md) using those values.
+   > - If both are provided, proceed directly to **Manual Setup** in [**Setup Guide**](android-setup.md) using those values.
    > - If either is missing, you MUST ask the user BEFORE writing any code or files:
    >   - Question: "How would you like to configure Auth0 for this project?"
    >   - Options: "Automatic setup (Recommended) — Auth0 CLI creates the app and writes credentials to strings.xml" / "Manual setup — I'll provide my Client ID and Domain"
    >
-   > Then follow [**Setup Guide**](references/setup.md) for the chosen path.
+   > Then follow [**Setup Guide**](android-setup.md) for the chosen path.
    > **Do NOT proceed to step 3 until Auth0 credentials are confirmed.**
 
 3. **Initialize**: Create an Auth0 account instance:
@@ -127,9 +127,9 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 ## Detailed Documentation
 
-- [**Setup Guide**](references/setup.md) — Install SDK, configure Auth0 application, set up callback URLs, Android App Links, custom schemes, ProGuard/R8
-- [**Integration Patterns**](references/integration.md) — Web Auth login/logout, credential storage, biometric authentication, database login, passwordless authentication, MFA handling, custom tabs, error handling
-- [**Testing & Reference**](references/api.md) — Testing checklist, common issues, security considerations, API reference
+- [**Setup Guide**](android-setup.md) — Install SDK, configure Auth0 application, set up callback URLs, Android App Links, custom schemes, ProGuard/R8
+- [**Integration Patterns**](android-integration.md) — Web Auth login/logout, credential storage, biometric authentication, database login, passwordless authentication, MFA handling, custom tabs, error handling
+- [**Testing & Reference**](android-api.md) — Testing checklist, common issues, security considerations, API reference
 
 ## Common Mistakes
 
@@ -164,14 +164,14 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 ### Common Use Cases
 
-- [Log in with Web Auth](references/integration.md#web-auth-login)
-- [Log out](references/integration.md#web-auth-logout)
-- [Store credentials securely](references/integration.md#credential-storage)
-- [Require biometric authentication](references/integration.md#biometric-protected-credentials)
-- [Database login](references/integration.md#database-login)
-- [Passwordless authentication](references/integration.md#passwordless-authentication)
-- [Handle MFA](references/integration.md#mfa-handling)
-- [Call protected APIs](references/integration.md#calling-protected-apis)
+- [Log in with Web Auth](android-integration.md#web-auth-login)
+- [Log out](android-integration.md#web-auth-logout)
+- [Store credentials securely](android-integration.md#credential-storage)
+- [Require biometric authentication](android-integration.md#biometric-protected-credentials)
+- [Database login](android-integration.md#database-login)
+- [Passwordless authentication](android-integration.md#passwordless-authentication)
+- [Handle MFA](android-integration.md#mfa-handling)
+- [Call protected APIs](android-integration.md#calling-protected-apis)
 
 ## References
 

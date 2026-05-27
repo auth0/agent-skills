@@ -44,7 +44,7 @@ VERSION=$(npm view @auth0/auth0-spa-js version)
 
 ### 2. Configure Auth0
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](references/setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see [Setup Guide](spa-js-setup.md) for complete scripts.
 
 **For manual setup**, create `.env` (Vite):
 
@@ -136,9 +136,9 @@ const response = await fetch('https://your-api.example.com/data', {
 
 ## Detailed Documentation
 
-- [**Setup Guide**](references/setup.md) — Automated setup scripts (Bash/PowerShell), Auth0 CLI commands, `.env` configuration, callback URL setup
-- [**Integration Patterns**](references/integration.md) — Token management, calling APIs, refresh tokens, organizations, MFA, DPoP, error handling, advanced patterns
-- [**Testing & Reference**](references/api.md) — Configuration options, claims reference, testing checklist, common issues, security considerations
+- [**Setup Guide**](spa-js-setup.md) — Automated setup scripts (Bash/PowerShell), Auth0 CLI commands, `.env` configuration, callback URL setup
+- [**Integration Patterns**](spa-js-integration.md) — Token management, calling APIs, refresh tokens, organizations, MFA, DPoP, error handling, advanced patterns
+- [**Testing & Reference**](spa-js-api.md) — Configuration options, claims reference, testing checklist, common issues, security considerations
 
 ## Common Mistakes
 
@@ -182,12 +182,12 @@ const response = await fetch('https://your-api.example.com/data', {
 ### Common Use Cases
 
 - Login/Logout → See Step 4 above
-- Protecting content → [Integration Guide](references/integration.md#protecting-content)
-- API calls with tokens → [Integration Guide](references/integration.md#calling-protected-apis)
-- Refresh tokens → [Integration Guide](references/integration.md#refresh-token-rotation)
-- Organizations → [Integration Guide](references/integration.md#organizations)
-- MFA handling → [Integration Guide](references/integration.md#mfa-handling)
-- Error handling → [Integration Guide](references/integration.md#error-handling)
+- Protecting content → [Integration Guide](spa-js-integration.md#protecting-content)
+- API calls with tokens → [Integration Guide](spa-js-integration.md#calling-protected-apis)
+- Refresh tokens → [Integration Guide](spa-js-integration.md#refresh-token-rotation)
+- Organizations → [Integration Guide](spa-js-integration.md#organizations)
+- MFA handling → [Integration Guide](spa-js-integration.md#mfa-handling)
+- Error handling → [Integration Guide](spa-js-integration.md#error-handling)
 
 ## References
 
