@@ -82,6 +82,7 @@ npx clawhub install auth0-ionic-angular
 npx clawhub install auth0-ionic-vue
 npx clawhub install auth0-aspnetcore-authentication
 npx clawhub install auth0-net-android
+npx clawhub install auth0-net-ios
 ```
 
 Or browse and install from the [ClawHub web UI](https://clawhub.ai) — search for "auth0".
@@ -99,7 +100,7 @@ You don't pick skills manually — framework detection handles it.
 
 ## Skills
 
-28 skills covering web, mobile, and API authentication.
+29 skills covering web, mobile, and API authentication.
 
 | Skill | SDK | Frameworks |
 |-------|-----|------------|
@@ -132,6 +133,7 @@ You don't pick skills manually — framework detection handles it.
 | **iOS/macOS** | [`Auth0.swift`](https://github.com/auth0/Auth0.swift) | Swift (iOS, macOS, tvOS, watchOS, visionOS) |
 | **.NET MAUI** | [`Auth0.OidcClient.MAUI`](https://github.com/auth0/auth0-oidc-client-net) | .NET MAUI (iOS, Android, macOS, Windows) |
 | **.NET Android** | [`Auth0.OidcClient.AndroidX`](https://github.com/auth0/auth0-oidc-client-net) | .NET Android (Xamarin) |
+| **.NET iOS** | [`Auth0.OidcClient.iOS`](https://github.com/auth0/auth0-oidc-client-net) | .NET iOS (Xamarin) |
 
 ## Example prompts
 
