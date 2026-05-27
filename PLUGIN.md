@@ -62,6 +62,7 @@ Mobile skills:
 - `auth0-maui` - .NET MAUI cross-platform (iOS, Android, macOS, Windows)
 - `auth0-net-android` - .NET Android (Xamarin)
 - `auth0-net-ios` - .NET iOS (Xamarin)
+- `auth0-winforms` - .NET WinForms applications
 
 ---
 
@@ -111,7 +112,8 @@ auth0/agent-skills/
 │           ├── auth0-android/
 │           ├── auth0-swift/
 │           ├── auth0-maui/
-│           └── auth0-net-android/
+│           ├── auth0-net-android/
+│           ├── auth0-winforms/
 │           └── auth0-net-ios/
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
@@ -181,7 +183,7 @@ cp -r plugins/auth0/skills/* ~/.claude/skills/
 ## Use Cases
 
 ### Install Everything (Most Common)
-User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 29 skills.
+User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 30 skills.
 
 ### Install One Framework
 Developer working on React app -> uses CLI to install just `auth0-react` skill.
