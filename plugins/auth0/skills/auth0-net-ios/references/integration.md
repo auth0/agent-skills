@@ -166,7 +166,7 @@ public class AppDelegate : UIApplicationDelegate
 
 ### Authentication Error
 
-You can check the `IsError` property of the result to see whether the login has failed. The `ErrorMessage` will contain more information regarding the error which occurred.
+You can check the `IsError` property of the result to see whether the login has failed. Inspect `LoginResult.Error` for the error type and `LoginResult.ErrorDescription` for human-readable details.
 
 ```csharp
 var loginResult = await client.LoginAsync();

@@ -23,7 +23,7 @@ Add Auth0 authentication to .NET iOS applications. This skill integrates the `Au
 ## Prerequisites
 
 - .NET 8.0 SDK or later (.NET 9 also supported — use `net9.0-ios` target framework)
-- Visual Studio 2022 for Mac (17.8+) with iOS workload, or JetBrains Rider
+- JetBrains Rider or VS Code with C# Dev Kit (with iOS workload)
 - macOS with Xcode 15+
 - iOS 14.0+ deployment target
 - Auth0 account with a Native application configured
@@ -165,7 +165,7 @@ BrowserResultType browserResult = await client.LogoutAsync();
 ```
 
 > **Agent instruction:** Always include `offline_access` in the scope to enable refresh tokens. This allows the app to silently refresh access tokens without forcing the user to re-authenticate.
-
+>
 > **Agent instruction:** After login, always persist tokens to the iOS Keychain using the `Security` framework (`SecKeyChain.Add` with `SecAccessible.WhenUnlockedThisDeviceOnly`). Never store tokens in `UserDefaults` or leave them only in memory. Clear tokens on logout. See [Integration Patterns](./references/integration.md) for the full `SecureTokenStorage` helper class.
 
 ### Required Platform Configuration
