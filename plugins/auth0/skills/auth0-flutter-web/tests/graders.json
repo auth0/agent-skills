@@ -6,8 +6,13 @@
   },
   {
     "type": "contains",
+    "value": "package:auth0_flutter/auth0_flutter.dart",
+    "description": "Has base import for types (import package:auth0_flutter/auth0_flutter.dart for Credentials, UserProfile)"
+  },
+  {
+    "type": "contains",
     "value": "package:auth0_flutter/auth0_flutter_web.dart",
-    "description": "Has correct import statement (import package:auth0_flutter/auth0_flutter_web.dart)"
+    "description": "Has web import for Auth0Web class (import package:auth0_flutter/auth0_flutter_web.dart)"
   },
   {
     "type": "matches",

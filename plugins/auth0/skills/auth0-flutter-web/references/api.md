@@ -16,6 +16,7 @@ Auth0Web(String domain, String clientId)
 ### Programmatic Initialization
 
 ```dart
+import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 // Basic initialization

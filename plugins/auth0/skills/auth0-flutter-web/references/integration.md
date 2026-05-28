@@ -26,6 +26,7 @@ Tokens cached in-memory by Auth0 SPA JS (auto-refresh on expiry)
 ### Basic Redirect Login
 
 ```dart
+import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 final auth0 = Auth0Web('YOUR_DOMAIN', 'YOUR_CLIENT_ID');
@@ -276,6 +277,7 @@ await auth0.loginWithRedirect(
 ```dart
 // lib/auth_service.dart
 import 'package:flutter/foundation.dart';
+import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 class AuthService extends ChangeNotifier {
@@ -357,6 +359,7 @@ class MyApp extends StatelessWidget {
 ```dart
 // lib/providers/auth_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 final auth0Provider = Provider<Auth0Web>((ref) {
@@ -404,6 +407,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<Credentials?>> {
 ```dart
 // lib/auth/auth_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 // Events

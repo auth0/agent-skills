@@ -107,6 +107,7 @@ metadata:
 
 ```dart
 // lib/auth_service.dart
+import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 class AuthService {
@@ -270,6 +271,7 @@ class HomeScreen extends StatelessWidget {
 ```dart
 // lib/auth_service.dart
 import 'package:flutter/foundation.dart';
+import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 class AuthService extends ChangeNotifier {
@@ -357,7 +359,8 @@ For complete patterns with Riverpod, Bloc, and advanced scenarios, see [Integrat
 | Missing Auth0 SPA JS script in `web/index.html` | Add `<script src="https://cdn.auth0.com/js/auth0-spa-js/2.1/auth0-spa-js.production.js" defer></script>` to `<head>` |
 | Not calling `onLoad()` on app startup | Always call `onLoad()` in `initState()` or equivalent to restore sessions after redirect |
 | Missing `Allowed Web Origins` in Auth0 Dashboard | Add your app URL (e.g., `http://localhost:3000`) to Allowed Web Origins — required for silent token renewal |
-| Using `auth0_flutter` mobile API on web | Import `package:auth0_flutter/auth0_flutter_web.dart` (NOT `auth0_flutter.dart`) and use `Auth0Web` class |
+| Using `auth0_flutter` mobile API on web | Import **both** `package:auth0_flutter/auth0_flutter.dart` (for types like `Credentials`, `UserProfile`) AND `package:auth0_flutter/auth0_flutter_web.dart` (for `Auth0Web` class) |
+| Missing base import causes type errors | `Credentials` and `UserProfile` are exported from `auth0_flutter.dart`, not `auth0_flutter_web.dart` — you need both imports |
 | Callback URL mismatch | Ensure `Allowed Callback URLs` matches the exact URL where your app runs (including port) |
 | Not adding `--web-port` when running locally | Use `flutter run -d chrome --web-port 3000` to ensure consistent port matching callback URLs |
 | Popup blocked by browser | `loginWithPopup()` must be called from a direct user interaction (button click); cannot be called from `initState()` |
