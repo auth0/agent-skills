@@ -52,7 +52,7 @@ $guard = auth('auth0-api');
 | `sdk(bool $reset = false)` | `Auth0Interface` | Access the underlying Auth0 PHP SDK instance |
 | `management()` | `ManagementInterface` | Access the Auth0 Management API |
 | `processToken(string $token)` | `?array` | Decode and validate a JWT string manually |
-| `refreshUser()` | `void` | Refreshes user from Auth0 `/userinfo` endpoint |
+| `refreshUser()` | `void` | Calls Auth0 `/userinfo` endpoint to refresh user claims. Requires a valid access token with the `openid` scope. In stateless API mode (`STRATEGY_API`), this is rarely needed since each request carries its own token. |
 
 ---
 
@@ -192,7 +192,17 @@ Route::middleware(GuardMiddleware::class)->group(function () {
 });
 ```
 
-Note: `GuardMiddleware` accepts a `guard` parameter via its constructor. Register it with a specific guard using Laravel's middleware alias system rather than a static method.
+Register it with a specific guard using Laravel's middleware alias system in `bootstrap/app.php`:
+
+```php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->alias([
+        'auth0.guard' => \Auth0\Laravel\Middleware\GuardMiddleware::class,
+    ]);
+})
+```
+
+Then use on routes: `Route::middleware('auth0.guard')->group(...)`
 
 ---
 

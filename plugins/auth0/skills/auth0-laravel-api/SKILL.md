@@ -321,7 +321,7 @@ Claims are accessed via:
 > ```
 >
 > **If the user does NOT ask to test**, provide commands for them to run manually:
-> ```
+> ```bash
 > auth0 test token <CLIENT_ID> --audience <AUDIENCE> --scopes <SCOPE1,SCOPE2>
 > curl -H "Accept: application/json" -H "Authorization: Bearer <PASTE_TOKEN_HERE>" http://localhost:8000/api/private
 > ```

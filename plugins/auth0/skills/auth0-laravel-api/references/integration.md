@@ -301,15 +301,16 @@ Route::middleware('auth:auth0-api')->get('/token-info', function () {
 
 ## Organization Validation
 
-For multi-tenant APIs using Auth0 Organizations, add allowed organizations in `config/auth0.php`:
+For multi-tenant APIs using Auth0 Organizations, set the `AUTH0_ORGANIZATION` environment variable with a comma-delimited list of allowed organization IDs:
+
+```bash
+AUTH0_ORGANIZATION=org_abc123,org_def456
+```
+
+The published `config/auth0.php` already maps this using the SDK's helper:
 
 ```php
-'guards' => [
-    'api' => [
-        'strategy' => SdkConfiguration::STRATEGY_API,
-        'organization' => [env('AUTH0_ORGANIZATION')],
-    ],
-],
+'organization' => \Auth0\Laravel\Configuration::stringToArrayOrNull(env('AUTH0_ORGANIZATION')),
 ```
 
 The SDK validates the `org_id` claim in the token against the configured allowlist.
@@ -342,8 +343,8 @@ class ApiTest extends TestCase
 ### Integration Testing with Real Tokens
 
 ```bash
-# Get a test token
-TOKEN=$(auth0 test token --audience https://my-api.example.com --no-input 2>/dev/null)
+# Get a test token (replace <M2M_CLIENT_ID> with your M2M application's Client ID)
+TOKEN=$(auth0 test token <M2M_CLIENT_ID> --audience https://my-api.example.com --no-input 2>/dev/null)
 
 # Test endpoints
 curl -s http://localhost:8000/api/private \
