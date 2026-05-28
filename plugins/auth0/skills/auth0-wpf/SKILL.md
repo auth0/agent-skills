@@ -1,7 +1,7 @@
 ---
 name: auth0-wpf
 description: Use when adding Auth0 authentication to WPF (Windows Presentation Foundation) desktop applications - integrates Auth0.OidcClient.WPF NuGet package for native login, logout, token refresh, and user profile. Trigger on WPF authentication, add login to WPF, Auth0 WPF, .NET WPF auth, Windows desktop auth
-license: Proprietary
+license: Apache-2.0
 metadata:
   author: Auth0 SDKs Team <auth0-sdk-cdt@okta.com>
   openclaw:
@@ -157,11 +157,13 @@ if (!loginResult.IsError)
     }
 }
 
+// Store the refresh token from login for later use
+var refreshToken = loginResult.RefreshToken;
+
 // Logout
 await client.LogoutAsync();
 
 // Refresh token (requires offline_access scope)
-var refreshToken = loginResult.RefreshToken;
 var refreshResult = await client.RefreshTokenAsync(refreshToken);
 if (refreshResult.IsError == false)
 {

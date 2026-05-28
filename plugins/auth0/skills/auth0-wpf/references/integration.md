@@ -36,6 +36,7 @@ The Auth0 WPF SDK uses the Authorization Code flow with PKCE via WebView2:
 **MainWindow.xaml.cs:**
 
 ```csharp
+using System.Windows;
 using Auth0.OidcClient;
 using System.Diagnostics;
 
