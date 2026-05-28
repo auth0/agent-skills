@@ -3,12 +3,25 @@ import ora from "ora"
 import { auth0ApiCall } from "./auth0-api.mjs"
 
 /**
- * Create a Single Page Application in Auth0.
+ * Find an existing SPA client matching the plan, or create a new one.
  */
 export async function applySPAClientChanges(clientPlan) {
   const spinner = ora("Creating Single Page Application").start()
 
   try {
+    // Check for existing client with same name to avoid duplicates on retry
+    const listArgs = ["apps", "list", "--json", "--no-input"]
+    const { stdout: listOut } = await $({ timeout: 30000 })`auth0 ${listArgs}`
+    const apps = listOut ? JSON.parse(listOut) : []
+    const existing = apps.find(
+      (app) => app.name === clientPlan.name && app.app_type === "spa"
+    )
+
+    if (existing) {
+      spinner.succeed(`Found existing SPA: ${existing.name} (${existing.client_id})`)
+      return existing
+    }
+
     const createArgs = [
       "apps", "create",
       "--name", clientPlan.name,
@@ -49,6 +62,7 @@ export async function enableRefreshTokenRotation(clientId) {
 
     spinner.succeed("Refresh token rotation enabled")
   } catch (e) {
-    spinner.warn(`Could not enable refresh token rotation: ${e.message}`)
+    spinner.fail(`Failed to enable refresh token rotation: ${e.message}`)
+    throw e
   }
 }

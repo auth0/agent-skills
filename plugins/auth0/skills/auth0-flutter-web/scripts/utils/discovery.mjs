@@ -14,8 +14,8 @@ export async function discoverExistingConnections() {
     spinner.succeed(`Found ${connections.length} existing connection(s)`)
     return connections
   } catch (e) {
-    spinner.warn("Could not discover connections — will create new ones")
-    return []
+    spinner.fail(`Failed to discover connections: ${e.message}`)
+    throw e
   }
 }
 

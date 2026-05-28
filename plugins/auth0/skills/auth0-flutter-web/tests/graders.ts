@@ -11,9 +11,9 @@
  *   all            → flattened sub-graders
  *   judge.examples → stripped
  */
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { readFileSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -53,13 +53,13 @@ function mapGrader(g: RichGrader): GraderDef | GraderDef[] {
       return { kind: "contains", needle: g.value, name };
 
     case "contains_any":
-      return { kind: "contains", needle: g.values?.[0], name };
+      return (g.values ?? []).map((v) => ({ kind: "contains", needle: v, name }));
 
     case "not_contains":
       return { kind: "not_contains", needle: g.value, name };
 
     case "not_contains_any":
-      return { kind: "not_contains", needle: g.values?.[0], name };
+      return (g.values ?? []).map((v) => ({ kind: "not_contains", needle: v, name }));
 
     case "matches":
       return { kind: "matches", pattern: g.pattern, name };

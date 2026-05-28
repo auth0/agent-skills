@@ -36,10 +36,22 @@ export async function checkAuth0CLI() {
 export async function getActiveTenant() {
   const spinner = ora("Detecting active tenant").start()
   try {
-    const tenantsArgs = ["tenants", "list", "--csv", "--no-input"]
-    const { stdout } = await $({ timeout: 10000 })`auth0 ${tenantsArgs}`
+    // Try JSON output first (more reliable parsing)
+    const jsonArgs = ["tenants", "list", "--json", "--no-input"]
+    const { stdout } = await $({ timeout: 10000 })`auth0 ${jsonArgs}`
+    const tenants = stdout ? JSON.parse(stdout) : []
+    const active = tenants.find((t) => t.active)
 
-    const activeLine = stdout
+    if (active) {
+      const domain = active.domain
+      spinner.succeed(`Active tenant: ${domain}`)
+      return domain
+    }
+
+    // Fallback: CSV parsing
+    const csvArgs = ["tenants", "list", "--csv", "--no-input"]
+    const { stdout: csvOut } = await $({ timeout: 10000 })`auth0 ${csvArgs}`
+    const activeLine = csvOut
       .split("\n")
       .slice(1)
       .find((line) => line.includes("→"))

@@ -51,7 +51,7 @@
   },
   {
     "type": "not_contains_any",
-    "values": ["Auth0.plist", "CredentialsManager", "webAuth()", ".start()"],
+    "values": ["Auth0.plist", "CredentialsManager", "webAuth"],
     "description": "Does not use mobile-specific APIs (webAuth, CredentialsManager, Auth0.plist)"
   },
   {
@@ -68,7 +68,7 @@
   },
   {
     "type": "matches",
-    "pattern": "2\\.1|\\^2\\.1|\\^2\\.[0-9]+",
+    "pattern": "\\^?2\\.1\\.\\d+",
     "description": "Uses current SDK version (2.1.0) in pubspec.yaml dependency"
   },
   {
@@ -78,7 +78,7 @@
   },
   {
     "type": "matches",
-    "pattern": "WebException|catch.*WebException|e\\.code|error\\.code.*login_required|error\\.code.*consent_required",
+    "pattern": "on\\s+WebException|catch.*WebException|WebException.*code.*(login_required|consent_required)",
     "description": "Handles Auth0-specific web error types (WebException) instead of generic catch-all"
   },
   {

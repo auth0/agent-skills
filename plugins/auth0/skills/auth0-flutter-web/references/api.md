@@ -214,7 +214,7 @@ Object? get appState
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `sub` | `String?` | User ID (e.g., `auth0|64abc123`) |
+| `sub` | `String?` | User ID (e.g., `auth0\|64abc123`) |
 | `name` | `String?` | Full display name |
 | `givenName` | `String?` | First name |
 | `familyName` | `String?` | Last name |

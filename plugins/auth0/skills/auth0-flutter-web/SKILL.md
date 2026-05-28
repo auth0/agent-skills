@@ -4,21 +4,17 @@ description: Use when adding Auth0 authentication to a Flutter web application �
 license: Proprietary
 metadata:
   author: Auth0 <support@auth0.com>
+  version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Auth0 Flutter Web Integration
 
 `auth0_flutter` is the official Auth0 SDK for Flutter applications. On the **web platform**, it wraps the Auth0 SPA JS SDK to provide browser-based authentication via redirect or popup flows with built-in credential caching and automatic token renewal.
 
-> **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
-> ```bash
-> flutter pub info auth0_flutter 2>/dev/null | head -5
-> ```
-> Or check pub.dev:
-> ```bash
-> curl -s https://pub.dev/api/packages/auth0_flutter | python3 -c "import sys,json;print(json.load(sys.stdin)['latest']['version'])"
-> ```
-> Use the returned version in all dependency lines instead of any hardcoded version below. Current known version: `2.1.0`.
+> **Agent instruction:** The current SDK version is `2.1.0`. Use this version in all dependency lines below. If you need to verify, run `flutter pub add auth0_flutter` which will resolve the latest compatible version automatically.
 
 ## When NOT to Use
 
@@ -36,7 +32,7 @@ metadata:
 - **Dart** 3.5.0+
 - Auth0 account — [Sign up free](https://auth0.com/signup)
 - Node.js 20+ (for bootstrap script automation)
-- Auth0 CLI — `brew install auth0/auth0-cli/auth0` (for bootstrap script)
+- Auth0 CLI — [install instructions](https://github.com/auth0/auth0-cli) (for bootstrap script)
 
 ## Quick Start Workflow
 
@@ -59,8 +55,10 @@ metadata:
 
 ### Step 2 — Configure Auth0
 
+> **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID) in your response text or terminal output. Write them directly into Dart source files using the Write or Edit tool. When running Auth0 CLI commands that produce output containing these values, redirect output to a file and read it programmatically.
+>
 > **Agent instruction:**
-> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Store them for use in the Dart code and proceed to Step 3.
+> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write them directly into the Dart source file (e.g., `lib/auth_service.dart`) using the Edit tool, then proceed to Step 3.
 > - **If no credentials are provided:** Run the bootstrap script — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
 >
 > Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and the script command.

@@ -2,16 +2,18 @@
 
 ## Auth0 Configuration
 
+> **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID) in your response text or terminal output. Write them directly into Dart source files using the Write or Edit tool. When running Auth0 CLI commands that produce output containing these values, redirect output to a file and read it programmatically.
+>
 > **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt.
-> - **If credentials are provided:** Store them for use in the Dart code and proceed to "Post-Setup Steps".
+> - **If credentials are provided:** Write them directly into the Dart source file using the Edit tool and proceed to "Post-Setup Steps".
 > - **If no credentials are provided:** Run the bootstrap script below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
 
 ### Bootstrap Script
 
 > **Agent instruction:** Run these checks before the script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
-> 1. **Check Node.js**: `node --version`. If missing or below 20, install it: `brew install node`.
-> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
+> 1. **Check Node.js**: `node --version`. If missing or below 20, install per platform (macOS: `brew install node`, Linux/Windows: see https://nodejs.org).
+> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, install per platform (macOS: `brew install auth0/auth0-cli/auth0`, Linux: `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh`, see https://github.com/auth0/auth0-cli).
 > 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.

@@ -1,10 +1,10 @@
-@@ -0,0 +1,1216 @@
 #!/usr/bin/env node
 
 import fs from "node:fs"
 import path from "node:path"
 import os from "node:os"
 import readline from "node:readline/promises"
+import { fileURLToPath } from "node:url"
 import { $ } from "execa"
 import ora from "ora"
 
@@ -12,7 +12,7 @@ import ora from "ora"
 // Paths
 // ---------------------------------------------------------------------------
 
-const EVAL_DIR = path.dirname(new URL(import.meta.url).pathname)
+const EVAL_DIR = path.dirname(fileURLToPath(import.meta.url))
 const SKILL_DIR = path.resolve(EVAL_DIR, "..")
 
 // ---------------------------------------------------------------------------
@@ -427,15 +427,19 @@ async function runClaude(taskPrompt, workspaceDir, systemPrompt = null) {
   }
 
   const startTime = Date.now()
-  const { stdout } = await $({
+  const result = await $({
     cwd: workspaceDir,
     timeout: 600000, // 10 minutes max per run
     reject: false,
   })`claude ${args}`
   const durationMs = Date.now() - startTime
-  const tokens = parseTokenUsage(stdout)
 
-  return { stdout, durationMs, tokens }
+  if (result.failed) {
+    return { stdout: "", durationMs, tokens: { input: 0, output: 0 }, failed: true }
+  }
+
+  const tokens = parseTokenUsage(result.stdout)
+  return { stdout: result.stdout, durationMs, tokens }
 }
 
 async function runBaseline(taskPrompt, workspaceDir) {
@@ -449,12 +453,18 @@ async function runBaseline(taskPrompt, workspaceDir) {
   if (MODEL) args.push("--model", MODEL)
 
   const startTime = Date.now()
-  const { stdout } = await $({
+  const result = await $({
     cwd: workspaceDir,
     timeout: 120000, // 2 minutes max for single call
     reject: false,
   })`claude ${args}`
   const durationMs = Date.now() - startTime
+
+  if (result.failed) {
+    return { stdout: "", durationMs, tokens: { input: 0, output: 0 }, failed: true }
+  }
+
+  const { stdout } = result
   const tokens = parseTokenUsage(stdout)
 
   // Extract code blocks from response and write to workspace for grading
@@ -585,13 +595,16 @@ function computeBenchmark(allRuns, config) {
     },
     run_summary: runSummary,
     grader_analysis: graderAnalysis,
-    assessment: skillDelta >= 0.25
-      ? "skill_valuable"
-      : withSummary.pass_rate.mean >= 0.85
-        ? "skill_acceptable"
-        : skillDelta < 0.15
-          ? "needs_improvement"
-          : "moderate_value",
+    assessment: (() => {
+      const t = config.scoring?.thresholds ?? {}
+      const valuableDelta = t.skill_valuable?.delta_gte ?? 0.25
+      const acceptableRate = t.skill_acceptable?.with_skill_pass_rate_gte ?? 0.85
+      const improvementDelta = t.needs_improvement?.delta_lt ?? 0.15
+      if (skillDelta >= valuableDelta) return "skill_valuable"
+      if (withSummary.pass_rate.mean >= acceptableRate) return "skill_acceptable"
+      if (skillDelta < improvementDelta) return "needs_improvement"
+      return "moderate_value"
+    })(),
   }
 }
 
@@ -951,13 +964,9 @@ async function main() {
 
       if (projectPath) {
         const spinner = ora(`Copying project to eval workspaces${runLabel}`).start()
-        // Copy to all workspaces in parallel
-        const copyTasks = [
-          $`cp -r ${projectPath}/. ${withoutSkillDir}/`,
-          $`cp -r ${projectPath}/. ${withSkillDir}/`,
-        ]
-        if (!skipBaseline) copyTasks.push($`cp -r ${projectPath}/. ${baselineDir}/`)
-        await Promise.all(copyTasks)
+        fs.cpSync(projectPath, withoutSkillDir, { recursive: true })
+        fs.cpSync(projectPath, withSkillDir, { recursive: true })
+        if (!skipBaseline) fs.cpSync(projectPath, baselineDir, { recursive: true })
         spinner.succeed(`Project copied${runLabel}`)
       } else if (run === 1) {
         console.log("\n  No project provided. Agents will scaffold from scratch.\n")
