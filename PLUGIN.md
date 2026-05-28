@@ -62,8 +62,9 @@ Mobile skills:
 - `auth0-maui` - .NET MAUI cross-platform (iOS, Android, macOS, Windows)
 - `auth0-net-android` - .NET Android (Xamarin)
 - `auth0-net-ios` - .NET iOS (Xamarin)
-- `auth0-winforms` - .NET WinForms applications
 
+Desktop Application skills:
+- `auth0-winforms` - .NET WinForms applications
 ---
 
 ## Directory Structure

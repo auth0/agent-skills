@@ -65,16 +65,25 @@ echo ""
 echo "Existing Native applications:"
 auth0 apps list --json 2>/dev/null | jq -r '.[] | select(.app_type == "native") | "\(.client_id) - \(.name)"' || echo "  (none found)"
 echo ""
-echo "Creating new Native application for WinForms..."
+read -rp "Enter an existing client_id to reuse, or press Enter to create a new app: " EXISTING_CLIENT_ID
 
-# Create the application
-APP_JSON=$(auth0 apps create \
-    --name "My WinForms App" \
-    --type native \
-    --auth-method none \
-    --callbacks "https://$DOMAIN/mobile" \
-    --logout-urls "https://$DOMAIN/mobile" \
-    --json)
+if [ -n "$EXISTING_CLIENT_ID" ]; then
+    APP_JSON=$(auth0 apps show "$EXISTING_CLIENT_ID" --json 2>/dev/null)
+    if [ -z "$APP_JSON" ] || [ "$(echo "$APP_JSON" | jq -r '.client_id // empty')" = "" ]; then
+        echo "Error: Could not retrieve app with client_id '$EXISTING_CLIENT_ID'."
+        exit 1
+    fi
+    echo "Reusing existing application: $(echo "$APP_JSON" | jq -r '.name')"
+else
+    echo "Creating new Native application for WinForms..."
+    APP_JSON=$(auth0 apps create \
+        --name "My WinForms App" \
+        --type native \
+        --auth-method none \
+        --callbacks "https://$DOMAIN/mobile" \
+        --logout-urls "https://$DOMAIN/mobile" \
+        --json)
+fi
 
 CLIENT_ID=$(echo "$APP_JSON" | jq -r '.client_id')
 
