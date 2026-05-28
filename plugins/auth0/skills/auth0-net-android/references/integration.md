@@ -102,8 +102,6 @@ namespace AndroidSample
             editor.PutString("refresh_token", loginResult.RefreshToken);
             editor.Apply();
 
-            Debug.WriteLine($"id_token: {loginResult.IdentityToken}");
-            Debug.WriteLine($"access_token: {loginResult.AccessToken}");
 
             Debug.WriteLine($"name: {loginResult.User.FindFirst(c => c.Type == "name")?.Value}");
             Debug.WriteLine($"email: {loginResult.User.FindFirst(c => c.Type == "email")?.Value}");
@@ -193,8 +191,7 @@ var loginResult = await client.LoginAsync();
 
 if (!loginResult.IsError)
 {
-    Debug.WriteLine($"id_token: {loginResult.IdentityToken}");
-    Debug.WriteLine($"access_token: {loginResult.AccessToken}");
+    Debug.WriteLine($"Authentication successful. Token expiration: {loginResult.AccessTokenExpiration}");
 }
 ```
 

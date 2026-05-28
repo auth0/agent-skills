@@ -187,8 +187,7 @@ var loginResult = await client.LoginAsync();
 
 if (!loginResult.IsError)
 {
-    Debug.WriteLine($"id_token: {loginResult.IdentityToken}");
-    Debug.WriteLine($"access_token: {loginResult.AccessToken}");
+    Debug.WriteLine($"Authentication successful.");
 }
 ```
 
