@@ -181,9 +181,8 @@ namespace iOSSample
             }
             else
             {
-                sb.AppendLine($"ID Token: {loginResult.IdentityToken}");
-                sb.AppendLine($"Access Token: {loginResult.AccessToken}");
-                sb.AppendLine($"Refresh Token: {loginResult.RefreshToken}");
+                sb.AppendLine($"Name: {loginResult.User.FindFirst("name")?.Value}");
+                sb.AppendLine($"Email: {loginResult.User.FindFirst("email")?.Value}");
                 sb.AppendLine();
                 sb.AppendLine("-- Claims --");
                 foreach (var claim in loginResult.User.Claims)
