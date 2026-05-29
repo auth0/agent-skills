@@ -42,6 +42,7 @@ Server-side session authentication for Nuxt 3/4. NOT the same as @auth0/auth0-vu
 | Using `useUser()` for security checks | Use `useAuth0(event).getSession()` server-side |
 | Missing callback URLs in Auth0 Dashboard | Add `http://localhost:3000/auth/callback` |
 | Weak/missing session secret | Generate: `openssl rand -hex 64` |
+| Hardcoding credentials in `nuxt.config.ts` | Leave runtimeConfig values as empty strings; Nuxt auto-fills from `NUXT_AUTH0_*` env vars |
 
 ## Quick Setup
 
@@ -65,6 +66,8 @@ NUXT_AUTH0_AUDIENCE=https://your-api  # optional
 
 ```typescript
 // 4. nuxt.config.ts
+// Leave values as empty strings — Nuxt auto-fills them from NUXT_AUTH0_* env vars at runtime.
+// If you prefer explicit mapping, use: domain: process.env.NUXT_AUTH0_DOMAIN || ''
 export default defineNuxtConfig({
   modules: ['@auth0/auth0-nuxt'],
   runtimeConfig: {
