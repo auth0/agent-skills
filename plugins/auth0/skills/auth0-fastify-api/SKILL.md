@@ -128,8 +128,9 @@ curl http://localhost:3001/api/public
 Test protected endpoint (requires access token):
 
 ```bash
+# First, obtain an access token (e.g. via Auth0 Dashboard > APIs > Test tab)
 curl http://localhost:3001/api/private \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 ---

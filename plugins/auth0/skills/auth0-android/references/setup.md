@@ -172,17 +172,17 @@ with open(path, 'w') as f:
 PYEOF
 
 echo "✅ Auth0 credentials written to $STRINGS_FILE"
-echo "   Domain:       $DOMAIN"
-echo "   Client ID:    $CLIENT_ID"
-echo "   Package:      $PACKAGE_NAME"
-echo "   Callback URL: $CALLBACK_URL"
 ```
 
 After the script runs, proceed to **Post-Setup Steps** below.
 
 ### Manual Setup (User-Provided Credentials)
 
-> **Agent instruction:** Ask the user for their Auth0 **Client ID** and **Domain**. Then update `strings.xml` with the values they provide:
+> **Agent instruction:** Ask the user to provide their Auth0 **Client ID** and **Domain**.
+>
+> **Note:** For native Android applications, Domain and Client ID are public configuration values (compiled into the APK and visible to anyone who decompiles it). They are NOT secrets and do not grant access without the user's credentials. No client secret is used.
+>
+> Once the user provides values, write them directly to `strings.xml` without displaying them back in conversation output:
 > ```xml
 > <string name="com_auth0_client_id">USER_PROVIDED_CLIENT_ID</string>
 > <string name="com_auth0_domain">USER_PROVIDED_DOMAIN</string>
