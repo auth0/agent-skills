@@ -1,6 +1,6 @@
 ---
 name: auth0-fastify
-description: Use when adding authentication (login, logout, protected routes) to Fastify web applications - integrates @auth0/auth0-fastify for session-based auth. For stateless Fastify APIs use auth0-fastify-api instead.
+description: "Use when adding authentication to Fastify web applications — integrates @auth0/auth0-fastify for session-based login, logout, OAuth callback handling, user profile retrieval, and access token management. Registers /auth/login, /auth/logout, and /auth/callback routes automatically. For stateless Fastify APIs receiving JWT Bearer tokens, use auth0-fastify-api instead."
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -12,26 +12,12 @@ metadata:
 
 # Auth0 Fastify Integration
 
-Add authentication to Fastify web applications using @auth0/auth0-fastify.
+Add session-based authentication to Fastify web applications using @auth0/auth0-fastify.
 
----
-
-## Prerequisites
-
-- Fastify application (v5.x or newer)
-- Node.js 20 LTS or newer
-- Auth0 account and application configured
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
-
-## When NOT to Use
-
-- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
-- **Next.js applications** - Use `auth0-nextjs` skill which handles both client and server
-- **Mobile applications** - Use `auth0-react-native` for React Native/Expo
-- **Stateless APIs** - Use `@auth0/auth0-fastify-api` instead for JWT validation without sessions
-- **Microservices** - Use JWT validation for service-to-service auth
-
----
+> **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
+> ```
+> gh api repos/auth0/auth0-fastify/releases/latest --jq '.tag_name'
+> ```
 
 ## Quick Start Workflow
 
@@ -43,7 +29,9 @@ npm install @auth0/auth0-fastify fastify @fastify/view ejs dotenv
 
 ### 2. Configure Environment
 
-Create `.env`:
+**For automated setup with Auth0 CLI**, see [Setup Guide](references/setup.md).
+
+**For manual setup**, create `.env`:
 
 ```bash
 AUTH0_DOMAIN=your-tenant.auth0.com
@@ -54,6 +42,8 @@ APP_BASE_URL=http://localhost:3000
 ```
 
 Generate secret: `openssl rand -hex 64`
+
+**Verify before proceeding:** In the Auth0 Dashboard, confirm the application is set to **Regular Web Application** (not SPA) and that `http://localhost:3000/auth/callback` is listed in Allowed Callback URLs, `http://localhost:3000` in Allowed Logout URLs and Allowed Web Origins.
 
 ### 3. Configure Auth Plugin
 
@@ -68,13 +58,11 @@ import ejs from 'ejs';
 
 const fastify = Fastify({ logger: true });
 
-// Register view engine
 await fastify.register(fastifyView, {
   engine: { ejs },
   root: './views',
 });
 
-// Configure Auth0 plugin
 await fastify.register(fastifyAuth0, {
   domain: process.env.AUTH0_DOMAIN,
   clientId: process.env.AUTH0_CLIENT_ID,
@@ -86,10 +74,10 @@ await fastify.register(fastifyAuth0, {
 fastify.listen({ port: 3000 });
 ```
 
-This automatically creates:
-- `/auth/login` - Login endpoint
-- `/auth/logout` - Logout endpoint
-- `/auth/callback` - OAuth callback
+This automatically registers:
+- `/auth/login` — Redirects to Auth0 Universal Login
+- `/auth/logout` — Clears session and redirects to Auth0 logout
+- `/auth/callback` — Handles OAuth callback and creates session
 
 ### 4. Add Routes
 
@@ -118,13 +106,17 @@ fastify.get('/profile', {
 
 ### 5. Test Authentication
 
-Start your server:
-
 ```bash
 node server.js
 ```
 
-Visit `http://localhost:3000` and test the login flow.
+Visit `http://localhost:3000` and verify:
+1. Clicking login redirects to Auth0 Universal Login
+2. After login, you are redirected back with a valid session
+3. `/profile` shows user info when authenticated
+4. Logout clears the session and redirects home
+
+If login redirects fail, check the server logs for callback URL mismatch errors — the most common cause is a missing or incorrect Allowed Callback URL in the Auth0 Dashboard.
 
 ---
 
@@ -132,45 +124,18 @@ Visit `http://localhost:3000` and test the login flow.
 
 | Mistake | Fix |
 |---------|-----|
-| Forgot to add callback URL in Auth0 Dashboard | Add `/auth/callback` path to Allowed Callback URLs (e.g., `http://localhost:3000/auth/callback`) |
-| Missing or weak SESSION_SECRET | Generate secure 64-char secret with `openssl rand -hex 64` and store in .env |
-| App created as SPA type in Auth0 | Must be Regular Web Application type for server-side auth |
-| Session secret exposed in code | Always use environment variables, never hardcode secrets |
-| Wrong appBaseUrl for production | Update APP_BASE_URL to match your production domain |
-| Not awaiting fastify.register | Fastify v4+ requires awaiting plugin registration |
+| Callback URL mismatch | Add `http://localhost:3000/auth/callback` to Allowed Callback URLs in Auth0 Dashboard |
+| App created as SPA type | Must be **Regular Web Application** for server-side session auth |
+| Weak SESSION_SECRET | Generate with `openssl rand -hex 64` — minimum 64 characters |
+| Not awaiting `fastify.register` | Fastify v4+ requires `await` on plugin registration |
 
 ---
 
-## Related Skills
+## Detailed Documentation
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
-
----
-
-## Quick Reference
-
-**Plugin Options:**
-- `domain` - Auth0 tenant domain (required)
-- `clientId` - Auth0 client ID (required)
-- `clientSecret` - Auth0 client secret (required)
-- `appBaseUrl` - Application URL (required)
-- `sessionSecret` - Session encryption secret (required, min 64 chars)
-- `audience` - API audience (optional, for calling APIs)
-
-**Client Methods:**
-- `fastify.auth0Client.getSession({ request, reply })` - Get user session
-- `fastify.auth0Client.getUser({ request, reply })` - Get user profile
-- `fastify.auth0Client.getAccessToken({ request, reply })` - Get access token
-- `fastify.auth0Client.logout(options, { request, reply })` - Logout user
-
-**Common Use Cases:**
-- Protected routes → Use `preHandler` to check session (see Step 4)
-- Check auth status → `!!session`
-- Get user info → `getUser({ request, reply })`
-- Call APIs → `getAccessToken({ request, reply })`
+- **[Setup Guide](references/setup.md)** — Automated setup with Auth0 CLI, environment configuration
+- **[Integration Guide](references/integration.md)** — Protected routes with preHandlers, calling APIs with access tokens, error handling
+- **[API Reference](references/api.md)** — Plugin options, client methods, session management
 
 ---
 
