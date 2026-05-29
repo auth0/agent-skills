@@ -38,8 +38,6 @@ jobs:
       if: ${{ !cancelled() }}
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        BASE_REF: ${{ github.base_ref }}
-        IS_PUSH: ${{ github.event_name == 'push' }}
       run: |
         set -euo pipefail
 
@@ -58,16 +56,8 @@ jobs:
             | tee "snyk-agent-scan-skill-${skill_name}.json"
         }
 
-        if [ "$IS_PUSH" = "true" ]; then
-          # On main: scan all skills
-          SKILL_DIRS=$(find plugins/*/skills -maxdepth 1 -mindepth 1 -type d 2>/dev/null | sort)
-        else
-          # On PRs: scan only changed skills
-          git fetch origin "$BASE_REF" --depth=1
-          SKILL_DIRS=$(git diff --name-only "origin/$BASE_REF" -- 'plugins/*/skills/**' \
-            | cut -d/ -f1-4 \
-            | sort -u)
-        fi
+        # Scan all skills on both PRs and pushes to main
+        SKILL_DIRS=$(find plugins/*/skills -maxdepth 1 -mindepth 1 -type d 2>/dev/null | sort)
 
         if [ -z "$SKILL_DIRS" ]; then
           echo "No skills to scan"
