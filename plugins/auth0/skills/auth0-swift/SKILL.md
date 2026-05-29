@@ -61,7 +61,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 ### Step 2 — Configure Auth0
 
 > **Agent instruction:**
-> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write `Auth0.plist` directly with those values — do NOT ask the user any questions, and do NOT hardcode them in Swift source files. Then proceed to Step 3.
+> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write `Auth0.plist` directly with those values — do NOT ask the user any questions, do NOT hardcode them in Swift source files, and do NOT pass them as arguments to `Auth0.webAuth()` or `Auth0.authentication()`. The SDK reads `Auth0.plist` automatically — always use the no-argument form `Auth0.webAuth()`. Then proceed to Step 3.
 > - **If an `Auth0.plist` file already exists in the project:** Read it to extract `ClientId` and `Domain`, then proceed to Step 3.
 > - **If no `Auth0.plist` exists and no credentials were provided:** Ask the user via `AskUserQuestion`: _"How would you like to configure Auth0?"_
 >   - **Automatic (Auth0 CLI)** — I'll create the application, set callback URLs, and configure everything using the Auth0 CLI.
@@ -159,6 +159,15 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 ### Step 4 — Implement Authentication
 
 > **Agent instruction:** Search the project for `@main struct` (SwiftUI) or `AppDelegate`/`UIViewController` (UIKit) to detect the UI framework. If ambiguous, ask via `AskUserQuestion`: _"Does your app use SwiftUI or UIKit?"_ Then follow **only** the matching path below.
+>
+> **IMPORTANT — Never pass credentials in code:** Do NOT pass `clientId` or `domain` as arguments to `Auth0.webAuth()`, `Auth0.authentication()`, or any other SDK call. The SDK reads these values automatically from `Auth0.plist`. Always use the no-argument forms:
+> ```swift
+> Auth0.webAuth()           // ✓ reads Auth0.plist automatically
+> Auth0.authentication()    // ✓ reads Auth0.plist automatically
+>
+> Auth0.webAuth(clientId: "...", domain: "...")      // ✗ never do this
+> Auth0.authentication(clientId: "...", domain: "...") // ✗ never do this
+> ```
 
 #### SwiftUI
 
@@ -171,16 +180,9 @@ import Combine
 
 class AuthenticationService: ObservableObject {
     @Published var isAuthenticated = false
-    @Published var userName: String?
-    @Published var userEmail: String?
     private let credentialsManager = CredentialsManager(authentication: Auth0.authentication())
 
-    init() {
-        isAuthenticated = credentialsManager.canRenew()
-        // credentialsManager.user is a UserInfo? decoded from the stored ID token
-        userName = credentialsManager.user?.name
-        userEmail = credentialsManager.user?.email
-    }
+    init() { isAuthenticated = credentialsManager.canRenew() }
 
     func login() async {
         do {
@@ -190,11 +192,7 @@ class AuthenticationService: ObservableObject {
                 .scope("openid profile email offline_access")
                 .start()
             _ = credentialsManager.store(credentials: credentials)
-            await MainActor.run {
-                isAuthenticated = true
-                userName = credentialsManager.user?.name
-                userEmail = credentialsManager.user?.email
-            }
+            await MainActor.run { isAuthenticated = true }
         } catch WebAuthError.userCancelled { }
         catch { print("Login failed: \(error)") }
     }
@@ -203,11 +201,7 @@ class AuthenticationService: ObservableObject {
         do { try await Auth0.webAuth().useHTTPS().clearSession() }
         catch { print("Logout failed: \(error)") }
         _ = credentialsManager.clear()
-        await MainActor.run {
-            isAuthenticated = false
-            userName = nil
-            userEmail = nil
-        }
+        await MainActor.run { isAuthenticated = false }
     }
 }
 ```
@@ -236,8 +230,6 @@ class AuthenticationService {
     private let credentialsManager = CredentialsManager(authentication: Auth0.authentication())
 
     var isAuthenticated: Bool { credentialsManager.canRenew() }
-    // credentialsManager.user is a UserInfo? decoded from the stored ID token
-    var user: UserInfo? { credentialsManager.user }
 
     func login() async throws {
         let credentials = try await Auth0
@@ -308,7 +300,6 @@ private let auth = AuthenticationService()
 | Not calling `clearSession()` on logout | Always call `clearSession()` to remove the Auth0 session cookie from the browser |
 | Build error "No such module 'Auth0'" | Verify the package is added to the correct target; for CocoaPods, open `.xcworkspace` |
 | Hardcoding domain/clientId in Swift source when they're in the prompt | Write them into `Auth0.plist` and call `Auth0.webAuth()` with no arguments — the SDK reads the plist automatically |
-| Using `IDTokenClaimsValidation()` or similar to read user profile | Use `credentialsManager.user` — it returns a `UserInfo?` with `.name`, `.email`, `.picture`, etc., decoded from the stored ID token |
 
 ## Related Skills
 
