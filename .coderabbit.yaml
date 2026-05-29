@@ -56,3 +56,8 @@ reviews:
       instructions: |
         This defines the Cursor plugin manifest.
         Ensure plugin.json is valid JSON and skill references are correct.
+
+    - path: "plugins/auth0/.codex-plugin/**"
+      instructions: |
+        This defines the Codex plugin manifest.
+        Ensure plugin.json is valid JSON and skill references are correct.
