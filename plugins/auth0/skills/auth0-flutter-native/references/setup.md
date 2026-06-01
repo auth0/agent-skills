@@ -2,44 +2,68 @@
 
 ## Auth0 Configuration
 
-> **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt. On native mobile these are public client configuration, not secrets (PKCE is used; there is no client secret) — but do not echo them back in your response; write them directly into config using the Write/Edit tool.
-> - **If credentials are provided:** Write them directly into the Dart configuration and proceed to "Post-Setup Steps".
-> - **If no credentials are provided:** Run the bootstrap script below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
-
-### Bootstrap Script
-
-> **Agent instruction:** Run these checks before the script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+> **Note:** For native mobile applications, the Auth0 Domain and Client ID are **public configuration** (not secrets). A native app uses PKCE with no client secret, and these values are safe to commit to source control. Pass them directly to `Auth0(domain, clientId)`.
 >
-> 1. **Check Node.js**: `node --version`. If missing or below 20, install it: `brew install node`.
-> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
-> 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
+> **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt.
+> - **If credentials are provided:** Use them directly in the `Auth0(...)` constructor and proceed to "Post-Setup Steps".
+> - **If no credentials are provided:** Ask the user which setup they prefer using `AskUserQuestion`: _"How would you like to set up the Auth0 application — automatic (I run the Auth0 CLI to create it) or manual (you create it in the Auth0 Dashboard and provide the Domain + Client ID)?"_
+>   - **Automatic:** Follow the Auth0 CLI steps below.
+>   - **Manual:** Ask the user for their Auth0 Domain and Client ID, then go straight to "Using Credentials" and the Post-Setup Steps.
+
+### Create the Auth0 Application (Auth0 CLI)
+
+> **Agent instruction:** Run these preflight checks first. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+>
+> 1. **Check the Auth0 CLI is installed**: `command -v auth0`. If missing, install per platform — macOS: `brew install auth0/auth0-cli/auth0`; Linux: `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh`. See https://github.com/auth0/auth0-cli.
+> 2. **Check login / active tenant**: `auth0 tenants list --json --no-input`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
->    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
-> 4. **Confirm active tenant**: Parse the `→` line from the CSV output. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
->    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 3.
+>    - Wait for confirmation, then re-run. Retry up to 3 times before treating as a persistent failure.
+> 3. **Confirm the active tenant**: select the tenant where `active` is `true` from the JSON output:
 >
-> Once confirmed, run:
+>    ```bash
+>    auth0 tenants list --json --no-input | jq -r '.[] | select(.active) | .domain'
+>    ```
+>
+>    Tell the user: _"Your active Auth0 tenant is `<domain>`. Is this correct?"_ If not, ask them to run `auth0 tenants use <tenant-domain>`, then re-check. This domain is the `domain` value for `Auth0(...)`.
+
+**Step 1 — Determine the platform identifiers.** The Native callback URLs are built from the Android package name and the iOS bundle identifier:
+- **Android package name** — the `applicationId` in `android/app/build.gradle`.
+- **iOS bundle identifier** — `PRODUCT_BUNDLE_IDENTIFIER` in `ios/Runner.xcodeproj/project.pbxproj` (the Runner target, not RunnerTests).
+
+**Step 2 — Create the Native application.** This registers both platform callback URLs and logout URLs in one command. Use the Flutter project name (from `pubspec.yaml`) for `--name`, and substitute the real domain, package name, and bundle id:
+
+```bash
+auth0 apps create \
+  --name "My Flutter App" \
+  --type native \
+  --callbacks "https://YOUR_DOMAIN/android/ANDROID_PACKAGE_NAME/callback,https://YOUR_DOMAIN/ios/IOS_BUNDLE_ID/callback" \
+  --logout-urls "https://YOUR_DOMAIN/android/ANDROID_PACKAGE_NAME/callback,https://YOUR_DOMAIN/ios/IOS_BUNDLE_ID/callback" \
+  --no-input --json
+```
+
+The JSON output includes `client_id` — this is the `clientId` value for `Auth0(...)`. (Before creating, you can run `auth0 apps list --json --no-input` to check for an existing Native app of the same name and reuse it — see "Configure Callback URLs" below to update its URLs with `auth0 apps update`.)
+
+**Step 3 — Ensure the database connection is enabled for the app.** Most tenants already have a `Username-Password-Authentication` connection. Enable it for the new application (replace `CONNECTION_ID` and `CLIENT_ID`):
+
+```bash
+auth0 api patch "connections/CONNECTION_ID" \
+  --data '{"enabled_clients":["CLIENT_ID"]}' \
+  --no-input
+```
+
+> **Agent instruction:** Find `CONNECTION_ID` with `auth0 api get connections --no-input` (match `name` = `Username-Password-Authentication`). Preserve any existing `enabled_clients` by appending `CLIENT_ID` to that list. If no such connection exists, create one:
+>
 > ```bash
-> cd <path-to-skill>/auth0-flutter-native/scripts
-> npm install
-> node bootstrap.mjs <path-to-flutter-project>
+> auth0 api post connections \
+>   --data '{"name":"Username-Password-Authentication","strategy":"auth0","enabled_clients":["CLIENT_ID"]}' \
+>   --no-input
 > ```
->
-> If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run. Retry up to 3 times.
-> Only if the script keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID, then use those values directly in the Dart code.
 
-The script will:
-1. Detect your Flutter project structure (checks for `pubspec.yaml`, `android/`, and `ios/` directories)
-2. Detect the Android package name (`applicationId`) and iOS bundle identifier
-3. Create a **Native** application in Auth0 Dashboard
-4. Register the Android and iOS callback URLs and logout URLs
-5. Set up a database connection (Username-Password-Authentication)
-6. Write the `auth0Domain` / `auth0Scheme` `manifestPlaceholders` into `android/app/build.gradle`
-7. Output the domain and client ID to use in your Dart code
+After these steps you have a `domain` and `client_id`. Pass them directly to `Auth0` (see "Using Credentials" below), then continue to the Post-Setup Steps.
 
-### Using Credentials Directly (credentials already known)
+### Using Credentials
 
-Use this only when credentials are explicitly provided by the user or obtained after bootstrap script failure.
+Pass the domain and client ID directly to the `Auth0` constructor in your Dart code:
 
 ```dart
 final auth0 = Auth0('YOUR_AUTH0_DOMAIN', 'YOUR_AUTH0_CLIENT_ID');

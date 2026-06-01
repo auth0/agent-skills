@@ -27,7 +27,7 @@ metadata:
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below. Current known version: `2.1.0`.
 
-> **IMPORTANT — Credential privacy:** On native mobile, the Auth0 **domain** and **client ID** are public client configuration, not secrets — no client secret is used (the SDK uses PKCE). Still, never echo these values back in your response text or terminal output. Write them directly into source/config using the Write or Edit tool. When running Auth0 CLI commands that print these values, redirect the output to a file and read it programmatically rather than displaying it.
+> **Note:** On native mobile, the Auth0 **domain** and **client ID** are public client configuration (not secrets). A native app uses PKCE with no client secret, and these values are safe to commit to source control. Pass them directly to `Auth0(domain, clientId)` in your Dart code.
 
 ## When NOT to Use
 
@@ -45,8 +45,7 @@ metadata:
 - **Android**: minSdkVersion 21+, compileSdkVersion 34+
 - **iOS**: 14.0+ (Universal Link callbacks require iOS 17.4+)
 - Auth0 account — [Sign up free](https://auth0.com/signup)
-- Node.js 20+ (for bootstrap script automation)
-- Auth0 CLI — `brew install auth0/auth0-cli/auth0` (for bootstrap script)
+- Auth0 CLI — [install instructions](https://github.com/auth0/auth0-cli) (used to create and configure the Auth0 application)
 
 ## Quick Start Workflow
 
@@ -69,11 +68,15 @@ metadata:
 
 ### Step 2 — Configure Auth0
 
-> **Agent instruction:**
-> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write them directly into the Dart configuration using the Write/Edit tool (do NOT echo them back in your response) and proceed to Step 3.
-> - **If no credentials are provided:** Run the bootstrap script — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
+> **Note:** The Auth0 Domain and Client ID are **public configuration** (not secrets) — a native app uses PKCE with no client secret. Pass them directly to `Auth0(domain, clientId)`; there is no need to store them in environment variables or hide them.
 >
-> Follow the [Setup Guide](./references/setup.md) (Auth0 Configuration section) for pre-flight checks and the bootstrap script command. The bootstrap script (`node bootstrap.mjs`) is the automatic setup path — it runs `auth0 apps create` for you.
+> **Agent instruction:**
+> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Use those values directly in the `Auth0(...)` constructor and proceed to Step 3.
+> - **If no credentials are provided:** Ask the user which setup they prefer using `AskUserQuestion`: _"How would you like to set up the Auth0 application — automatic (I run the Auth0 CLI to create it) or manual (you create it in the Auth0 Dashboard and give me the Domain + Client ID)?"_
+>   - **Automatic:** Follow the Auth0 CLI steps in the Setup Guide to create the Native application.
+>   - **Manual:** Ask the user for their Auth0 Domain and Client ID and use them directly.
+>
+> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for the pre-flight checks and the `auth0 apps create` command.
 
 ### Step 3 — Configure Android
 
@@ -122,7 +125,7 @@ android {
 
 ### Step 5 — Configure Callback URLs
 
-> **Agent instruction:** Register the platform-specific callback and logout URLs using the Auth0 CLI. The bootstrap script does this automatically. To do it manually, determine the Android package name (from `android/app/build.gradle` `applicationId`) and the iOS bundle identifier (from Xcode / `PRODUCT_BUNDLE_IDENTIFIER`), then run the command below, replacing the placeholders (`CLIENT_ID`, `YOUR_DOMAIN`, `ANDROID_PACKAGE_NAME`, `IOS_BUNDLE_ID`) with the project's values:
+> **Agent instruction:** Register the platform-specific callback and logout URLs using the Auth0 CLI. Determine the Android package name (from `android/app/build.gradle` `applicationId`) and the iOS bundle identifier (from Xcode / `PRODUCT_BUNDLE_IDENTIFIER`), then run the command below, replacing the placeholders (`CLIENT_ID`, `YOUR_DOMAIN`, `ANDROID_PACKAGE_NAME`, `IOS_BUNDLE_ID`) with the project's values:
 >
 > ```bash
 > auth0 apps update CLIENT_ID \
@@ -388,7 +391,7 @@ For complete patterns with Riverpod, Bloc, biometrics, and advanced scenarios, s
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 Dashboard configuration, bootstrap script, Android `manifestPlaceholders`, iOS `Info.plist` / Associated Domains, callback URL registration
+- **[Setup Guide](./references/setup.md)** — Auth0 application creation via the Auth0 CLI, Android `manifestPlaceholders`, iOS `Info.plist` / Associated Domains, callback URL registration
 - **[Integration Patterns](./references/integration.md)** — Web Auth login/logout, CredentialsManager, biometric protection, custom schemes, organizations, API access tokens, state management patterns, error handling
 - **[API Reference & Testing](./references/api.md)** — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
 
@@ -396,7 +399,7 @@ For complete patterns with Riverpod, Bloc, biometrics, and advanced scenarios, s
 
 | Mistake | Fix |
 |---------|-----|
-| Auth0 app type not set to **Native** | In Auth0 Dashboard, select "Native" when creating the application (the bootstrap script does this automatically) |
+| Auth0 app type not set to **Native** | Create the application with `auth0 apps create --type native` (or select "Native" in the Auth0 Dashboard) |
 | Missing `manifestPlaceholders` on Android | Add `manifestPlaceholders = [auth0Domain: "...", auth0Scheme: "https"]` to `android/app/build.gradle` `defaultConfig` — the build fails without it |
 | Using `Auth0Web` on mobile | Mobile uses the `Auth0` class with `webAuthentication()`, not `Auth0Web` (that's the web-only API) |
 | Importing `auth0_flutter_web.dart` on mobile | Only import `package:auth0_flutter/auth0_flutter.dart` — the `_web` import is for Flutter web |
