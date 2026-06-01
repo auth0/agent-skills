@@ -36,6 +36,7 @@ Frontend framework skills:
 - `auth0-vue` - Vue.js 3
 - `auth0-angular` - Angular 12+
 - `auth0-spa-js` - Vanilla JS SPAs
+- `auth0-flutter-web` - Flutter Web (Dart)
 
 Backend/fullstack framework skills:
 - `auth0-nextjs` - Next.js
@@ -94,6 +95,7 @@ auth0/agent-skills/
 │           ├── auth0-vue/
 │           ├── auth0-angular/
 │           ├── auth0-spa-js/
+│           ├── auth0-flutter-web/
 │           ├── auth0-nextjs/
 │           ├── auth0-nuxt/
 │           ├── auth0-express/
