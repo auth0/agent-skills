@@ -6,40 +6,59 @@
 >
 > **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt.
 > - **If credentials are provided:** Use them directly in the `Auth0Web(...)` constructor and proceed to "Post-Setup Steps".
-> - **If no credentials are provided:** Run the bootstrap script below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
+> - **If no credentials are provided:** Follow the Auth0 CLI steps below to create the application. Do NOT ask the user to create or configure the application in the Auth0 Dashboard manually — always use the CLI.
 
-### Bootstrap Script
+### Create the Auth0 Application (Auth0 CLI)
 
-> **Agent instruction:** Run these checks before the script. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
+> **Agent instruction:** Run these preflight checks first. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
-> 1. **Check Node.js**: `node --version`. If missing or below 20, install per platform (macOS: `brew install node`, Linux/Windows: see https://nodejs.org).
-> 2. **Check Auth0 CLI**: `command -v auth0`. If missing, install per platform (macOS: `brew install auth0/auth0-cli/auth0`, Linux: `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh`, see https://github.com/auth0/auth0-cli).
-> 3. **Check Auth0 login**: `auth0 tenants list --json --no-input 2>&1`. If it fails or returns empty:
+> 1. **Check the Auth0 CLI is installed**: `command -v auth0`. If missing, install per platform — macOS: `brew install auth0/auth0-cli/auth0`; Linux: `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh`. See https://github.com/auth0/auth0-cli.
+> 2. **Check login / active tenant**: `auth0 tenants list --json --no-input`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
->    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
-> 4. **Confirm active tenant**: Select the tenant where `active` is `true` from the JSON output (e.g., `auth0 tenants list --json --no-input | jq -r '.[] | select(.active) | .domain'`). Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
->    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 3.
+>    - Wait for confirmation, then re-run. Retry up to 3 times before treating as a persistent failure.
+> 3. **Confirm the active tenant**: select the tenant where `active` is `true` from the JSON output:
 >
-> Once confirmed, run:
+>    ```bash
+>    auth0 tenants list --json --no-input | jq -r '.[] | select(.active) | .domain'
+>    ```
+>
+>    Tell the user: _"Your active Auth0 tenant is `<domain>`. Is this correct?"_ If not, ask them to run `auth0 tenants use <tenant-domain>`, then re-check. This domain is the `domain` value for `Auth0Web(...)`.
+
+**Step 1 — Create the Single Page Application.** This registers the callback URL, logout URL, and web origin in one command. Use the Flutter project name (from `pubspec.yaml`) for `--name`, and `http://localhost:3000` as the local dev URL:
+
+```bash
+auth0 apps create \
+  --name "My Flutter Web App" \
+  --type spa \
+  --callbacks "http://localhost:3000" \
+  --logout-urls "http://localhost:3000" \
+  --web-origins "http://localhost:3000" \
+  --no-input --json
+```
+
+The JSON output includes `client_id` — this is the `clientId` value for `Auth0Web(...)`. (Before creating, you can run `auth0 apps list --json --no-input` to check for an existing SPA of the same name and reuse it.)
+
+**Step 2 — Ensure the database connection is enabled for the app.** Most tenants already have a `Username-Password-Authentication` connection. Enable it for the new application (replace `CLIENT_ID`):
+
+```bash
+auth0 api patch "connections/CONNECTION_ID" \
+  --data '{"enabled_clients":["CLIENT_ID"]}' \
+  --no-input
+```
+
+> **Agent instruction:** Find `CONNECTION_ID` with `auth0 api get connections --no-input` (match `name` = `Username-Password-Authentication`). Preserve any existing `enabled_clients` by appending `CLIENT_ID` to that list. If no such connection exists, create one:
+>
 > ```bash
-> cd <path-to-skill>/auth0-flutter-web/scripts
-> npm install
-> node bootstrap.mjs <path-to-flutter-project>
+> auth0 api post connections \
+>   --data '{"name":"Username-Password-Authentication","strategy":"auth0","enabled_clients":["CLIENT_ID"]}' \
+>   --no-input
 > ```
->
-> If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run. Retry up to 3 times.
-> Only if the script keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID, then use those values directly in the `Auth0Web(...)` constructor (see "Using Credentials" below).
 
-The script will:
-1. Detect your Flutter web project structure (checks for `pubspec.yaml` and `web/` directory)
-2. Create a **Single Page Application** in Auth0 Dashboard
-3. Register callback URLs, logout URLs, and web origins for `http://localhost:3000`
-4. Set up a database connection (Username-Password-Authentication)
-5. Output the domain and client ID to use in your Dart code
+**Step 3 — Enable refresh token rotation** (so `offline_access` and silent renewal work) — see [Enable Refresh Token Rotation](#enable-refresh-token-rotation-recommended) below.
 
-### Using Credentials (credentials already known)
+After these steps you have a `domain` and `client_id`. Pass them directly to `Auth0Web` (see "Using Credentials" below), then continue to the Post-Setup Steps.
 
-Use this when credentials are explicitly provided by the user or obtained after bootstrap script failure.
+### Using Credentials
 
 Auth0 `domain` and `clientId` are **public identifiers** (not secrets) — a SPA has no client secret and these values ship in the browser bundle. Pass them directly to the `Auth0Web` constructor:
 

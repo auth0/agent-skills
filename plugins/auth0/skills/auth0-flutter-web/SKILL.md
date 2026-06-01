@@ -31,8 +31,7 @@ metadata:
 - **Flutter** 3.24.0+
 - **Dart** 3.5.0+
 - Auth0 account — [Sign up free](https://auth0.com/signup)
-- Node.js 20+ (for bootstrap script automation)
-- Auth0 CLI — [install instructions](https://github.com/auth0/auth0-cli) (for bootstrap script)
+- Auth0 CLI — [install instructions](https://github.com/auth0/auth0-cli) (used to create and configure the Auth0 application)
 
 ## Quick Start Workflow
 
@@ -61,9 +60,9 @@ metadata:
 >
 > **Agent instruction:**
 > - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Proceed to Step 3 and use those values directly in the `Auth0Web(...)` constructor.
-> - **If no credentials are provided:** Run the bootstrap script — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
+> - **If no credentials are provided:** Create the application with the Auth0 CLI — do NOT ask the user to create or configure an Auth0 application manually in the Dashboard. Always use the CLI path.
 >
-> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and the script command.
+> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for the pre-flight checks and the `auth0 apps create` command.
 
 ### Step 3 — Add Auth0 SPA JS to index.html
 
@@ -352,7 +351,7 @@ For complete patterns with Riverpod, Bloc, and advanced scenarios, see [Integrat
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 Dashboard configuration, bootstrap script, web/index.html setup, callback URL registration
+- **[Setup Guide](./references/setup.md)** — Auth0 application creation via the Auth0 CLI, web/index.html setup, callback URL registration
 - **[Integration Patterns](./references/integration.md)** — Redirect login, popup login, credential management, state management patterns, organization support, error handling
 - **[API Reference & Testing](./references/api.md)** — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
 
