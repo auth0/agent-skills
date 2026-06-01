@@ -30,8 +30,8 @@ import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 final auth0 = Auth0Web(
-  const String.fromEnvironment('AUTH0_DOMAIN'),
-  const String.fromEnvironment('AUTH0_CLIENT_ID'),
+  'YOUR_AUTH0_DOMAIN',
+  'YOUR_AUTH0_CLIENT_ID',
 );
 
 // Redirect to Auth0 Universal Login
@@ -330,8 +330,8 @@ void main() {
   runApp(
     ChangeNotifierProvider(
       create: (_) => AuthService(
-        domain: const String.fromEnvironment('AUTH0_DOMAIN'),
-        clientId: const String.fromEnvironment('AUTH0_CLIENT_ID'),
+        domain: 'YOUR_AUTH0_DOMAIN',
+        clientId: 'YOUR_AUTH0_CLIENT_ID',
       )..init(),
       child: const MyApp(),
     ),
@@ -367,8 +367,8 @@ import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 final auth0Provider = Provider<Auth0Web>((ref) {
   return Auth0Web(
-    const String.fromEnvironment('AUTH0_DOMAIN'),
-    const String.fromEnvironment('AUTH0_CLIENT_ID'),
+    'YOUR_AUTH0_DOMAIN',
+    'YOUR_AUTH0_CLIENT_ID',
   );
 });
 

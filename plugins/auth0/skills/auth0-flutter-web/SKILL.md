@@ -57,16 +57,10 @@ metadata:
 
 ### Step 2 — Configure Auth0
 
-> **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID) in your response text or terminal output. When running Auth0 CLI commands that produce output containing these values, redirect output to a file and read it programmatically:
->
-> ```bash
-> auth0 apps create ... --json --no-input > /tmp/auth0-output.json 2>&1
-> ```
->
-> Then use the Read tool on `/tmp/auth0-output.json` to extract needed values. When confirming the active tenant with the user, use a masked format (e.g., `your-te****.us.auth0.com`).
+> **Note:** For Single Page Applications, the Auth0 Domain and Client ID are **public configuration** (not secrets). A SPA uses PKCE with no client secret, and these values ship in the browser bundle. Pass them directly to `Auth0Web(domain, clientId)` — there is no need to store them in environment variables or hide them.
 >
 > **Agent instruction:**
-> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Proceed to Step 3 — the code examples below use `const String.fromEnvironment()` to read credentials from `--dart-define` flags at compile time.
+> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Proceed to Step 3 and use those values directly in the `Auth0Web(...)` constructor.
 > - **If no credentials are provided:** Run the bootstrap script — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
 >
 > Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for pre-flight checks and the script command.
@@ -187,8 +181,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _authService = AuthService(
-    domain: const String.fromEnvironment('AUTH0_DOMAIN'),
-    clientId: const String.fromEnvironment('AUTH0_CLIENT_ID'),
+    domain: 'YOUR_AUTH0_DOMAIN',
+    clientId: 'YOUR_AUTH0_CLIENT_ID',
   );
   bool _isLoading = true;
 
@@ -329,8 +323,8 @@ void main() {
   runApp(
     ChangeNotifierProvider(
       create: (_) => AuthService(
-        domain: const String.fromEnvironment('AUTH0_DOMAIN'),
-        clientId: const String.fromEnvironment('AUTH0_CLIENT_ID'),
+        domain: 'YOUR_AUTH0_DOMAIN',
+        clientId: 'YOUR_AUTH0_CLIENT_ID',
       )..init(),
       child: const MyApp(),
     ),
@@ -345,13 +339,13 @@ For complete patterns with Riverpod, Bloc, and advanced scenarios, see [Integrat
 > **Agent instruction:** Run a build to verify the integration compiles without errors:
 >
 > ```bash
-> flutter build web --dart-define=AUTH0_DOMAIN=<domain> --dart-define=AUTH0_CLIENT_ID=<client-id>
+> flutter build web
 > ```
 >
 > Then run the app locally to test:
 >
 > ```bash
-> flutter run -d chrome --web-port 3000 --dart-define=AUTH0_DOMAIN=<domain> --dart-define=AUTH0_CLIENT_ID=<client-id>
+> flutter run -d chrome --web-port 3000
 > ```
 >
 > If the build fails, review error messages and fix up to 5 times before asking the user.

@@ -19,10 +19,10 @@ Auth0Web(String domain, String clientId)
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
-// Basic initialization — values supplied via --dart-define at build/run time
+// Basic initialization — domain and client ID are public SPA config (not secrets)
 final auth0 = Auth0Web(
-  const String.fromEnvironment('AUTH0_DOMAIN'),
-  const String.fromEnvironment('AUTH0_CLIENT_ID'),
+  'YOUR_AUTH0_DOMAIN',
+  'YOUR_AUTH0_CLIENT_ID',
 );
 ```
 

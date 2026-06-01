@@ -85,7 +85,7 @@
     "type": "judge",
     "description": "Contains skill-specific advanced patterns beyond basic SDK usage (offline_access, error types, onLoad, version)",
     "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like Auth0Web, loginWithRedirect, logout, credentials). Look for at least 2 of: (1) SDK version 2.1.0 in pubspec.yaml, (2) offline_access scope in a login call, (3) Auth0-specific web error handling (WebException with error codes like login_required, consent_required — not just generic catch), (4) proper onLoad() session restoration with null-check logic. These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
-    "examples": "PASS: Login call includes offline_access scope AND code catches WebException with specific error codes.\nPASS: pubspec.yaml declares version ^2.1.0 AND onLoad() is called with proper null-check branching logic.\nFAIL: Code only uses basic Auth0Web().loginWithRedirect() with no offline_access, no error handling, and hardcoded credentials.\nFAIL: Code has correct basic structure but only catches generic Exception, never WebException.",
+    "examples": "PASS: Login call includes offline_access scope AND code catches WebException with specific error codes.\nPASS: pubspec.yaml declares version ^2.1.0 AND onLoad() is called with proper null-check branching logic.\nFAIL: Code only uses basic Auth0Web().loginWithRedirect() with no offline_access and no error handling.\nFAIL: Code has correct basic structure but only catches generic Exception, never WebException.",
     "framework": "dart"
   }
 ]
