@@ -14,10 +14,10 @@
 >
 > 1. **Check Node.js**: `node --version`. If missing or below 20, install per platform (macOS: `brew install node`, Linux/Windows: see https://nodejs.org).
 > 2. **Check Auth0 CLI**: `command -v auth0`. If missing, install per platform (macOS: `brew install auth0/auth0-cli/auth0`, Linux: `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh`, see https://github.com/auth0/auth0-cli).
-> 3. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
+> 3. **Check Auth0 login**: `auth0 tenants list --json --no-input 2>&1`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
-> 4. **Confirm active tenant**: Parse the `→` line from the CSV output. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
+> 4. **Confirm active tenant**: Select the tenant where `active` is `true` from the JSON output (e.g., `auth0 tenants list --json --no-input | jq -r '.[] | select(.active) | .domain'`). Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
 >    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 3.
 >
 > Once confirmed, run:
