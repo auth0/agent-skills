@@ -43,15 +43,26 @@ auth0 apps create \
 
 The JSON output includes `client_id` — this is the `clientId` value for `Auth0(...)`. (Before creating, you can run `auth0 apps list --json --no-input` to check for an existing Native app of the same name and reuse it — see "Configure Callback URLs" below to update its URLs with `auth0 apps update`.)
 
-**Step 3 — Ensure the database connection is enabled for the app.** Most tenants already have a `Username-Password-Authentication` connection. Enable it for the new application (replace `CONNECTION_ID` and `CLIENT_ID`):
+**Step 3 — Ensure the database connection is enabled for the app.** Most tenants already have a `Username-Password-Authentication` connection. Enable it for the new application **without disconnecting other apps** — fetch the existing `enabled_clients`, append `CLIENT_ID`, then patch the merged list back.
 
-```bash
-auth0 api patch "connections/CONNECTION_ID" \
-  --data '{"enabled_clients":["CLIENT_ID"]}' \
-  --no-input
-```
-
-> **Agent instruction:** Find `CONNECTION_ID` with `auth0 api get connections --no-input` (match `name` = `Username-Password-Authentication`). Preserve any existing `enabled_clients` by appending `CLIENT_ID` to that list. If no such connection exists, create one:
+> **Agent instruction:**
+>
+> 1. Find `CONNECTION_ID` (match `name` = `Username-Password-Authentication`):
+>    ```bash
+>    auth0 api get connections --no-input | jq -r '.[] | select(.name == "Username-Password-Authentication") | .id'
+>    ```
+> 2. Fetch the connection's current `enabled_clients`:
+>    ```bash
+>    auth0 api get "connections/CONNECTION_ID" --no-input | jq -c '.enabled_clients'
+>    ```
+> 3. Append `CLIENT_ID` to that array (deduplicate; create `["CLIENT_ID"]` if the connection had none), then patch the **merged** list back — never send `["CLIENT_ID"]` alone, as that replaces the array and disconnects every other application:
+>    ```bash
+>    auth0 api patch "connections/CONNECTION_ID" \
+>      --data '{"enabled_clients":["EXISTING_CLIENT_1","EXISTING_CLIENT_2","CLIENT_ID"]}' \
+>      --no-input
+>    ```
+>
+> If no `Username-Password-Authentication` connection exists, create one:
 >
 > ```bash
 > auth0 api post connections \

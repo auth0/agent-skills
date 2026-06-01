@@ -27,8 +27,6 @@ metadata:
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below. Current known version: `2.1.0`.
 
-> **Note:** On native mobile, the Auth0 **domain** and **client ID** are public client configuration (not secrets). A native app uses PKCE with no client secret, and these values are safe to commit to source control. Pass them directly to `Auth0(domain, clientId)` in your Dart code.
-
 ## When NOT to Use
 
 - **Flutter web**: Use [auth0-flutter-web](/auth0-flutter-web) — web uses a different platform interface (`Auth0Web`) wrapping Auth0 SPA JS
