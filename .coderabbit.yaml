@@ -1,0 +1,63 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+early_access: false
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: "plugins/**/SKILL.md"
+      instructions: |
+        This file must follow the Agent Skills specification (https://agentskills.io/specification).
+        Verify the following:
+
+        Frontmatter:
+        - `name` (required): max 64 chars, lowercase letters/numbers/hyphens only, must not start/end with hyphen, no consecutive hyphens, must match the parent directory name.
+        - `description` (required): max 1024 chars, must describe what the skill does AND when to use it. Flag vague descriptions.
+        - `license`: should be "Apache-2.0" for this repo.
+        - `metadata.author`: should be present (e.g. "Auth0 <support@auth0.com>").
+        - `metadata.version`: should be a semver string.
+        - `metadata.openclaw.emoji`: should be present (single emoji).
+        - `metadata.openclaw.homepage`: should point to https://github.com/auth0/agent-skills.
+
+        Body content:
+        - Should have clear step-by-step instructions for an AI agent.
+        - Should include working code examples with correct SDK usage.
+        - Should document prerequisites and "when NOT to use" guidance.
+        - Should reference the correct Auth0 SDK package.
+        - Total length should stay under 500 lines; longer content should be split into references/.
+        - File references should use relative paths from the skill root.
+
+    - path: "plugins/**/references/**"
+      instructions: |
+        Reference files provide supplemental documentation loaded on-demand by AI agents.
+        - Keep individual files focused on a single topic.
+        - Smaller files are better (agents load these into context).
+        - Ensure code examples are correct and use current SDK APIs.
+        - Filenames should be kebab-case markdown files.
+
+    - path: "plugins/**/scripts/**"
+      instructions: |
+        Scripts are executable code that AI agents can run.
+        - Must be self-contained or clearly document dependencies.
+        - Should include helpful error messages.
+        - Should handle edge cases gracefully.
+        - Check for security issues (command injection, credential leaks).
+
+    - path: "plugins/auth0/.claude-plugin/**"
+      instructions: |
+        This defines the Claude Code plugin manifest.
+        Ensure plugin.json is valid JSON and skill references are correct.
+
+    - path: "plugins/auth0/.cursor-plugin/**"
+      instructions: |
+        This defines the Cursor plugin manifest.
+        Ensure plugin.json is valid JSON and skill references are correct.
+
+    - path: "plugins/auth0/.codex-plugin/**"
+      instructions: |
+        This defines the Codex plugin manifest.
+        Ensure plugin.json is valid JSON and skill references are correct.

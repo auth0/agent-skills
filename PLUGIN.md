@@ -29,6 +29,7 @@ Core skills:
 - `auth0-quickstart` - Framework detection and routing
 - `auth0-migration` - Migrate from other auth providers
 - `auth0-mfa` - Multi-Factor Authentication
+- `acul-screen-generator` - Custom Universal Login screens and theming
 
 Frontend framework skills:
 - `auth0-react` - React SPAs
@@ -46,6 +47,7 @@ Backend/fullstack framework skills:
 - `auth0-fastapi-api` - FastAPI API authentication
 - `auth0-java-mvc-common` - Java Servlet web applications
 - `auth0-springboot-api` - Spring Boot API authentication
+- `auth0-aspnetcore-authentication` - ASP.NET Core MVC, Razor Pages, Blazor Server web applications
 - `auth0-aspnetcore-api` - ASP.NET Core API authentication
 - `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
 
@@ -57,7 +59,13 @@ Mobile skills:
 - `auth0-swift` - iOS/macOS (Swift)
 - `auth0-react-native` - React Native CLI (bare workflow)
 - `auth0-expo` - Expo (managed workflow)
+- `auth0-maui` - .NET MAUI cross-platform (iOS, Android, macOS, Windows)
+- `auth0-net-android` - .NET Android (Xamarin)
+- `auth0-net-ios` - .NET iOS (Xamarin)
 
+Desktop Application skills:
+- `auth0-winforms` - .NET WinForms applications
+- `auth0-wpf` - .NET WPF applications
 ---
 
 ## Directory Structure
@@ -81,6 +89,7 @@ auth0/agent-skills/
 │           ├── auth0-quickstart/
 │           ├── auth0-migration/
 │           ├── auth0-mfa/
+│           ├── acul-screen-generator/
 │           ├── auth0-react/
 │           ├── auth0-vue/
 │           ├── auth0-angular/
@@ -94,6 +103,7 @@ auth0/agent-skills/
 │           ├── auth0-fastapi-api/
 │           ├── auth0-java-mvc-common/
 │           ├── auth0-springboot-api/
+│           ├── auth0-aspnetcore-authentication/
 │           ├── auth0-aspnetcore-api/
 │           ├── express-oauth2-jwt-bearer/
 │           ├── auth0-ionic-angular/
@@ -102,7 +112,12 @@ auth0/agent-skills/
 │           ├── auth0-react-native/
 │           ├── auth0-expo/
 │           ├── auth0-android/
-│           └── auth0-swift/
+│           ├── auth0-swift/
+│           ├── auth0-maui/
+│           ├── auth0-net-android/
+│           ├── auth0-winforms/
+│           ├── auth0-net-ios/
+│           └── auth0-wpf/
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
@@ -171,7 +186,7 @@ cp -r plugins/auth0/skills/* ~/.claude/skills/
 ## Use Cases
 
 ### Install Everything (Most Common)
-User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 26 skills.
+User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 31 skills.
 
 ### Install One Framework
 Developer working on React app -> uses CLI to install just `auth0-react` skill.

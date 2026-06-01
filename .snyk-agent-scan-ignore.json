@@ -29,8 +29,14 @@
   },
   {
     "code": "W012",
-    "url_pattern": "https://api\\.github\\.com/repos/auth0/[^/]+/releases/latest",
+    "url_pattern": "(https://api\\.github\\.com/)?repos/auth0/[^/]+/releases",
     "reason": "First-party Auth0 repo API call to fetch latest release version"
+  },
+  {
+    "code": "W012",
+    "skills": ["auth0-branding"],
+    "url_pattern": "https://api\\.brandfetch\\.io/v2/brands/",
+    "reason": "Brandfetch API is used to extract brand tokens (colors, logos, fonts) for theming Auth0 Universal Login"
   },
   {
     "code": "W012",

@@ -15,4 +15,4 @@ Add Auth0 authentication to a Flask web application using the auth0-server-pytho
 **Auth0 Credentials:**
 - Domain: `dev-example.auth0.com`
 - Client ID: `abc123def456ghi789jkl012`
-- Client Secret: `secret_xyz789abc123def456ghi789jkl012mno345pqr678stu901vwx234yz`
+- Client Secret: `YOUR_AUTH0_CLIENT_SECRET`

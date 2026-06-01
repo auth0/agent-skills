@@ -56,6 +56,8 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
    >
    > Then follow [**Setup Guide**](references/setup.md) for the chosen path.
    > **Do NOT proceed to step 3 until Auth0 credentials are confirmed.**
+   >
+   > **Note:** For native Android apps, Domain and Client ID are public configuration (not secrets). No client secret is used. Write values directly to `strings.xml` without displaying them in conversation output.
 
 3. **Initialize**: Create an Auth0 account instance:
    ```kotlin
