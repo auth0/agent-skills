@@ -86,11 +86,14 @@ function detectIosBundleId(projectPath) {
   const pbxproj = path.join(projectPath, "ios/Runner.xcodeproj/project.pbxproj")
   if (fs.existsSync(pbxproj)) {
     const content = fs.readFileSync(pbxproj, "utf-8")
-    const match = content.match(/PRODUCT_BUNDLE_IDENTIFIER\s*=\s*([^;]+);/)
-    if (match) {
+    // Scan every PRODUCT_BUNDLE_IDENTIFIER — the first match may be the
+    // RunnerTests target or a $(...) variable reference; return the first
+    // concrete value belonging to the real Runner target.
+    for (const match of content.matchAll(/PRODUCT_BUNDLE_IDENTIFIER\s*=\s*([^;]+);/g)) {
       const value = match[1].trim().replace(/^["']|["']$/g, "")
-      // Skip the RunnerTests target value if it contains ".RunnerTests"
-      if (!value.includes("RunnerTests")) return value
+      // Skip test targets and unresolved build-setting variable references.
+      if (value.includes("RunnerTests") || value.includes("$(")) continue
+      return value
     }
   }
   return null

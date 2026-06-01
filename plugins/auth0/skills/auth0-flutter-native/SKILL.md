@@ -1,7 +1,7 @@
 ---
 name: auth0-flutter-native
 description: Use when adding Auth0 authentication to a Flutter mobile application (iOS/Android) — integrates the auth0_flutter SDK (native platform) for Web Auth login/logout via the system browser, with secure credential storage and biometric protection through the CredentialsManager.
-license: Proprietary
+license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
   version: '1.0.0'
@@ -26,6 +26,8 @@ metadata:
 > curl -s https://pub.dev/api/packages/auth0_flutter | python3 -c "import sys,json;print(json.load(sys.stdin)['latest']['version'])"
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below. Current known version: `2.1.0`.
+
+> **IMPORTANT — Credential privacy:** On native mobile, the Auth0 **domain** and **client ID** are public client configuration, not secrets — no client secret is used (the SDK uses PKCE). Still, never echo these values back in your response text or terminal output. Write them directly into source/config using the Write or Edit tool. When running Auth0 CLI commands that print these values, redirect the output to a file and read it programmatically rather than displaying it.
 
 ## When NOT to Use
 
@@ -68,7 +70,7 @@ metadata:
 ### Step 2 — Configure Auth0
 
 > **Agent instruction:**
-> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Store them for use in the Dart code and proceed to Step 3.
+> - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Write them directly into the Dart configuration using the Write/Edit tool (do NOT echo them back in your response) and proceed to Step 3.
 > - **If no credentials are provided:** Run the bootstrap script — do NOT ask the user to create or configure an Auth0 application manually. Always use the CLI path.
 >
 > Follow the [Setup Guide](./references/setup.md) (Auth0 Configuration section) for pre-flight checks and the bootstrap script command. The bootstrap script (`node bootstrap.mjs`) is the automatic setup path — it runs `auth0 apps create` for you.
@@ -120,7 +122,7 @@ android {
 
 ### Step 5 — Configure Callback URLs
 
-> **Agent instruction:** Register the platform-specific callback and logout URLs using the Auth0 CLI. The bootstrap script does this automatically. To do it manually, determine the Android package name (from `android/app/build.gradle` `applicationId`) and the iOS bundle identifier (from Xcode / `PRODUCT_BUNDLE_IDENTIFIER`), then run:
+> **Agent instruction:** Register the platform-specific callback and logout URLs using the Auth0 CLI. The bootstrap script does this automatically. To do it manually, determine the Android package name (from `android/app/build.gradle` `applicationId`) and the iOS bundle identifier (from Xcode / `PRODUCT_BUNDLE_IDENTIFIER`), then run the command below, replacing the placeholders (`CLIENT_ID`, `YOUR_DOMAIN`, `ANDROID_PACKAGE_NAME`, `IOS_BUNDLE_ID`) with the project's values:
 >
 > ```bash
 > auth0 apps update CLIENT_ID \

@@ -4,6 +4,7 @@ import fs from "node:fs"
 import path from "node:path"
 import os from "node:os"
 import readline from "node:readline/promises"
+import { fileURLToPath } from "node:url"
 import { $ } from "execa"
 import ora from "ora"
 
@@ -11,7 +12,7 @@ import ora from "ora"
 // Paths
 // ---------------------------------------------------------------------------
 
-const EVAL_DIR = path.dirname(new URL(import.meta.url).pathname)
+const EVAL_DIR = path.dirname(fileURLToPath(import.meta.url))
 const SKILL_DIR = path.resolve(EVAL_DIR, "..")
 
 // ---------------------------------------------------------------------------

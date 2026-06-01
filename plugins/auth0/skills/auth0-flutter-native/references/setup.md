@@ -2,8 +2,8 @@
 
 ## Auth0 Configuration
 
-> **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt.
-> - **If credentials are provided:** Store them for use in the Dart code and proceed to "Post-Setup Steps".
+> **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt. On native mobile these are public client configuration, not secrets (PKCE is used; there is no client secret) — but do not echo them back in your response; write them directly into config using the Write/Edit tool.
+> - **If credentials are provided:** Write them directly into the Dart configuration and proceed to "Post-Setup Steps".
 > - **If no credentials are provided:** Run the bootstrap script below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
 
 ### Bootstrap Script

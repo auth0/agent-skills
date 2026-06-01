@@ -12,7 +12,7 @@ export function formatChangePlan(plan) {
     lines.push(`           Logout URLs:   ${plan.client.logoutUrls.join(", ")}`)
   }
 
-  if (plan.connection) {
+  if (plan.connection?.action) {
     lines.push(`  [${plan.connection.action.toUpperCase()}] Database connection: Username-Password-Authentication`)
   }
 

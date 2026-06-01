@@ -25,6 +25,19 @@ export function writeManifestPlaceholders(gradlePath, domain, scheme = "https") 
 
   const isKts = gradlePath.endsWith(".kts")
 
+  // Groovy uses `manifestPlaceholders = [...]`, which reassigns (clobbers) the
+  // whole map. If another SDK already declared placeholders without auth0Domain,
+  // skip and ask the user to merge manually rather than dropping their entries.
+  // (The Kotlin DSL branch uses indexed assignment, which is additive and safe.)
+  if (!isKts && content.includes("manifestPlaceholders")) {
+    spinner.warn("Existing manifestPlaceholders found in build.gradle — skipping to avoid clobbering them")
+    console.error(
+      "\n  Add these entries to your existing manifestPlaceholders map manually:\n" +
+      `    auth0Domain: "${domain}", auth0Scheme: "${scheme}"\n`
+    )
+    return
+  }
+
   const insertion = isKts
     ? `        manifestPlaceholders["auth0Domain"] = "${domain}"\n` +
       `        manifestPlaceholders["auth0Scheme"] = "${scheme}"\n`

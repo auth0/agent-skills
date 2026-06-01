@@ -7,7 +7,7 @@
  * Custom type mappings:
  *   file_contains  → contains (loses file-specificity)
  *   contains_any   → contains (first value only)
- *   not_contains_any → not_contains (first value only)
+ *   not_contains_any → one not_contains per value (all values checked)
  *   all            → flattened sub-graders
  *   judge.examples → stripped
  */
@@ -59,7 +59,11 @@ function mapGrader(g: RichGrader): GraderDef | GraderDef[] {
       return { kind: "not_contains", needle: g.value, name };
 
     case "not_contains_any":
-      return { kind: "not_contains", needle: g.values?.[0], name };
+      return (g.values ?? []).map((needle) => ({
+        kind: "not_contains",
+        needle,
+        name,
+      }));
 
     case "matches":
       return { kind: "matches", pattern: g.pattern, name };
