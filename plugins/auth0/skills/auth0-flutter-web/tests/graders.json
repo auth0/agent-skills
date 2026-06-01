@@ -68,7 +68,7 @@
   },
   {
     "type": "matches",
-    "pattern": "\\^?2\\.1\\.\\d+",
+    "pattern": "auth0_flutter:\\s*\\^?2\\.1\\.\\d+",
     "description": "Uses current SDK version (2.1.0) in pubspec.yaml dependency"
   },
   {

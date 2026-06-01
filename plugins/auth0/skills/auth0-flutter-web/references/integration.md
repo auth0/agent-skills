@@ -29,7 +29,10 @@ Tokens cached in-memory by Auth0 SPA JS (auto-refresh on expiry)
 import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
-final auth0 = Auth0Web('YOUR_DOMAIN', 'YOUR_CLIENT_ID');
+final auth0 = Auth0Web(
+  const String.fromEnvironment('AUTH0_DOMAIN'),
+  const String.fromEnvironment('AUTH0_CLIENT_ID'),
+);
 
 // Redirect to Auth0 Universal Login
 Future<void> login() async {
@@ -327,8 +330,8 @@ void main() {
   runApp(
     ChangeNotifierProvider(
       create: (_) => AuthService(
-        domain: 'YOUR_DOMAIN',
-        clientId: 'YOUR_CLIENT_ID',
+        domain: const String.fromEnvironment('AUTH0_DOMAIN'),
+        clientId: const String.fromEnvironment('AUTH0_CLIENT_ID'),
       )..init(),
       child: const MyApp(),
     ),
@@ -363,7 +366,10 @@ import 'package:auth0_flutter/auth0_flutter.dart';
 import 'package:auth0_flutter/auth0_flutter_web.dart';
 
 final auth0Provider = Provider<Auth0Web>((ref) {
-  return Auth0Web('YOUR_DOMAIN', 'YOUR_CLIENT_ID');
+  return Auth0Web(
+    const String.fromEnvironment('AUTH0_DOMAIN'),
+    const String.fromEnvironment('AUTH0_CLIENT_ID'),
+  );
 });
 
 final authStateProvider = StateNotifierProvider<AuthNotifier, AsyncValue<Credentials?>>((ref) {

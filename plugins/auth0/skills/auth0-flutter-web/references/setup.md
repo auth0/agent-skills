@@ -2,10 +2,10 @@
 
 ## Auth0 Configuration
 
-> **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID) in your response text or terminal output. Write them directly into Dart source files using the Write or Edit tool. When running Auth0 CLI commands that produce output containing these values, redirect output to a file and read it programmatically.
+> **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID) in your response text or terminal output. Credentials are passed at compile time via `--dart-define` flags — never hardcode them in source files. When running Auth0 CLI commands that produce output containing these values, redirect output to a file and read it programmatically.
 >
 > **Agent instruction:** Check whether Auth0 credentials (domain and client ID) are already provided in the user's prompt.
-> - **If credentials are provided:** Write them directly into the Dart source file using the Edit tool and proceed to "Post-Setup Steps".
+> - **If credentials are provided:** Use them in `--dart-define` flags when building/running the app and proceed to "Post-Setup Steps".
 > - **If no credentials are provided:** Run the bootstrap script below. Do NOT offer manual setup or ask the user to create an application in Auth0 Dashboard themselves — always use the CLI.
 
 ### Bootstrap Script
@@ -28,7 +28,7 @@
 > ```
 >
 > If the script fails due to session expiry, ask the user to run `auth0 login` again, then re-run. Retry up to 3 times.
-> Only if the script keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID, then use those values directly in the Dart code.
+> Only if the script keeps failing after retries: use `AskUserQuestion` to ask the user for their Auth0 Domain and Client ID, then pass those values at compile time via `--dart-define` flags (see "Passing Credentials at Compile Time" below) — never write them verbatim into Dart source files.
 
 The script will:
 1. Detect your Flutter web project structure (checks for `pubspec.yaml` and `web/` directory)
@@ -37,15 +37,28 @@ The script will:
 4. Set up a database connection (Username-Password-Authentication)
 5. Output the domain and client ID to use in your Dart code
 
-### Using Credentials Directly (credentials already known)
+### Passing Credentials at Compile Time (credentials already known)
 
 Use this only when credentials are explicitly provided by the user or obtained after bootstrap script failure.
 
+Auth0 `domain` and `clientId` are public identifiers (not secrets), but to keep them out of source control and out of agent output, read them from `--dart-define` flags via `const String.fromEnvironment()` rather than hardcoding string literals:
+
 ```dart
-final auth0 = Auth0Web('YOUR_AUTH0_DOMAIN', 'YOUR_AUTH0_CLIENT_ID');
+final auth0 = Auth0Web(
+  const String.fromEnvironment('AUTH0_DOMAIN'),
+  const String.fromEnvironment('AUTH0_CLIENT_ID'),
+);
 ```
 
-There is no config file (like `Auth0.plist` for iOS) — credentials are passed directly to the `Auth0Web` constructor in Dart code.
+Supply the values at build/run time:
+
+```bash
+flutter run -d chrome --web-port 3000 \
+  --dart-define=AUTH0_DOMAIN=<domain> \
+  --dart-define=AUTH0_CLIENT_ID=<client-id>
+```
+
+There is no config file (like `Auth0.plist` for iOS) — the values are injected at compile time and never written verbatim into Dart source files.
 
 ---
 
@@ -164,18 +177,24 @@ Auth0 Flutter Web **does not use a client secret**. Single Page Applications use
 
 ## Running the App
 
+> Credentials are read at compile time via `const String.fromEnvironment(...)`, so the `--dart-define` flags must be present on **every** `flutter run` / `flutter build`. Omitting them makes `Auth0Web` receive empty strings and authentication will fail at runtime.
+
 ```bash
 # Development (with consistent port for callback URLs)
-flutter run -d chrome --web-port 3000
+flutter run -d chrome --web-port 3000 \
+  --dart-define=AUTH0_DOMAIN=<domain> \
+  --dart-define=AUTH0_CLIENT_ID=<client-id>
 
 # Production build
-flutter build web
+flutter build web \
+  --dart-define=AUTH0_DOMAIN=<domain> \
+  --dart-define=AUTH0_CLIENT_ID=<client-id>
 
 # Serve production build locally for testing
 cd build/web && python3 -m http.server 3000
 ```
 
-> **Agent instruction:** Always use `--web-port 3000` during development to match the callback URLs registered in Auth0 Dashboard. If the user prefers a different port, update both the run command and the Auth0 Dashboard URLs.
+> **Agent instruction:** Always use `--web-port 3000` during development to match the callback URLs registered in Auth0 Dashboard. If the user prefers a different port, update both the run command and the Auth0 Dashboard URLs. Always include both `--dart-define` flags on every run/build command.
 
 ---
 
@@ -185,17 +204,22 @@ After completing setup, verify:
 
 ```bash
 # 1. Build the project
-flutter build web
+flutter build web \
+  --dart-define=AUTH0_DOMAIN=<domain> \
+  --dart-define=AUTH0_CLIENT_ID=<client-id>
 
 # 2. Run locally
-flutter run -d chrome --web-port 3000
+flutter run -d chrome --web-port 3000 \
+  --dart-define=AUTH0_DOMAIN=<domain> \
+  --dart-define=AUTH0_CLIENT_ID=<client-id>
 ```
 
 - [ ] `auth0_flutter` is in `pubspec.yaml` dependencies
 - [ ] Auth0 SPA JS script tag is in `web/index.html`
-- [ ] `Auth0Web` is instantiated with correct domain and client ID
+- [ ] `Auth0Web` is instantiated from `String.fromEnvironment` defines
+- [ ] Both `--dart-define` flags are passed on every run/build command
 - [ ] `onLoad()` is called on app startup
 - [ ] Callback URLs are saved in Auth0 Dashboard
 - [ ] Allowed Web Origins is configured in Auth0 Dashboard
-- [ ] App builds without errors (`flutter build web`)
+- [ ] App builds without errors
 - [ ] Login redirect works and returns to the app
