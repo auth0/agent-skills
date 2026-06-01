@@ -43,11 +43,13 @@ metadata:
 > **Agent instruction:** Check the project directory for `pubspec.yaml`. If present, add the dependency. If not found, this is not a Flutter project — ask the user.
 >
 > Run in the project root:
+>
 > ```bash
 > flutter pub add auth0_flutter
 > ```
 >
 > Verify the dependency was added to `pubspec.yaml`:
+>
 > ```yaml
 > dependencies:
 >   auth0_flutter: ^2.1.0
@@ -56,9 +58,11 @@ metadata:
 ### Step 2 — Configure Auth0
 
 > **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID) in your response text or terminal output. When running Auth0 CLI commands that produce output containing these values, redirect output to a file and read it programmatically:
+>
 > ```bash
 > auth0 apps create ... --json --no-input > /tmp/auth0-output.json 2>&1
 > ```
+>
 > Then use the Read tool on `/tmp/auth0-output.json` to extract needed values. When confirming the active tenant with the user, use a masked format (e.g., `your-te****.us.auth0.com`).
 >
 > **Agent instruction:**
@@ -85,6 +89,7 @@ metadata:
 > 1. Determine the app's web URL. For local development, default is `http://localhost:3000` (when running with `--web-port 3000`).
 > 2. Ask the user via `AskUserQuestion`: _"What port will you run your Flutter web app on locally? (default: 3000)"_
 > 3. Register the callback URLs using the Auth0 CLI (substitute real values for `CLIENT_ID`, `APP_URL`):
+>
 > ```bash
 > auth0 apps update CLIENT_ID \
 >   --callbacks "APP_URL" \
@@ -338,13 +343,17 @@ For complete patterns with Riverpod, Bloc, and advanced scenarios, see [Integrat
 ### Step 6 — Verify Build
 
 > **Agent instruction:** Run a build to verify the integration compiles without errors:
+>
 > ```bash
 > flutter build web --dart-define=AUTH0_DOMAIN=<domain> --dart-define=AUTH0_CLIENT_ID=<client-id>
 > ```
+>
 > Then run the app locally to test:
+>
 > ```bash
 > flutter run -d chrome --web-port 3000 --dart-define=AUTH0_DOMAIN=<domain> --dart-define=AUTH0_CLIENT_ID=<client-id>
 > ```
+>
 > If the build fails, review error messages and fix up to 5 times before asking the user.
 
 ## Detailed Documentation
