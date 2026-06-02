@@ -48,17 +48,19 @@ The JSON output includes `client_id` — this is the `clientId` value for `Auth0
 > **Agent instruction:**
 >
 > 1. Find `CONNECTION_ID` (match `name` = `Username-Password-Authentication`):
+>
 >    ```bash
 >    auth0 api get connections --no-input | jq -r '.[] | select(.name == "Username-Password-Authentication") | .id'
 >    ```
-> 2. Fetch the connection's current `enabled_clients`:
+>
+> 2. Build the **merged** `enabled_clients` array from the connection's current value, then patch that computed array back. The `jq` expression reads the existing list (defaulting to `[]` if the connection had none), appends `CLIENT_ID`, and dedupes with `unique` — so it never overwrites or disconnects the other applications already on the connection. Do **not** patch `["CLIENT_ID"]` alone.
+>
 >    ```bash
->    auth0 api get "connections/CONNECTION_ID" --no-input | jq -c '.enabled_clients'
->    ```
-> 3. Append `CLIENT_ID` to that array (deduplicate; create `["CLIENT_ID"]` if the connection had none), then patch the **merged** list back — never send `["CLIENT_ID"]` alone, as that replaces the array and disconnects every other application:
->    ```bash
+>    MERGED_CLIENTS=$(auth0 api get "connections/CONNECTION_ID" --no-input |
+>      jq -c --arg cid "CLIENT_ID" '(.enabled_clients // []) + [$cid] | unique')
+>
 >    auth0 api patch "connections/CONNECTION_ID" \
->      --data '{"enabled_clients":["EXISTING_CLIENT_1","EXISTING_CLIENT_2","CLIENT_ID"]}' \
+>      --data "{\"enabled_clients\":$MERGED_CLIENTS}" \
 >      --no-input
 >    ```
 >
