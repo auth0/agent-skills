@@ -66,22 +66,13 @@ Your `SKILL.md` must include:
    Notes:
    - `license` must be `Apache-2.0` unless a specific package requires otherwise (matches the repository `LICENSE`).
    - `metadata.author` must follow `Name <email>`; separate multiple authors with commas, not semicolons.
-   - If your skill's workflow invokes `auth0` CLI commands, declare `requires.bins: [auth0]` (and the matching `install` block) so agents can prompt for installation. Apply this consistently.
+   - The `requires`, `os`, and `install` fields under `metadata.openclaw` are [ClawHub](https://clawhub.ai) metadata used when installing the skill via `npx clawhub install`. If your skill's workflow invokes `auth0` CLI commands, declare `requires.bins: [auth0]` (and the matching `install` block) so ClawHub can prompt the user to install the CLI. Apply this consistently.
 
 2. **Clear Instructions**: Step-by-step guidance for the AI agent
 
 3. **Code Examples**: Working code samples for each SDK where applicable
 
 4. **Error Handling**: Common errors and how to handle them
-
-### Section Conventions
-
-Skills fall into two loose templates. Pick the one that matches and copy an existing skill as a starting point:
-
-- **Integration skills** (framework/SDK setup, e.g. `auth0-react`, `auth0-vue`): use the sections `Prerequisites` → `When NOT to Use` → `Quick Start Workflow` → `Common Mistakes` → `Related Skills` → `Quick Reference` → `References`.
-- **Capability skills** (cross-cutting tasks, e.g. `auth0-branding`, `auth0-mfa`, `auth0-custom-domains`): organize around `Capabilities` / `Overview` and task-specific sections.
-
-Use the heading `# Auth0 <Framework> Integration` for integration skills (not the lowercased slug).
 
 ### Code Style
 
