@@ -43,5 +43,10 @@
     "skills": ["auth0-custom-domains"],
     "url": "https://mcp.cloudflare.com/mcp",
     "reason": "The skill sets up custom domains for Auth0 tenants, and uses Cloudflare's MCP to write the CNAME record for the custom domain."
+  },
+  {
+    "code": "W012",
+    "url_pattern": "https://cdn\\.auth0\\.com/js/auth0-spa-js/",
+    "reason": "First-party Auth0 SPA JS SDK served from Auth0-owned CDN, required by auth0_flutter web platform"
   }
 ]
