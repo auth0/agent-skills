@@ -14,36 +14,74 @@ We appreciate feedback and contribution to this repo! Before you get started, pl
 
 ### Skill Structure
 
+Per the Agent Skills specification, **only `SKILL.md` may live in the skill root**. All other content must go in one of these subdirectories:
+
 ```
 plugins/auth0/skills/my-skill/
-├── SKILL.md           # Required: Main skill file
-├── references/        # Optional: Additional documentation
-│   └── reference.md
-└── scripts/           # Optional: Helper scripts
-    └── helper.js
+├── SKILL.md           # Required: Main skill file (the ONLY file allowed in root)
+├── references/        # Optional: Additional documentation (kebab-case .md files)
+│   ├── setup.md
+│   ├── integration.md
+│   └── api.md
+├── scripts/           # Optional: Executable helper code
+│   └── helper.js
+├── assets/            # Optional: Static resources (templates, images, data files)
+└── tests/             # Optional: Validation artifacts (test transcripts, fixtures)
 ```
+
+Markdown files in subdirectories must be **kebab-case** (e.g. `route-protection.md`). Framework integration skills conventionally split their reference docs into `setup.md`, `integration.md`, and `api.md` — follow that naming so skills stay consistent.
 
 ### SKILL.md Requirements
 
 Your `SKILL.md` must include:
 
-1. **YAML Frontmatter** with required fields:
+1. **YAML Frontmatter** with the following fields. `name`, `description`, `license`, `metadata.author`, and the full `metadata.openclaw` block (with `emoji` and `homepage`) are **required and enforced by the linter** — a skill missing any of them will fail validation:
+
    ```yaml
    ---
    name: my-skill
    description: Brief description of what this skill does and when to use it.
    license: Apache-2.0
    metadata:
-     author: your-name
-     version: 1.0.0
+     author: Auth0 <support@auth0.com>   # required, must be "Name <email>" format
+     version: '1.0.0'                      # recommended; most skills pin this
+     openclaw:                             # required block
+       emoji: "\U0001F510"
+       homepage: https://github.com/auth0/agent-skills
+       requires:                           # optional: declare external dependencies
+         bins:
+           - auth0                         # declare `auth0` if the skill runs CLI commands
+       os:                                 # optional: darwin, linux, windows
+         - darwin
+         - linux
+       install:                            # optional: how to install required bins
+         - id: brew
+           kind: brew
+           package: auth0/auth0-cli/auth0
+           bins: [auth0]
+           label: 'Install Auth0 CLI (brew)'
    ---
    ```
+
+   Notes:
+   - `license` must be `Apache-2.0` unless a specific package requires otherwise (matches the repository `LICENSE`).
+   - `metadata.author` must follow `Name <email>`; separate multiple authors with commas, not semicolons.
+   - If your skill's workflow invokes `auth0` CLI commands, declare `requires.bins: [auth0]` (and the matching `install` block) so agents can prompt for installation. Apply this consistently.
 
 2. **Clear Instructions**: Step-by-step guidance for the AI agent
 
 3. **Code Examples**: Working code samples for each SDK where applicable
 
 4. **Error Handling**: Common errors and how to handle them
+
+### Section Conventions
+
+Skills fall into two loose templates. Pick the one that matches and copy an existing skill as a starting point:
+
+- **Integration skills** (framework/SDK setup, e.g. `auth0-react`, `auth0-vue`): use the sections `Prerequisites` → `When NOT to Use` → `Quick Start Workflow` → `Common Mistakes` → `Related Skills` → `Quick Reference` → `References`.
+- **Capability skills** (cross-cutting tasks, e.g. `auth0-branding`, `auth0-mfa`, `auth0-custom-domains`): organize around `Capabilities` / `Overview` and task-specific sections.
+
+Use the heading `# Auth0 <Framework> Integration` for integration skills (not the lowercased slug).
 
 ### Code Style
 
@@ -64,15 +102,14 @@ Your `SKILL.md` must include:
 
 ### Validating Skills
 
-Use the skills reference library to validate your skills:
+This repository uses [skillsaw](https://github.com/stbenjam/skillsaw) to enforce frontmatter and structure conventions. The same check runs in CI (`.github/workflows/skillsaw.yml`) and **must pass before a PR can merge**, so run it locally first:
 
 ```bash
-# Validate a specific skill
-npx skills-ref validate ./plugins/auth0/skills/my-skill
-
-# Validate all skills
-npx skills-ref validate ./plugins/auth0/skills/
+# Validate the whole repository in strict mode (matches CI)
+uvx skillsaw --strict
 ```
+
+Rules are configured in [`.skillsaw.yaml`](./.skillsaw.yaml), with repository-specific custom rules in [`.skillsaw/rules.py`](./.skillsaw/rules.py).
 
 ### Testing with AI Assistants
 
