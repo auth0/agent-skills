@@ -41,16 +41,16 @@
 >
 > Then write the `.env` file (see below).
 >
-> **Write the .env file** (both paths):
+> **Write the .env file** (both paths). The SDK reads `ISSUER_BASE_URL` (a full URL, including `https://`) and `AUDIENCE` automatically:
 > ```env
-> AUTH0_DOMAIN=your-tenant.us.auth0.com
-> AUTH0_AUDIENCE=https://your-api.example.com
+> ISSUER_BASE_URL=https://your-tenant.us.auth0.com
+> AUDIENCE=https://your-api.example.com
 > PORT=3000
 > ```
 
 ### Auth0 API Registration (Resource Server)
 
-The bootstrap script automatically runs `auth0 apis create` to register your API as a Resource Server. This produces the `AUTH0_AUDIENCE` value (the API Identifier) that your middleware uses for token validation.
+The bootstrap script automatically runs `auth0 apis create` to register your API as a Resource Server. This produces the `AUDIENCE` value (the API Identifier) that your middleware uses for token validation.
 
 **Auth0 CLI command (for reference):**
 ```bash
@@ -66,7 +66,7 @@ auth0 apis create \
 2. Click **Create API**
 3. Set:
    - **Name**: Your API name (e.g., "My Node API")
-   - **Identifier**: A URL-like identifier (e.g., `https://my-api.example.com`) — this becomes `AUTH0_AUDIENCE`
+   - **Identifier**: A URL-like identifier (e.g., `https://my-api.example.com`) — this becomes `AUDIENCE`
    - **Signing Algorithm**: `RS256` (recommended)
 4. Click **Create**
 5. Note the **API Identifier** — this is your Audience value
@@ -85,7 +85,7 @@ To use `claimIncludes('permissions', 'read:data')` with Auth0 RBAC:
 
 After running the bootstrap script or manual setup:
 
-1. **Verify domain and audience** are correct in `.env`
+1. **Verify `ISSUER_BASE_URL` and `AUDIENCE`** are correct in `.env`
 2. **Test the API is reachable**: `auth0 apis list --json --no-input | grep your-api`
 3. **Confirm CORS is configured** before auth middleware in your server file (see integration.md)
 4. **Request a test token** using M2M credentials or the Auth0 Dashboard test feature:
@@ -121,15 +121,15 @@ npm install --save-dev @types/express @types/cors  # TypeScript projects
 `express-oauth2-jwt-bearer` requires only **Domain** and **Audience** — no Client Secret. The middleware validates tokens using the Auth0 JWKS (JSON Web Key Set) endpoint, which provides the public signing keys. This means:
 
 - **No client secret needed** for token validation
-- The JWKS endpoint is publicly accessible at `https://{AUTH0_DOMAIN}/.well-known/jwks.json`
+- The JWKS endpoint is publicly accessible at `{ISSUER_BASE_URL}/.well-known/jwks.json`
 - The middleware fetches and caches keys automatically
 
 ### .env file (development)
 
 ```env
 # .env — Never commit to source control
-AUTH0_DOMAIN=your-tenant.us.auth0.com
-AUTH0_AUDIENCE=https://your-api.example.com
+ISSUER_BASE_URL=https://your-tenant.us.auth0.com
+AUDIENCE=https://your-api.example.com
 PORT=3000
 ```
 
@@ -139,8 +139,8 @@ Set these as environment variables in your hosting platform (not in `.env` files
 
 | Variable | Example Value |
 |----------|--------------|
-| `AUTH0_DOMAIN` | `your-tenant.us.auth0.com` |
-| `AUTH0_AUDIENCE` | `https://your-api.example.com` |
+| `ISSUER_BASE_URL` | `https://your-tenant.us.auth0.com` |
+| `AUDIENCE` | `https://your-api.example.com` |
 | `PORT` | `3000` |
 
 **Never commit `.env` to source control.** Add `.env` to `.gitignore`:

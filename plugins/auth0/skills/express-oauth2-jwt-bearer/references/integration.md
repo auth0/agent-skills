@@ -23,10 +23,8 @@ Apply `checkJwt` middleware globally to protect all routes:
 ```javascript
 import { auth } from 'express-oauth2-jwt-bearer';
 
-const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
-});
+// Reads ISSUER_BASE_URL + AUDIENCE from env
+const checkJwt = auth();
 
 // All routes below this require a valid JWT
 app.use(checkJwt);
@@ -57,9 +55,7 @@ Allow unauthenticated requests but attach auth info when present:
 
 ```javascript
 const optionalAuth = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
-  authRequired: false,
+  authRequired: false, // issuerBaseURL + audience read from env
 });
 
 app.get('/api/profile', optionalAuth, (req, res) => {
@@ -159,11 +155,8 @@ app.use(cors({
   exposedHeaders: ['WWW-Authenticate'],
 }));
 
-// 2. Auth second
-const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
-});
+// 2. Auth second (reads ISSUER_BASE_URL + AUDIENCE from env)
+const checkJwt = auth();
 ```
 
 ## DPoP Support
@@ -174,8 +167,7 @@ DPoP (Demonstration of Proof-of-Possession) binds tokens to the client's key pai
 
 ```javascript
 const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
+  // issuerBaseURL + audience read from ISSUER_BASE_URL / AUDIENCE env vars
   dpop: {
     enabled: true,
     required: false,  // Accept both Bearer and DPoP tokens
@@ -187,8 +179,7 @@ const checkJwt = auth({
 
 ```javascript
 const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
+  // issuerBaseURL + audience read from ISSUER_BASE_URL / AUDIENCE env vars
   dpop: {
     enabled: true,
     required: true,  // Reject plain Bearer tokens
@@ -200,8 +191,7 @@ const checkJwt = auth({
 
 ```javascript
 const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
+  // issuerBaseURL + audience read from ISSUER_BASE_URL / AUDIENCE env vars
   dpop: { enabled: false },
 });
 ```

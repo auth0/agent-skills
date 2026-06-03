@@ -8,8 +8,8 @@ All options are passed to the `auth()` function or set via environment variables
 
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `issuerBaseURL` | `string` | Yes (or `ISSUER_BASE_URL` env var) | — | Auth0 domain with `https://`, e.g. `https://your-tenant.us.auth0.com` |
-| `audience` | `string` | Yes (or `AUDIENCE` env var) | — | API Identifier from Auth0 Dashboard, e.g. `https://my-api.com` |
+| `issuerBaseURL` | `string` | Yes (or `ISSUER_BASE_URL` env var) | `process.env.ISSUER_BASE_URL` | Auth0 domain with `https://`, e.g. `https://your-tenant.us.auth0.com` |
+| `audience` | `string` | Yes (or `AUDIENCE` env var) | `process.env.AUDIENCE` | API Identifier from Auth0 Dashboard, e.g. `https://my-api.com` |
 | `secret` | `string` | For HS256 only | — | Shared secret for symmetric JWT signing (HS256). Not required for RS256. |
 | `tokenSigningAlg` | `string` | No | `RS256` | JWT signing algorithm. Use `HS256` for symmetric keys. |
 | `issuer` | `string` | No (alternative to `issuerBaseURL`) | — | Issuer claim value — use with `jwksUri` for non-standard setups |
@@ -34,15 +34,15 @@ When no options are passed to `auth()`, these variables are read automatically:
 
 | Variable | Description |
 |----------|-------------|
-| `ISSUER_BASE_URL` | Auth0 domain with `https://` prefix: `https://your-tenant.us.auth0.com` |
+| `ISSUER_BASE_URL` | Auth0 domain as a **full URL** with `https://` prefix: `https://your-tenant.us.auth0.com` |
 | `AUDIENCE` | API Identifier: `https://your-api.example.com` |
 
-**Note:** `AUTH0_DOMAIN` / `AUTH0_AUDIENCE` are the conventional `.env` keys used in this skill. Pass them explicitly:
+This is the convention this skill uses — set them in `.env` and call `auth()` with no arguments:
 ```javascript
-auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
-})
+import 'dotenv/config';
+import { auth } from 'express-oauth2-jwt-bearer';
+
+const checkJwt = auth(); // reads ISSUER_BASE_URL + AUDIENCE from env
 ```
 
 ## Claims Reference
@@ -89,9 +89,9 @@ app.use(cors({
 app.use(express.json());
 
 // 2. JWT validation middleware
+//    issuerBaseURL + audience are read from ISSUER_BASE_URL / AUDIENCE env vars.
 const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
+  clockTolerance: 5, // seconds of allowed clock skew
 });
 
 // 3. Public endpoint (no auth required)
@@ -135,8 +135,8 @@ app.listen(PORT, () => console.log(`API listening on port ${PORT}`));
 ### Environment configuration (.env)
 
 ```env
-AUTH0_DOMAIN=your-tenant.us.auth0.com
-AUTH0_AUDIENCE=https://your-api.example.com
+ISSUER_BASE_URL=https://your-tenant.us.auth0.com
+AUDIENCE=https://your-api.example.com
 PORT=3000
 CORS_ORIGIN=http://localhost:5173
 ```
@@ -153,10 +153,7 @@ import { auth, requiredScopes } from 'express-oauth2-jwt-bearer';
 
 const app = express();
 
-const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
-});
+const checkJwt = auth(); // reads ISSUER_BASE_URL + AUDIENCE from env
 
 app.get('/api/private', checkJwt, (req: Request, res: Response) => {
   const sub = req.auth?.payload.sub;
@@ -196,10 +193,10 @@ curl --request POST \
 | Error | Cause | Fix |
 |-------|-------|-----|
 | `UnauthorizedError: No authorization token was found` | No `Authorization: Bearer ...` header | Add the bearer token to the request header |
-| `UnauthorizedError: invalid_token — jwt audience invalid` | Audience mismatch | Verify `AUTH0_AUDIENCE` matches the API Identifier in Auth0 Dashboard exactly |
-| `UnauthorizedError: invalid_token — jwt issuer invalid` | Domain mismatch | Verify `AUTH0_DOMAIN` is the Auth0 tenant hostname (no `https://`) |
+| `UnauthorizedError: invalid_token — jwt audience invalid` | Audience mismatch | Verify `AUDIENCE` matches the API Identifier in Auth0 Dashboard exactly |
+| `UnauthorizedError: invalid_token — jwt issuer invalid` | Issuer mismatch | Verify `ISSUER_BASE_URL` is the full Auth0 tenant URL with `https://` |
 | `UnauthorizedError: invalid_token — jwt expired` | Token has expired | Request a new token; check system clock drift (`clockTolerance` option) |
-| `Error: JWKS request failed` | Network or domain misconfiguration | Verify `AUTH0_DOMAIN` is reachable; check network/proxy settings |
+| `Error: JWKS request failed` | Network or issuer misconfiguration | Verify `ISSUER_BASE_URL` is reachable; check network/proxy settings |
 | `InsufficientScopeError: Insufficient scope` | Token lacks required scope | Verify the requesting app has the scope granted; check `requiredScopes()` call |
 | `CORS error` on OPTIONS preflight | Auth middleware running before CORS | Move `cors()` middleware before `auth()` in the middleware chain |
 | `TypeError: Cannot read properties of undefined (reading 'payload')` | `req.auth` is undefined | Check that `checkJwt` middleware runs before the handler |

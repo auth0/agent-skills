@@ -54,14 +54,11 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 >
 > 3. **Configure Auth0** — follow `references/setup.md`. If the user already provided their Auth0 Domain and API Audience in the prompt, use them directly — skip the bootstrap script and do NOT call `AskUserQuestion` to re-confirm. Otherwise, offer automatic setup via bootstrap script or manual setup.
 >
-> 4. **Set up middleware** — add to `app.js` or `server.js`:
+> 4. **Set up middleware** — add to `app.js` or `server.js`. The SDK reads `ISSUER_BASE_URL` and `AUDIENCE` from the environment automatically, so `auth()` needs no arguments:
 >    ```javascript
 >    import { auth } from 'express-oauth2-jwt-bearer';
 >
->    const checkJwt = auth({
->      issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
->      audience: process.env.AUTH0_AUDIENCE,
->    });
+>    const checkJwt = auth(); // reads ISSUER_BASE_URL + AUDIENCE from env
 >
 >    app.use(checkJwt); // apply globally, or per-route
 >    ```
@@ -108,10 +105,10 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 |---------|---------|-----|
 | Created an **Application** instead of an **API** in Auth0 Dashboard | Token validation fails; wrong audience | Create a new **API** (Resource Server) in Auth0 Dashboard → APIs |
 | Audience doesn't match API identifier exactly | `401 Unauthorized` — "Audience mismatch" | Copy the exact API Identifier string from Auth0 Dashboard → APIs |
-| Domain includes `https://` prefix | `Error: Invalid URL` at startup | Use hostname only: `your-tenant.us.auth0.com`, not `https://...` |
+| `ISSUER_BASE_URL` missing the `https://` prefix | `Error: Invalid URL` at startup | `ISSUER_BASE_URL` is a full URL — use `https://your-tenant.us.auth0.com`, not the bare hostname |
 | Checking `scope` claim instead of `permissions` for RBAC | 403 always returned or permissions ignored | Use `requiredScopes()` for scope-based RBAC; use `claimIncludes('permissions', 'read:data')` for Auth0 RBAC permission claims |
 | CORS not configured before auth middleware | Preflight OPTIONS requests return 401 | Add `cors()` middleware before `auth()` in the middleware chain |
-| `.env` file not loaded | `undefined` for domain/audience | Add `import 'dotenv/config'` at the top of the entry file |
+| `.env` file not loaded | `auth()` throws "issuerBaseURL ... required" at startup | Add `import 'dotenv/config'` at the top of the entry file, before calling `auth()` |
 | `req.auth` is undefined | `TypeError: Cannot read properties of undefined` | Verify `checkJwt` middleware runs before the handler |
 
 ## Related Skills
@@ -140,8 +137,8 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `issuerBaseURL` | `string` | Auth0 domain with `https://` (required unless using env vars) |
-| `audience` | `string` | API Identifier from Auth0 Dashboard (required unless using env vars) |
+| `issuerBaseURL` | `string` | Auth0 domain with `https://` (defaults to `ISSUER_BASE_URL` env var) |
+| `audience` | `string` | API Identifier from Auth0 Dashboard (defaults to `AUDIENCE` env var) |
 | `tokenSigningAlg` | `string` | Signing algorithm (default: `RS256`; use `HS256` for symmetric) |
 | `authRequired` | `boolean` | Set `false` to make authentication optional (default: `true`) |
 | `clockTolerance` | `number` | Clock skew tolerance in seconds (no default; undefined unless set) |
@@ -149,10 +146,12 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 ### Environment Variables
 
+The SDK auto-detects these when no arguments are passed to `auth()`:
+
 | Variable | Description |
 |----------|-------------|
-| `ISSUER_BASE_URL` | Auth0 domain with `https://` (auto-detected by SDK) |
-| `AUDIENCE` | API Identifier (auto-detected by SDK) |
+| `ISSUER_BASE_URL` | Auth0 domain as a **full URL** with `https://` (e.g. `https://your-tenant.us.auth0.com`) |
+| `AUDIENCE` | API Identifier from Auth0 Dashboard (e.g. `https://my-api.example.com`) |
 
 ### Request Object
 
