@@ -1,6 +1,6 @@
 ---
 name: auth0-fastify
-description: "Use when adding authentication to Fastify web applications — integrates @auth0/auth0-fastify for session-based login, logout, OAuth callback handling, user profile retrieval, and access token management. Registers /auth/login, /auth/logout, and /auth/callback routes automatically. For stateless Fastify APIs receiving JWT Bearer tokens, use auth0-fastify-api instead."
+description: "Use when adding authentication (login, logout, protected routes) to Fastify web applications — integrates @auth0/auth0-fastify for login, logout, OAuth callback handling, user profile retrieval, and access token management. For stateless Fastify APIs, use auth0-fastify-api instead."
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -12,12 +12,31 @@ metadata:
 
 # Auth0 Fastify Integration
 
-Add session-based authentication to Fastify web applications using @auth0/auth0-fastify.
+Add authentication to Fastify web applications using @auth0/auth0-fastify.
 
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
-> ```
+> ```bash
 > gh api repos/auth0/auth0-fastify/releases/latest --jq '.tag_name'
 > ```
+
+---
+
+## Prerequisites
+
+- Fastify application (v5.x or newer)
+- Node.js 20 LTS or newer
+- Auth0 account and application configured
+- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+
+## When NOT to Use
+
+- **Single Page Applications** — Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
+- **Next.js applications** — Use `auth0-nextjs` skill which handles both client and server
+- **Mobile applications** — Use `auth0-react-native` for React Native/Expo
+- **Stateless APIs** — Use `@auth0/auth0-fastify-api` instead for JWT validation without sessions
+- **Microservices** — Use JWT validation for service-to-service auth
+
+---
 
 ## Quick Start Workflow
 
@@ -85,7 +104,7 @@ This automatically registers:
 // Public route
 fastify.get('/', async (request, reply) => {
   const session = await fastify.auth0Client.getSession({ request, reply });
-  return reply.view('views/home.ejs', {
+  return reply.view('home.ejs', {
     isAuthenticated: !!session,
   });
 });
@@ -100,7 +119,7 @@ fastify.get('/profile', {
   }
 }, async (request, reply) => {
   const user = await fastify.auth0Client.getUser({ request, reply });
-  return reply.view('views/profile.ejs', { user });
+  return reply.view('profile.ejs', { user });
 });
 ```
 
@@ -125,9 +144,20 @@ If login redirects fail, check the server logs for callback URL mismatch errors 
 | Mistake | Fix |
 |---------|-----|
 | Callback URL mismatch | Add `http://localhost:3000/auth/callback` to Allowed Callback URLs in Auth0 Dashboard |
-| App created as SPA type | Must be **Regular Web Application** for server-side session auth |
-| Weak SESSION_SECRET | Generate with `openssl rand -hex 64` — minimum 64 characters |
+| App created as SPA type | Must be **Regular Web Application** for server-side auth |
+| Missing or weak `SESSION_SECRET` | Generate with `openssl rand -hex 64` and store in `.env` |
+| Session secret exposed in code | Always use environment variables, never hardcode secrets |
+| Wrong `appBaseUrl` for production | Update `APP_BASE_URL` to match your production domain |
 | Not awaiting `fastify.register` | Fastify v4+ requires `await` on plugin registration |
+
+---
+
+## Related Skills
+
+- `auth0-quickstart` — Basic Auth0 setup
+- `auth0-migration` — Migrate from another auth provider
+- `auth0-mfa` — Add Multi-Factor Authentication
+- `auth0-cli` — Manage Auth0 resources from the terminal
 
 ---
 

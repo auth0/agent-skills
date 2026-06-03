@@ -14,7 +14,7 @@ fastify.get('/dashboard', {
   }
 }, async (request, reply) => {
   const user = await fastify.auth0Client.getUser({ request, reply });
-  return reply.view('views/dashboard.ejs', { user });
+  return reply.view('dashboard.ejs', { user });
 });
 ```
 
@@ -40,12 +40,12 @@ fastify.get('/api-data', {
     if (!session) return reply.redirect('/auth/login');
   }
 }, async (request, reply) => {
-  const { token } = await fastify.auth0Client.getAccessToken({ request, reply });
+  const { accessToken } = await fastify.auth0Client.getAccessToken({ request, reply });
   const response = await fetch('https://api.example.com/data', {
-    headers: { Authorization: `Bearer ${token}` },
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
   const data = await response.json();
-  return reply.view('views/data.ejs', { data });
+  return reply.view('data.ejs', { data });
 });
 ```
 
