@@ -63,6 +63,8 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 >    app.use(checkJwt); // apply globally, or per-route
 >    ```
 >
+>    > **IMPORTANT:** `auth()` auto-reads `ISSUER_BASE_URL` and `AUDIENCE` from the environment. **Never** hardcode the domain or audience as string literals (e.g. `auth({ issuerBaseURL: 'https://your-tenant.us.auth0.com', audience: '...' })`) — that bakes per-environment config into source. Set them in `.env`/your platform's env vars and let the SDK read them.
+>
 > 5. **Protect endpoints** — apply middleware globally or to specific routes:
 >    ```javascript
 >    // Global protection
