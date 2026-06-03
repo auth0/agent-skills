@@ -47,15 +47,16 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 >
 > 1. **Fetch latest version** (see instruction above).
 >
-> 2. **Install the SDK:**
+> 2. **Install the SDK** (and `dotenv` to load `.env`):
 >    ```bash
->    npm install express-oauth2-jwt-bearer
+>    npm install express-oauth2-jwt-bearer dotenv
 >    ```
 >
 > 3. **Configure Auth0** — follow `references/setup.md`. If the user already provided their Auth0 Domain and API Audience in the prompt, use them directly — skip the bootstrap script and do NOT call `AskUserQuestion` to re-confirm. Otherwise, offer automatic setup via bootstrap script or manual setup.
 >
-> 4. **Set up middleware** — add to `app.js` or `server.js`. The SDK reads `ISSUER_BASE_URL` and `AUDIENCE` from the environment automatically, so `auth()` needs no arguments:
+> 4. **Set up middleware** — add to `app.js` or `server.js`. The SDK reads `ISSUER_BASE_URL` and `AUDIENCE` from the environment automatically, so `auth()` needs no arguments. Load `.env` with `dotenv` **before** calling `auth()`:
 >    ```javascript
+>    import 'dotenv/config'; // must come before auth() — or: require('dotenv').config();
 >    import { auth } from 'express-oauth2-jwt-bearer';
 >
 >    const checkJwt = auth(); // reads ISSUER_BASE_URL + AUDIENCE from env
