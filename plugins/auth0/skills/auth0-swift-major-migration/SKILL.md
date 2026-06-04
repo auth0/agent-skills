@@ -1,6 +1,6 @@
 ---
 name: auth0-swift-major-migration
-description: Use when upgrading Auth0.swift to the latest major version in an iOS, macOS, tvOS, watchOS, or visionOS app — detects current version, analyzes the new SDK's source code, applies changes based on the project's architecture and Apple-recommended standards, and builds until successful.
+description: Use when upgrading Auth0.swift to the latest major version in an iOS, macOS, tvOS, watchOS, or visionOS app — detects current version, analyzes the new SDK's source code, applies the minimal set of compile-time and behavioral breaking changes (only where the project actually uses the affected APIs) following the project's architecture and Apple-recommended standards, builds until successful, and produces a summary with manual-review items and backend follow-up actions.
 license: Proprietary
 metadata:
   author: Auth0 <support@auth0.com>
@@ -29,9 +29,29 @@ The migration is driven by the SDK's real public API surface and the project's c
 - Xcode installed and project buildable before starting
 - Project under version control (git) with a clean working tree
 
+## Migration Scope & Boundaries
+
+This skill applies a **minimal, targeted** migration. Read these boundaries before starting — they govern every change you make.
+
+**In scope (apply automatically):**
+- **Compile-time breaking changes** — renamed/removed types, methods, properties, and parameters that prevent the project from building against the new major version
+- **Behavioral breaking changes** — changes where the old code compiles but behaves differently (e.g., a default that changed, a method that now throws), but only where the project actually relies on the old behavior
+
+**Out of scope (do NOT apply automatically):**
+- **Opt-in / optional features** — new capabilities the new version offers that the project did not previously use. Mention them in the summary as optional, never apply them.
+- **Deprecations that still compile** — note them for follow-up; do not change them.
+- **Cosmetic refactors** — do not restyle, reorganize, or "modernize" code beyond what the migration requires.
+
+**Boundary conditions (critical — apply changes only where the project is actually affected):**
+- **SDK-internal changes do not propagate to consumer code.** If the SDK itself adopts Swift 6 / strict concurrency internally, that does NOT mean you migrate the consumer app to Swift 6. Only adjust call sites where the SDK's *public* signature change forces a change.
+- **API-specific changes apply only to used APIs.** If there is a breaking change in, say, the `CredentialsManager` API, only touch integrator code that actually uses `CredentialsManager`. If the project never imports or calls that API, make no change for it.
+- **Never invent usage.** If you cannot find a concrete call site for a breaking change in the project, do not add code "just in case." This prevents hallucinated changes.
+
+When a change is genuinely ambiguous or could be applied multiple valid ways, stop and ask the user rather than guessing.
+
 ## Quick Start Workflow
 
-> **Agent instruction:** Follow these steps strictly in order. The end goal is a **green build** on the target major version. Never skip the backup step. Never apply changes without understanding them from the official guide first.
+> **Agent instruction:** Follow these steps strictly in order. The end goal is a **green build** on the target major version, with the **smallest correct set of changes**. Never skip the backup step. Never apply a change unless you can point to the specific SDK API change and the specific project call site it affects. Respect the Migration Scope & Boundaries above at every step.
 
 ---
 
@@ -210,27 +230,38 @@ The migration is driven by the SDK's real public API surface and the project's c
 > - Work through one API change category at a time
 > - For each category, search the ENTIRE project (app code + tests + extensions) for affected patterns
 > - Apply the fix to ALL occurrences before moving to the next category
+> - **Apply changes only where the project actually uses the affected API** (see Migration Scope & Boundaries). If a breaking change targets an API the project never calls, skip it entirely — do not add speculative code.
+> - **Do not propagate SDK-internal changes to consumer code.** A Swift 6 / concurrency change inside the SDK only requires a consumer change if the SDK's *public* signature forces it. Do not migrate the app's language mode or annotate unrelated code.
+> - Exclude opt-in/optional features and still-compiling deprecations — note them for the summary instead (see Step 8)
 > - If a change is ambiguous or has multiple valid approaches, ask the user before proceeding
 > - Never remove functionality — migrate it to the new API equivalent
-> - If an API is removed with no direct replacement, add a `// TODO:` comment explaining what backend work is needed and inform the user
+> - If an API is removed with no in-SDK replacement (e.g., functionality moved server-side), do NOT silently delete the code. Add a `// TODO:` comment explaining what is needed, record it for the summary, and inform the user
 >
 > **Pattern for each change:**
 > 1. Search for the old pattern across all Swift files
-> 2. Determine the correct replacement based on the new SDK's public API and the project's architecture
-> 3. Apply the replacement in a way that is consistent with the project's style and Apple platform conventions
-> 4. Verify the replacement is semantically equivalent (preserves behavior)
+> 2. Confirm the project actually uses it — if there are no call sites, skip
+> 3. Determine the correct replacement based on the new SDK's public API and the project's architecture
+> 4. Apply the replacement in a way that is consistent with the project's style and Apple platform conventions
+> 5. Verify the replacement is semantically equivalent (preserves behavior)
 >
-> **Apple platform considerations:**
-> - If the project targets Swift 6, ensure all Auth0 interactions are `@Sendable`-correct and respect actor boundaries
-> - If using SwiftUI, prefer `@MainActor`-isolated view models over manual `DispatchQueue.main` calls
-> - If using structured concurrency, prefer `async throws` over completion handler patterns even if both are available in the new SDK
-> - Respect the project's error handling strategy (typed throws, Result, do-catch patterns)
+> **Apple platform considerations (match what the project already uses — never upgrade it):**
+> - If the project *already* targets Swift 6, keep Auth0 interactions `@Sendable`-correct and respect actor boundaries. If it does NOT, do not introduce Swift 6 concurrency requirements.
+> - If using SwiftUI, prefer `@MainActor`-isolated view models over manual `DispatchQueue.main` calls — only when touching code you're already migrating
+> - If the project uses structured concurrency, prefer the SDK's `async throws` APIs; if it uses completion handlers or Combine, migrate to the matching style the SDK offers
+> - Respect the project's existing error-handling strategy (typed throws, Result, do-catch)
+>
+> **Error-handling migrations (be explicit):**
+> - When an API's error type or throwing behavior changes, map it onto the project's *existing* error-handling approach — do not impose a new one
+> - If the project routes errors through a custom logging or telemetry layer (e.g., a `Logger`, analytics SDK, crash reporter), preserve that integration: convert the new error type and feed it into the same sink the project already uses
+> - When the new error type exposes richer cases than before, you may surface them to the existing handler, but do not invent new user-facing error UI unless asked
+> - Record any error-handling change that the user should review in the migration summary (Step 8)
 >
 > **Security rules:**
 > - Never hardcode tokens, secrets, or credentials during migration
+> - **Never print, log, or echo credentials, tokens, or other sensitive values** — not in code you generate, not in example snippets, not in debug statements. If the old code logged a token, treat removing/redacting that as part of the migration.
 > - If migration involves auth flow changes, preserve existing security properties (PKCE, secure storage, etc.)
 > - Never downgrade from CredentialsManager/Keychain to UserDefaults or in-memory storage
-> - If the new SDK offers improved security features, mention them to the user as optional improvements
+> - If the new SDK offers improved security features, mention them to the user as optional improvements (do not auto-apply)
 
 ---
 
@@ -244,23 +275,25 @@ The migration is driven by the SDK's real public API surface and the project's c
 >
 > **For each build failure:**
 > 1. Read the error message and source location
-> 2. Identify which breaking change category it belongs to
-> 3. Consult the migration guide for the correct fix
-> 4. Apply the fix
+> 2. Identify which breaking change it belongs to, using the SDK source analysis from Step 3
+> 3. Determine the correct fix from the new SDK's public API (the migration guide is supplementary context only)
+> 4. Apply the fix in keeping with the project's architecture and the boundary rules
 > 5. Rebuild
 >
 > **Iteration limits:**
 > - Up to **10 build-fix cycles** are allowed
-> - If after 10 attempts the build still fails, stop and present the remaining errors to the user with context from the migration guide
+> - If after 10 attempts the build still fails, stop and present the remaining errors to the user with context
 >
 > **Common error patterns (version-agnostic):**
-> - `has no member 'X'` → API renamed or removed; check migration guide for replacement
-> - `cannot find type 'X'` → Type renamed; find new name in guide
+> - `has no member 'X'` → API renamed or removed; find replacement in the new SDK source
+> - `cannot find type 'X'` → Type renamed; find new name in the SDK source
 > - `cannot convert value` → Return type changed; update call site
 > - `does not conform to protocol` → Protocol requirements changed; add new required methods
-> - `missing argument` → New required parameter added; check guide for default value
+> - `missing argument` → New required parameter added; check the SDK source for the default value
 > - `extra argument` → Parameter removed; delete it
-> - `is inaccessible due to access control` → API made internal; check guide for alternative
+> - `is inaccessible due to access control` → API made internal; find the supported alternative
+> - `call can throw, but is not marked with 'try'` → method now throws; wrap in the project's existing error-handling pattern
+> - `sending 'X' risks causing data races` → only appears if the project already uses strict concurrency; resolve within the project's existing actor model — do not enable strict concurrency where it wasn't already on
 >
 > **After successful build:**
 > ```bash
@@ -277,27 +310,50 @@ The migration is driven by the SDK's real public API surface and the project's c
 >    ```bash
 >    xcodebuild test -scheme <SCHEME> -destination "platform=iOS Simulator,name=iPhone 16" 2>&1 | tail -20
 >    ```
->    If tests fail due to migration-related changes, fix them using the same guide. Test failures are acceptable to report to the user if they require test logic changes beyond API updates.
+>    If tests fail due to migration-related changes, fix them within the boundary rules. Test failures are acceptable to report to the user if they require test logic changes beyond API updates.
 >
-> 2. **Show the user a summary of changes made:**
+> 2. **Collect the diff for the summary:**
 >    ```bash
 >    git diff --stat
 >    ```
+
+---
+
+### Step 9 — Migration Summary & Next Steps
+
+> **Agent instruction:** Produce a concise, customer-focused summary. This is the most important output for the user — it tells them what changed, what they must review, and what follow-up work remains. Use the following structure:
 >
-> 3. **Highlight any `// TODO:` comments** added for changes that need manual follow-up (removed APIs, backend work needed, etc.).
+> **1. What changed (automatic):**
+> - List each breaking change applied, grouped by API area (e.g., Web Auth, CredentialsManager, Authentication, error types)
+> - For each, note the files touched
 >
-> 4. **Mention optional new features** from the migration guide that the user might want to adopt (but do NOT apply them without asking).
+> **2. Needs manual review:**
+> - **Error handling** — call out every place where error types or throwing behavior changed, especially where the project's custom logging/telemetry integration was involved. Ask the user to verify error mapping is correct.
+> - Any `// TODO:` comments added during migration
+> - Any change where you had to make a judgment call about the project's architecture
 >
-> 5. **Ask the user** if they'd like to:
->    - Commit the migration changes
->    - Adopt any new features from the target version
->    - Review specific files in detail
+> **3. Follow-up actions (backend / configuration):** Some breaking changes require work beyond the app code. Surface these explicitly when relevant to this migration:
+> - **Management Client removed (v3):** If the project used the SDK's Management client, code calling it may have been removed or stubbed. The Management API can no longer be called directly from the SDK. **Inform the user that backend-side changes are required** — Management API operations must move to a secure backend (the app should call your backend, which calls the Management API with appropriate credentials). Never put a Management API token in the client.
+> - **MFA API changes:** If old MFA APIs were migrated to new MFA APIs, list which flows changed and tell the user to re-test enrollment and challenge flows end-to-end against their tenant configuration.
+> - **Any removed API whose functionality moved server-side:** describe what the user must implement on the backend.
+>
+> **4. Optional improvements (NOT applied):**
+> - List opt-in features / new capabilities the target version offers that the project does not currently use
+> - List still-compiling deprecations the user may want to address later
+> - Make clear these were intentionally excluded to keep the migration minimal
+>
+> **5. Ask the user** if they'd like to:
+> - Commit the migration changes
+> - Adopt any of the optional features above
+> - Review specific files in detail
+>
+> **Security reminder for the summary:** Never include actual tokens, secrets, or credential values in the summary output.
 
 ---
 
 ## Detailed Documentation
 
-- **[Migration Process](./references/process.md)** — Detailed guidance on edge cases, multi-version jumps, and rollback procedures
+- **[Migration Process](./references/process.md)** — Boundary conditions, scope limits, error-handling migrations, Management Client removal, MFA API migrations, multi-version jumps, and rollback procedures
 - **[Security Checklist](./references/security.md)** — Security invariants that must be preserved during any migration
 
 ## Common Mistakes
@@ -305,13 +361,20 @@ The migration is driven by the SDK's real public API surface and the project's c
 | Mistake | Fix |
 |---------|-----|
 | Starting migration on dirty working tree | Always verify clean git state and create backup branch first |
-| Applying changes without reading migration guide | Always fetch and parse the official guide before making changes |
+| Applying changes by mirroring the migration guide | Base changes on the new SDK's actual public API and the project's architecture; the guide is supplementary |
+| Migrating the consumer app to Swift 6 because the SDK did | SDK-internal concurrency changes don't propagate; only change call sites the public API forces |
+| Applying a breaking-change fix for an API the project doesn't use | Apply changes only where there's a real call site — never add speculative code |
+| Adopting opt-in/optional new features automatically | Keep migration minimal; list optional features in the summary instead |
+| Imposing a new error-handling style | Map new error types onto the project's existing handling and custom logging/telemetry |
+| Silently removing Management Client code | Note it requires backend-side changes; surface in the summary and next steps |
 | Only fixing app code, missing tests | Search test targets for Auth0 usage too |
 | Removing functionality when API is deleted | Add TODO comment and inform user — never silently remove features |
+| Printing or logging tokens/credentials in generated code | Never log sensitive values; redact and remove any existing credential logging |
 | Hardcoding version in multiple places | Update the single source of truth (Package.swift/Podfile/Cartfile) |
 | Skipping intermediate major versions | Must migrate sequentially (v1→v2→v3, not v1→v3 directly) |
 | Building before applying known changes | Apply all known breaking changes first, then build to catch remaining issues |
 | Continuing after 10+ failed build attempts | Stop and ask the user — likely a misunderstood change or project-specific issue |
+| Skipping the migration summary | Always produce the summary with manual-review items and follow-up actions |
 
 ## Related Skills
 
