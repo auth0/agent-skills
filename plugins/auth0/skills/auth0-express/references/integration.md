@@ -63,16 +63,26 @@ app.get('/api-call', requiresAuth(), async (req, res) => {
 });
 ```
 
-Configure audience in middleware:
+Configure `authorizationParams` in middleware — **all three fields are required** to obtain an access token:
 
 ```javascript
 app.use(auth({
+  authRequired: false,
+  auth0Logout: true,
+  secret: process.env.SECRET,
+  baseURL: process.env.BASE_URL,
+  clientID: process.env.CLIENT_ID,
+  issuerBaseURL: process.env.ISSUER_BASE_URL,
+  clientSecret: process.env.CLIENT_SECRET,
   authorizationParams: {
-    audience: 'https://your-api-identifier'
-  },
-  // ... other config
+    response_type: 'code',               // required: authorization code flow
+    audience: 'https://your-api-identifier', // required: API identifier
+    scope: 'openid profile email'        // required: token scopes
+  }
 }));
 ```
+
+> **Common mistake:** Putting `audience` as a top-level key (outside `authorizationParams`) is silently ignored — no access token will be issued for the API.
 
 ---
 
