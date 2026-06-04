@@ -216,7 +216,7 @@ Visit `http://localhost:3000` and test the login flow.
 **Request Properties:**
 - `req.oidc.isAuthenticated()` - Check if user is logged in
 - `req.oidc.user` - User profile object
-- `req.oidc.accessToken` - Access token object (`{ access_token, token_type, expires_at }`); destructure with `const { access_token } = req.oidc.accessToken` — only populated when `authorizationParams` with `audience` + `response_type: 'code'` is configured
+- `req.oidc.accessToken` - Access token object (`{ access_token, token_type, expires_in }`); `expires_in` is seconds remaining. Destructure with `const { access_token } = req.oidc.accessToken`. Also exposes `isExpired()` and `refresh()` methods. Only populated when `authorizationParams` with `audience` + `response_type: 'code'` is configured
 - `req.oidc.idToken` - ID token
 - `req.oidc.refreshToken` - Refresh token
 
