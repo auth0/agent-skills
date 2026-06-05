@@ -97,14 +97,10 @@ This automatically creates:
 When you need an access token for an external API, `audience` **must** go inside `authorizationParams` — putting it at the top level is silently ignored and no access token is issued.
 
 ```javascript
+// SDK auto-loads SECRET, BASE_URL, CLIENT_ID, ISSUER_BASE_URL, CLIENT_SECRET from env vars
 app.use(auth({
   authRequired: false,
   auth0Logout: true,
-  secret: process.env.SECRET,
-  baseURL: process.env.BASE_URL,
-  clientID: process.env.CLIENT_ID,
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  clientSecret: process.env.CLIENT_SECRET,
   authorizationParams: {            // ← required for access tokens
     response_type: 'code',          // ← required: authorization code flow
     audience: process.env.AUDIENCE, // ← API identifier (never top-level)

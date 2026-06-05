@@ -66,14 +66,8 @@ app.get('/api-call', requiresAuth(), async (req, res) => {
 Configure `authorizationParams` in middleware — **all three fields are required** to obtain an access token:
 
 ```javascript
+// SDK auto-loads SECRET, BASE_URL, CLIENT_ID, ISSUER_BASE_URL, CLIENT_SECRET from env vars
 app.use(auth({
-  authRequired: false,
-  auth0Logout: true,
-  secret: process.env.SECRET,
-  baseURL: process.env.BASE_URL,
-  clientID: process.env.CLIENT_ID,
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  clientSecret: process.env.CLIENT_SECRET,
   authorizationParams: {
     response_type: 'code',               // required: authorization code flow
     audience: 'https://your-api-identifier', // required: API identifier
