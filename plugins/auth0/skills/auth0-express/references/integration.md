@@ -76,8 +76,6 @@ app.use(auth({
 }));
 ```
 
-> **Common mistake:** Putting `audience` as a top-level key (outside `authorizationParams`) is silently ignored — no access token will be issued for the API.
-
 ---
 
 ## Custom Login/Logout
