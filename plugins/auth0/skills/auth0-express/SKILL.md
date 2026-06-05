@@ -54,6 +54,7 @@ BASE_URL=http://localhost:3000
 CLIENT_ID=your-client-id
 CLIENT_SECRET=your-client-secret
 ISSUER_BASE_URL=https://your-tenant.auth0.com
+AUDIENCE=https://your-api-identifier  # only required if calling external APIs (Step 3a)
 ```
 
 Generate secret: `openssl rand -hex 32`
