@@ -118,64 +118,76 @@ function TransferFunds() {
 
 ---
 
-## Next.js (App Router)
+### Next.js (App Router) — reactive step-up
 
-### API Route
+The `@auth0/nextjs-auth0` v4 SDK does MFA step-up **reactively**, not proactively. You do not
+pass `acr_values` or inspect the `amr` claim. Instead, MFA is enforced by an Auth0 post-login
+**Action** on the protected audience; when you request an access token for that audience the SDK
+throws `MfaRequiredError`, which you resolve with a popup. The access token stays on the server.
 
-```typescript
-// app/api/sensitive/route.ts
-import { getSession, withApiAuthRequired } from '@auth0/nextjs-auth0';
+**1. Server route — request the token, surface `MfaRequiredError`:**
+
+```ts
+// app/api/transfer/route.ts
 import { NextResponse } from 'next/server';
+import { auth0 } from '@/lib/auth0';
+import { MfaRequiredError } from '@auth0/nextjs-auth0/server';
 
-export const POST = withApiAuthRequired(async function handler(req) {
-  const session = await getSession();
+export async function POST() {
+  try {
+    const { token } = await auth0.getAccessToken({
+      audience: 'https://api.example.com',
+      refresh: true,
+    });
 
-  // Check if MFA was completed
-  const amr = session?.user?.amr || [];
+    // Use the token server-side to authorize the transfer. It never leaves the server.
+    await fetch('https://api.example.com/transfer', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` },
+    });
 
-  if (!amr.includes('mfa')) {
-    return NextResponse.json(
-      { error: 'MFA required', code: 'mfa_required' },
-      { status: 403 }
-    );
-  }
-
-  // Proceed with sensitive operation
-  return NextResponse.json({ success: true });
-});
-```
-
-### Client Component
-
-```typescript
-// app/transfer/page.tsx
-'use client';
-
-import { useUser } from '@auth0/nextjs-auth0/client';
-import { useRouter } from 'next/navigation';
-
-export default function TransferPage() {
-  const { user } = useUser();
-  const router = useRouter();
-
-  const handleTransfer = async () => {
-    const response = await fetch('/api/sensitive', { method: 'POST' });
-
-    if (response.status === 403) {
-      const { code } = await response.json();
-      if (code === 'mfa_required') {
-        // Redirect to login with MFA required
-        router.push('/api/auth/login?acr_values=http://schemas.openid.net/pape/policies/2007/06/multi-factor');
-        return;
-      }
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    if (error instanceof MfaRequiredError) {
+      return NextResponse.json(error.toJSON(), { status: 403 });
     }
-
-    // Success
-  };
-
-  return <button onClick={handleTransfer}>Transfer Funds</button>;
+    throw error;
+  }
 }
 ```
+
+**2. Client component — resolve MFA with a popup, then retry:**
+
+```tsx
+'use client';
+
+import { mfa } from '@auth0/nextjs-auth0/client';
+
+export function TransferButton() {
+  async function transfer() {
+    let res = await fetch('/api/transfer', { method: 'POST' });
+
+    if (res.status === 403 && (await res.clone().json()).error === 'mfa_required') {
+      // Complete MFA in a popup (no full-page redirect). The stepped-up token is
+      // cached in the server session by the SDK.
+      await mfa.challengeWithPopup({ audience: 'https://api.example.com' });
+      // Retry — the server now gets a token that satisfies MFA.
+      res = await fetch('/api/transfer', { method: 'POST' });
+    }
+
+    return res.json();
+  }
+
+  return <button onClick={transfer}>Transfer funds</button>;
+}
+```
+
+**3. Tenant: enforce MFA on the protected audience via a post-login Action** (otherwise
+`getAccessToken` just succeeds and step-up never triggers). Set the tenant MFA policy to
+Adaptive or Never, and challenge MFA in the Action only when the protected audience is requested.
+
+> The default `acr_values` (`http://schemas.openid.net/pape/policies/2007/06/multi-factor`) is
+> supplied by `challengeWithPopup()` — you do not hardcode it.
 
 ---
 
