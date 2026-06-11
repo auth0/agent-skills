@@ -59,6 +59,19 @@ export function TransferButton() {
 }
 ```
 
+## Common mistake — do not hand-roll the popup
+
+Do **not** open the popup yourself with `window.open('/auth/login?acr_values=…')` plus a
+`postMessage` / `window.closed` listener. That is the proactive Universal-Login redirect
+pattern in a popup window — it bypasses the SDK's session token caching and the postMessage
+handshake that `mfa.challengeWithPopup()` manages for you, and it leaves you re-implementing
+timeout, popup-blocked, and cancellation handling by hand.
+
+`acr_values` should **not** appear in your application code at all — `mfa.challengeWithPopup()`
+supplies the multi-factor policy by default. If you find yourself writing `acr_values` or
+building a URL to `/auth/login`, you are on the wrong path: call `mfa.challengeWithPopup({ audience })`
+instead and let the SDK do the rest.
+
 ## Tenant requirement
 
 Enforce MFA on the protected audience via a post-login Action; otherwise `getAccessToken`

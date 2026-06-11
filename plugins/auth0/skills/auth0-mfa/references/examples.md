@@ -189,6 +189,11 @@ Adaptive or Never, and challenge MFA in the Action only when the protected audie
 > The default `acr_values` (`http://schemas.openid.net/pape/policies/2007/06/multi-factor`) is
 > supplied by `challengeWithPopup()` — you do not hardcode it.
 
+**Common mistake:** Do not hand-roll the popup with `window.open('/auth/login?acr_values=…')`
+and a `postMessage` listener. That bypasses the SDK's token caching and re-implements what
+`mfa.challengeWithPopup()` already handles. `acr_values` should not appear in your app code at
+all — the SDK supplies the multi-factor policy by default.
+
 ---
 
 ## Vue.js
