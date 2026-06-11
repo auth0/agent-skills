@@ -223,6 +223,7 @@ Visit `http://localhost:3000` and test the login flow.
 - **[Setup Guide](references/setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
 - **[Integration Guide](references/integration.md)** - Server-side auth, protected routes, API routes, middleware
 - **[API Reference](references/api.md)** - Complete SDK API, hooks, helpers, session management
+- **[MFA Step-Up](references/mfa.md)** - Reactive MFA step-up for sensitive actions (popup, server-held token)
 
 ---
 
