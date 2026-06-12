@@ -1,8 +1,41 @@
 # MFA Step-Up (reactive)
 
-`@auth0/nextjs-auth0` v4 implements MFA step-up **reactively**. There is no proactive
-"request step-up" call and no server-side `amr`/`acr` claim inspection (that is the React SPA
-pattern — do not use it here).
+`@auth0/nextjs-auth0` v4 implements MFA step-up **reactively**: you do not inspect an `amr`/`acr`
+claim to decide whether to challenge (that is the React SPA pattern — do not use it here).
+Instead, you request an access token for the protected audience, and the SDK throws
+`MfaRequiredError` when Auth0 demands step-up. You then resolve the challenge.
+
+## Verified SDK surface (v4.22.0)
+
+These are the real exports — import them exactly as shown:
+
+```ts
+// server (route handlers, server actions)
+import { MfaRequiredError } from '@auth0/nextjs-auth0/server';
+// your Auth0Client instance exposes getAccessToken:
+//   auth0.getAccessToken(options?): Promise<{ token: string; expiresAt: number; scope?: string; ... }>
+//   options: { audience?: string; refresh?: boolean; scope?: string }
+
+// client (client components)
+import { mfa } from '@auth0/nextjs-auth0/client';
+//   mfa.challengeWithPopup(options): Promise<{ token: string; ... }>
+//   options: { audience: string; scope?: string; acr_values?: string; prompt?: string;
+//              returnTo?: string; timeout?: number; popupWidth?: number; popupHeight?: number }
+```
+
+`MfaRequiredError` has `code === 'mfa_required'`, an `error` field equal to `'mfa_required'`, an
+`error_description`, an encrypted `mfa_token`, optional `mfa_requirements`, and a `toJSON()` that
+serialises to `{ error, error_description }` — so `NextResponse.json(error.toJSON(), { status: 403 })`
+sends `{ error: 'mfa_required', ... }` to the client.
+
+## Resolving the challenge — two supported mechanisms
+
+1. **Popup (recommended for in-page step-up):** `mfa.challengeWithPopup({ audience })` opens Auth0
+   Universal Login in a popup, completes MFA, caches the stepped-up token in the server session,
+   and resolves — no full-page redirect. This is the flow documented below.
+2. **Headless MFA API:** `MfaRequiredError.mfa_token` can be exchanged via the SDK's `mfa` client
+   methods (`mfa.getAuthenticators`, `mfa.challenge`, `mfa.verify`) to build your own OTP/SMS UI.
+   Use this only when you need a fully custom challenge UI; otherwise prefer the popup.
 
 ## Flow
 
