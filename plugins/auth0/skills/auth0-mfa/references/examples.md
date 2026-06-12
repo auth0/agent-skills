@@ -118,81 +118,14 @@ function TransferFunds() {
 
 ---
 
-### Next.js (App Router) — reactive step-up
+### Next.js (App Router)
 
-The `@auth0/nextjs-auth0` v4 SDK does MFA step-up **reactively**, not proactively. You do not
-pass `acr_values` or inspect the `amr` claim. Instead, MFA is enforced by an Auth0 post-login
-**Action** on the protected audience; when you request an access token for that audience the SDK
-throws `MfaRequiredError`, which you resolve with a popup. The access token stays on the server.
+Next.js with `@auth0/nextjs-auth0` v4 does MFA step-up **reactively** (request an access token
+for the protected audience → handle `MfaRequiredError` → resolve with `mfa.challengeWithPopup()`),
+which is different from the proactive SPA pattern shown above (`acr_values` + `amr` inspection).
 
-**1. Server route — request the token, surface `MfaRequiredError`:**
-
-```ts
-// app/api/transfer/route.ts
-import { NextResponse } from 'next/server';
-import { auth0 } from '@/lib/auth0';
-import { MfaRequiredError } from '@auth0/nextjs-auth0/server';
-
-export async function POST() {
-  try {
-    const { token } = await auth0.getAccessToken({
-      audience: 'https://api.example.com',
-      refresh: true,
-    });
-
-    // Use the token server-side to authorize the transfer. It never leaves the server.
-    await fetch('https://api.example.com/transfer', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    return NextResponse.json({ ok: true });
-  } catch (error) {
-    if (error instanceof MfaRequiredError) {
-      return NextResponse.json(error.toJSON(), { status: 403 });
-    }
-    throw error;
-  }
-}
-```
-
-**2. Client component — resolve MFA with a popup, then retry:**
-
-```tsx
-'use client';
-
-import { mfa } from '@auth0/nextjs-auth0/client';
-
-export function TransferButton() {
-  async function transfer() {
-    let res = await fetch('/api/transfer', { method: 'POST' });
-
-    if (res.status === 403 && (await res.clone().json()).error === 'mfa_required') {
-      // Complete MFA in a popup (no full-page redirect). The stepped-up token is
-      // cached in the server session by the SDK.
-      await mfa.challengeWithPopup({ audience: 'https://api.example.com' });
-      // Retry — the server now gets a token that satisfies MFA.
-      res = await fetch('/api/transfer', { method: 'POST' });
-    }
-
-    return res.json();
-  }
-
-  return <button onClick={transfer}>Transfer funds</button>;
-}
-```
-
-**3. Tenant: enforce MFA on the protected audience via a post-login Action** (otherwise
-`getAccessToken` just succeeds and step-up never triggers). Set the tenant MFA policy to
-Adaptive or Never, and challenge MFA in the Action only when the protected audience is requested.
-
-> The default `acr_values` (`http://schemas.openid.net/pape/policies/2007/06/multi-factor`) is
-> supplied by `challengeWithPopup()` — you do not hardcode it.
-
-**Common mistake:** Do not hand-roll the popup with `window.open('/auth/login?acr_values=…')`
-and a `postMessage` listener. That bypasses the SDK's token caching and re-implements what
-`mfa.challengeWithPopup()` already handles. `acr_values` should not appear in your app code at
-all — the SDK supplies the multi-factor policy by default.
+The full server-and-client implementation lives in the **`auth0-nextjs`** skill — see its
+`references/mfa.md`. Use that skill for Next.js apps rather than adapting the SPA examples here.
 
 ---
 
