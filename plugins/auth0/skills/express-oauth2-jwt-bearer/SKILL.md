@@ -52,10 +52,16 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 >    npm install express-oauth2-jwt-bearer
 >    ```
 >
-> 3. **Configure Auth0** — follow `references/setup.md`. If the user already provided their Auth0 Domain and API Audience in the prompt, use them directly — skip the bootstrap script and do NOT call `AskUserQuestion` to re-confirm. Otherwise, offer automatic setup via bootstrap script or manual setup.
+> 3. **Configure Auth0** — follow `references/setup.md`. If the user already provided their Auth0 Domain and API Audience in the prompt, write them to a `.env` file as `AUTH0_DOMAIN` and `AUTH0_AUDIENCE` and reference them via `process.env` — skip the bootstrap script and do NOT call `AskUserQuestion` to re-confirm. **Never hardcode the domain or audience as literal strings (or `||` fallback defaults) in `server.js` / `app.js`** — they belong in `.env` only. Otherwise, offer automatic setup via bootstrap script or manual setup.
 >
-> 4. **Set up middleware** — add to `app.js` or `server.js`:
+> 4. **Set up middleware** — first create a `.env` file with the Auth0 values, then load it and add the middleware:
+>    ```bash
+>    # .env
+>    AUTH0_DOMAIN=your-tenant.us.auth0.com
+>    AUTH0_AUDIENCE=https://your-api-identifier
+>    ```
 >    ```javascript
+>    import 'dotenv/config'; // load .env before reading process.env
 >    import { auth } from 'express-oauth2-jwt-bearer';
 >
 >    const checkJwt = auth({
@@ -65,6 +71,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 >
 >    app.use(checkJwt); // apply globally, or per-route
 >    ```
+>    Read the domain and audience from `process.env` — do not inline the literal values here.
 >
 > 5. **Protect endpoints** — apply middleware globally or to specific routes:
 >    ```javascript
@@ -112,6 +119,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 | Checking `scope` claim instead of `permissions` for RBAC | 403 always returned or permissions ignored | Use `requiredScopes()` for scope-based RBAC; use `claimIncludes('permissions', 'read:data')` for Auth0 RBAC permission claims |
 | CORS not configured before auth middleware | Preflight OPTIONS requests return 401 | Add `cors()` middleware before `auth()` in the middleware chain |
 | `.env` file not loaded | `undefined` for domain/audience | Add `import 'dotenv/config'` at the top of the entry file |
+| Hardcoded domain/audience in source (incl. `process.env.X \|\| 'literal'` fallbacks) | Secrets committed to source; fails security review | Put values in `.env` (`AUTH0_DOMAIN` / `AUTH0_AUDIENCE`) and reference via `process.env` — no literal fallbacks |
 | `req.auth` is undefined | `TypeError: Cannot read properties of undefined` | Verify `checkJwt` middleware runs before the handler |
 
 ## Related Skills
