@@ -12,7 +12,7 @@ metadata:
 
 # Auth0.swift v3 Migration
 
-Migrates an existing Auth0.swift v1 or v2 integration to v3. Every code change is gated on a search that confirms the project actually calls the affected API — if the project never uses `CredentialsManager`, no `CredentialsManager` code is touched. Changes follow the project's existing architecture and Apple platform conventions.
+Migrates an existing Auth0.swift v2 integration to v3. Every code change is gated on a search that confirms the project actually calls the affected API — if the project never uses `CredentialsManager`, no `CredentialsManager` code is touched. Changes follow the project's existing architecture and Apple platform conventions.
 
 ## When NOT to Use
 
@@ -23,7 +23,7 @@ Migrates an existing Auth0.swift v1 or v2 integration to v3. Every code change i
 
 ## Prerequisites
 
-- Existing Auth0.swift v1 or v2 integration
+- Existing Auth0.swift v2 integration
 - Xcode installed; project builds cleanly on the current version
 - Project under git version control with a clean working tree
 
@@ -81,19 +81,34 @@ grep -A2 'auth0/Auth0.swift' Package.swift 2>/dev/null
 ```
 
 ```bash
-# Find the latest v3 release tag on GitHub
+# List all v3 releases (stable + pre-release), most recent first
 curl -s https://api.github.com/repos/auth0/Auth0.swift/releases | python3 -c "
 import sys, json
 releases = json.load(sys.stdin)
 v3 = [r for r in releases if r['tag_name'].startswith('3') and not r['draft']]
-print(v3[0]['tag_name'] if v3 else 'No v3 release found')
+for r in v3:
+    label = '(pre-release)' if r.get('prerelease') else '(stable)     '
+    print(r['tag_name'].ljust(20), label)
+print()
+print('Total v3 releases:', len(v3))
 "
 ```
 
-Confirm with the user before proceeding:
-> *"Your project uses Auth0.swift vX.Y.Z. The latest v3 release is vN.M.P. Shall I proceed with the migration?"*
+**Prompt the developer — pick a target version:**
 
-**Multi-version jumps:** If migrating from v1, apply v1→v2 first (build successfully), then v2→v3. Do not skip intermediate versions.
+Show the full list and ask:
+> *"Here are all available Auth0.swift v3 releases:*
+>
+> *  3.1.0          (stable)*
+> *  3.0.0          (stable)*
+> *  3.0.0-beta.2   (pre-release)*
+> *  3.0.0-beta.1   (pre-release)*
+>
+> *Which version would you like to migrate to? Enter the exact tag (e.g. `3.1.0` or `3.0.0-beta.2`).*
+> *If you're unsure, the most recent release above is usually the right choice."*
+
+Record the developer's answer as `<TARGET_TAG>`. Use it in every subsequent step.
+
 
 ---
 
@@ -102,7 +117,7 @@ Confirm with the user before proceeding:
 Fetch the actual Swift source for the target tag. The signatures here are the authoritative reference for every change made in Step 6.
 
 ```bash
-TAG=<target-tag>   # e.g., 3.0.0-beta.2
+TAG=<TARGET_TAG>   # the version the developer chose in Step 2, e.g. 3.0.0-beta.2
 
 # List all public Swift files in the SDK
 curl -s "https://api.github.com/repos/auth0/Auth0.swift/git/trees/${TAG}?recursive=1" \
@@ -136,58 +151,35 @@ This is the ground truth. Every change in Step 6 must match a real signature in 
 
 ### Step 4 — Audit Which Auth0 APIs the Project Uses
 
-Run these greps **before touching any code**. Record which ones return results — only those API areas need migration.
-
+**Find all Swift files that import Auth0 — these are the scope of the migration:**
 ```bash
-# All files that import Auth0 (scope of migration)
 grep -rl "import Auth0" --include="*.swift" .
-
-# WebAuth usage
-grep -rn "webAuth()\|WebAuth\|clearSession\|\.logout(" --include="*.swift" .
-
-# CredentialsManager usage
-grep -rn "CredentialsManager\|credentialsManager" --include="*.swift" .
-
-# Credentials model usage
-grep -rn "\.expiresIn\b" --include="*.swift" .
-
-# UserInfo / UserProfile type usage
-grep -rn "\bUserInfo\b" --include="*.swift" .
-
-# WebAuthError switch statements that reference removed v2 cases
-grep -rn "\.noBundleIdentifier\|\.noAuthorizationCode\|\.invalidInvitationURL\|\.pkceNotAllowed" \
-  --include="*.swift" .
-
-# CredentialsManager revoke usage
-grep -rn "\.revoke(" --include="*.swift" .
-
-# Custom CredentialsStorage implementation
-grep -rn "CredentialsStorage" --include="*.swift" .
-
-# Management client usage (removed in v3)
-grep -rn "Auth0\.users\|\.users(token:" --include="*.swift" .
-
-# Old MFA methods (removed in v3)
-grep -rn "login(withOTP\|login(withOOBCode\|login(withRecoveryCode\|multifactorChallenge(" \
-  --include="*.swift" .
-
-# Authentication API usage
-grep -rn "Auth0\.authentication()\|authentication()\.login\|authentication()\.signup" \
-  --include="*.swift" .
-
-# Stored Request<> type annotations in app code (break when return type changes to Requestable)
-grep -rn "Request<Credentials\|Request<DatabaseUser\|Request<UserProfile\|Request<UserInfo\|Request<Void\|Request<JWKS\|Request<SSOCredentials" \
-  --include="*.swift" .
-
-# Test/mock files conforming to Authentication, MFAClient, or Requestable
-grep -rn ": Authentication\|: MFAClient\|: Requestable\|: TokenRequestable" \
-  --include="*.swift" . | grep -i "test\|mock\|stub\|fake\|spy"
-
-# Tests that use Auth0
-grep -rl "import Auth0\|@testable import" --include="*.swift" . | grep -i test
 ```
 
-**Rule:** If a grep returns no results, that entire API area is out of scope. Do not touch it.
+**Read every file from that list.** Do not grep for specific API patterns — read the full source so you can see exactly how `Auth0`, `webAuth`, `authentication`, `credentialsManager`, and any Auth0 types are used, including calls with domain/clientId parameters, chained builder calls, and any custom conformances.
+
+For each file, identify:
+
+| What to look for | Why it matters |
+|---|---|
+| Any call to `webAuth()`, `webAuth(domain:)`, `webAuth(domain:clientId:)` | §6.1 – `clearSession` rename; §6.14 – default scope |
+| Any call to `.clearSession(` | §6.1 — rename to `logout` |
+| Switch/catch on `WebAuthError` with explicit case names | §6.2 — removed and new cases |
+| `DispatchQueue.main.async` or `MainActor.run` wrapping an Auth0 callback | §6.3 — removable in v3 |
+| Any stored `Request<…>` type annotation (not just chained `.start(…)`) | §6.4 — type changed to `Requestable` |
+| Test mocks conforming to `Authentication`, `MFAClient`, or `Requestable` | §6.4 — return type + `@MainActor` update |
+| Any call to `credentialsManager.store(` | §6.5 — Bool → throws |
+| Any call to `credentialsManager.clear()` | §6.6 — Bool → throws |
+| Any access to `credentialsManager.user` (property, not method) | §6.7 — replaced by `userProfile()` method |
+| Any call to `credentialsManager.revoke(` | §6.8 — new error paths |
+| Any type annotation or declaration using `UserInfo` | §6.9 — renamed to `UserProfile` |
+| Any access to `.expiresIn` on a `Credentials`-like object | §6.10 — renamed to `expiresAt` |
+| Any type conforming to `CredentialsStorage` | §6.11 — method signatures changed |
+| Any call to `Auth0.users(` or `Auth0.users(token:` | §6.12 — Management client removed |
+| `login(withOTP:`, `login(withOOBCode:`, `login(withRecoveryCode:`, `multifactorChallenge(` | §6.13 — MFA methods removed |
+| Any call to `webAuth()` that does **not** chain `.scope(` | §6.14 — default scope changed |
+
+Build a checklist: **"This project uses: [list]"** and **"This project does NOT use: [list]"**. Only work through the §6.x sections that appear in the "uses" list. Skip the rest entirely.
 
 ---
 
@@ -195,13 +187,15 @@ grep -rl "import Auth0\|@testable import" --include="*.swift" . | grep -i test
 
 Apply only the matching package manager.
 
+Use the `<TARGET_TAG>` chosen in Step 2. For stable releases (`3.x.y` with no suffix), use a range specifier. For pre-releases (`3.x.y-beta.z`), pin the exact tag — package managers treat pre-release versions as out-of-range for `~>` / `from:` rules.
+
 **Swift Package Manager (Package.swift):**
 ```swift
-// Before
-.package(url: "https://github.com/auth0/Auth0.swift", from: "2.0.0")
-
-// After
+// Stable v3 — range specifier picks up all 3.x.y patches
 .package(url: "https://github.com/auth0/Auth0.swift", from: "3.0.0")
+
+// Pre-release / specific beta — exact tag required
+.package(url: "https://github.com/auth0/Auth0.swift", exact: "3.0.0-beta.2")
 ```
 
 Then resolve:
@@ -211,11 +205,11 @@ swift package resolve
 
 **CocoaPods (Podfile):**
 ```ruby
-# Before
-pod 'Auth0', '~> 2.0'
-
-# After
+# Stable v3
 pod 'Auth0', '~> 3.0'
+
+# Pre-release / specific beta — pin the exact version
+pod 'Auth0', '3.0.0-beta.2'
 ```
 
 Then:
@@ -225,11 +219,11 @@ pod update Auth0
 
 **Carthage (Cartfile):**
 ```
-# Before
-github "auth0/Auth0.swift" ~> 2.0
-
-# After
+# Stable v3
 github "auth0/Auth0.swift" ~> 3.0
+
+# Pre-release / specific beta — pin the exact tag
+github "auth0/Auth0.swift" "3.0.0-beta.2"
 ```
 
 Then:
@@ -237,7 +231,9 @@ Then:
 carthage update Auth0.swift --use-xcframeworks
 ```
 
-**Xcode-managed SPM** (no `Package.swift` at root): Tell the user to update via *File → Packages → Update to Latest Package Versions*. If it doesn't resolve to v3, change the version rule to *Up to Next Major* from 3.0.0.
+**Xcode-managed SPM** (no `Package.swift` at root):
+- *Stable:* File → Packages → Update to Latest Package Versions, then verify the version rule is *Up to Next Major* from 3.0.0.
+- *Pre-release / specific beta:* File → Packages → Update to Latest Package Versions won't resolve a beta unless the dependency already pins an exact version. Tell the user to change the version rule to *Exact Version* and enter `3.0.0-beta.2` (or the chosen tag).
 
 Do **not** build yet — apply all known code changes first.
 
@@ -245,18 +241,15 @@ Do **not** build yet — apply all known code changes first.
 
 ### Step 6 — Apply Breaking Changes
 
-> **Agent instruction:** Work through each subsection below. Before making any edit in a subsection, run the stated grep. If it returns nothing, skip the entire subsection — do not touch those files. For each grep hit, apply the change shown in that subsection. Then move to the next subsection.
+> **Agent instruction:** Work through only the §6.x sections that matched during the Step 4 file-reading audit. Skip every section whose API the project does not use — do not touch those files.
 >
-> Apply the change exactly as shown. Do not alter surrounding code, rename variables, reformat, or modernise code that isn't being migrated. If the project uses completion handlers, use the completion-handler version; if it uses async/await, use the async version; if it uses Combine, use the Combine version.
+> Apply each change exactly as shown. Do not alter surrounding code, rename variables, reformat, or modernise code that isn't being migrated. Match the project's existing style: completion handler → completion handler, async/await → async/await, Combine → Combine.
 
 ---
 
 #### 6.1 — `WebAuth.clearSession()` → `WebAuth.logout()`
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "clearSession" --include="*.swift" .
-```
+**Applies if:** Step 4 found any call to `.clearSession(` in the project's source files.
 
 The `clearSession(federated:)` method was renamed to `logout(federated:)`. The parameter and its default value are unchanged.
 
@@ -314,11 +307,7 @@ try await Auth0.webAuth().logout(federated: true)
 
 #### 6.2 — `WebAuthError` — removed and new cases in exhaustive `switch` statements
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "\.noBundleIdentifier\|\.noAuthorizationCode\|\.invalidInvitationURL\|\.pkceNotAllowed" \
-  --include="*.swift" .
-```
+**Applies if:** Step 4 found any `switch` or `catch` on `WebAuthError` with explicit case names in the project's source files.
 
 Four `WebAuthError` cases were **removed** in v3. They represent configuration mistakes that should be caught in development, not handled in production. If the project has an exhaustive `switch` over `WebAuthError` (or explicitly matches these cases), the build will fail.
 
@@ -427,11 +416,7 @@ do {
 
 #### 6.3 — Remove redundant main-thread dispatch around WebAuth and CredentialsManager callbacks
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "DispatchQueue\.main\|MainActor\.run" --include="*.swift" . \
-  | grep -E "webAuth|credentialsManager|CredentialsManager|Auth0\."
-```
+**Applies if:** Step 4 found `DispatchQueue.main.async` or `MainActor.run` wrapping an Auth0 callback body.
 
 In v3, all completion-handler callbacks, Combine publishers, and async/await methods deliver results on the main thread (they are `@MainActor`). Wrapping callback bodies in `DispatchQueue.main.async { }` or `await MainActor.run { }` is no longer necessary and can be removed.
 
@@ -481,17 +466,7 @@ self.isAuthenticated = true
 
 #### 6.4 — `Authentication` / `MFAClient` methods return `Requestable` instead of `Request` — app code and test mocks
 
-**Scope check — app code (skip if empty):**
-```bash
-grep -rn "Request<Credentials\|Request<DatabaseUser\|Request<UserProfile\|Request<UserInfo\|Request<Void\|Request<JWKS\|Request<SSOCredentials" \
-  --include="*.swift" .
-```
-
-**Scope check — test mocks (skip if empty):**
-```bash
-grep -rn "Authentication\|MFAClient\|Requestable\|MockAuth" \
-  --include="*.swift" . | grep -i "test\|mock\|stub\|fake\|spy"
-```
+**Applies if:** Step 4 found either (a) a stored `Request<…>` type annotation in app code, or (b) test/mock files with types conforming to `Authentication`, `MFAClient`, or `Requestable`.
 
 In v3, all `Authentication` and `MFAClient` methods return protocol types rather than the concrete `Request` struct:
 
@@ -625,10 +600,7 @@ struct MockTokenRequest<T, E: Auth0Error>: TokenRequestable {
 
 #### 6.5 — `CredentialsManager.store(credentials:)` — Bool return → throws
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "\.store(credentials:" --include="*.swift" .
-```
+**Applies if:** Step 4 found any call to `credentialsManager.store(credentials:` in the project's source files.
 
 `store(credentials:)` previously returned `Bool`. In v3 it throws on failure and returns `Void` on success.
 
@@ -665,10 +637,7 @@ try? credentialsManager.store(credentials: credentials)
 
 #### 6.6 — `CredentialsManager.clear()` — Bool return → throws
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "credentialsManager\.clear()" --include="*.swift" .
-```
+**Applies if:** Step 4 found any call to `credentialsManager.clear()` in the project's source files.
 
 `clear()` previously returned `Bool`. In v3 it throws.
 
@@ -690,10 +659,7 @@ do {
 
 #### 6.7 — `CredentialsManager.user` property → `userProfile()` throwing method
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "credentialsManager\.user\b" --include="*.swift" .
-```
+**Applies if:** Step 4 found any access to `credentialsManager.user` as a property (not a method call) in the project's source files.
 
 The `user: UserInfo?` computed property was replaced by `userProfile() throws -> UserProfile?` (see also §6.9 for the type rename).
 
@@ -719,10 +685,7 @@ func loadUser() throws {
 
 #### 6.8 — `CredentialsManager` async methods — new error paths from throwing storage
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "credentialsManager\.revoke\|\.revoke(" --include="*.swift" .
-```
+**Applies if:** Step 4 found any call to `credentialsManager.revoke(` in the project's source files.
 
 Because `CredentialsManager` storage methods now throw, several async methods gain new failure paths that were previously silently swallowed. The most significant is `revoke()`. Only update error-handling code that the project actually writes — call sites that already use a `default:` branch need no change.
 
@@ -807,10 +770,7 @@ credentialsManager.credentials { result in
 
 #### 6.9 — `UserInfo` → `UserProfile` type rename
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "\bUserInfo\b" --include="*.swift" .
-```
+**Applies if:** Step 4 found any type annotation, function signature, or variable declaration referencing `UserInfo` in the project's source files.
 
 The `UserInfo` type was renamed to `UserProfile`. Update every type annotation, function signature, and variable declaration that references `UserInfo`.
 
@@ -843,10 +803,7 @@ Auth0.authentication()
 
 #### 6.10 — `Credentials.expiresIn` → `Credentials.expiresAt`
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "\.expiresIn\b" --include="*.swift" .
-```
+**Applies if:** Step 4 found any access to `.expiresIn` on a `Credentials`, `APICredentials`, or `SSOCredentials` object.
 
 The `expiresIn: Date` property on `Credentials`, `APICredentials`, and `SSOCredentials` was renamed to `expiresAt: Date`. The underlying JSON key is unchanged; only the Swift property name changed.
 
@@ -862,10 +819,7 @@ let expiry: Date = credentials.expiresAt
 
 #### 6.11 — `CredentialsStorage` custom implementation — methods now throw
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "CredentialsStorage" --include="*.swift" .
-```
+**Applies if:** Step 4 found a type conforming to `CredentialsStorage` in the project's source files. Skip if the project only passes a `SimpleKeychain` instance — the default storage needs no change.
 
 Only applies if the project provides a **custom** `CredentialsStorage` implementation (i.e., a type conforming to the protocol — not just using the default `SimpleKeychain`). Skip if the project only passes a `SimpleKeychain` instance.
 
@@ -920,10 +874,7 @@ Verify the exact `CredentialsManagerError` cases against the SDK source fetched 
 
 #### 6.12 — Management client removed
 
-**Scope check (skip if empty):**
-```bash
-grep -rn "Auth0\.users\|\.users(token:" --include="*.swift" .
-```
+**Applies if:** Step 4 found any call to `Auth0.users(` or `Auth0.users(token:` in the project's source files.
 
 `Auth0.users(token:)` and the entire `Users` management client were removed from the SDK in v3. Do **not** silently delete any call sites — add a `TODO` comment and surface this in the migration summary.
 
@@ -953,16 +904,7 @@ This **requires backend work** — record it in the Step 8 summary.
 
 #### 6.13 — MFA methods removed from `Authentication` → migrate to `MFAClient`
 
-**Scope check — removed call sites (skip if empty):**
-```bash
-grep -rn "login(withOTP:\|login(withOOBCode:\|login(withRecoveryCode:\|multifactorChallenge(" \
-  --include="*.swift" .
-```
-
-**Scope check — test mocks for MFA (skip if empty):**
-```bash
-grep -rn ": MFAClient\|MockMFA\|StubMFA" --include="*.swift" . | grep -i "test\|mock\|stub\|fake"
-```
+**Applies if:** Step 4 found any call to `login(withOTP:`, `login(withOOBCode:`, `login(withRecoveryCode:`, or `multifactorChallenge(` — or test mocks conforming to `MFAClient` — in the project's source files.
 
 The four MFA methods on the `Authentication` protocol were removed in v3. They are replaced by the dedicated `MFAClient` protocol, accessible via `Auth0.mfa()`:
 
@@ -1156,11 +1098,7 @@ List all migrated MFA flows in the Step 9 summary and ask the user to **re-test 
 
 #### 6.14 — Default scope now includes `offline_access`
 
-**Scope check — only applies if the project calls WebAuth without an explicit `.scope()`:**
-```bash
-grep -rn "webAuth()" --include="*.swift" . \
-  | grep -v "\.scope("
-```
+**Applies if:** Step 4 found any call to `webAuth()`, `webAuth(domain:)`, or `webAuth(domain:clientId:)` — but only for call chains that do **not** already have a `.scope(…)` modifier. Read the actual call site in the file to confirm whether `.scope(` is present; do not grep — the call chain may span multiple lines.
 
 In v3, the default scope changed from `"openid profile email"` to `"openid profile email offline_access"`. Apps that relied on the default and do **not** want a refresh token should add an explicit `.scope()` call:
 
@@ -1282,14 +1220,16 @@ Present a concise summary covering:
 
 | Mistake | Correct approach |
 |---|---|
-| Applying a breaking-change fix when the grep returns nothing | The grep gate is mandatory. No hits = skip the section entirely |
+| Applying a §6.x section when Step 4 didn't find that API in the project | Step 4 file-reading is the gate. Not found = skip the section entirely |
+| Using grep alone to decide if an API is used | Grep misses multi-line call chains, calls with `domain:clientId:` params, and variable aliases. Read the actual files |
 | Touching `CredentialsManager` when the project doesn't use it | Only migrate what the project actually calls |
 | Removing `DispatchQueue.main` wrappers around non-Auth0 code | Only remove dispatch wrappers that are solely inside an Auth0 callback body |
 | Silently deleting Management API call sites | Add `// TODO:` and surface in the summary — removing the call breaks functionality |
 | Silently deleting old MFA call sites | Same as above — add `TODO` and note in the summary |
 | Applying changes based on assumed knowledge, not the fetched SDK source | Every fix must trace to a signature in the files fetched in Step 3 |
+| Pinning `from: "3.0.0"` when the developer chose a beta tag | Stable range specifiers won't resolve betas; use `exact: "<TAG>"` for pre-releases |
 | Starting migration on a dirty working tree | Always verify `git status --porcelain` is empty first |
-| Skipping straight to build without applying known changes first | Apply all grepped changes first, then build to catch remainders |
+| Skipping straight to build without applying known changes first | Apply all known changes first, then build to catch remainders |
 | Continuing past 10 failed build cycles | Stop and show the user the remaining errors |
 | Skipping the migration summary | Always produce the full summary — the user needs it |
 

@@ -1,19 +1,6 @@
 # Migration Process — Edge Cases & Procedures
 
-This skill migrates Auth0.swift v1/v2 integrations to v3. Every code change is gated on a grep that confirms the project actually uses the affected API. If the grep returns nothing, the section is skipped entirely — no speculative changes, no added imports, no defensive code.
-
----
-
-## Multi-Major-Version Jumps (v1 → v3)
-
-Apply migrations **sequentially**. v1 → v3 in a single pass misses intermediate renames that compound.
-
-```
-v1 → v2: fetch v2 source tree, apply v1→v2 breaking changes, build green
-v2 → v3: fetch v3 source tree, apply v2→v3 breaking changes, build green
-```
-
-Each intermediate build must succeed before proceeding to the next version.
+This skill migrates Auth0.swift v2 integrations to v3. Every code change is gated on reading the project's source files to confirm the affected API is actually used. If an API area is not found, the corresponding section is skipped entirely — no speculative changes, no added imports, no defensive code.
 
 ---
 
