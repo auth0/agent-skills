@@ -23,10 +23,8 @@ Apply `checkJwt` middleware globally to protect all routes:
 ```javascript
 import { auth } from 'express-oauth2-jwt-bearer';
 
-const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
-});
+// Reads ISSUER_BASE_URL and AUDIENCE from the environment automatically
+const checkJwt = auth();
 
 // All routes below this require a valid JWT
 app.use(checkJwt);
@@ -56,9 +54,8 @@ app.get('/api/private', checkJwt, (req, res) => {
 Allow unauthenticated requests but attach auth info when present:
 
 ```javascript
+// issuer and audience come from ISSUER_BASE_URL / AUDIENCE in the environment
 const optionalAuth = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
   authRequired: false,
 });
 
@@ -159,11 +156,8 @@ app.use(cors({
   exposedHeaders: ['WWW-Authenticate'],
 }));
 
-// 2. Auth second
-const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
-});
+// 2. Auth second (reads ISSUER_BASE_URL and AUDIENCE from the environment)
+const checkJwt = auth();
 ```
 
 ## DPoP Support
@@ -173,9 +167,8 @@ DPoP (Demonstration of Proof-of-Possession) binds tokens to the client's key pai
 ### Hybrid mode (Bearer or DPoP both accepted — default)
 
 ```javascript
+// issuer and audience come from ISSUER_BASE_URL / AUDIENCE in the environment
 const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
   dpop: {
     enabled: true,
     required: false,  // Accept both Bearer and DPoP tokens
@@ -186,9 +179,8 @@ const checkJwt = auth({
 ### DPoP-only mode (rejects plain Bearer tokens)
 
 ```javascript
+// issuer and audience come from ISSUER_BASE_URL / AUDIENCE in the environment
 const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
   dpop: {
     enabled: true,
     required: true,  // Reject plain Bearer tokens
@@ -199,9 +191,8 @@ const checkJwt = auth({
 ### Bearer-only mode (disable DPoP)
 
 ```javascript
+// issuer and audience come from ISSUER_BASE_URL / AUDIENCE in the environment
 const checkJwt = auth({
-  issuerBaseURL: `https://${process.env.AUTH0_DOMAIN}`,
-  audience: process.env.AUTH0_AUDIENCE,
   dpop: { enabled: false },
 });
 ```
