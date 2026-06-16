@@ -175,6 +175,14 @@ grep -rn "login(withOTP\|login(withOOBCode\|login(withRecoveryCode\|multifactorC
 grep -rn "Auth0\.authentication()\|authentication()\.login\|authentication()\.signup" \
   --include="*.swift" .
 
+# Stored Request<> type annotations in app code (break when return type changes to Requestable)
+grep -rn "Request<Credentials\|Request<DatabaseUser\|Request<UserProfile\|Request<UserInfo\|Request<Void\|Request<JWKS\|Request<SSOCredentials" \
+  --include="*.swift" .
+
+# Test/mock files conforming to Authentication, MFAClient, or Requestable
+grep -rn ": Authentication\|: MFAClient\|: Requestable\|: TokenRequestable" \
+  --include="*.swift" . | grep -i "test\|mock\|stub\|fake\|spy"
+
 # Tests that use Auth0
 grep -rl "import Auth0\|@testable import" --include="*.swift" . | grep -i test
 ```
@@ -471,7 +479,151 @@ self.isAuthenticated = true
 
 ---
 
-#### 6.4 — `CredentialsManager.store(credentials:)` — Bool return → throws
+#### 6.4 — `Authentication` / `MFAClient` methods return `Requestable` instead of `Request` — app code and test mocks
+
+**Scope check — app code (skip if empty):**
+```bash
+grep -rn "Request<Credentials\|Request<DatabaseUser\|Request<UserProfile\|Request<UserInfo\|Request<Void\|Request<JWKS\|Request<SSOCredentials" \
+  --include="*.swift" .
+```
+
+**Scope check — test mocks (skip if empty):**
+```bash
+grep -rn "Authentication\|MFAClient\|Requestable\|MockAuth" \
+  --include="*.swift" . | grep -i "test\|mock\|stub\|fake\|spy"
+```
+
+In v3, all `Authentication` and `MFAClient` methods return protocol types rather than the concrete `Request` struct:
+
+- **Credential-returning methods** (login, codeExchange, renew, ssoExchange, etc.) now return `any TokenRequestable<T, E>`
+- **All other methods** (signup, resetPassword, userInfo, jwks, etc.) now return `any Requestable<T, E>`
+
+**Impact on app code:** Call sites that chain directly to `.start(_:)` — the overwhelming majority — compile without any change. The only app code that breaks is a stored `Request<>` type annotation:
+
+```swift
+// v2 — storing the request in a typed variable
+let request: Request<Credentials, AuthenticationError> = Auth0
+    .authentication()
+    .login(usernameOrEmail: email, password: password,
+           realmOrConnection: "Username-Password-Authentication",
+           audience: audience, scope: scope)
+request.start { result in ... }
+
+// v3 — update the type annotation to the protocol type
+// For credential-returning methods:
+let request: any TokenRequestable<Credentials, AuthenticationError> = Auth0
+    .authentication()
+    .login(usernameOrEmail: email, password: password,
+           realmOrConnection: "Username-Password-Authentication",
+           audience: audience, scope: scope)
+request.start { result in ... }
+
+// For non-credential methods (signup, resetPassword, userInfo, jwks):
+let request: any Requestable<DatabaseUser, AuthenticationError> = Auth0
+    .authentication()
+    .signup(email: email, password: password, connection: connection)
+request.start { result in ... }
+
+// Most common pattern — chaining directly, no annotation needed, no change required:
+Auth0.authentication()
+    .login(usernameOrEmail: email, password: password,
+           realmOrConnection: "Username-Password-Authentication",
+           audience: audience, scope: scope)
+    .start { result in ... }  // ✅ unchanged
+```
+
+**Credential-returning methods that now return `any TokenRequestable` (full list):**
+- `login(email:code:audience:scope:)`
+- `login(phoneNumber:code:audience:scope:)`
+- `login(usernameOrEmail:password:realmOrConnection:audience:scope:)`
+- `loginDefaultDirectory(withUsername:password:audience:scope:)`
+- `login(appleAuthorizationCode:fullName:profile:audience:scope:)`
+- `login(facebookSessionAccessToken:profile:audience:scope:)`
+- `codeExchange(withCode:codeVerifier:redirectURI:)`
+- `renew(withRefreshToken:audience:scope:)`
+- `ssoExchange(withRefreshToken:)`
+- `MFAClient.verify(otp:mfaToken:)`, `verify(oobCode:bindingCode:mfaToken:)`, `verify(recoveryCode:mfaToken:)`
+
+**Impact on test targets — custom `Authentication` mocks:**
+
+If the project's test target has a mock or stub conforming to the `Authentication` or `MFAClient` protocol, two changes are required:
+
+1. **Return type:** Change `Request<T, E>` to `any TokenRequestable<T, E>` (credential methods) or `any Requestable<T, E>` (other methods)
+2. **`start(_:)` callback:** Add `@MainActor` to match the updated `Requestable` protocol requirement
+
+```swift
+// v2 — mock Authentication conformance in tests
+class MockAuthentication: Authentication {
+    var credentialsResult: Result<Credentials, AuthenticationError> = .failure(.init(info: [:], statusCode: 0))
+
+    func login(usernameOrEmail username: String,
+               password: String,
+               realmOrConnection realm: String,
+               audience: String?,
+               scope: String) -> Request<Credentials, AuthenticationError> {
+        // ❌ compile error in v3 — Request is no longer the return type
+        return Request(session: URLSession.shared, ...) // v2 internal — no longer works
+    }
+}
+
+// v2 — mock Requestable used as stub
+struct MockRequest<T, E: Auth0Error>: Requestable {
+    let result: Result<T, E>
+    func start(_ callback: @escaping (Result<T, E>) -> Void) {
+        // ❌ @MainActor missing — does not conform to v3 Requestable
+        callback(result)
+    }
+}
+
+// v3 — updated mock
+struct MockRequest<T, E: Auth0Error>: Requestable {
+    let result: Result<T, E>
+    // ✅ Add @MainActor to match the protocol; dispatch via Task to satisfy @MainActor isolation
+    func start(_ callback: @escaping @MainActor (Result<T, E>) -> Void) {
+        Task { @MainActor in callback(result) }
+    }
+}
+
+// v3 — updated Authentication mock returning the correct protocol type
+class MockAuthentication: Authentication {
+    var credentialsResult: Result<Credentials, AuthenticationError> = .failure(.init(info: [:], statusCode: 0))
+
+    func login(usernameOrEmail username: String,
+               password: String,
+               realmOrConnection realm: String,
+               audience: String?,
+               scope: String) -> any TokenRequestable<Credentials, AuthenticationError> {
+        // ✅ Return MockTokenRequest, not Request
+        return MockTokenRequest(result: credentialsResult)
+    }
+}
+
+// v3 — TokenRequestable mock (for credential-returning methods)
+struct MockTokenRequest<T, E: Auth0Error>: TokenRequestable {
+    typealias ResultType = T
+    typealias ErrorType = E
+
+    let result: Result<T, E>
+
+    func start(_ callback: @escaping @MainActor (Result<T, E>) -> Void) {
+        Task { @MainActor in callback(result) }
+    }
+
+    // TokenRequestable adds these claim-validation builder methods — return self
+    func validateClaims() -> any TokenRequestable<T, E> { self }
+    func withLeeway(_ leeway: Int) -> any TokenRequestable<T, E> { self }
+    func withIssuer(_ issuer: String) -> any TokenRequestable<T, E> { self }
+    func withNonce(_ nonce: String?) -> any TokenRequestable<T, E> { self }
+    func withMaxAge(_ maxAge: Int?) -> any TokenRequestable<T, E> { self }
+    func withOrganization(_ organization: String?) -> any TokenRequestable<T, E> { self }
+}
+```
+
+> The `MockTokenRequest` stub above stubs out all `TokenRequestable` builder methods by returning `self`. In most tests, `validateClaims()` and the `with*` modifiers are never called, so returning `self` is correct. If a specific test verifies claim validation behaviour, implement those methods properly.
+
+---
+
+#### 6.5 — `CredentialsManager.store(credentials:)` — Bool return → throws
 
 **Scope check (skip if empty):**
 ```bash
@@ -511,7 +663,7 @@ try? credentialsManager.store(credentials: credentials)
 
 ---
 
-#### 6.5 — `CredentialsManager.clear()` — Bool return → throws
+#### 6.6 — `CredentialsManager.clear()` — Bool return → throws
 
 **Scope check (skip if empty):**
 ```bash
@@ -536,14 +688,14 @@ do {
 
 ---
 
-#### 6.6 — `CredentialsManager.user` property → `userProfile()` throwing method
+#### 6.7 — `CredentialsManager.user` property → `userProfile()` throwing method
 
 **Scope check (skip if empty):**
 ```bash
 grep -rn "credentialsManager\.user\b" --include="*.swift" .
 ```
 
-The `user: UserInfo?` computed property was replaced by `userProfile() throws -> UserProfile?` (see also §6.8 for the type rename).
+The `user: UserInfo?` computed property was replaced by `userProfile() throws -> UserProfile?` (see also §6.9 for the type rename).
 
 ```swift
 // v2 — property access, returns UserInfo?
@@ -565,7 +717,7 @@ func loadUser() throws {
 
 ---
 
-#### 6.7 — `CredentialsManager` async methods — new error paths from throwing storage
+#### 6.8 — `CredentialsManager` async methods — new error paths from throwing storage
 
 **Scope check (skip if empty):**
 ```bash
@@ -653,7 +805,7 @@ credentialsManager.credentials { result in
 
 ---
 
-#### 6.8 — `UserInfo` → `UserProfile` type rename
+#### 6.9 — `UserInfo` → `UserProfile` type rename
 
 **Scope check (skip if empty):**
 ```bash
@@ -689,7 +841,7 @@ Auth0.authentication()
 
 ---
 
-#### 6.9 — `Credentials.expiresIn` → `Credentials.expiresAt`
+#### 6.10 — `Credentials.expiresIn` → `Credentials.expiresAt`
 
 **Scope check (skip if empty):**
 ```bash
@@ -708,7 +860,7 @@ let expiry: Date = credentials.expiresAt
 
 ---
 
-#### 6.10 — `CredentialsStorage` custom implementation — methods now throw
+#### 6.11 — `CredentialsStorage` custom implementation — methods now throw
 
 **Scope check (skip if empty):**
 ```bash
@@ -766,7 +918,7 @@ Verify the exact `CredentialsManagerError` cases against the SDK source fetched 
 
 ---
 
-#### 6.11 — Management client removed
+#### 6.12 — Management client removed
 
 **Scope check (skip if empty):**
 ```bash
@@ -799,38 +951,210 @@ This **requires backend work** — record it in the Step 8 summary.
 
 ---
 
-#### 6.12 — Old MFA methods removed
+#### 6.13 — MFA methods removed from `Authentication` → migrate to `MFAClient`
 
-**Scope check (skip if empty):**
+**Scope check — removed call sites (skip if empty):**
 ```bash
 grep -rn "login(withOTP:\|login(withOOBCode:\|login(withRecoveryCode:\|multifactorChallenge(" \
   --include="*.swift" .
 ```
 
-The following `Authentication` methods were removed in v3:
-- `login(withOTP:mfaToken:)`
-- `login(withOOBCode:mfaToken:bindingCode:)`
-- `login(withRecoveryCode:mfaToken:)`
-- `multifactorChallenge(mfaToken:types:authenticatorId:)`
-
-These are replaced by the new `MFAClient` API. Fetch the v3 `MFAClient.swift` to understand the new signatures, then migrate accordingly. Do **not** silently delete MFA call sites — add `TODO` comments where you cannot complete the migration:
-
-```swift
-// v2 — OTP login
-Auth0.authentication()
-    .login(withOTP: otpCode, mfaToken: mfaToken)
-    .start { result in ... }
-
-// v3 — use MFAClient (fetch Auth0/MFAClient.swift from the target tag for exact signatures)
-// TODO: Migrate to Auth0.authentication().mfaClient(mfaToken:).loginWithOTP(otp:)
-// Verify the exact MFAClient method names against the v3 SDK source.
+**Scope check — test mocks for MFA (skip if empty):**
+```bash
+grep -rn ": MFAClient\|MockMFA\|StubMFA" --include="*.swift" . | grep -i "test\|mock\|stub\|fake"
 ```
 
-List all removed MFA methods in the Step 8 summary and ask the user to re-test MFA flows end-to-end after migration.
+The four MFA methods on the `Authentication` protocol were removed in v3. They are replaced by the dedicated `MFAClient` protocol, accessible via `Auth0.mfa()`:
+
+| v2 (`Authentication`) | v3 (`MFAClient`) |
+|---|---|
+| `authentication().login(withOTP: otp, mfaToken: token)` | `mfa().verify(otp: otp, mfaToken: token)` |
+| `authentication().login(withOOBCode: code, mfaToken: token, bindingCode: binding)` | `mfa().verify(oobCode: code, bindingCode: binding, mfaToken: token)` |
+| `authentication().login(withRecoveryCode: code, mfaToken: token)` | `mfa().verify(recoveryCode: code, mfaToken: token)` |
+| `authentication().multifactorChallenge(mfaToken: token, types: types, authenticatorId: id)` | `mfa().challenge(with: id, mfaToken: token)` |
+
+**The `mfaToken` itself** still comes from the same place — an `AuthenticationError` where `error.isMultifactorRequired == true` returns the token via `error.mfaRequiredErrorPayload?.mfaToken`.
 
 ---
 
-#### 6.13 — Default scope now includes `offline_access`
+**OTP (TOTP authenticator app):**
+```swift
+// v2
+Auth0.authentication()
+    .login(withOTP: otpCode, mfaToken: mfaToken)
+    .start { result in
+        switch result {
+        case .success(let credentials): storeCredentials(credentials)
+        case .failure(let error): showError(error)
+        }
+    }
+
+// v3 — verify returns any TokenRequestable<Credentials, MFAVerifyError>
+Auth0.mfa()
+    .verify(otp: otpCode, mfaToken: mfaToken)
+    .start { result in
+        switch result {
+        case .success(let credentials): storeCredentials(credentials)
+        case .failure(let error): showError(error)
+        }
+    }
+
+// async/await
+let credentials = try await Auth0.mfa().verify(otp: otpCode, mfaToken: mfaToken).start()
+```
+
+---
+
+**OOB (SMS / email code):**
+```swift
+// v2
+Auth0.authentication()
+    .login(withOOBCode: oobCode, mfaToken: mfaToken, bindingCode: bindingCode)
+    .start { result in ... }
+
+// v3 — parameter order changed: oobCode first, bindingCode second
+Auth0.mfa()
+    .verify(oobCode: oobCode, bindingCode: bindingCode, mfaToken: mfaToken)
+    .start { result in ... }
+```
+
+---
+
+**Recovery code:**
+```swift
+// v2
+Auth0.authentication()
+    .login(withRecoveryCode: recoveryCode, mfaToken: mfaToken)
+    .start { result in ... }
+
+// v3
+Auth0.mfa()
+    .verify(recoveryCode: recoveryCode, mfaToken: mfaToken)
+    .start { result in ... }
+```
+
+---
+
+**MFA challenge (request an OOB code to be sent):**
+```swift
+// v2
+Auth0.authentication()
+    .multifactorChallenge(mfaToken: mfaToken,
+                          types: ["oob"],
+                          authenticatorId: authenticatorId)
+    .start { result in ... }
+
+// v3 — types parameter removed; pass authenticatorId directly
+Auth0.mfa()
+    .challenge(with: authenticatorId, mfaToken: mfaToken)
+    .start { result in ... }
+```
+
+---
+
+**Handling the MFA required error to obtain the mfaToken (unchanged between v2 and v3):**
+```swift
+Auth0.authentication()
+    .login(usernameOrEmail: email,
+           password: password,
+           realmOrConnection: "Username-Password-Authentication",
+           audience: audience,
+           scope: scope)
+    .start { result in
+        switch result {
+        case .success(let credentials):
+            storeCredentials(credentials)
+        case .failure(let error) where error.isMultifactorRequired:
+            // mfaToken extracted the same way in both v2 and v3
+            if let mfaToken = error.mfaRequiredErrorPayload?.mfaToken {
+                presentMFAChallenge(mfaToken: mfaToken)
+            }
+        case .failure(let error):
+            showError(error)
+        }
+    }
+```
+
+---
+
+**Error type changed: `AuthenticationError` → `MFAVerifyError`**
+
+The verify methods on `MFAClient` return `any TokenRequestable<Credentials, MFAVerifyError>`. If the project previously matched specific `AuthenticationError` cases in MFA failure handlers, map them onto `MFAVerifyError`:
+
+```swift
+// v2 — MFA failures came as AuthenticationError
+Auth0.authentication()
+    .login(withOTP: otp, mfaToken: mfaToken)
+    .start { result in
+        switch result {
+        case .success(let credentials): storeCredentials(credentials)
+        case .failure(let error as AuthenticationError):
+            if error.isMultifactorCodeInvalid {
+                showError("Invalid code. Please try again.")
+            } else {
+                showError(error.debugDescription)
+            }
+        }
+    }
+
+// v3 — failures come as MFAVerifyError; fetch MFAErrors.swift for all cases
+Auth0.mfa()
+    .verify(otp: otp, mfaToken: mfaToken)
+    .start { result in
+        switch result {
+        case .success(let credentials): storeCredentials(credentials)
+        case .failure(let error):
+            // Check the MFAVerifyError cases in Auth0/MFA/MFAErrors.swift
+            // for the exact case names available in the target SDK version
+            showError(error.debugDescription)
+        }
+    }
+```
+
+> Fetch `Auth0/MFA/MFAErrors.swift` from the target tag (Step 3) and read the `MFAVerifyError` cases to map any specific error handling the project currently does. Do not guess error case names — read them from the source.
+
+---
+
+**Test mocks for `MFAClient`:**
+
+If the project's test target has a mock conforming to `MFAClient`, update method return types and add `@MainActor` to `start(_:)` (same pattern as §6.4 for `Authentication` mocks):
+
+```swift
+// v3 — mock MFAClient in tests
+struct MockMFAClient: MFAClient {
+    var verifyResult: Result<Credentials, MFAVerifyError>
+
+    func verify(otp: String,
+                mfaToken: String) -> any TokenRequestable<Credentials, MFAVerifyError> {
+        return MockTokenRequest(result: verifyResult)
+    }
+
+    func verify(oobCode: String,
+                bindingCode: String?,
+                mfaToken: String) -> any TokenRequestable<Credentials, MFAVerifyError> {
+        return MockTokenRequest(result: verifyResult)
+    }
+
+    func verify(recoveryCode: String,
+                mfaToken: String) -> any TokenRequestable<Credentials, MFAVerifyError> {
+        return MockTokenRequest(result: verifyResult)
+    }
+
+    func challenge(with authenticatorId: String,
+                   mfaToken: String) -> any Requestable<MFAChallenge, MfaChallengeError> {
+        return MockRequest(result: .success(MFAChallenge(...)))
+    }
+    // implement remaining MFAClient requirements using the same pattern
+}
+```
+
+> Use the `MockTokenRequest` and `MockRequest` structs from §6.4. The `MFAClient` protocol also requires `getAuthenticators`, `enroll(mfaToken:phoneNumber:)`, `enroll(mfaToken:)`, and `enroll(mfaToken:email:)` — stub them the same way, using the return types from `MFAClient.swift`.
+
+List all migrated MFA flows in the Step 9 summary and ask the user to **re-test every MFA flow end-to-end** (OTP, OOB, recovery code, challenge request) against their tenant configuration.
+
+---
+
+#### 6.14 — Default scope now includes `offline_access`
 
 **Scope check — only applies if the project calls WebAuth without an explicit `.scope()`:**
 ```bash
@@ -885,11 +1209,13 @@ For each error:
 |---|---|
 | `has no member 'clearSession'` | §6.1 — rename to `logout` |
 | `error enum element 'pkceNotAllowed' not found in type` (or other removed cases) | §6.2 — remove deleted `WebAuthError` cases from switch |
-| `has no member 'user'` on CredentialsManager | §6.6 — change to `userProfile()` |
-| `cannot find type 'UserInfo'` | §6.8 — rename to `UserProfile` |
-| `has no member 'expiresIn'` | §6.9 — rename to `expiresAt` |
-| `cannot convert value of type 'Bool'` on store/clear | §6.4/§6.5 — add do-catch or try? |
-| `does not conform to protocol 'CredentialsStorage'` | §6.10 — update protocol methods + add deleteAllEntries |
+| `cannot convert return expression of type 'Request<...>'` in mock | §6.4 — update mock return type to `any TokenRequestable<T,E>` or `any Requestable<T,E>` |
+| `does not conform to protocol 'Requestable'` (missing `@MainActor` on `start`) | §6.4 — add `@MainActor` to `start(_:)` callback in mock |
+| `has no member 'user'` on CredentialsManager | §6.7 — change to `userProfile()` |
+| `cannot find type 'UserInfo'` | §6.9 — rename to `UserProfile` |
+| `has no member 'expiresIn'` | §6.10 — rename to `expiresAt` |
+| `cannot convert value of type 'Bool'` on store/clear | §6.5/§6.6 — add do-catch or try? |
+| `does not conform to protocol 'CredentialsStorage'` | §6.11 — update protocol methods + add deleteAllEntries |
 | `call can throw, but is not marked with 'try'` | wrap in do-catch or add try? |
 | `sending '...' risks causing data races` | only relevant if Swift 6 mode is already on; resolve within the existing actor model |
 
@@ -929,9 +1255,10 @@ Present a concise summary covering:
 
 **3. Backend / configuration follow-up** (only if triggered)
 - **WebAuthError cases changed (§6.2):** List which removed cases were deleted from switch statements and which new cases were added. Note that `.authenticationFailed` and `.codeExchangeFailed` may benefit from user-facing copy changes.
-- **revoke() new error paths (§6.7):** If the project calls `revoke()`, note that `.noCredentials` and `.clearFailed` can now surface — confirm the failure handling navigates the user correctly.
-- **Management client removed (§6.11):** List the specific operations that were stubbed with `TODO`. Describe what the user must implement on a secure backend.
-- **MFA methods removed (§6.12):** List which MFA flows need updating to `MFAClient`. Ask the user to re-test MFA end-to-end.
+- **`Request` → `Requestable` in mocks (§6.4):** List which test mock files were updated. Note any `TokenRequestable` builder methods that were stubbed with `return self` — confirm this is correct for the tests involved.
+- **revoke() new error paths (§6.8):** If the project calls `revoke()`, note that `.noCredentials` and `.clearFailed` can now surface — confirm the failure handling navigates the user correctly.
+- **Management client removed (§6.12):** List the specific operations that were stubbed with `TODO`. Describe what the user must implement on a secure backend.
+- **MFA methods removed (§6.13):** List which MFA flows need updating to `MFAClient`. Ask the user to re-test MFA end-to-end.
 
 **4. Optional improvements not applied** (list briefly; never auto-apply)
 - New `clearAll()` method on `CredentialsManager` — clears all credentials in one call

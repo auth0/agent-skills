@@ -75,6 +75,7 @@ npx clawhub install auth0-fastify-api
 npx clawhub install auth0-react-native
 npx clawhub install auth0-android
 npx clawhub install auth0-swift
+npx clawhub install auth0-swift-major-migration
 npx clawhub install auth0-flutter-native
 npx clawhub install auth0-flutter-web
 npx clawhub install auth0-maui
