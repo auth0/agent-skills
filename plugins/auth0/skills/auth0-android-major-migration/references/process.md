@@ -11,10 +11,12 @@ The skill accepts an optional target version as an argument (`$ARGUMENTS`). Reso
 **When an argument is provided, it must pass all three checks before use:**
 
 1. **Exists** — the tag appears in the published release list:
+
    ```bash
    gh api repos/auth0/Auth0.Android/releases --paginate \
      --jq '.[] | select(.draft==false) | .tag_name'
    ```
+
 2. **Next major (v4)** — `tag_name` starts with `4`. A `3.x` or lower tag is the current/previous major, not the next one.
 3. **Not a downgrade** — the tag is newer than the version detected in the project files.
 
@@ -94,6 +96,7 @@ distributionUrl=https\://services.gradle.org/distributions/gradle-8.11.1-all.zip
 // root build.gradle (buildscript classpath form)
 classpath 'com.android.tools.build:gradle:8.10.1'
 ```
+
 ```kotlin
 // settings/root plugins block form
 id("com.android.application") version "8.10.1"
@@ -154,7 +157,7 @@ v4 removed `UsersAPIClient`, `ManagementException`, and `ManagementCallback`.
 
 Recommended pattern:
 
-```
+```text
 App  ──HTTPS (user access token)──▶  Your Backend  ──M2M token──▶  Auth0 Management API
 ```
 

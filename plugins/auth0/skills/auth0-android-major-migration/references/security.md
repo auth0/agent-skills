@@ -10,7 +10,7 @@ These must hold true before and after migration. If any are violated, the migrat
 
 ### 1. No Secrets in Source Code
 
-```
+```text
 [ ] No client_secret in any Kotlin/Java/Gradle/XML file (native apps use PKCE, not secrets)
 [ ] No hardcoded tokens or API keys
 [ ] Auth0 domain and client ID live in strings.xml (public config, not secrets) — not hardcoded in source
@@ -19,6 +19,7 @@ These must hold true before and after migration. If any are violated, the migrat
 ```
 
 **Verification:**
+
 ```bash
 grep -rniE "client_secret|api_key|apikey|secret_key" \
   --include="*.kt" --include="*.java" --include="*.xml" --include="*.gradle" --include="*.kts" .
@@ -26,13 +27,14 @@ grep -rniE "client_secret|api_key|apikey|secret_key" \
 
 ### 2. Secure Token Storage
 
-```
+```text
 [ ] Credentials stored via SecureCredentialsManager (encrypted at rest) — not plain SharedPreferences, not files
 [ ] No tokens written to plain SharedPreferences or disk in clear text
 [ ] Biometric protection preserved if it existed before migration (the FragmentActivity + LocalAuthenticationOptions constructor)
 ```
 
 **Verification:**
+
 ```bash
 # Flag any plain SharedPreferences write that looks credential-related
 grep -rniE "getSharedPreferences|SharedPreferences" --include="*.kt" --include="*.java" . \
@@ -43,7 +45,7 @@ grep -rniE "getSharedPreferences|SharedPreferences" --include="*.kt" --include="
 
 ### 3. PKCE Flow Preserved
 
-```
+```text
 [ ] Web Auth still goes through WebAuthProvider (PKCE is automatic — just verify WebAuthProvider.login is used)
 [ ] No manual token exchange without a code verifier
 [ ] No implicit grant flow introduced
@@ -51,7 +53,7 @@ grep -rniE "getSharedPreferences|SharedPreferences" --include="*.kt" --include="
 
 ### 4. Session Cleanup on Logout
 
-```
+```text
 [ ] Logout clears the Auth0 session (WebAuthProvider.logout)
 [ ] Logout clears stored credentials (clearCredentials() — note §8.3: in v4 this clears ALL storage)
 [ ] No orphaned tokens after logout

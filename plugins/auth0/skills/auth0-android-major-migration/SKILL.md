@@ -243,16 +243,19 @@ Build a checklist: **"This project uses: [list]"** and **"This project does NOT 
 Apply the matching declaration style. Use `<TARGET_TAG>` from Step 2.
 
 **Inline — Groovy DSL (`build.gradle`):**
+
 ```groovy
 implementation 'com.auth0.android:auth0:<TARGET_TAG>'
 ```
 
 **Inline — Kotlin DSL (`build.gradle.kts`):**
+
 ```kotlin
 implementation("com.auth0.android:auth0:<TARGET_TAG>")
 ```
 
 **Version catalog (`gradle/libs.versions.toml`):**
+
 ```toml
 [versions]
 auth0 = "<TARGET_TAG>"
