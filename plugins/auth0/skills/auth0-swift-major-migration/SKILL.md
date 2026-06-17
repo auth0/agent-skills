@@ -4,7 +4,7 @@ description: Use when upgrading Auth0.swift to v3 in an iOS, macOS, tvOS, watchO
 license: Proprietary
 metadata:
   author: Auth0 <support@auth0.com>
-  version: '2.0.0'
+  version: '1.0.0'
   openclaw:
     emoji: "\U0001F504"
     homepage: https://github.com/auth0/agent-skills
