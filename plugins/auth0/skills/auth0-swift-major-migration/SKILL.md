@@ -1240,7 +1240,10 @@ Present a concise summary covering:
 **3. Backend / configuration follow-up** (only if triggered)
 - **WebAuthError cases changed (§6.2):** List which removed cases were deleted from switch statements and which new cases were added. Note that `.authenticationFailed` and `.codeExchangeFailed` may benefit from user-facing copy changes.
 - **`Request` → `Requestable` in mocks (§6.4):** List which test mock files were updated. Note any `TokenRequestable` builder methods that were stubbed with `return self` — confirm this is correct for the tests involved.
-- **revoke() new error paths (§6.8):** If the project calls `revoke()`, note that `.noCredentials` and `.clearFailed` can now surface — confirm the failure handling navigates the user correctly.
+- **New error paths (§6.8):** List which CredentialsManager async methods the project calls and note the new errors that can now surface:
+  - `revoke()` — `.noCredentials` (nothing to revoke), `.revokeFailed` (server revocation failed), `.clearFailed` (token revoked but Keychain delete failed)
+  - `credentials()` / `renew()` / `apiCredentials()` / `ssoCredentials()` — `.noCredentials` (Keychain item not found), `.renewFailed` (refresh token renewal failed), `.storeFailed` (renewed credentials could not be saved)
+  - Confirm the failure handling for each case navigates or surfaces errors correctly.
 - **Management client removed (§6.12):** List the specific operations that were stubbed with `TODO`. Describe what the user must implement on a secure backend.
 - **MFA methods removed (§6.13):** List which MFA flows need updating to `MFAClient`. Ask the user to re-test MFA end-to-end.
 - **Default scope change (§6.14):** Note whether `.scope()` was added explicitly or the new `offline_access` default was accepted. Confirm the tenant is configured to allow offline access.
