@@ -31,7 +31,7 @@ Migrates an existing Auth0.swift v2 integration to v3. Every code change is gate
 
 ## Migration Workflow
 
-> **Agent instruction:** Execute every step in order. The goal is a green build with the smallest correct changeset. Each code-change step is gated by a grep — if the grep returns nothing, skip the entire step for that API area. Never add code the project doesn't already call.
+> **Agent instruction:** Execute every step in order. The goal is a green build with the smallest correct changeset. Each code-change step is gated by the Step 4 file-reading audit — if the API was not found in the project's source files, skip the entire step for that area. Never add code the project doesn't already call.
 
 ---
 
@@ -130,9 +130,15 @@ for item in json.load(sys.stdin).get('tree', []):
 
 # Fetch core public API files
 for FILE in WebAuth.swift CredentialsManager.swift Authentication.swift \
-            Credentials.swift UserInfo.swift UserProfile.swift \
-            CredentialsStorage.swift AuthenticationError.swift \
-            CredentialsManagerError.swift WebAuthError.swift; do
+            Credentials.swift UserProfile.swift Requestable.swift \
+            CredentialsStorage.swift CredentialsManagerError.swift WebAuthError.swift; do
+    URL="https://raw.githubusercontent.com/auth0/Auth0.swift/${TAG}/Auth0/${FILE}"
+    CONTENT=$(curl -sf "$URL")
+    [ -n "$CONTENT" ] && echo "=== $FILE ===" && echo "$CONTENT"
+done
+
+# MFA files live in a subdirectory
+for FILE in MFA/MFAClient.swift MFA/MFAErrors.swift; do
     URL="https://raw.githubusercontent.com/auth0/Auth0.swift/${TAG}/Auth0/${FILE}"
     CONTENT=$(curl -sf "$URL")
     [ -n "$CONTENT" ] && echo "=== $FILE ===" && echo "$CONTENT"
@@ -169,7 +175,7 @@ For each file, identify:
 | Any stored `Request<…>` type annotation (not just chained `.start(…)`) | §6.4 — type changed to `Requestable` |
 | Test mocks conforming to `Authentication`, `MFAClient`, or `Requestable` | §6.4 — return type + `@MainActor` update |
 | Any call to `credentialsManager.store(` | §6.5 — Bool → throws |
-| Any call to `credentialsManager.clear()` | §6.6 — Bool → throws |
+| Any call to `credentialsManager.clear()` or `credentialsManager.clear(forAudience:` | §6.6 — Bool → throws (both overloads) |
 | Any access to `credentialsManager.user` (property, not method) | §6.7 — replaced by `userProfile()` method |
 | Any call to `credentialsManager.revoke(` | §6.8 — new error paths |
 | Any type annotation or declaration using `UserInfo` | §6.9 — renamed to `UserProfile` |
@@ -178,6 +184,7 @@ For each file, identify:
 | Any call to `Auth0.users(` or `Auth0.users(token:` | §6.12 — Management client removed |
 | `login(withOTP:`, `login(withOOBCode:`, `login(withRecoveryCode:`, `multifactorChallenge(` | §6.13 — MFA methods removed |
 | Any call to `webAuth()` that does **not** chain `.scope(` | §6.14 — default scope changed |
+| Any call to `credentialsManager.credentials(` without explicit `minTTL:` parameter | §6.15 — default minTTL changed from 0 to 60 seconds |
 
 Build a checklist: **"This project uses: [list]"** and **"This project does NOT use: [list]"**. Only work through the §6.x sections that appear in the "uses" list. Skip the rest entirely.
 
@@ -309,7 +316,7 @@ try await Auth0.webAuth().logout(federated: true)
 
 **Applies if:** Step 4 found any `switch` or `catch` on `WebAuthError` with explicit case names in the project's source files.
 
-Four `WebAuthError` cases were **removed** in v3. They represent configuration mistakes that should be caught in development, not handled in production. If the project has an exhaustive `switch` over `WebAuthError` (or explicitly matches these cases), the build will fail.
+Two `WebAuthError` cases were **removed** in v3. If the project has an exhaustive `switch` over `WebAuthError` (or explicitly matches these cases), the build will fail.
 
 Three **new** cases were added to surface previously hidden failures.
 
@@ -317,8 +324,6 @@ Three **new** cases were added to surface previously hidden failures.
 
 | v2 case | v3 behaviour |
 |---|---|
-| `.noBundleIdentifier` | Removed — now surfaces as `.unknown` with a descriptive message |
-| `.noAuthorizationCode` | Removed — now surfaces as `.unknown` |
 | `.invalidInvitationURL` | Removed — now surfaces as `.unknown` |
 | `.pkceNotAllowed` | Removed — now surfaces as `.unknown` |
 
@@ -344,9 +349,6 @@ Auth0.webAuth().start { result in
         case .pkceNotAllowed:
             // ❌ compile error in v3 — remove this case
             showConfigError("PKCE not allowed")
-        case .noBundleIdentifier:
-            // ❌ compile error in v3 — remove this case
-            showConfigError("Bundle ID missing")
         default:
             showError(error)
         }
@@ -368,10 +370,11 @@ Auth0.webAuth().start { result in
         case .codeExchangeFailed:
             // token exchange failed — network or server issue
             showError("Something went wrong. Please try again.")
-        case .credentialsManagerError(let cause):
+        case .credentialsManagerError:
             // login succeeded but credentials could not be stored
             // the user is authenticated in memory but will need to log in again next launch
-            reportToMonitoring(cause)
+            // access the underlying error via error.cause (WebAuthError.cause: Error?)
+            reportToMonitoring(error.cause)
             showError("Could not save your session.")
         default:
             showError(error)
@@ -514,9 +517,11 @@ Auth0.authentication()
 - `loginDefaultDirectory(withUsername:password:audience:scope:)`
 - `login(appleAuthorizationCode:fullName:profile:audience:scope:)`
 - `login(facebookSessionAccessToken:profile:audience:scope:)`
+- `login(passkey:challenge:connection:audience:scope:organization:)` — two overloads (sign in + sign up with passkey)
 - `codeExchange(withCode:codeVerifier:redirectURI:)`
 - `renew(withRefreshToken:audience:scope:)`
 - `ssoExchange(withRefreshToken:)`
+- `customTokenExchange(subjectToken:subjectTokenType:audience:scope:organization:parameters:)`
 - `MFAClient.verify(otp:mfaToken:)`, `verify(oobCode:bindingCode:mfaToken:)`, `verify(recoveryCode:mfaToken:)`
 
 **Impact on test targets — custom `Authentication` mocks:**
@@ -635,18 +640,22 @@ try? credentialsManager.store(credentials: credentials)
 
 ---
 
-#### 6.6 — `CredentialsManager.clear()` — Bool return → throws
+#### 6.6 — `CredentialsManager.clear()` and `clear(forAudience:scope:)` — Bool return → throws
 
-**Applies if:** Step 4 found any call to `credentialsManager.clear()` in the project's source files.
+**Applies if:** Step 4 found any call to `credentialsManager.clear()` or `credentialsManager.clear(forAudience:` in the project's source files.
 
-`clear()` previously returned `Bool`. In v3 it throws.
+Both overloads previously returned `Bool`. In v3 both throw:
+- `clear() throws` — clears the main stored credentials
+- `clear(forAudience:scope:) throws` — clears API credentials for a specific audience
 
 ```swift
 // v2
 _ = credentialsManager.clear()
+_ = credentialsManager.clear(forAudience: "https://api.example.com")
 
 // v3
 try? credentialsManager.clear()
+try? credentialsManager.clear(forAudience: "https://api.example.com")
 // or, if the project handles errors:
 do {
     try credentialsManager.clear()
@@ -737,6 +746,7 @@ credentialsManager.revoke { result in
 | New error | When it fires |
 |---|---|
 | `.noCredentials` | `getEntry` throws (e.g., Keychain item not found) — previously swallowed by `try?` |
+| `.renewFailed` | Refresh token renewal request failed — network error, invalid/expired refresh token |
 | `.storeFailed` | Keychain write fails when saving renewed credentials |
 
 These only matter if the project's existing `catch`/`failure` handler needs to distinguish these cases. If it uses a generic fallback, no change is needed.
@@ -868,7 +878,7 @@ final class AppKeychain: CredentialsStorage {
 }
 ```
 
-Verify the exact `CredentialsManagerError` cases against the SDK source fetched in Step 3 — the error type you throw must match what the SDK declares.
+> The `CredentialsStorage` protocol declares its methods as `throws` with no specific error type — you can throw any `Error`. The example above uses `CredentialsManagerError` cases for illustration only; your implementation should throw an error type that makes sense for your storage backend. Verify the `CredentialsManagerError` case names in the SDK source fetched in Step 3 if you choose to reuse them.
 
 ---
 
@@ -898,7 +908,7 @@ Auth0
 // See: https://auth0.com/docs/secure/tokens/access-tokens/management-api-access-tokens
 ```
 
-This **requires backend work** — record it in the Step 8 summary.
+This **requires backend work** — record it in the Step 9 summary.
 
 ---
 
@@ -1084,7 +1094,9 @@ struct MockMFAClient: MFAClient {
 
     func challenge(with authenticatorId: String,
                    mfaToken: String) -> any Requestable<MFAChallenge, MfaChallengeError> {
-        return MockRequest(result: .success(MFAChallenge(...)))
+        // Fetch MFAClient.swift from the target tag to find MFAChallenge's initializer,
+        // then construct a real fixture or return .failure for tests that don't exercise this path
+        return MockRequest(result: .failure(/* MfaChallengeError case from MFAErrors.swift */))
     }
     // implement remaining MFAClient requirements using the same pattern
 }
@@ -1119,7 +1131,41 @@ Auth0.webAuth()
 // No change needed; the new default is intentional.
 ```
 
-Surface this as a **behavioural change** in the Step 8 summary regardless of which path is chosen — the Auth0 tenant must permit offline access for this app if refresh tokens are to be issued.
+Surface this as a **behavioural change** in the Step 9 summary regardless of which path is chosen — the Auth0 tenant must permit offline access for this app if refresh tokens are to be issued.
+
+---
+
+#### 6.15 — `CredentialsManager.credentials()` — default `minTTL` changed from 0 to 60 seconds
+
+**Applies if:** Step 4 found any call to `credentialsManager.credentials(` without an explicit `minTTL:` parameter.
+
+In v3, `CredentialsManager.credentials(withScope:minTTL:parameters:headers:callback:)` defaults `minTTL` to `60` instead of `0`. This means the credentials manager will now consider tokens expired — and trigger a silent refresh — 60 seconds before their actual expiry, rather than only when they are already expired.
+
+This is a **silent behavioural change**: the app still compiles without changes, but token renewal now happens earlier than before.
+
+```swift
+// v2 — credentials() triggers renewal only when token is actually expired (minTTL default: 0)
+credentialsManager.credentials { result in
+    switch result {
+    case .success(let credentials): use(credentials)
+    case .failure(let error): handleError(error)
+    }
+}
+
+// v3 — credentials() triggers renewal 60 seconds before expiry (minTTL default: 60)
+// No code change needed if this behaviour is acceptable (recommended for most apps).
+// To restore the v2 behaviour explicitly:
+credentialsManager.credentials(minTTL: 0) { result in
+    switch result {
+    case .success(let credentials): use(credentials)
+    case .failure(let error): handleError(error)
+    }
+}
+```
+
+For most apps the new default is preferable — renewing tokens slightly before expiry avoids races where an in-flight request uses an access token that expires mid-request. Only set `minTTL: 0` explicitly if the app has a specific reason to renew only at exact expiry.
+
+Surface this as a **behavioural note** in the Step 9 summary.
 
 ---
 
@@ -1146,7 +1192,7 @@ For each error:
 | Xcode error | Likely cause |
 |---|---|
 | `has no member 'clearSession'` | §6.1 — rename to `logout` |
-| `error enum element 'pkceNotAllowed' not found in type` (or other removed cases) | §6.2 — remove deleted `WebAuthError` cases from switch |
+| `error enum element 'pkceNotAllowed' not found in type` or `'invalidInvitationURL' not found` | §6.2 — remove deleted `WebAuthError` cases from switch |
 | `cannot convert return expression of type 'Request<...>'` in mock | §6.4 — update mock return type to `any TokenRequestable<T,E>` or `any Requestable<T,E>` |
 | `does not conform to protocol 'Requestable'` (missing `@MainActor` on `start`) | §6.4 — add `@MainActor` to `start(_:)` callback in mock |
 | `has no member 'user'` on CredentialsManager | §6.7 — change to `userProfile()` |
@@ -1155,7 +1201,7 @@ For each error:
 | `cannot convert value of type 'Bool'` on store/clear | §6.5/§6.6 — add do-catch or try? |
 | `does not conform to protocol 'CredentialsStorage'` | §6.11 — update protocol methods + add deleteAllEntries |
 | `call can throw, but is not marked with 'try'` | wrap in do-catch or add try? |
-| `sending '...' risks causing data races` | only relevant if Swift 6 mode is already on; resolve within the existing actor model |
+| `sending '...' risks causing data races` | only appears when the project uses Swift 6 language mode or `SWIFT_STRICT_CONCURRENCY=complete`; resolve within the existing actor model — not a migration error |
 
 **Limit:** Up to **10 build-fix cycles**. If the build still fails after 10 attempts, stop and show the remaining errors to the user with context — do not guess.
 
@@ -1197,6 +1243,8 @@ Present a concise summary covering:
 - **revoke() new error paths (§6.8):** If the project calls `revoke()`, note that `.noCredentials` and `.clearFailed` can now surface — confirm the failure handling navigates the user correctly.
 - **Management client removed (§6.12):** List the specific operations that were stubbed with `TODO`. Describe what the user must implement on a secure backend.
 - **MFA methods removed (§6.13):** List which MFA flows need updating to `MFAClient`. Ask the user to re-test MFA end-to-end.
+- **Default scope change (§6.14):** Note whether `.scope()` was added explicitly or the new `offline_access` default was accepted. Confirm the tenant is configured to allow offline access.
+- **Default minTTL change (§6.15):** Note that `credentialsManager.credentials()` now renews tokens 60 seconds before expiry instead of at exact expiry. Confirm this is acceptable or that `minTTL: 0` was set explicitly.
 
 **4. Optional improvements not applied** (list briefly; never auto-apply)
 - New `clearAll()` method on `CredentialsManager` — clears all credentials in one call

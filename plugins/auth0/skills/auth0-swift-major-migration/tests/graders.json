@@ -22,15 +22,15 @@
   },
   {
     "type": "judge",
-    "description": "Greps for affected APIs before applying each change — does not apply changes for APIs the project doesn't use",
-    "question": "Does the solution search the project for each affected API pattern before applying the corresponding change? It must NOT apply changes for APIs the project never calls. For example: if the project doesn't use a custom CredentialsStorage implementation, the solution must NOT modify CredentialsStorage-related code.",
-    "examples": "PASS: Greps for 'clearSession' before applying the logout rename, greps for '.store(credentials:' before updating store(), greps for 'CredentialsStorage' before touching protocol conformances.\nPASS: Explicitly states it skipped CredentialsStorage changes because the project has no custom CredentialsStorage implementation.\nFAIL: Applies CredentialsStorage protocol changes even though the project never implements a custom one.\nFAIL: Applies changes wholesale without checking whether each API is actually used.",
+    "description": "Reads project source files to identify which APIs are used before applying any change — does not apply changes for APIs the project doesn't use",
+    "question": "Does the solution read the project's Swift source files (files that import Auth0) to identify which APIs are actually used before applying changes? It must NOT apply changes for APIs the project never calls. For example: if the project doesn't use a custom CredentialsStorage implementation, the solution must NOT modify CredentialsStorage-related code.",
+    "examples": "PASS: Reads AuthenticationService.swift and identifies clearSession, store, clear, and credentialsManager.user before applying changes. Skips CredentialsStorage section because no custom implementation was found.\nPASS: Explicitly states it skipped MFA migration because no login(withOTP:) calls were found when reading the project files.\nFAIL: Applies CredentialsStorage protocol changes even though the project never implements a custom one.\nFAIL: Applies all 14 change sections wholesale without checking whether each API is actually used in the project.",
     "framework": "swift"
   },
   {
     "type": "matches",
-    "pattern": "from:\\s*\"3\\.|~>\\s*3\\.|\"auth0/Auth0\\.swift\"\\s*~>\\s*3",
-    "description": "Updates Package.swift (or Podfile/Cartfile) dependency to v3"
+    "pattern": "from:\\s*\"3\\.|exact:\\s*\"3\\.|~>\\s*3\\.|\"auth0/Auth0\\.swift\"\\s*~>\\s*3",
+    "description": "Updates Package.swift (or Podfile/Cartfile) dependency to v3 — matches both stable (from: \"3.\") and pre-release (exact: \"3.x.y-beta.z\") forms"
   },
   {
     "type": "judge",

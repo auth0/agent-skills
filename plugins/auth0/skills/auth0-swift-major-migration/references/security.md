@@ -46,7 +46,7 @@ grep -r "UserDefaults.*token\|UserDefaults.*credential\|UserDefaults.*auth" --in
 ### 4. Session Cleanup on Logout
 
 ```
-[ ] Logout clears the Auth0 session (calls the logout/clearSession API on WebAuth)
+[ ] Logout clears the Auth0 session (calls webAuth().logout(); changed from webAuth().clearSession() in v2)
 [ ] Logout clears stored credentials from Keychain
 [ ] No orphaned tokens after logout
 ```
