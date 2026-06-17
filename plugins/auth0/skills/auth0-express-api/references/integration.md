@@ -7,14 +7,14 @@ API protection patterns for Express.js using `@auth0/auth0-express-api`.
 ## Basic Protected Endpoint
 
 ```javascript
-import { requireAuth } from '@auth0/auth0-express-api';
+import { requiresAuth } from '@auth0/auth0-express-api';
 
-app.get('/api/private', requireAuth(), (req, res) => {
+app.get('/api/private', requiresAuth(), (req, res) => {
   res.json({ message: `Hello, ${req.auth0.user.sub}` });
 });
 ```
 
-`requireAuth()` returns `401 Unauthorized` if the token is missing, expired, or invalid.
+`requiresAuth()` returns `401 Unauthorized` if the token is missing, expired, or invalid.
 
 ---
 
@@ -24,7 +24,7 @@ app.get('/api/private', requireAuth(), (req, res) => {
 
 ```javascript
 app.get('/api/admin/edit',
-  requireAuth({ scopes: ['read:admin', 'write:admin'] }),
+  requiresAuth({ scopes: ['read:admin', 'write:admin'] }),
   (req, res) => {
     res.json({ message: 'Full admin access' });
   }
@@ -34,11 +34,11 @@ app.get('/api/admin/edit',
 ### Flexible Scope Matching with `scopesInclude`
 
 ```javascript
-import { requireAuth, scopesInclude } from '@auth0/auth0-express-api';
+import { requiresAuth, scopesInclude } from '@auth0/auth0-express-api';
 
 // Match ANY of the provided scopes (default)
 app.get('/api/messages',
-  requireAuth(),
+  requiresAuth(),
   scopesInclude('read:messages read:admin'),
   (req, res) => {
     res.json({ messages: [] });
@@ -47,7 +47,7 @@ app.get('/api/messages',
 
 // Match ALL of the provided scopes
 app.get('/api/admin/edit',
-  requireAuth(),
+  requiresAuth(),
   scopesInclude('read:admin write:admin', { match: 'all' }),
   (req, res) => {
     res.json({ success: true });
@@ -55,7 +55,7 @@ app.get('/api/admin/edit',
 );
 
 // Array syntax also supported
-app.get('/api/messages', requireAuth(), scopesInclude(['read:messages', 'read:admin']), handler);
+app.get('/api/messages', requiresAuth(), scopesInclude(['read:messages', 'read:admin']), handler);
 ```
 
 ---
@@ -65,28 +65,28 @@ app.get('/api/messages', requireAuth(), scopesInclude(['read:messages', 'read:ad
 ### `claimEquals` — Exact value check
 
 ```javascript
-import { requireAuth, claimEquals } from '@auth0/auth0-express-api';
+import { requiresAuth, claimEquals } from '@auth0/auth0-express-api';
 
-app.get('/api/admin', requireAuth(), claimEquals('isAdmin', true), handler);
-app.get('/api/vip', requireAuth(), claimEquals('tier', 'premium'), handler);
-app.get('/api/level', requireAuth(), claimEquals('level', 5), handler);
+app.get('/api/admin', requiresAuth(), claimEquals('isAdmin', true), handler);
+app.get('/api/vip', requiresAuth(), claimEquals('tier', 'premium'), handler);
+app.get('/api/level', requiresAuth(), claimEquals('level', 5), handler);
 ```
 
 ### `claimIncludes` — Array/string contains values
 
 ```javascript
-import { requireAuth, claimIncludes } from '@auth0/auth0-express-api';
+import { requiresAuth, claimIncludes } from '@auth0/auth0-express-api';
 
 // Check for a single value
 app.delete('/api/users/:id',
-  requireAuth(),
+  requiresAuth(),
   claimIncludes('roles', ['admin']),
   handler
 );
 
 // Check for multiple values (user must have ALL)
 app.get('/api/admin/users',
-  requireAuth(),
+  requiresAuth(),
   claimIncludes('roles', ['admin', 'editor']),
   handler
 );
@@ -95,10 +95,10 @@ app.get('/api/admin/users',
 ### `claimCheck` — Custom validation logic
 
 ```javascript
-import { requireAuth, claimCheck } from '@auth0/auth0-express-api';
+import { requiresAuth, claimCheck } from '@auth0/auth0-express-api';
 
 app.get('/api/premium',
-  requireAuth(),
+  requiresAuth(),
   claimCheck(
     (token) => token.tier === 'premium' || token.roles?.includes('admin'),
     { errorMessage: 'Premium tier or admin role required' }
@@ -109,16 +109,16 @@ app.get('/api/premium',
 
 The validation function receives the full token payload and must return `true` to grant access.
 
-All claim middleware returns `401 Forbidden` when the check fails. Always use after `requireAuth()`.
+All claim middleware returns `401 Forbidden` when the check fails. Always use after `requiresAuth()`.
 
 ---
 
 ## Accessing Token Claims
 
-After `requireAuth()`, `req.auth0.user` contains the decoded JWT payload:
+After `requiresAuth()`, `req.auth0.user` contains the decoded JWT payload:
 
 ```javascript
-app.get('/api/me', requireAuth(), (req, res) => {
+app.get('/api/me', requiresAuth(), (req, res) => {
   const { sub, email, permissions } = req.auth0.user;
   res.json({ sub, email, permissions });
 });
@@ -138,7 +138,7 @@ declare module '@auth0/auth0-express-api' {
   }
 }
 
-app.get('/api/profile', requireAuth(), (req, res) => {
+app.get('/api/profile', requiresAuth(), (req, res) => {
   const { tier, roles } = req.auth0.user; // fully typed
   res.json({ tier, roles });
 });

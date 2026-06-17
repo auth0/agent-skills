@@ -62,7 +62,7 @@ When `mountRoutes: true` (default), these routes are registered automatically:
 
 ---
 
-## `requireAuth(options?)`
+## `requiresAuth(options?)`
 
 Middleware that protects a route. Import from `@auth0/auth0-express`.
 
@@ -70,10 +70,10 @@ Middleware that protects a route. Import from `@auth0/auth0-express`.
 - For API requests (accepts `application/json` but not `text/html`): returns `401 Unauthorized`
 
 ```javascript
-import { requireAuth } from '@auth0/auth0-express';
+import { requiresAuth } from '@auth0/auth0-express';
 
-app.get('/protected', requireAuth(), handler);
-app.get('/admin', requireAuth({ returnTo: '/admin' }), handler);
+app.get('/protected', requiresAuth(), handler);
+app.get('/admin', requiresAuth({ returnTo: '/admin' }), handler);
 ```
 
 **Options:**
@@ -86,7 +86,7 @@ app.get('/admin', requireAuth({ returnTo: '/admin' }), handler);
 
 ## Claim Middleware
 
-All claim middleware returns `403 Forbidden` when the check fails. Must be used after `requireAuth()`.
+All claim middleware returns `403 Forbidden` when the check fails. Must be used after `requiresAuth()`.
 
 ### `claimEquals(claim, value, options?)`
 
@@ -95,7 +95,7 @@ Validates that a specific claim equals an expected value.
 ```javascript
 import { claimEquals } from '@auth0/auth0-express';
 
-app.get('/admin', requireAuth(), claimEquals('role', 'admin'), handler);
+app.get('/admin', requiresAuth(), claimEquals('role', 'admin'), handler);
 ```
 
 **Options:**
@@ -111,8 +111,8 @@ Validates that a claim (array or space-separated string) includes the specified 
 ```javascript
 import { claimIncludes } from '@auth0/auth0-express';
 
-app.delete('/users/:id', requireAuth(), claimIncludes('permissions', 'delete:users'), handler);
-app.get('/admin', requireAuth(), claimIncludes('permissions', ['read:users', 'admin:all']), handler);
+app.delete('/users/:id', requiresAuth(), claimIncludes('permissions', 'delete:users'), handler);
+app.get('/admin', requiresAuth(), claimIncludes('permissions', ['read:users', 'admin:all']), handler);
 ```
 
 ### `claimCheck(fn, options?)`
@@ -123,7 +123,7 @@ Validates claims using a custom function. Function receives `(claims, req)` and 
 import { claimCheck } from '@auth0/auth0-express';
 
 app.get('/premium',
-  requireAuth(),
+  requiresAuth(),
   claimCheck((claims) => claims.subscription === 'premium'),
   handler
 );
@@ -158,7 +158,7 @@ After `createAuth0()` is registered, `req.auth0` is available on all requests.
 ```javascript
 import 'dotenv/config';
 import express from 'express';
-import { createAuth0, requireAuth, claimIncludes } from '@auth0/auth0-express';
+import { createAuth0, requiresAuth, claimIncludes } from '@auth0/auth0-express';
 
 const app = express();
 app.set('view engine', 'ejs');
@@ -173,14 +173,14 @@ app.get('/', async (req, res) => {
 });
 
 // Protected route
-app.get('/profile', requireAuth(), async (req, res) => {
+app.get('/profile', requiresAuth(), async (req, res) => {
   const user = await req.auth0.client.getUser();
   res.render('profile', { user });
 });
 
 // RBAC - requires 'admin' permission in token
 app.get('/admin',
-  requireAuth(),
+  requiresAuth(),
   claimIncludes('permissions', 'admin:read'),
   async (req, res) => {
     res.render('admin');
@@ -188,7 +188,7 @@ app.get('/admin',
 );
 
 // Call external API
-app.get('/data', requireAuth(), async (req, res) => {
+app.get('/data', requiresAuth(), async (req, res) => {
   const { accessToken } = await req.auth0.client.getAccessToken();
   const response = await fetch('https://api.example.com/data', {
     headers: { Authorization: `Bearer ${accessToken}` }

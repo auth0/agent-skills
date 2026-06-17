@@ -1,6 +1,6 @@
 ---
 name: auth0-express-api
-description: Use when protecting Express.js API endpoints with JWT Bearer token authentication using the @auth0/auth0-express-api SDK - covers requireAuth middleware, scope-based authorization with scopesInclude, and claim-based RBAC with claimEquals/claimIncludes/claimCheck. Do NOT use for the older express-oauth2-jwt-bearer package or for server-side web apps with login UI.
+description: Use when protecting Express.js API endpoints with JWT Bearer token authentication using the @auth0/auth0-express-api SDK - covers requiresAuth middleware, scope-based authorization with scopesInclude, and claim-based RBAC with claimEquals/claimIncludes/claimCheck. Do NOT use for the older express-oauth2-jwt-bearer package or for server-side web apps with login UI.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -69,9 +69,9 @@ app.listen(3000, () => console.log('API running on http://localhost:3000'));
 ### 4. Protect Endpoints
 
 ```javascript
-import { requireAuth } from '@auth0/auth0-express-api';
+import { requiresAuth } from '@auth0/auth0-express-api';
 
-app.get('/api/private', requireAuth(), (req, res) => {
+app.get('/api/private', requiresAuth(), (req, res) => {
   res.json({ message: `Hello, ${req.auth0.user.sub}` });
 });
 ```
@@ -106,8 +106,8 @@ curl -H "Authorization: Bearer <token>" http://localhost:3000/api/private
 | CORS not configured before auth middleware | Preflight OPTIONS returns 401 | Add `cors()` middleware before `createAuth0Api()` |
 | `.env` file not loaded | `undefined` domain/audience | Add `import 'dotenv/config'` at the top of the entry file |
 | Hardcoded domain/audience in source | Secrets in version control | Put values in `.env` only; never inline literal values |
-| Using `requireAuth` from `@auth0/auth0-express` in an API project | Type mismatch / wrong behavior | Import `requireAuth` from `@auth0/auth0-express-api` |
-| Calling claim middleware before `requireAuth` | `req.auth0.user` is undefined | Always call `requireAuth()` first in the middleware chain |
+| Using `requiresAuth` from `@auth0/auth0-express` in an API project | Type mismatch / wrong behavior | Import `requiresAuth` from `@auth0/auth0-express-api` |
+| Calling claim middleware before `requiresAuth` | `req.auth0.user` is undefined | Always call `requiresAuth()` first in the middleware chain |
 
 ---
 
@@ -127,7 +127,7 @@ curl -H "Authorization: Bearer <token>" http://localhost:3000/api/private
 
 | Function | Description | Returns |
 |----------|-------------|---------|
-| `requireAuth(options?)` | JWT validation; validates Bearer token | 401 if missing/invalid |
+| `requiresAuth(options?)` | JWT validation; validates Bearer token | 401 if missing/invalid |
 | `scopesInclude(scopes, options?)` | Validates token has required scopes | 403 if missing |
 | `claimEquals(claim, value)` | Validates a claim equals a value | 403 if mismatch |
 | `claimIncludes(claim, values)` | Validates claim includes all values | 403 if incomplete |

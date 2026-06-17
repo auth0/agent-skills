@@ -6,23 +6,23 @@ Server-side authentication patterns for Express.js using `@auth0/auth0-express`.
 
 ## Protected Routes
 
-### Using requireAuth Middleware
+### Using requiresAuth Middleware
 
-`requireAuth()` protects routes automatically:
+`requiresAuth()` protects routes automatically:
 - For HTML requests (browsers): redirects to `/auth/login` with a `returnTo` parameter
 - For API requests (those accepting JSON but not HTML): returns `401 Unauthorized`
 
 ```javascript
-import { requireAuth } from '@auth0/auth0-express';
+import { requiresAuth } from '@auth0/auth0-express';
 
 // Protects a page route - browser is redirected to login
-app.get('/profile', requireAuth(), async (req, res) => {
+app.get('/profile', requiresAuth(), async (req, res) => {
   const user = await req.auth0.client.getUser();
   res.render('profile', { user });
 });
 
 // Custom return URL after login
-app.get('/admin', requireAuth({ returnTo: '/admin/dashboard' }), (req, res) => {
+app.get('/admin', requiresAuth({ returnTo: '/admin/dashboard' }), (req, res) => {
   res.send('Admin page');
 });
 ```
@@ -51,7 +51,7 @@ app.get('/protected', requireSession, async (req, res) => {
 ## Accessing User Information
 
 ```javascript
-app.get('/dashboard', requireAuth(), async (req, res) => {
+app.get('/dashboard', requiresAuth(), async (req, res) => {
   // Get user profile from ID token
   const user = await req.auth0.client.getUser();
 
@@ -79,7 +79,7 @@ app.use(createAuth0({
 Then retrieve the token in a route:
 
 ```javascript
-app.get('/call-api', requireAuth(), async (req, res) => {
+app.get('/call-api', requiresAuth(), async (req, res) => {
   const { accessToken } = await req.auth0.client.getAccessToken();
 
   const response = await fetch('https://your-api.com/data', {
@@ -101,30 +101,30 @@ The SDK provides claim-based authorization middleware for RBAC.
 ### claimEquals — Check exact claim value
 
 ```javascript
-import { requireAuth, claimEquals } from '@auth0/auth0-express';
+import { requiresAuth, claimEquals } from '@auth0/auth0-express';
 
 // Only allow users with role 'admin' (from ID token by default)
-app.get('/admin', requireAuth(), claimEquals('role', 'admin'), handler);
+app.get('/admin', requiresAuth(), claimEquals('role', 'admin'), handler);
 
 // Check access token claims instead
-app.get('/admin', requireAuth(), claimEquals('role', 'admin', { tokenType: 'access' }), handler);
+app.get('/admin', requiresAuth(), claimEquals('role', 'admin', { tokenType: 'access' }), handler);
 ```
 
 ### claimIncludes — Check claim array contains value(s)
 
 ```javascript
-import { requireAuth, claimIncludes } from '@auth0/auth0-express';
+import { requiresAuth, claimIncludes } from '@auth0/auth0-express';
 
 // User needs 'delete:users' permission
 app.delete('/users/:id',
-  requireAuth(),
+  requiresAuth(),
   claimIncludes('permissions', 'delete:users'),
   handler
 );
 
 // User needs at least one of multiple permissions
 app.get('/admin/users',
-  requireAuth(),
+  requiresAuth(),
   claimIncludes('permissions', ['read:users', 'admin:all']),
   handler
 );
@@ -133,17 +133,17 @@ app.get('/admin/users',
 ### claimCheck — Custom claim validation
 
 ```javascript
-import { requireAuth, claimCheck } from '@auth0/auth0-express';
+import { requiresAuth, claimCheck } from '@auth0/auth0-express';
 
 app.get('/premium',
-  requireAuth(),
+  requiresAuth(),
   claimCheck((claims) => claims.subscription === 'premium' && claims.email_verified === true),
   handler
 );
 
 // With access to request params
 app.get('/org/:orgId/settings',
-  requireAuth(),
+  requiresAuth(),
   claimCheck((claims, req) => claims.org_id === req.params.orgId && claims.org_role === 'owner'),
   handler
 );
@@ -240,8 +240,8 @@ app.use((err, req, res, next) => {
 
 | Issue | Solution |
 |-------|----------|
-| `getUser()` returns `undefined` | Route not protected with `requireAuth()` or user not logged in |
-| Redirect after login goes to wrong page | Use `?returnTo=/path` on `/auth/login` link or `requireAuth({ returnTo })` |
+| `getUser()` returns `undefined` | Route not protected with `requiresAuth()` or user not logged in |
+| Redirect after login goes to wrong page | Use `?returnTo=/path` on `/auth/login` link or `requiresAuth({ returnTo })` |
 | Callback URL mismatch | Register `http://localhost:3000/auth/callback` in Auth0 Dashboard |
 | Access token missing | Set `audience` in `createAuth0()` config or `AUTH0_AUDIENCE` env var |
 | Session not persisting | Verify `AUTH0_SESSION_SECRET` is set and consistent across restarts |

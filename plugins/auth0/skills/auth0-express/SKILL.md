@@ -1,6 +1,6 @@
 ---
 name: auth0-express
-description: Use when adding authentication (login, logout, protected routes) to Express.js web applications using the @auth0/auth0-express SDK - session-based auth with built-in /auth/login, /auth/logout, /auth/callback routes, requireAuth middleware, and claim-based authorization. Do NOT use for the older express-openid-connect package.
+description: Use when adding authentication (login, logout, protected routes) to Express.js web applications using the @auth0/auth0-express SDK - session-based auth with built-in /auth/login, /auth/logout, /auth/callback routes, requiresAuth middleware, and claim-based authorization. Do NOT use for the older express-openid-connect package.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -86,16 +86,16 @@ This automatically mounts:
 ### 4. Protect Routes
 
 ```javascript
-import { requireAuth } from '@auth0/auth0-express';
+import { requiresAuth } from '@auth0/auth0-express';
 
 // Redirects to /auth/login if not authenticated
-app.get('/profile', requireAuth(), async (req, res) => {
+app.get('/profile', requiresAuth(), async (req, res) => {
   const user = await req.auth0.client.getUser();
   res.json({ user });
 });
 
 // Returns 401 for API requests (requests that accept JSON but not HTML)
-app.get('/api/me', requireAuth(), async (req, res) => {
+app.get('/api/me', requiresAuth(), async (req, res) => {
   const user = await req.auth0.client.getUser();
   res.json({ user });
 });
@@ -104,7 +104,7 @@ app.get('/api/me', requireAuth(), async (req, res) => {
 ### 5. Access User Info
 
 ```javascript
-app.get('/dashboard', requireAuth(), async (req, res) => {
+app.get('/dashboard', requiresAuth(), async (req, res) => {
   const user = await req.auth0.client.getUser();
   const session = await req.auth0.client.getSession();
 
@@ -131,7 +131,7 @@ app.get('/dashboard', requireAuth(), async (req, res) => {
 | Using `AUTH0_AUDIENCE` for API access without configuring SDK | Set `audience` in `createAuth0()` config or `AUTH0_AUDIENCE` env var |
 | Weak or missing session secret | Generate with `openssl rand -hex 64` and set as `AUTH0_SESSION_SECRET` |
 | Hardcoding credentials in source | Always use environment variables; never inline domain/client ID |
-| Calling `getUser()` outside `requireAuth()` protected route | `getUser()` returns `undefined` if session not established |
+| Calling `getUser()` outside `requiresAuth()` protected route | `getUser()` returns `undefined` if session not established |
 
 ---
 
@@ -155,7 +155,7 @@ app.get('/dashboard', requireAuth(), async (req, res) => {
 - `/auth/backchannel-logout` - Back-channel logout
 
 **Middleware:**
-- `requireAuth(options?)` - Protects a route; redirects HTML requests to `/auth/login`, returns 401 for API requests
+- `requiresAuth(options?)` - Protects a route; redirects HTML requests to `/auth/login`, returns 401 for API requests
 
 **`req.auth0.client` Methods:**
 - `getUser()` - Returns user profile or `undefined`

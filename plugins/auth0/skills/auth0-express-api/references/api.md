@@ -40,17 +40,17 @@ All options can be set via environment variables — call `createAuth0Api()` wit
 
 ---
 
-## `requireAuth(options?)`
+## `requiresAuth(options?)`
 
 Validates the JWT Bearer token in the `Authorization` header. Returns `401 Unauthorized` if the token is missing, expired, or invalid.
 
 ```javascript
-import { requireAuth } from '@auth0/auth0-express-api';
+import { requiresAuth } from '@auth0/auth0-express-api';
 
-app.get('/api/private', requireAuth(), handler);
+app.get('/api/private', requiresAuth(), handler);
 
 // Require specific scopes (all must be present)
-app.get('/api/admin', requireAuth({ scopes: ['read:admin', 'write:admin'] }), handler);
+app.get('/api/admin', requiresAuth({ scopes: ['read:admin', 'write:admin'] }), handler);
 ```
 
 **Options:**
@@ -63,19 +63,19 @@ app.get('/api/admin', requireAuth({ scopes: ['read:admin', 'write:admin'] }), ha
 
 ## `scopesInclude(scopes, options?)`
 
-Validates token has the required scopes. Must be used after `requireAuth()`.
+Validates token has the required scopes. Must be used after `requiresAuth()`.
 
 ```javascript
 import { scopesInclude } from '@auth0/auth0-express-api';
 
 // Match ANY scope (default)
-app.get('/api/data', requireAuth(), scopesInclude('read:data read:admin'), handler);
+app.get('/api/data', requiresAuth(), scopesInclude('read:data read:admin'), handler);
 
 // Match ALL scopes
-app.get('/api/admin', requireAuth(), scopesInclude('read:admin write:admin', { match: 'all' }), handler);
+app.get('/api/admin', requiresAuth(), scopesInclude('read:admin write:admin', { match: 'all' }), handler);
 
 // Array syntax
-app.get('/api/data', requireAuth(), scopesInclude(['read:data', 'read:admin']), handler);
+app.get('/api/data', requiresAuth(), scopesInclude(['read:data', 'read:admin']), handler);
 ```
 
 **Options:**
@@ -95,9 +95,9 @@ Validates that a specific claim equals an expected value. Returns `403 Forbidden
 ```javascript
 import { claimEquals } from '@auth0/auth0-express-api';
 
-app.get('/admin', requireAuth(), claimEquals('isAdmin', true), handler);
-app.get('/vip', requireAuth(), claimEquals('tier', 'premium'), handler);
-app.get('/level5', requireAuth(), claimEquals('level', 5), handler);
+app.get('/admin', requiresAuth(), claimEquals('isAdmin', true), handler);
+app.get('/vip', requiresAuth(), claimEquals('tier', 'premium'), handler);
+app.get('/level5', requiresAuth(), claimEquals('level', 5), handler);
 ```
 
 Supports string, number, and boolean values.
@@ -111,8 +111,8 @@ Validates that a claim (array or space-separated string) includes all of the spe
 ```javascript
 import { claimIncludes } from '@auth0/auth0-express-api';
 
-app.delete('/users/:id', requireAuth(), claimIncludes('roles', ['admin']), handler);
-app.get('/admin/edit', requireAuth(), claimIncludes('roles', ['admin', 'editor']), handler);
+app.delete('/users/:id', requiresAuth(), claimIncludes('roles', ['admin']), handler);
+app.get('/admin/edit', requiresAuth(), claimIncludes('roles', ['admin', 'editor']), handler);
 ```
 
 ---
@@ -125,7 +125,7 @@ Custom claim validation. The function receives the full token payload and must r
 import { claimCheck } from '@auth0/auth0-express-api';
 
 app.get('/premium',
-  requireAuth(),
+  requiresAuth(),
   claimCheck(
     (token) => token.tier === 'premium' || token.roles?.includes('admin'),
     { errorMessage: 'Premium or admin required' }
@@ -144,7 +144,7 @@ app.get('/premium',
 
 ## `req.auth0` Object
 
-After `createAuth0Api()` is registered and `requireAuth()` validates the token, `req.auth0` is available.
+After `createAuth0Api()` is registered and `requiresAuth()` validates the token, `req.auth0` is available.
 
 | Property | Type | Description |
 |----------|------|-------------|
@@ -184,7 +184,7 @@ declare module '@auth0/auth0-express-api' {
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import { createAuth0Api, requireAuth, scopesInclude, claimIncludes } from '@auth0/auth0-express-api';
+import { createAuth0Api, requiresAuth, scopesInclude, claimIncludes } from '@auth0/auth0-express-api';
 
 const app = express();
 app.use(express.json());
@@ -201,13 +201,13 @@ app.get('/api/public', (req, res) => {
 });
 
 // Protected endpoint
-app.get('/api/private', requireAuth(), (req, res) => {
+app.get('/api/private', requiresAuth(), (req, res) => {
   res.json({ sub: req.auth0.user.sub });
 });
 
 // Scope-based access
 app.get('/api/messages',
-  requireAuth(),
+  requiresAuth(),
   scopesInclude('read:messages'),
   (req, res) => {
     res.json({ messages: [] });
@@ -216,7 +216,7 @@ app.get('/api/messages',
 
 // RBAC - require admin permission
 app.delete('/api/users/:id',
-  requireAuth(),
+  requiresAuth(),
   claimIncludes('permissions', ['delete:users']),
   (req, res) => {
     res.json({ deleted: req.params.id });
