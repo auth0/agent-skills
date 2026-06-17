@@ -21,7 +21,7 @@ Add authentication to Express.js web applications using `@auth0/auth0-express`.
 ## Prerequisites
 
 - Express.js application
-- Node.js 20 LTS or newer
+- Node.js 22 LTS or newer
 - Auth0 account and a **Regular Web Application** configured
 - If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
 

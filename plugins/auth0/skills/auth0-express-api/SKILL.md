@@ -21,7 +21,7 @@ Protect Express.js API endpoints with JWT Bearer token authentication using `@au
 ## Prerequisites
 
 - Express.js application
-- Node.js 20 LTS or newer
+- Node.js 22 LTS or newer
 - Auth0 account with a configured **API** (Resource Server)
 - If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
 
