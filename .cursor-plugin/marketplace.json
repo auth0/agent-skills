@@ -48,6 +48,7 @@
         "java-mvc",
         "swift",
         "android",
+        "android-major-migration",
         "flutter-native",
         "flutter-web",
         "flutter",

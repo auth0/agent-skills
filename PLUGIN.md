@@ -57,6 +57,7 @@ Mobile skills:
 - `auth0-ionic-react` - Ionic React + Capacitor (iOS/Android)
 - `auth0-ionic-vue` - Ionic Vue + Capacitor (iOS/Android)
 - `auth0-android` - Android (Kotlin/Java)
+- `auth0-android-major-migration` - Auth0.Android major version upgrades (v3 → v4)
 - `auth0-swift` - iOS/macOS (Swift)
 - `auth0-react-native` - React Native CLI (bare workflow)
 - `auth0-expo` - Expo (managed workflow)
@@ -114,6 +115,7 @@ auth0/agent-skills/
 │           ├── auth0-react-native/
 │           ├── auth0-expo/
 │           ├── auth0-android/
+│           ├── auth0-android-major-migration/
 │           ├── auth0-swift/
 │           ├── auth0-maui/
 │           ├── auth0-net-android/
