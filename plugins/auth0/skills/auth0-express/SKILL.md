@@ -1,6 +1,6 @@
 ---
 name: auth0-express
-description: Use when adding authentication (login, logout, protected routes) to Express.js web applications - integrates express-openid-connect for session-based auth.
+description: Use when adding authentication (login, logout, protected routes) to Express.js web applications using the @auth0/auth0-express SDK - session-based auth with built-in /auth/login, /auth/logout, /auth/callback routes, requireAuth middleware, and claim-based authorization. Do NOT use for the older express-openid-connect package.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -10,25 +10,28 @@ metadata:
     homepage: https://github.com/auth0/agent-skills
 ---
 
-# Auth0 Express Integration
+# Auth0 Express SDK Integration
 
-Add authentication to Express.js web applications using express-openid-connect.
+Add authentication to Express.js web applications using `@auth0/auth0-express`.
+
+> **Note:** This skill covers the `@auth0/auth0-express` SDK (currently in beta). For the older `express-openid-connect` package, use the `express-openid-connect` skill instead.
 
 ---
 
 ## Prerequisites
 
 - Express.js application
-- Auth0 account and application configured
+- Node.js 20 LTS or newer
+- Auth0 account and a **Regular Web Application** configured
 - If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
 
 ## When NOT to Use
 
-- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
-- **Next.js applications** - Use `auth0-nextjs` skill which handles both client and server
-- **Mobile applications** - Use `auth0-react-native` for React Native/Expo
-- **Stateless APIs** - Use JWT validation middleware instead of session-based auth
-- **Microservices** - Use JWT validation for service-to-service auth
+- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular`
+- **Next.js applications** - Use `auth0-nextjs`
+- **Mobile applications** - Use `auth0-react-native`
+- **Stateless APIs** - Use `auth0-express-api` or `express-oauth2-jwt-bearer`
+- **Using express-openid-connect package** - Use `express-openid-connect` skill
 
 ---
 
@@ -37,141 +40,85 @@ Add authentication to Express.js web applications using express-openid-connect.
 ### 1. Install SDK
 
 ```bash
-npm install express-openid-connect dotenv
+npm install @auth0/auth0-express@beta dotenv
 ```
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](references/setup.md) for complete scripts.
-
-**For manual setup:**
-
 Create `.env`:
 
-```bash
-SECRET=<openssl-rand-hex-32>
-BASE_URL=http://localhost:3000
-CLIENT_ID=your-client-id
-CLIENT_SECRET=your-client-secret
-ISSUER_BASE_URL=https://your-tenant.auth0.com
-AUDIENCE=https://your-api-identifier  # only required if calling external APIs (Step 3a)
+```env
+AUTH0_DOMAIN=your-tenant.auth0.com
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_CLIENT_SECRET=your-client-secret
+APP_BASE_URL=http://localhost:3000
+AUTH0_SESSION_SECRET=your-long-random-secret-here
 ```
 
-Generate secret: `openssl rand -hex 32`
+Generate session secret: `openssl rand -hex 64`
 
-### 3. Configure Auth Middleware
+Auth0 Dashboard setup:
+- Add `http://localhost:3000/auth/callback` to **Allowed Callback URLs**
+- Add `http://localhost:3000` to **Allowed Logout URLs**
 
-Update your Express app (`app.js` or `index.js`):
+### 3. Register Auth0 Router
 
 ```javascript
-require('dotenv').config();
-const express = require('express');
-const { auth, requiresAuth } = require('express-openid-connect');
+import 'dotenv/config';
+import express from 'express';
+import { createAuth0 } from '@auth0/auth0-express';
 
 const app = express();
 
-// Configure Auth0 middleware
-app.use(auth({
-  authRequired: false,  // Don't require auth for all routes
-  auth0Logout: true,    // Enable logout endpoint
-  secret: process.env.SECRET,
-  baseURL: process.env.BASE_URL,
-  clientID: process.env.CLIENT_ID,
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  clientSecret: process.env.CLIENT_SECRET
-}));
+// Reads AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET,
+// APP_BASE_URL, AUTH0_SESSION_SECRET from environment automatically
+app.use(createAuth0());
 
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
-});
+app.listen(3000, () => console.log('Server running on http://localhost:3000'));
 ```
 
-> **Calling external APIs?** If you need an access token for a downstream API, you **must** add `authorizationParams` — see Step 3a below.
+This automatically mounts:
+- `/auth/login` - Initiates login flow
+- `/auth/logout` - Logs the user out
+- `/auth/callback` - OAuth callback (must be in Auth0 Allowed Callback URLs)
+- `/auth/backchannel-logout` - Back-channel logout support
 
-This automatically creates:
-- `/login` - Login endpoint
-- `/logout` - Logout endpoint
-- `/callback` - OAuth callback
-
-### 3a. Configure Middleware for API Access (when calling external APIs)
-
-When you need an access token for an external API, `audience` **must** go inside `authorizationParams` — putting it at the top level is silently ignored and no access token is issued.
+### 4. Protect Routes
 
 ```javascript
-// SDK auto-loads SECRET, BASE_URL, CLIENT_ID, ISSUER_BASE_URL, CLIENT_SECRET from env vars
-app.use(auth({
-  authRequired: false,
-  auth0Logout: true,
-  authorizationParams: {            // ← required for access tokens
-    response_type: 'code',          // ← required: authorization code flow
-    audience: process.env.AUDIENCE, // ← API identifier (never top-level)
-    scope: 'openid profile email'
-  }
-}));
+import { requireAuth } from '@auth0/auth0-express';
+
+// Redirects to /auth/login if not authenticated
+app.get('/profile', requireAuth(), async (req, res) => {
+  const user = await req.auth0.client.getUser();
+  res.json({ user });
+});
+
+// Returns 401 for API requests (requests that accept JSON but not HTML)
+app.get('/api/me', requireAuth(), async (req, res) => {
+  const user = await req.auth0.client.getUser();
+  res.json({ user });
+});
 ```
 
-Then access the token in your route:
+### 5. Access User Info
 
 ```javascript
-app.get('/api-call', requiresAuth(), async (req, res) => {
-  const { access_token } = req.oidc.accessToken; // object, not a string
-  const response = await fetch('https://your-api.com/data', {
-    headers: { Authorization: `Bearer ${access_token}` }
-  });
-  res.json(await response.json());
+app.get('/dashboard', requireAuth(), async (req, res) => {
+  const user = await req.auth0.client.getUser();
+  const session = await req.auth0.client.getSession();
+
+  res.render('dashboard', { user, session });
 });
 ```
-
-### 4. Add Routes
-
-```javascript
-// Public route
-app.get('/', (req, res) => {
-  res.send(req.oidc.isAuthenticated() ? 'Logged in' : 'Logged out');
-});
-
-// Protected route
-app.get('/profile', requiresAuth(), (req, res) => {
-  res.send(`
-    <h1>Profile</h1>
-    <p>Name: ${req.oidc.user.name}</p>
-    <p>Email: ${req.oidc.user.email}</p>
-    <pre>${JSON.stringify(req.oidc.user, null, 2)}</pre>
-    <a href="/logout">Logout</a>
-  `);
-});
-
-// Login/logout links
-app.get('/', (req, res) => {
-  res.send(`
-    ${req.oidc.isAuthenticated() ? `
-      <p>Welcome, ${req.oidc.user.name}!</p>
-      <a href="/profile">Profile</a>
-      <a href="/logout">Logout</a>
-    ` : `
-      <a href="/login">Login</a>
-    `}
-  `);
-});
-```
-
-### 5. Test Authentication
-
-Start your server:
-
-```bash
-node app.js
-```
-
-Visit `http://localhost:3000` and test the login flow.
 
 ---
 
 ## Detailed Documentation
 
-- **[Setup Guide](references/setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
-- **[Integration Guide](references/integration.md)** - Protected routes, sessions, API integration, error handling
-- **[API Reference](references/api.md)** - Complete middleware API, configuration options, request properties
+- **[Setup Guide](references/setup.md)** - Environment configuration, Auth0 CLI setup, session secrets
+- **[Integration Guide](references/integration.md)** - Route protection, sessions, API access tokens, claim middleware
+- **[API Reference](references/api.md)** - Full configuration options, `req.auth0` API, middleware reference
 
 ---
 
@@ -179,22 +126,21 @@ Visit `http://localhost:3000` and test the login flow.
 
 | Mistake | Fix |
 |---------|-----|
-| Forgot to add callback URL in Auth0 Dashboard | Add `/callback` path to Allowed Callback URLs (e.g., `http://localhost:3000/callback`) |
-| Missing or weak SECRET | Generate secure secret with `openssl rand -hex 32` and store in .env as `SECRET` |
-| Setting authRequired: true globally | Set to false and use `requiresAuth()` middleware on specific routes |
-| App created as SPA type in Auth0 | Must be Regular Web Application type for server-side auth |
-| Session secret exposed in code | Always use environment variables, never hardcode secrets |
-| Wrong baseURL for production | Update BASE_URL to match your production domain |
-| Not handling logout returnTo | Add your domain to Allowed Logout URLs in Auth0 Dashboard |
-| `audience` as a top-level config key | Move `audience` inside `authorizationParams` with `response_type: 'code'` and `scope` — top-level `audience` is silently ignored, no access token is issued |
-| `req.oidc.accessToken` used as a string | It is an object — destructure with `const { access_token } = req.oidc.accessToken` |
+| App type is SPA in Auth0 Dashboard | Must be **Regular Web Application** type |
+| Callback URL not registered | Add `/auth/callback` path to Allowed Callback URLs |
+| Using `AUTH0_AUDIENCE` for API access without configuring SDK | Set `audience` in `createAuth0()` config or `AUTH0_AUDIENCE` env var |
+| Weak or missing session secret | Generate with `openssl rand -hex 64` and set as `AUTH0_SESSION_SECRET` |
+| Hardcoding credentials in source | Always use environment variables; never inline domain/client ID |
+| Calling `getUser()` outside `requireAuth()` protected route | `getUser()` returns `undefined` if session not established |
 
 ---
 
 ## Related Skills
 
+- `express-openid-connect` - For Express web apps using the older express-openid-connect SDK
+- `auth0-express-api` - For Express APIs protected with JWT Bearer tokens using @auth0/auth0-express-api
+- `express-oauth2-jwt-bearer` - For Express APIs using the older express-oauth2-jwt-bearer SDK
 - `auth0-quickstart` - Basic Auth0 setup
-- `auth0-migration` - Migrate from another auth provider
 - `auth0-mfa` - Add Multi-Factor Authentication
 - `auth0-cli` - Manage Auth0 resources from the terminal
 
@@ -202,31 +148,35 @@ Visit `http://localhost:3000` and test the login flow.
 
 ## Quick Reference
 
-**Middleware Options:**
-- `authRequired` - Require auth for all routes (default: false)
-- `auth0Logout` - Enable /logout endpoint (default: false)
-- `secret` - Session secret (required)
-- `baseURL` - Application URL (required)
-- `clientID` - Auth0 client ID (required)
-- `issuerBaseURL` - Auth0 tenant URL (required)
+**Mounted Routes** (automatic when using `createAuth0()`):
+- `/auth/login` - Start login; supports `?returnTo=/path` query param
+- `/auth/logout` - Logout user
+- `/auth/callback` - OAuth callback
+- `/auth/backchannel-logout` - Back-channel logout
 
-**Request Properties:**
-- `req.oidc.isAuthenticated()` - Check if user is logged in
-- `req.oidc.user` - User profile object
-- `req.oidc.accessToken` - Access token object (`{ access_token, token_type, expires_in }`); `expires_in` is seconds remaining. Destructure with `const { access_token } = req.oidc.accessToken`. Also exposes `isExpired()` and `refresh()` methods. Only populated when `authorizationParams` with `audience` + `response_type: 'code'` is configured
-- `req.oidc.idToken` - ID token
-- `req.oidc.refreshToken` - Refresh token
+**Middleware:**
+- `requireAuth(options?)` - Protects a route; redirects HTML requests to `/auth/login`, returns 401 for API requests
 
-**Common Use Cases:**
-- Protected routes → Use `requiresAuth()` middleware (see Step 4)
-- Check auth status → `req.oidc.isAuthenticated()`
-- Get user info → `req.oidc.user`
-- Call APIs → [Integration Guide](references/integration.md#calling-apis)
+**`req.auth0.client` Methods:**
+- `getUser()` - Returns user profile or `undefined`
+- `getSession()` - Returns session or `undefined`
+- `getAccessToken()` - Returns `{ accessToken }` (requires `audience` configured)
+- `startInteractiveLogin(options)` - Returns authorization URL for custom login routes
+- `completeInteractiveLogin(url)` - Completes callback for custom login routes
+- `logout(options)` - Returns logout URL for custom logout routes
+
+**Environment Variables:**
+- `AUTH0_DOMAIN` - Your Auth0 tenant domain (e.g. `tenant.auth0.com`)
+- `AUTH0_CLIENT_ID` - Application client ID
+- `AUTH0_CLIENT_SECRET` - Application client secret
+- `APP_BASE_URL` - Application base URL (e.g. `http://localhost:3000`)
+- `AUTH0_SESSION_SECRET` - Session encryption secret (min 64 hex chars recommended)
+- `AUTH0_AUDIENCE` - Optional API audience for access tokens
 
 ---
 
 ## References
 
-- [Express OpenID Connect Documentation](https://auth0.com/docs/libraries/express-openid-connect)
+- [@auth0/auth0-express on npm](https://www.npmjs.com/package/@auth0/auth0-express)
+- [GitHub: auth0/auth0-express](https://github.com/auth0/auth0-express)
 - [Auth0 Express Quickstart](https://auth0.com/docs/quickstart/webapp/express)
-- [SDK GitHub Repository](https://github.com/auth0/express-openid-connect)

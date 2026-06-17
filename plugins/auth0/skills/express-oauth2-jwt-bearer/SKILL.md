@@ -32,7 +32,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 | Use Case | Recommended Skill |
 |----------|------------------|
-| Building a server-side web app with login UI (Express sessions) | `auth0-express` |
+| Building a server-side web app with login UI (Express sessions) | `auth0-express` or `express-openid-connect` |
 | Building a Next.js app with server-side auth | `auth0-nextjs` |
 | Building a React/Angular/Vue SPA | `auth0-react`, `auth0-angular`, `auth0-vue` |
 | Building a React Native or mobile app | `auth0-react-native`, `auth0-android`, `auth0-swift` |
@@ -122,7 +122,8 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 ## Related Skills
 
-- **[auth0-express](../auth0-express)** — For Express web apps with login UI (sessions, cookies)
+- **[auth0-express](../auth0-express)** — For Express web apps with login UI using @auth0/auth0-express (sessions, cookies)
+- **[express-openid-connect](../express-openid-connect)** — For Express web apps with login UI using express-openid-connect (sessions, cookies)
 - **[auth0-nextjs](../auth0-nextjs)** — For Next.js server-side web apps
 - **[auth0-aspnetcore-api](../auth0-aspnetcore-api)** — BACKEND_API reference implementation for .NET
 - **[go-jwt-middleware](../go-jwt-middleware)** — JWT middleware for Go APIs

@@ -1,178 +1,226 @@
-# Auth0 Express Integration Patterns
+# Auth0 Express SDK Integration Patterns
 
-Server-side authentication patterns for Express.js.
+Server-side authentication patterns for Express.js using `@auth0/auth0-express`.
 
 ---
 
 ## Protected Routes
 
-### Single Route
+### Using requireAuth Middleware
+
+`requireAuth()` protects routes automatically:
+- For HTML requests (browsers): redirects to `/auth/login` with a `returnTo` parameter
+- For API requests (those accepting JSON but not HTML): returns `401 Unauthorized`
 
 ```javascript
-const { requiresAuth } = require('express-openid-connect');
+import { requireAuth } from '@auth0/auth0-express';
 
-app.get('/admin', requiresAuth(), (req, res) => {
-  res.send(`Admin: ${req.oidc.user.name}`);
+// Protects a page route - browser is redirected to login
+app.get('/profile', requireAuth(), async (req, res) => {
+  const user = await req.auth0.client.getUser();
+  res.render('profile', { user });
+});
+
+// Custom return URL after login
+app.get('/admin', requireAuth({ returnTo: '/admin/dashboard' }), (req, res) => {
+  res.send('Admin page');
 });
 ```
 
-### Multiple Routes
+### Using Custom Middleware
+
+For fine-grained control, build your own middleware:
 
 ```javascript
-// Protect all /admin routes
-app.use('/admin', requiresAuth());
+async function requireSession(req, res, next) {
+  const session = await req.auth0.client.getSession();
+  if (!session) {
+    return res.redirect('/auth/login');
+  }
+  next();
+}
 
-app.get('/admin/dashboard', (req, res) => {
-  res.send('Dashboard');
-});
-
-app.get('/admin/settings', (req, res) => {
-  res.send('Settings');
-});
-```
-
-### Require Auth Globally
-
-```javascript
-app.use(auth({
-  authRequired: true  // All routes require authentication
-}));
-
-// Make specific routes public
-app.get('/public', (req, res) => {
-  res.send('Public page');
+app.get('/protected', requireSession, async (req, res) => {
+  const user = await req.auth0.client.getUser();
+  res.render('page', { user });
 });
 ```
 
 ---
 
-## Calling APIs
-
-### Get Access Token
+## Accessing User Information
 
 ```javascript
-app.get('/api-call', requiresAuth(), async (req, res) => {
-  const { access_token } = req.oidc.accessToken;
+app.get('/dashboard', requireAuth(), async (req, res) => {
+  // Get user profile from ID token
+  const user = await req.auth0.client.getUser();
+
+  // Get full session object
+  const session = await req.auth0.client.getSession();
+
+  res.render('dashboard', { user, session });
+});
+```
+
+`getUser()` returns `undefined` if the user is not authenticated.
+
+---
+
+## Calling External APIs (Access Tokens)
+
+To get an access token for a downstream API, set the `audience` when registering the router:
+
+```javascript
+app.use(createAuth0({
+  audience: process.env.AUTH0_AUDIENCE, // or set AUTH0_AUDIENCE env var
+}));
+```
+
+Then retrieve the token in a route:
+
+```javascript
+app.get('/call-api', requireAuth(), async (req, res) => {
+  const { accessToken } = await req.auth0.client.getAccessToken();
 
   const response = await fetch('https://your-api.com/data', {
-    headers: { Authorization: `Bearer ${access_token}` }
+    headers: { Authorization: `Bearer ${accessToken}` }
   });
 
-  const data = await response.json();
-  res.json(data);
+  res.json(await response.json());
 });
 ```
 
-Configure `authorizationParams` in middleware — **all three fields are required** to obtain an access token:
-
-```javascript
-// SDK auto-loads SECRET, BASE_URL, CLIENT_ID, ISSUER_BASE_URL, CLIENT_SECRET from env vars
-app.use(auth({
-  authorizationParams: {
-    response_type: 'code',               // required: authorization code flow
-    audience: 'https://your-api-identifier', // required: API identifier
-    scope: 'openid profile email'        // required: token scopes
-  }
-}));
-```
+Add `AUTH0_AUDIENCE=https://your-api-identifier` to your `.env`.
 
 ---
 
-## Custom Login/Logout
+## Authorization with Claims
 
-### Custom Login Handler
+The SDK provides claim-based authorization middleware for RBAC.
+
+### claimEquals — Check exact claim value
 
 ```javascript
-app.get('/custom-login', (req, res) => {
-  res.oidc.login({
-    returnTo: '/dashboard',
+import { requireAuth, claimEquals } from '@auth0/auth0-express';
+
+// Only allow users with role 'admin' (from ID token by default)
+app.get('/admin', requireAuth(), claimEquals('role', 'admin'), handler);
+
+// Check access token claims instead
+app.get('/admin', requireAuth(), claimEquals('role', 'admin', { tokenType: 'access' }), handler);
+```
+
+### claimIncludes — Check claim array contains value(s)
+
+```javascript
+import { requireAuth, claimIncludes } from '@auth0/auth0-express';
+
+// User needs 'delete:users' permission
+app.delete('/users/:id',
+  requireAuth(),
+  claimIncludes('permissions', 'delete:users'),
+  handler
+);
+
+// User needs at least one of multiple permissions
+app.get('/admin/users',
+  requireAuth(),
+  claimIncludes('permissions', ['read:users', 'admin:all']),
+  handler
+);
+```
+
+### claimCheck — Custom claim validation
+
+```javascript
+import { requireAuth, claimCheck } from '@auth0/auth0-express';
+
+app.get('/premium',
+  requireAuth(),
+  claimCheck((claims) => claims.subscription === 'premium' && claims.email_verified === true),
+  handler
+);
+
+// With access to request params
+app.get('/org/:orgId/settings',
+  requireAuth(),
+  claimCheck((claims, req) => claims.org_id === req.params.orgId && claims.org_role === 'owner'),
+  handler
+);
+```
+
+Claim middleware returns:
+- `403 Forbidden` for HTML requests when authorization fails
+- `403 Forbidden` with JSON error for API requests
+
+---
+
+## Custom Login/Logout Routes
+
+When `mountRoutes: false` is set, implement routes manually:
+
+```javascript
+app.use(createAuth0({ mountRoutes: false }));
+
+app.get('/custom/login', async (req, res) => {
+  const authorizationUrl = await req.auth0.client.startInteractiveLogin({
     authorizationParams: {
-      connection: 'google-oauth2'
+      redirect_uri: 'http://localhost:3000/custom/callback',
     }
   });
+  res.redirect(authorizationUrl.href);
 });
-```
 
-### Custom Logout Handler
+app.get('/custom/callback', async (req, res) => {
+  await req.auth0.client.completeInteractiveLogin(
+    new URL(req.url, req.auth0.config.appBaseUrl)
+  );
+  res.redirect('/');
+});
 
-```javascript
-app.get('/custom-logout', (req, res) => {
-  res.oidc.logout({
-    returnTo: '/goodbye'
-  });
+app.get('/custom/logout', async (req, res) => {
+  const logoutUrl = await req.auth0.client.logout({ returnTo: 'http://localhost:3000' });
+  res.redirect(logoutUrl.href);
 });
 ```
 
 ---
 
-## Silent Authentication
+## HTML Login/Logout Links
 
-### Automatic Silent Login
+When using built-in mounted routes:
 
-Check if user is already authenticated at their IDP without forcing a login prompt.
-
-```javascript
-const { auth, attemptSilentLogin } = require('express-openid-connect');
-
-app.use(auth({
-  authRequired: false
-}));
-
-// Try silent authentication on first visit
-app.use(attemptSilentLogin());
-
-// Your routes
-app.get('/', (req, res) => {
-  if (req.oidc.isAuthenticated()) {
-    res.send(`Welcome back, ${req.oidc.user.name}!`);
-  } else {
-    res.send('Not logged in <a href="/login">Login</a>');
-  }
-});
+```html
+<a href="/auth/login">Log in</a>
+<a href="/auth/login?returnTo=/dashboard">Log in to dashboard</a>
+<a href="/auth/logout">Log out</a>
 ```
-
-**How it works:**
-- On the user's first visit, redirects to Auth0 with `prompt=none`
-- If user has active IDP session, they're silently logged in
-- If not, they see your page as anonymous
-- Uses a cookie to prevent repeated silent login attempts
-
-**Use cases:**
-- Show login/logout button based on IDP session status
-- Pre-authenticate users who have existing IDP sessions
-- Provide seamless experience for returning users
 
 ---
 
-## Session Management
+## Template Rendering (EJS Example)
 
-### Access User Info
+```bash
+npm install ejs
+```
 
 ```javascript
-app.get('/user', requiresAuth(), (req, res) => {
-  res.json({
-    isAuthenticated: req.oidc.isAuthenticated(),
-    user: req.oidc.user,
-    idToken: req.oidc.idToken,
-    accessToken: req.oidc.accessToken
-  });
+app.set('view engine', 'ejs');
+
+app.get('/', async (req, res) => {
+  const user = await req.auth0.client.getUser();
+  res.render('index', { user });
 });
 ```
 
-### Refresh Tokens
-
-```javascript
-app.use(auth({
-  authorizationParams: {
-    scope: 'openid profile email offline_access'
-  }
-}));
-
-// Access refresh token
-app.get('/refresh', requiresAuth(), (req, res) => {
-  const refreshToken = req.oidc.refreshToken;
-  // Use refresh token
-});
+```html
+<!-- views/index.ejs -->
+<% if (user) { %>
+  <h1>Welcome, <%= user.name %>!</h1>
+  <a href="/auth/logout">Logout</a>
+<% } else { %>
+  <a href="/auth/login">Login</a>
+<% } %>
 ```
 
 ---
@@ -181,11 +229,8 @@ app.get('/refresh', requiresAuth(), (req, res) => {
 
 ```javascript
 app.use((err, req, res, next) => {
-  if (err.name === 'UnauthorizedError') {
-    res.status(401).send('Unauthorized');
-  } else {
-    next(err);
-  }
+  console.error(err);
+  res.status(err.status || 500).json({ error: err.message });
 });
 ```
 
@@ -195,9 +240,11 @@ app.use((err, req, res, next) => {
 
 | Issue | Solution |
 |-------|----------|
-| "Invalid state" | Regenerate SECRET |
-| Session not persisting | Check cookie settings, use HTTPS in production |
-| Redirect loop | Verify callback URL matches Auth0 config |
+| `getUser()` returns `undefined` | Route not protected with `requireAuth()` or user not logged in |
+| Redirect after login goes to wrong page | Use `?returnTo=/path` on `/auth/login` link or `requireAuth({ returnTo })` |
+| Callback URL mismatch | Register `http://localhost:3000/auth/callback` in Auth0 Dashboard |
+| Access token missing | Set `audience` in `createAuth0()` config or `AUTH0_AUDIENCE` env var |
+| Session not persisting | Verify `AUTH0_SESSION_SECRET` is set and consistent across restarts |
 
 ---
 

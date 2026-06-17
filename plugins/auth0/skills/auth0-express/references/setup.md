@@ -1,53 +1,40 @@
-# Auth0 Express Setup Guide
+# Auth0 Express SDK Setup Guide
 
-Setup instructions for Express.js applications.
+Setup instructions for Express.js applications using `@auth0/auth0-express`.
 
 ---
 
 ## Quick Setup (Automated)
 
-Below automates the setup, except for the CLIENT_SECRET. Inform the user that they have to fill in the value for the CLIENT_SECRET themselves.
+Below automates the setup using the Auth0 CLI. The client secret must be filled in manually by the user.
 
-**Never read the contents of `.env.local` or `.env` at any point during setup.** The file may contain sensitive secrets that should not be exposed in the LLM context. If you determine you need to read the file for any reason, ask the user for explicit permission before doing so — do not proceed until the user confirms.
+**Never read the contents of `.env.local` or `.env` at any point during setup.** The file may contain sensitive secrets. If you need to read it for any reason, ask the user for explicit permission first.
 
-**Before running any part of this setup that writes to an env file, you MUST ask the user for explicit confirmation.** Follow the steps below precisely.
+**Before writing to any env file, ask the user for explicit confirmation.**
 
 ### Step 1: Check for existing env files and confirm with user
-
-Before writing credentials, check which env files exist:
 
 ```bash
 test -f .env.local && echo "ENV_LOCAL_EXISTS" || echo "ENV_LOCAL_NOT_FOUND"
 test -f .env && echo "ENV_EXISTS" || echo "ENV_NOT_FOUND"
 ```
 
-Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
+Then ask the user for explicit confirmation before proceeding:
 
-- If `.env.local` exists, ask:
-  - Question: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env.local" / "No, I'll update it manually"
-
-- If `.env.local` does **not** exist but `.env` exists, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
-
-- If neither exists, ask:
-  - Question: "This setup will create a `.env.local` file containing Auth0 credentials (CLIENT_ID, ISSUER_BASE_URL, SECRET) and a placeholder for CLIENT_SECRET. Do you want to proceed?"
-  - Options: "Yes, create .env.local" / "No, I'll configure it manually"
-
-**Do not proceed with writing to any env file unless the user selects the confirmation option.**
+- If `.env.local` exists: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
+- If `.env.local` doesn't exist but `.env` exists: "A `.env` file already exists. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
+- If neither exists: "This setup will create a `.env.local` file with Auth0 credentials. Do you want to proceed?"
 
 ### Step 2: Run automated setup (only after confirmation)
 
 ```bash
 #!/bin/bash
 
-# Install Auth0 CLI
+# Install Auth0 CLI if needed
 if ! command -v auth0 &> /dev/null; then
   if [[ "$OSTYPE" == "darwin"* ]]; then
     brew install auth0/auth0-cli/auth0
   else
-    # Download and review the install script before executing
     curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh
     echo "⚠️  Review the install script at /tmp/auth0-install.sh before running"
     sh /tmp/auth0-install.sh -b /usr/local/bin
@@ -60,11 +47,11 @@ auth0 login 2>/dev/null || auth0 login
 
 # Create/select app
 auth0 apps list
-read -p "Enter app ID (or Enter to create): " APP_ID
+read -p "Enter app ID (or Enter to create new): " APP_ID
 
 if [ -z "$APP_ID" ]; then
   APP_ID=$(auth0 apps create --name "${PWD##*/}-express" --type regular \
-    --callbacks "http://localhost:3000/callback" \
+    --callbacks "http://localhost:3000/auth/callback" \
     --logout-urls "http://localhost:3000" \
     --metadata "created_by=agent_skills" \
     --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
@@ -73,7 +60,7 @@ fi
 # Get credentials
 DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
 CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-SECRET=$(openssl rand -hex 32)
+SESSION_SECRET=$(openssl rand -hex 64)
 
 # Determine target env file
 if [ -f .env.local ]; then
@@ -84,57 +71,88 @@ else
   TARGET_FILE=".env.local"
 fi
 
-# Append Auth0 credentials
+# Append credentials
 cat >> "$TARGET_FILE" << ENVEOF
-SECRET=$SECRET
-BASE_URL=http://localhost:3000
-CLIENT_ID=$CLIENT_ID
-CLIENT_SECRET='YOUR_CLIENT_SECRET'
-ISSUER_BASE_URL=https://$DOMAIN
+AUTH0_DOMAIN=$DOMAIN
+AUTH0_CLIENT_ID=$CLIENT_ID
+AUTH0_CLIENT_SECRET=YOUR_CLIENT_SECRET
+APP_BASE_URL=http://localhost:3000
+AUTH0_SESSION_SECRET=$SESSION_SECRET
 ENVEOF
 
 echo "✅ Auth0 credentials written to $TARGET_FILE"
 ```
 
 After the script runs, remind the user to:
-1. Open the env file that was written and replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0.
-2. Ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.
+1. Replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0 Dashboard → Applications → your app → Settings.
+2. Ensure the env file is listed in `.gitignore`.
 
 ---
 
 ## Manual Setup
 
-### Install Packages
+### Install Package
 
 ```bash
-npm install express-openid-connect dotenv
+npm install @auth0/auth0-express@beta dotenv
 ```
 
 ### Create .env
 
-```bash
-SECRET=<openssl-rand-hex-32>
-BASE_URL=http://localhost:3000
-CLIENT_ID=your-client-id
-CLIENT_SECRET=your-client-secret
-ISSUER_BASE_URL=https://your-tenant.auth0.com
+```env
+AUTH0_DOMAIN=your-tenant.auth0.com
+AUTH0_CLIENT_ID=your-client-id
+AUTH0_CLIENT_SECRET=your-client-secret
+APP_BASE_URL=http://localhost:3000
+AUTH0_SESSION_SECRET=your-long-random-secret-here
 ```
+
+Generate session secret: `openssl rand -hex 64`
+
+### Auth0 Dashboard Configuration
+
+1. Go to [Auth0 Dashboard](https://manage.auth0.com) → Applications → your app
+2. Ensure **Application Type** is **Regular Web Application**
+3. Under **Allowed Callback URLs** add: `http://localhost:3000/auth/callback`
+4. Under **Allowed Logout URLs** add: `http://localhost:3000`
+5. Save changes
 
 ### Get Auth0 Credentials
 
 CLI: `auth0 apps show <app-id> --reveal-secrets`
 
-Dashboard: Create Regular Web Application, copy credentials
+Dashboard: Applications → your app → Settings tab
+
+---
+
+## Migration from express-openid-connect
+
+If migrating from `express-openid-connect`, the SDK supports legacy env var names for compatibility:
+
+| Old Variable | New Variable |
+|---|---|
+| `ISSUER_BASE_URL` | `AUTH0_DOMAIN` (full URL or just domain) |
+| `CLIENT_ID` | `AUTH0_CLIENT_ID` |
+| `CLIENT_SECRET` | `AUTH0_CLIENT_SECRET` |
+| `BASE_URL` | `APP_BASE_URL` |
+| `SECRET` | `AUTH0_SESSION_SECRET` |
+
+The `AUTH0_*` prefixed names are recommended.
+
+Note the route paths have changed:
+- `/login` → `/auth/login`
+- `/logout` → `/auth/logout`
+- `/callback` → `/auth/callback`
 
 ---
 
 ## Troubleshooting
 
-**"Invalid state" error:** Regenerate `SECRET`
+**"Invalid state" error:** Regenerate `AUTH0_SESSION_SECRET` with `openssl rand -hex 64`
 
-**Client secret required:** Express uses Regular Web Application type
+**Client secret required:** Make sure Application Type is Regular Web Application (not SPA)
 
-**Callback URL mismatch:** Add `/callback` to Allowed Callback URLs
+**Callback URL mismatch:** Add `/auth/callback` to Allowed Callback URLs (note `/auth/` prefix vs old `/callback`)
 
 ---
 
