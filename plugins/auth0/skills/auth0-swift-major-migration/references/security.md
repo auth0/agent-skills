@@ -101,7 +101,7 @@ grep -ri "secret\|password\|private_key" --include="*.swift" . | grep -v "//\|/\
 grep -ri "UserDefaults.*set.*token\|fileManager.*write.*token" --include="*.swift" .
 
 # 3. Auth0.plist contains only safe values (domain + clientId)
-cat **/Auth0.plist 2>/dev/null
+find . -name "Auth0.plist" -exec cat {} \; 2>/dev/null
 
 # 4. No credentials in build logs (check for print statements with tokens)
 grep -ri "print.*token\|print.*credential\|NSLog.*token" --include="*.swift" . | grep -v "//\|/\*"

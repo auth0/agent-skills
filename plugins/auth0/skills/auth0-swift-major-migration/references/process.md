@@ -63,7 +63,7 @@ for item in json.load(sys.stdin).get('tree', []):
 
 Before writing any replacement code, locate the target method in the fetched source and read its exact declaration. Step 3 fetches SDK files inline and prints them to stdout — search the output for the relevant declaration. Example patterns to look for:
 
-```
+```plaintext
 # In the fetched WebAuth.swift output — confirm logout() is the v3 name
 func logout(
 

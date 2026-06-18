@@ -1,7 +1,7 @@
 ---
 name: auth0-swift-major-migration
-description: "Use when upgrading Auth0.swift to v3 in an iOS, macOS, tvOS, watchOS, or visionOS app. Optionally pass a target version tag as an argument (e.g. auth0-swift-major-migration 3.0.0-beta.2) to skip the version prompt. Detects the current version, fetches the new SDK's actual source to confirm signatures, audits which Auth0 APIs the project actually uses, and applies only the breaking changes that affect real call sites — nothing else. Builds until green, then summarises what changed."
-license: Proprietary
+description: "Migrates Auth0.swift v2.x integrations to v3.x. Pass a target v3 tag as an argument (e.g. auth0-swift-major-migration 3.0.0-beta.2) to pin a specific version, or omit it to auto-resolve the latest v3 release. Detects the current version, fetches the new SDK's actual source to confirm signatures, audits which Auth0 APIs the project actually uses, and applies only the breaking changes that affect real call sites — nothing else. Builds until green, then summarises what changed."
+license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
   version: '1.0.0'
@@ -52,10 +52,15 @@ git checkout -
 ```
 
 ```bash
-# 1c. Confirm the project builds on the current version before touching anything
+# 1c. Pick an available simulator, then confirm the project builds before touching anything
+SIM=$(xcrun simctl list devices available -j \
+  | python3 -c "import sys,json; d=json.load(sys.stdin); \
+    phones=[dev for devs in d['devices'].values() for dev in devs \
+            if 'iPhone' in dev.get('name','') and dev.get('isAvailable')]; \
+    print(phones[0]['name'] if phones else 'iPhone 16')")
 xcodebuild build \
   -scheme <SCHEME> \
-  -destination "platform=iOS Simulator,name=iPhone 16" \
+  -destination "platform=iOS Simulator,name=${SIM}" \
   2>&1 | tail -5
 ```
 
@@ -65,16 +70,11 @@ If the build fails, stop. Ask the user to fix the existing issues first.
 
 ### Step 2 — Detect Current & Target Versions
 
-**Check if a target version was passed as an argument to this skill invocation.**
-
-If the developer invoked the skill with a version argument (e.g. `auth0-swift-major-migration 3.0.0-beta.2` or `migrate to 3.0.0-beta.2`), set `<TARGET_TAG>` to that value and **skip the version prompt entirely** — proceed directly to Step 3.
-
-If no version was provided, continue below.
+Detect the current Auth0.swift version from the project's dependency files:
 
 ```bash
 # Check Package.resolved first (most reliable)
-grep -A3 '"auth0/Auth0.swift"\|Auth0.swift"' \
-  **/Package.resolved 2>/dev/null | grep '"version"'
+find . -name "Package.resolved" | xargs grep -A3 '"auth0/Auth0.swift"\|Auth0.swift"' 2>/dev/null | grep '"version"'
 
 # Fallback: Podfile.lock
 grep "^  - Auth0 " Podfile.lock 2>/dev/null
@@ -86,35 +86,53 @@ grep "auth0/Auth0.swift" Cartfile.resolved 2>/dev/null
 grep -A2 'auth0/Auth0.swift' Package.swift 2>/dev/null
 ```
 
+**Resolve the target version.** There are two paths:
+
+**Path A — the user passed a target version argument (`$ARGUMENTS`):**
+
+Validate it against the published releases before using it. It must pass **all three** checks:
+
 ```bash
-# List all v3 releases (stable + pre-release), most recent first
+# List all published Auth0.swift v3 release tags
 curl -s https://api.github.com/repos/auth0/Auth0.swift/releases | python3 -c "
 import sys, json
 releases = json.load(sys.stdin)
 v3 = [r for r in releases if r['tag_name'].startswith('3') and not r['draft']]
 for r in v3:
-    label = '(pre-release)' if r.get('prerelease') else '(stable)     '
-    print(r['tag_name'].ljust(20), label)
-print()
-print('Total v3 releases:', len(v3))
+    print(r['tag_name'])
 "
 ```
 
-**Prompt the developer — pick a target version:**
+1. **Exists** — the requested tag appears in the published release list above.
+2. **Correct major** — the tag is within the **v3** major line (starts with `3`). A `2.x` or any other major is not valid; reject it.
+3. **Not a downgrade** — the tag is newer than the version detected in the project.
 
-Show the full list and ask:
-> *"Here are all available Auth0.swift v3 releases:*
->
-> *  3.1.0          (stable)*
-> *  3.0.0          (stable)*
-> *  3.0.0-beta.2   (pre-release)*
-> *  3.0.0-beta.1   (pre-release)*
->
-> *Which version would you like to migrate to? Enter the exact tag (e.g. `3.1.0` or `3.0.0-beta.2`).*
-> *If you're unsure, the most recent release above is usually the right choice.*
-> *You can also pass the version directly next time: `auth0-swift-major-migration 3.0.0-beta.2`"*
+> **On any check failing, STOP and ask the user.** Do not silently fall back. For example:
+> - *"`3.9.9` isn't a published Auth0.swift release. Published v3 releases are: `3.0.0-beta.2`, … . Please pass a valid v3 tag, or omit the argument to auto-resolve the latest v3 release."*
+> - *"`2.10.0` is a v2 release, not v3. This skill migrates to v3. Pass a v3 tag (e.g. `3.0.0-beta.2`) or omit the argument."*
+> - *"`3.0.0-beta.1` is older than the `3.0.0-beta.2` already in your project — that's a downgrade. Pass a newer v3 tag or omit the argument."*
 
-Record the developer's answer as `<TARGET_TAG>`. Use it in every subsequent step.
+**Path B — no argument: auto-resolve the latest v3 release (including pre-releases):**
+
+```bash
+# Newest v3.x release tag (stable or pre-release), most recent first
+curl -s https://api.github.com/repos/auth0/Auth0.swift/releases | python3 -c "
+import sys, json
+releases = json.load(sys.stdin)
+v3 = [r for r in releases if r['tag_name'].startswith('3') and not r['draft']]
+if v3:
+    print(v3[0]['tag_name'])
+else:
+    print('')
+"
+```
+
+Record the result as `<TARGET_TAG>` and use it in every subsequent step.
+
+> **If `<TARGET_TAG>` is a pre-release** (contains `-beta`, `-rc`, etc.), inform the user before continuing:
+> *"The latest v3 release is `<TARGET_TAG>` (a pre-release). I'll migrate to that. You can pin a different tag by passing it as an argument: `auth0-swift-major-migration <tag>`."*
+>
+> **If no v3 release exists** (the resolver returns empty), stop and tell the user there is no published v3 release to migrate to.
 
 
 ---
@@ -1182,7 +1200,7 @@ Surface this as a **behavioural note** in the Step 9 summary.
 # Attempt a build — expect errors for any remaining call sites
 xcodebuild build \
   -scheme <SCHEME> \
-  -destination "platform=iOS Simulator,name=iPhone 16" \
+  -destination "platform=iOS Simulator,name=${SIM}" \
   2>&1
 ```
 
@@ -1217,10 +1235,10 @@ For each error:
 ### Step 8 — Run Tests & Verify
 
 ```bash
-# Run the test suite if one exists
+# Run the test suite if one exists (reuse $SIM from Step 1)
 xcodebuild test \
   -scheme <SCHEME> \
-  -destination "platform=iOS Simulator,name=iPhone 16" \
+  -destination "platform=iOS Simulator,name=${SIM}" \
   2>&1 | tail -30
 ```
 

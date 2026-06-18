@@ -29,7 +29,7 @@
   },
   {
     "type": "matches",
-    "pattern": "from:\\s*\"3\\.|exact:\\s*\"3\\.|~>\\s*3\\.|\"auth0/Auth0\\.swift\"\\s*~>\\s*3",
+    "pattern": "from:\\s*\"([3-9]|[1-9][0-9]+)\\.|exact:\\s*\"([3-9]|[1-9][0-9]+)\\.|~>\\s*([3-9]|[1-9][0-9]+)\\.|\"auth0/Auth0\\.swift\"\\s*~>\\s*([3-9]|[1-9][0-9]+)",
     "description": "Updates Package.swift (or Podfile/Cartfile) dependency to v3 — matches both stable (from: \"3.\") and pre-release (exact: \"3.x.y-beta.z\") forms"
   },
   {
