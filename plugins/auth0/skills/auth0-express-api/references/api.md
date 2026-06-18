@@ -90,7 +90,7 @@ Returns `403 Forbidden` if scope requirements are not met.
 
 ## `claimEquals(claim, value)`
 
-Validates that a specific claim equals an expected value. Returns `403 Forbidden` on mismatch.
+Validates that a specific claim equals an expected value. Returns `401 Unauthorized` on mismatch.
 
 ```javascript
 import { claimEquals } from '@auth0/auth0-express-api';
@@ -106,7 +106,7 @@ Supports string, number, and boolean values.
 
 ## `claimIncludes(claim, values)`
 
-Validates that a claim (array or space-separated string) includes all of the specified values. Returns `403 Forbidden` if any value is missing.
+Validates that a claim (array or space-separated string) includes all of the specified values. Returns `401 Unauthorized` if any value is missing.
 
 ```javascript
 import { claimIncludes } from '@auth0/auth0-express-api';
@@ -119,7 +119,7 @@ app.get('/admin/edit', requiresAuth(), claimIncludes('roles', ['admin', 'editor'
 
 ## `claimCheck(fn, options?)`
 
-Custom claim validation. The function receives the full token payload and must return `true` to grant access. Returns `403 Forbidden` when function returns false.
+Custom claim validation. The function receives the full token payload and must return `true` to grant access. Returns `401 Unauthorized` when function returns false.
 
 ```javascript
 import { claimCheck } from '@auth0/auth0-express-api';

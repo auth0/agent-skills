@@ -129,9 +129,9 @@ curl -H "Authorization: Bearer <token>" http://localhost:3000/api/private
 |----------|-------------|---------|
 | `requiresAuth(options?)` | JWT validation; validates Bearer token | 401 if missing/invalid |
 | `scopesInclude(scopes, options?)` | Validates token has required scopes | 403 if missing |
-| `claimEquals(claim, value)` | Validates a claim equals a value | 403 if mismatch |
-| `claimIncludes(claim, values)` | Validates claim includes all values | 403 if incomplete |
-| `claimCheck(fn, options?)` | Custom claim validation function | 403 if fn returns false |
+| `claimEquals(claim, value)` | Validates a claim equals a value | 401 if mismatch |
+| `claimIncludes(claim, values)` | Validates claim includes all values | 401 if incomplete |
+| `claimCheck(fn, options?)` | Custom claim validation function | 401 if fn returns false |
 
 **`req.auth0` After Authentication:**
 

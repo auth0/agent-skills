@@ -109,7 +109,7 @@ app.get('/api/premium',
 
 The validation function receives the full token payload and must return `true` to grant access.
 
-All claim middleware returns `401 Forbidden` when the check fails. Always use after `requiresAuth()`.
+All claim middleware returns `401 Unauthorized` when the check fails. Always use after `requiresAuth()`.
 
 ---
 
