@@ -10,7 +10,7 @@ These must hold true before and after migration. If any are violated, the migrat
 
 ### 1. No Secrets in Source Code
 
-```
+```plaintext
 [ ] No client_secret in any Swift file (native apps use PKCE, not secrets)
 [ ] No hardcoded tokens or API keys
 [ ] No credentials in Info.plist (only domain and clientId belong in Auth0.plist)
@@ -24,7 +24,7 @@ grep -ri "client_secret\|api_key\|apikey\|secret_key" --include="*.swift" --incl
 
 ### 2. Secure Token Storage
 
-```
+```plaintext
 [ ] Credentials stored in Keychain via CredentialsManager (not UserDefaults, not files)
 [ ] No tokens stored in plain text anywhere
 [ ] Biometric protection preserved if it existed before migration
@@ -37,7 +37,7 @@ grep -r "UserDefaults.*token\|UserDefaults.*credential\|UserDefaults.*auth" --in
 
 ### 3. PKCE Flow Preserved
 
-```
+```plaintext
 [ ] WebAuth still uses PKCE (this is automatic in Auth0.swift — just verify webAuth() is used)
 [ ] No manual token exchange without code_verifier
 [ ] No implicit grant flow introduced
@@ -45,7 +45,7 @@ grep -r "UserDefaults.*token\|UserDefaults.*credential\|UserDefaults.*auth" --in
 
 ### 4. Session Cleanup on Logout
 
-```
+```plaintext
 [ ] Logout clears the Auth0 session (calls webAuth().logout(); changed from webAuth().clearSession() in v2)
 [ ] Logout clears stored credentials from Keychain
 [ ] No orphaned tokens after logout

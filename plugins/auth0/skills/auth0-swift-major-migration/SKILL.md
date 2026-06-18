@@ -250,7 +250,7 @@ pod update Auth0
 ```
 
 **Carthage (Cartfile):**
-```
+```plaintext
 # Stable v3
 github "auth0/Auth0.swift" ~> 3.0
 

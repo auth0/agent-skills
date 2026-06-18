@@ -161,7 +161,8 @@ Auth0.swift v3 removed `Auth0.users(token:)` and the entire `Users` management c
 3. Tell the user in the Step 9 summary: which operations were removed, that they must be moved to a secure backend, and that a Management API token must **never** be embedded in the client app.
 
 Backend pattern to recommend:
-```
+
+```plaintext
 App → HTTPS → Your Backend → Auth0 Management API (M2M token)
 ```
 
