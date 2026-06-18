@@ -103,26 +103,25 @@ The SDK provides claim-based authorization middleware for RBAC.
 ```javascript
 import { requiresAuth, claimEquals } from '@auth0/auth0-express';
 
-// Only allow users with role 'admin' (from ID token by default)
 app.get('/admin', requiresAuth(), claimEquals('role', 'admin'), handler);
-
-// Check access token claims instead
-app.get('/admin', requiresAuth(), claimEquals('role', 'admin', { tokenType: 'access' }), handler);
+app.get('/vip', requiresAuth(), claimEquals('tier', 'premium'), handler);
 ```
 
 ### claimIncludes — Check claim array contains value(s)
 
+`claimIncludes` requires **all** of the specified values to be present in the claim.
+
 ```javascript
 import { requiresAuth, claimIncludes } from '@auth0/auth0-express';
 
-// User needs 'delete:users' permission
+// User must have 'delete:users' permission
 app.delete('/users/:id',
   requiresAuth(),
-  claimIncludes('permissions', 'delete:users'),
+  claimIncludes('permissions', ['delete:users']),
   handler
 );
 
-// User needs at least one of multiple permissions
+// User must have both permissions
 app.get('/admin/users',
   requiresAuth(),
   claimIncludes('permissions', ['read:users', 'admin:all']),
@@ -138,13 +137,6 @@ import { requiresAuth, claimCheck } from '@auth0/auth0-express';
 app.get('/premium',
   requiresAuth(),
   claimCheck((claims) => claims.subscription === 'premium' && claims.email_verified === true),
-  handler
-);
-
-// With access to request params
-app.get('/org/:orgId/settings',
-  requiresAuth(),
-  claimCheck((claims, req) => claims.org_id === req.params.orgId && claims.org_role === 'owner'),
   handler
 );
 ```
@@ -173,7 +165,7 @@ app.get('/custom/login', async (req, res) => {
 
 app.get('/custom/callback', async (req, res) => {
   await req.auth0.client.completeInteractiveLogin(
-    new URL(req.url, req.auth0.config.appBaseUrl)
+    new URL(req.url, process.env.APP_BASE_URL)
   );
   res.redirect('/');
 });

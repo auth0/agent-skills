@@ -98,26 +98,20 @@ import { claimEquals } from '@auth0/auth0-express';
 app.get('/admin', requiresAuth(), claimEquals('role', 'admin'), handler);
 ```
 
-**Options:**
-
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `tokenType` | `'id' \| 'access'` | `'id'` | Which token's claims to check |
-
 ### `claimIncludes(claim, values, options?)`
 
-Validates that a claim (array or space-separated string) includes the specified value(s). User needs at least one of the values when an array is passed.
+Validates that a claim (array or space-separated string) includes **all** of the specified values.
 
 ```javascript
 import { claimIncludes } from '@auth0/auth0-express';
 
-app.delete('/users/:id', requiresAuth(), claimIncludes('permissions', 'delete:users'), handler);
+app.delete('/users/:id', requiresAuth(), claimIncludes('permissions', ['delete:users']), handler);
 app.get('/admin', requiresAuth(), claimIncludes('permissions', ['read:users', 'admin:all']), handler);
 ```
 
 ### `claimCheck(fn, options?)`
 
-Validates claims using a custom function. Function receives `(claims, req)` and must return `true` to allow access.
+Validates claims using a custom function. Function receives `claims` and must return `true` to allow access.
 
 ```javascript
 import { claimCheck } from '@auth0/auth0-express';
@@ -138,7 +132,6 @@ After `createAuth0()` is registered, `req.auth0` is available on all requests.
 | Property | Type | Description |
 |----------|------|-------------|
 | `req.auth0.client` | `ServerClient` | Auth0 server client instance |
-| `req.auth0.config` | `object` | SDK configuration (includes `appBaseUrl`) |
 
 ### `req.auth0.client` Methods
 
@@ -181,7 +174,7 @@ app.get('/profile', requiresAuth(), async (req, res) => {
 // RBAC - requires 'admin' permission in token
 app.get('/admin',
   requiresAuth(),
-  claimIncludes('permissions', 'admin:read'),
+  claimIncludes('permissions', ['admin:read']),
   async (req, res) => {
     res.render('admin');
   }
