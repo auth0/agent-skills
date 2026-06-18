@@ -230,11 +230,11 @@ For each file, identify:
 | `DPoPException.UNSUPPORTED_ERROR` | §7.5 — constant removed |
 | `.expiresIn` accessed on an `SSOCredentials` value | §7.6 — renamed to `expiresAt` (now a `Date`) |
 | `SecureCredentialsManager(` with an `Auth0` instance as the first argument | §7.7 — `Auth0`-based constructors removed |
-| `getCredentials(` / `awaitCredentials(` without an explicit `minTtl`, or `hasValidCredentials()` | §8.1 — default `minTtl` 0 → 60s (behavioral) |
-| `clearCredentials(` | §8.3 — now clears **all** storage |
-| A class implementing the `Storage` interface | §8.4 — new `removeAll()` (default impl provided) |
+| `getCredentials(` / `awaitCredentials(` without an explicit `minTtl`, or `hasValidCredentials()` | §9.1 — default `minTtl` 0 → 60s (behavioral) |
+| `clearCredentials(` | §9.3 — now clears **all** storage |
+| A class implementing the `Storage` interface | §9.4 — new `removeAll()` (default impl provided) |
 
-Build a checklist: **"This project uses: [list]"** and **"This project does NOT use: [list]"**. Only work through the §7.x / §8.x sections that appear in the "uses" list. Skip the rest entirely.
+Build a checklist: **"This project uses: [list]"** and **"This project does NOT use: [list]"**. Only work through the §7.x / §9.x sections that appear in the "uses" list. Skip the rest entirely.
 
 ---
 
@@ -376,6 +376,8 @@ handle(error)
 
 `SSOCredentials.expiresIn` (raw seconds, `Int`) was renamed to `expiresAt` and is now an absolute `Date` (computed during deserialization, consistent with `Credentials.expiresAt`). Rename the property **and** update any arithmetic that assumed a duration in seconds.
 
+> The JSON wire format is unchanged — the field is still `@field:SerializedName("expires_in")` in the SDK. Only the Kotlin property name and type changed (`expiresIn: Int` → `expiresAt: Date`); don't expect a renamed `expires_at` key if you grep the raw JSON.
+
 ```kotlin
 // v3 — seconds until expiry (Int)
 val secondsUntilExpiry: Int = ssoCredentials.expiresIn
@@ -442,7 +444,7 @@ For each error: read it, locate the source line, match it to a Step 7 section, v
 | `unresolved reference: UNSUPPORTED_ERROR` | §7.5 — remove the reference |
 | `unresolved reference: expiresIn` on `SSOCredentials`, or `Int`/`Date` type mismatch | §7.6 — rename to `expiresAt` (now a `Date`) |
 | `none of the following functions can be called` / `too many arguments` on `SecureCredentialsManager(` | §7.7 — build `AuthenticationAPIClient(auth0)` first, pass it in |
-| `class … must override removeAll` (custom `Storage`) | §8.4 — the interface has a default impl; override only if needed |
+| `class … must override removeAll` (custom `Storage`) | §9.4 — the interface has a default impl; override only if needed |
 
 **Limit:** Up to **10 build-fix cycles**. If the build still fails after 10 attempts, stop and show the remaining errors with context — do not guess.
 
@@ -452,7 +454,7 @@ For each error: read it, locate the source line, match it to a Step 7 section, v
 
 These changes compile without edits but alter runtime behavior. Surface each in the Step 10 summary. Only change code if the project depends on the old behavior.
 
-#### 8.1 — Credentials Manager default `minTtl` 0 → 60s
+#### 9.1 — Credentials Manager default `minTtl` 0 → 60s
 
 **Applies if:** the project calls `getCredentials(...)` / `awaitCredentials(...)` without an explicit `minTtl`, or calls `hasValidCredentials()`.
 
@@ -463,17 +465,17 @@ v4 renews credentials that expire within 60 seconds instead of only when already
 credentialsManager.getCredentials(scope = null, minTtl = 0, callback = callback)
 ```
 
-#### 8.2 — `CredentialsManager` now uses the global executor
+#### 9.2 — `CredentialsManager` now uses the global executor
 
 Runtime-only. Renewals across managers backed by the same `Auth0` object are now serialized, eliminating duplicate refresh-token exchanges. **No code change required.**
 
-#### 8.3 — `clearCredentials()` now clears all storage
+#### 9.3 — `clearCredentials()` now clears all storage
 
 **Applies if:** the project calls `clearCredentials()`.
 
 v4 calls `Storage.removeAll()`, clearing **all** values in the storage — including API credentials stored for specific audiences. If the project needs to preserve other data in the same `Storage`, recommend a separate `Storage` instance for API credentials, or consider the new `clearAll()` (Step 10 optional improvements).
 
-#### 8.4 — `Storage` interface gains `removeAll()`
+#### 9.4 — `Storage` interface gains `removeAll()`
 
 **Applies if:** the project has a class implementing the `Storage` interface.
 
@@ -494,9 +496,9 @@ Present a concise summary covering:
 - Any `// TODO:` left for §7.2 (Management API) — backend work required.
 
 **4. Behavioral changes (no code change, verify acceptable)**
-- §8.1 `minTtl` now defaults to 60s — tokens renew 60s before expiry.
-- §8.3 `clearCredentials()` now clears **all** storage (including API credentials).
-- §8.2 `CredentialsManager` now uses the global executor (renewals serialized).
+- §9.1 `minTtl` now defaults to 60s — tokens renew 60s before expiry.
+- §9.3 `clearCredentials()` now clears **all** storage (including API credentials).
+- §9.2 `CredentialsManager` now uses the global executor (renewals serialized).
 
 **5. Backend / configuration follow-up**
 - §7.2 Management API removal — list the operations stubbed with `TODO` and what must move to a secure backend (M2M token, never on-device).
