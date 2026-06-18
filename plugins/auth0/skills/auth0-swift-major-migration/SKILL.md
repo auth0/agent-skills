@@ -1,6 +1,6 @@
 ---
 name: auth0-swift-major-migration
-description: Use when upgrading Auth0.swift to v3 in an iOS, macOS, tvOS, watchOS, or visionOS app. Detects the current version, fetches the new SDK's actual source to confirm signatures, audits which Auth0 APIs the project actually uses, and applies only the breaking changes that affect real call sites — nothing else. Builds until green, then summarises what changed.
+description: "Use when upgrading Auth0.swift to v3 in an iOS, macOS, tvOS, watchOS, or visionOS app. Optionally pass a target version tag as an argument (e.g. auth0-swift-major-migration 3.0.0-beta.2) to skip the version prompt. Detects the current version, fetches the new SDK's actual source to confirm signatures, audits which Auth0 APIs the project actually uses, and applies only the breaking changes that affect real call sites — nothing else. Builds until green, then summarises what changed."
 license: Proprietary
 metadata:
   author: Auth0 <support@auth0.com>
@@ -65,6 +65,12 @@ If the build fails, stop. Ask the user to fix the existing issues first.
 
 ### Step 2 — Detect Current & Target Versions
 
+**Check if a target version was passed as an argument to this skill invocation.**
+
+If the developer invoked the skill with a version argument (e.g. `auth0-swift-major-migration 3.0.0-beta.2` or `migrate to 3.0.0-beta.2`), set `<TARGET_TAG>` to that value and **skip the version prompt entirely** — proceed directly to Step 3.
+
+If no version was provided, continue below.
+
 ```bash
 # Check Package.resolved first (most reliable)
 grep -A3 '"auth0/Auth0.swift"\|Auth0.swift"' \
@@ -105,7 +111,8 @@ Show the full list and ask:
 > *  3.0.0-beta.1   (pre-release)*
 >
 > *Which version would you like to migrate to? Enter the exact tag (e.g. `3.1.0` or `3.0.0-beta.2`).*
-> *If you're unsure, the most recent release above is usually the right choice."*
+> *If you're unsure, the most recent release above is usually the right choice.*
+> *You can also pass the version directly next time: `auth0-swift-major-migration 3.0.0-beta.2`"*
 
 Record the developer's answer as `<TARGET_TAG>`. Use it in every subsequent step.
 
