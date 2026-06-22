@@ -1,6 +1,7 @@
 ---
 name: auth0-swift
-description: Use when adding Auth0 authentication to an iOS, macOS, tvOS, watchOS, or visionOS application — integrates the Auth0.swift SDK for native Apple platform authentication using Web Auth, CredentialsManager, and biometric protection.
+description: >
+  Use when adding Auth0 login, logout, or biometric-protected credential storage to an iOS, macOS, tvOS, watchOS, or visionOS app. Integrates Auth0.swift — use even if the user says "add login to my iOS app" or "add login to my Swift app".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

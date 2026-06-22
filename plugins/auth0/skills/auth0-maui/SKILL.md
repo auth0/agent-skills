@@ -1,6 +1,7 @@
 ---
 name: auth0-maui
-description: Use when adding Auth0 authentication to .NET MAUI cross-platform applications (iOS, Android, macOS, Windows) - integrates Auth0.OidcClient.MAUI NuGet package for native login, logout, token refresh, and user profile. Trigger on MAUI authentication, add login to MAUI, Auth0 MAUI, .NET MAUI auth, cross-platform mobile auth
+description: >
+  Use when adding Auth0 login, logout, or token management to a .NET MAUI cross-platform app (iOS, Android, macOS, or Windows). Integrates Auth0.OidcClient.MAUI — use even if the user says "add login to my MAUI app".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

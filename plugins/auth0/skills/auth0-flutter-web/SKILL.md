@@ -1,6 +1,7 @@
 ---
 name: auth0-flutter-web
-description: Use when adding Auth0 authentication to a Flutter web application — integrates the auth0_flutter SDK (web platform) for browser-based authentication using redirect login, popup login, and credential caching.
+description: >
+  Use when adding Auth0 login or logout to a Flutter web application. Integrates auth0_flutter on the web platform — use even if the user says "add login to my Flutter web app".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

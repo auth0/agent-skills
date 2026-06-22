@@ -1,6 +1,7 @@
 ---
 name: auth0-nextjs
-description: Use when adding authentication to Next.js applications (login, logout, protected pages, middleware, server components) - supports App Router and Pages Router with @auth0/nextjs-auth0 SDK.
+description: >
+  Use when adding Auth0 login, logout, protected pages, or middleware to a Next.js application. Supports App Router and Pages Router with @auth0/nextjs-auth0 — use even if the user says "add login to my Next.js app" or "protect my Next.js routes".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

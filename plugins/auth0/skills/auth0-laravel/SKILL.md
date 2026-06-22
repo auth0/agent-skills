@@ -1,6 +1,7 @@
 ---
 name: auth0-laravel
-description: Use when adding login, logout, and user profile to a Laravel web application using session-based authentication - integrates auth0/login (laravel-auth0) for guard-based auth with auto-registered routes.
+description: >
+  Use when adding session-based login, logout, or user profile to a Laravel web application. Integrates auth0/login (laravel-auth0) with guard-based auth — use even if the user says "add login to my Laravel app".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

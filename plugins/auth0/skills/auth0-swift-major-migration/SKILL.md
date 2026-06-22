@@ -1,6 +1,7 @@
 ---
 name: auth0-swift-major-migration
-description: "Migrates Auth0.swift v2.x integrations to v3.x. Pass a target v3 tag as an argument (e.g. auth0-swift-major-migration 3.0.0-beta.2) to pin a specific version, or omit it to auto-resolve the latest v3 release. Detects the current version, fetches the new SDK's actual source to confirm signatures, audits which Auth0 APIs the project actually uses, and applies only the breaking changes that affect real call sites — nothing else. Builds until green, then summarises what changed."
+description: >
+  Use when upgrading an iOS or macOS app's Auth0.swift SDK from v2 to v3. Detects the current version, fetches the new SDK source to confirm API signatures, and applies only the breaking changes that affect real call sites — use even if the user says "update my Auth0 Swift SDK" or "migrate to Auth0.swift v3".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

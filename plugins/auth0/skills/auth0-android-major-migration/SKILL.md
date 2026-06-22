@@ -1,6 +1,7 @@
 ---
 name: auth0-android-major-migration
-description: Use when upgrading the Auth0.Android SDK (com.auth0.android:auth0) to its next major version (v4) in a native Android app (Kotlin/Java). Optionally takes a target version as an argument; otherwise auto-resolves the latest v4 release. Detects the current version, checks prerequisites (minSdk 26, Java 17, Gradle/AGP/Kotlin), fetches the new SDK's actual source to confirm signatures, audits which Auth0 APIs the project actually uses, and applies only the breaking changes that affect real call sites — nothing else. Builds until green, then summarises what changed.
+description: >
+  Use when upgrading an Android app's Auth0 SDK (com.auth0.android:auth0) to the next major version. Detects the current version, checks prerequisites, and applies only the breaking changes that affect the project's real call sites. Use even if the user just says "update my Auth0 Android SDK" or "migrate to Auth0 Android v4".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

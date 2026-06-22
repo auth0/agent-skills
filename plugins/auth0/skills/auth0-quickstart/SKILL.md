@@ -1,6 +1,7 @@
 ---
 name: auth0-quickstart
-description: Use when adding authentication or login to any app - detects your stack (React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, ASP.NET Core, React Native, Expo, Android, Swift), sets up an Auth0 account if needed, and routes to the correct SDK setup workflow.
+description: >
+  Use when adding Auth0 authentication to any app and unsure which SDK or skill to use. Detects the project's framework and routes to the right setup workflow — use this as the entry point even if the user just says "add login to my app" or "set up Auth0" without naming a framework.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

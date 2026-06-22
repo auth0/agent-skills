@@ -1,6 +1,7 @@
 ---
 name: auth0-fastapi-api
-description: "Use when securing FastAPI API endpoints with JWT Bearer token validation, scope/permission checks, or stateless auth - integrates auth0-fastapi-api for REST APIs receiving access tokens from SPAs, mobile apps, or other clients. Also handles DPoP proof-of-possession token binding. Triggers on: Auth0FastAPI, FastAPI API auth, JWT validation, require_auth, DPoP."
+description: >
+  Use when protecting FastAPI endpoints with JWT Bearer token validation, scope checks, or DPoP binding. Integrates auth0-fastapi-api for stateless APIs receiving access tokens — use even if the user says "secure my FastAPI endpoints" or "validate tokens in FastAPI".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

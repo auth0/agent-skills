@@ -1,6 +1,7 @@
 ---
 name: auth0-ionic-angular
-description: Use when adding Auth0 authentication to an Ionic Angular application with Capacitor — integrates @auth0/auth0-angular SDK with Capacitor Browser and App plugins for native iOS/Android deep linking, login, logout, and user profile display.
+description: >
+  Use when adding Auth0 login, logout, or deep linking to an Ionic Angular app with Capacitor. Integrates @auth0/auth0-angular with Capacitor Browser and App plugins for native iOS/Android.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

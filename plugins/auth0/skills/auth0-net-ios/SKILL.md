@@ -1,6 +1,7 @@
 ---
 name: auth0-net-ios
-description: Use when adding Auth0 authentication to .NET iOS applications - integrates Auth0.OidcClient.iOS NuGet package for native login, logout, token management, and user profile via ASWebAuthenticationSession with PKCE. Trigger on .NET iOS auth, .NET 8 iOS auth, .NET 9 iOS auth, add login to .NET iOS, Auth0 iOS C#, Xamarin iOS auth, Auth0 OIDC iOS, ASWebAuthenticationSession login .NET, native iOS C# authentication
+description: >
+  Use when adding Auth0 login or token management to a .NET iOS application. Integrates Auth0.OidcClient.iOS — use even if the user says "add login to my .NET iOS app" or references Xamarin iOS.
 license: Apache-2.0
 metadata:
   author: Auth0 SDKs Team <auth0-sdk-cdt@okta.com>

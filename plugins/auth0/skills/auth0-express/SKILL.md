@@ -1,6 +1,7 @@
 ---
 name: auth0-express
-description: Use when adding authentication (login, logout, protected routes) to Express.js web applications - integrates express-openid-connect for session-based auth.
+description: >
+  Use when adding session-based login, logout, or protected routes to an Express.js web application. Integrates express-openid-connect — use even if the user says "add login to my Express app" or "protect my Express routes".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

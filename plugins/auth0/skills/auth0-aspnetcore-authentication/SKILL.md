@@ -1,6 +1,7 @@
 ---
 name: auth0-aspnetcore-authentication
-description: Use when adding login, logout, and user profile to an ASP.NET Core MVC, Razor Pages, or Blazor Server web application using cookie-based authentication - integrates Auth0.AspNetCore.Authentication for server-rendered apps with login/callback/profile/logout flows.
+description: >
+  Use when adding cookie-based login, logout, or user profile to an ASP.NET Core MVC, Razor Pages, or Blazor Server web app. Integrates Auth0.AspNetCore.Authentication — use even if the user says "add login to my .NET web app" without naming the package.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

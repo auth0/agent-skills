@@ -1,6 +1,7 @@
 ---
 name: auth0-net-android
-description: Use when adding Auth0 authentication to .NET Android applications - integrates Auth0.OidcClient.AndroidX NuGet package for native login, logout, token management, and user profile via system browser with PKCE. Trigger on .NET Android auth, .NET 8 Android auth, .NET 9 Android auth, add login to .NET Android, Auth0 Android C#, Xamarin Android auth, Auth0 OIDC Android, Chrome Custom Tabs login .NET, native Android C# authentication
+description: >
+  Use when adding Auth0 login or token management to a .NET Android application. Integrates Auth0.OidcClient.AndroidX — use even if the user says "add login to my .NET Android app" or references Xamarin Android.
 license: Apache-2.0
 metadata:
   author: Auth0 SDKs Team <auth0-sdk-cdt@okta.com>

@@ -1,6 +1,7 @@
 ---
 name: auth0-branding
-description: Use when you want to (1) brand an Auth0 tenant's Universal Login to match a website or brand assets (colors, logo, fonts, page layout, text); (2) manually update one or more branding values (logos, colors, fonts, borders, backgrounds, text strings, or the page template) without extraction; (3) rewrite login text to match a voice and tone; (4) reset branding to Auth0 defaults; or (5) check whether a tenant is set up for branding to take effect end-to-end. Does not cover Advanced Customizations for Universal Login (ACUL); use the `acul-screen-generator` skill for that.
+description: >
+  Use when customizing the look of Auth0 Universal Login to match a brand — changing colors, logo, fonts, page layout, or login text. Also use when resetting branding to defaults or checking if branding is wired up end-to-end. Does not cover full custom UI screens — use acul-screen-generator for that.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

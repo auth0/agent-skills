@@ -1,6 +1,7 @@
 ---
 name: auth0-flutter-native
-description: Use when adding Auth0 authentication to a Flutter mobile application (iOS/Android) — integrates the auth0_flutter SDK (native platform) for Web Auth login/logout via the system browser, with secure credential storage and biometric protection through the CredentialsManager.
+description: >
+  Use when adding Auth0 login, logout, or biometric-protected credential storage to a Flutter mobile app (iOS or Android). Integrates auth0_flutter on the native platform — use even if the user says "add login to my Flutter app".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

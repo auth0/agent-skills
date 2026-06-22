@@ -1,6 +1,7 @@
 ---
 name: auth0-winforms
-description: Use when adding Auth0 authentication to Windows Forms (WinForms) desktop applications - integrates Auth0.OidcClient.WinForms NuGet package for native login, logout, token refresh, and user profile. Trigger on WinForms authentication, add login to WinForms, Auth0 WinForms, .NET Windows Forms auth, Windows desktop auth
+description: >
+  Use when adding Auth0 login, logout, or token management to a Windows Forms (WinForms) desktop application. Integrates Auth0.OidcClient.WinForms — use even if the user says "add login to my WinForms app" or "add Auth0 to my Windows desktop app".
 license: Apache-2.0
 metadata:
   author: Auth0 SDKs Team <auth0-sdk-cdt@okta.com>

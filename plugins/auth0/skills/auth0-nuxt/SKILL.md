@@ -1,6 +1,7 @@
 ---
 name: auth0-nuxt
-description: Use when implementing Auth0 authentication in Nuxt 3/4 applications, configuring session management, protecting routes with middleware, or integrating API access tokens - provides setup patterns, composable usage, and security best practices for the @auth0/auth0-nuxt SDK
+description: >
+  Use when adding Auth0 login, logout, session management, or protected routes to a Nuxt 3 or Nuxt 4 application. Integrates @auth0/auth0-nuxt — use even if the user says "add login to my Nuxt app".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

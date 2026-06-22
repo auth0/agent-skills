@@ -1,6 +1,7 @@
 ---
 name: auth0-laravel-api
-description: "Use when securing Laravel API endpoints with JWT Bearer token validation, scope/permission checks, or stateless auth - integrates auth0/login (laravel-auth0) with the AuthorizationGuard for REST APIs receiving access tokens from SPAs, mobile apps, or other clients. Triggers on: Laravel API auth, auth0.authorizer, AuthorizationGuard, Laravel JWT, stateless Bearer."
+description: >
+  Use when protecting Laravel API endpoints with JWT Bearer token validation or scope checks. Integrates auth0/login with the AuthorizationGuard for stateless APIs receiving access tokens.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
