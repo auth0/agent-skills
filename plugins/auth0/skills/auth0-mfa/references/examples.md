@@ -181,9 +181,7 @@ export default function TransferPage() {
 
 ## Vue.js
 
-Two approaches for step-up MFA in Vue. Use **acr_values** when you need explicit control over when MFA is required (e.g. gating a specific action). Use **interactiveErrorHandler: 'popup'** when you want the SDK to handle MFA automatically on any token request.
-
-### Approach 1: acr_values + amr check (recommended for action-gating)
+### Step-Up Authentication: acr_values + amr check
 
 `idTokenClaims` is a reactive ref from `useAuth0()` — read it as `idTokenClaims.value?.amr`. Check the `amr` claim directly before executing the sensitive action, then request MFA via `acr_values` if not already completed:
 
@@ -222,9 +220,9 @@ const handleTransfer = async () => {
 </template>
 ```
 
-### Approach 2: interactiveErrorHandler: 'popup' (recommended for transparent MFA)
+### Policy-driven MFA: interactiveErrorHandler: 'popup'
 
-Add `useRefreshTokens: true` and `interactiveErrorHandler: 'popup'` to your `createAuth0` setup. The SDK then handles any `mfa_required` error automatically by opening a Universal Login popup — no `acr_values` or `amr` checking needed in your components:
+When Auth0 tenant policy requires MFA (not app-initiated step-up), add `useRefreshTokens: true` and `interactiveErrorHandler: 'popup'` to your `createAuth0` setup. The SDK handles the `mfa_required` error from Auth0 by opening a Universal Login popup automatically — the app is not in control of when MFA is required, Auth0 is:
 
 ```js
 // main.js
