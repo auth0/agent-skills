@@ -229,25 +229,6 @@ const handleSensitiveAction = async () => {
 </template>
 ```
 
-### Step-Up via Popup (alternative — no acr_values needed in components)
-
-Set `interactiveErrorHandler: 'popup'` in setup and the SDK handles MFA automatically:
-
-```js
-// main.js
-app.use(
-  createAuth0({
-    domain: '<AUTH0_DOMAIN>',
-    clientId: '<AUTH0_CLIENT_ID>',
-    authorizationParams: { redirect_uri: window.location.origin },
-    useRefreshTokens: true,
-    interactiveErrorHandler: 'popup',
-  })
-);
-```
-
-With this configured, `getAccessTokenSilently()` opens a Universal Login popup automatically when MFA is required — no extra component code needed.
-
 ### Custom MFA UI (challenge flow)
 
 For a fully custom MFA UI, catch `MfaRequiredError` from `getAccessTokenSilently` and drive the flow via the `mfa` object. Requires `useRefreshTokens: true`:
