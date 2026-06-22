@@ -181,60 +181,120 @@ export default function TransferPage() {
 
 ## Vue.js
 
-```typescript
-<script setup lang="ts">
+### Step-Up Authentication (acr_values)
+
+Check the `amr` claim via `idTokenClaims`, then request MFA via `acr_values` if not already completed:
+
+```html
+<script setup>
 import { useAuth0 } from '@auth0/auth0-vue';
-import { ref } from 'vue';
 
-const { getAccessTokenSilently, getIdTokenClaims, loginWithRedirect } = useAuth0();
-const isVerifying = ref(false);
+const { getAccessTokenSilently, loginWithRedirect, idTokenClaims } = useAuth0();
 
-const hasMFA = async (): Promise<boolean> => {
-  const claims = await getIdTokenClaims();
-  const amr = claims?.amr || [];
+const hasMFA = () => {
+  const amr = idTokenClaims.value?.amr || [];
   return amr.includes('mfa');
 };
 
 const requireMFA = async () => {
-  isVerifying.value = true;
-  try {
-    if (!(await hasMFA())) {
-      try {
-        await getAccessTokenSilently({
-          authorizationParams: {
-            acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
-            max_age: 0,
-          },
-        });
-      } catch {
-        await loginWithRedirect({
-          authorizationParams: {
-            acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
-          },
-        });
-        return false;
-      }
+  if (!hasMFA()) {
+    try {
+      await getAccessTokenSilently({
+        authorizationParams: {
+          acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
+          max_age: 0,
+        },
+      });
+    } catch {
+      await loginWithRedirect({
+        authorizationParams: {
+          acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
+        },
+      });
+      return false;
     }
-    return true;
-  } finally {
-    isVerifying.value = false;
   }
+  return true;
 };
 
 const handleSensitiveAction = async () => {
   if (await requireMFA()) {
-    // Proceed with sensitive action
-    console.log('MFA verified, proceeding...');
+    // MFA verified — proceed
   }
 };
 </script>
 
 <template>
-  <button @click="handleSensitiveAction" :disabled="isVerifying">
-    {{ isVerifying ? 'Verifying...' : 'Transfer Funds' }}
-  </button>
+  <button @click="handleSensitiveAction">Transfer Funds</button>
 </template>
 ```
+
+### Step-Up via Popup (alternative — no acr_values needed in components)
+
+Set `interactiveErrorHandler: 'popup'` in setup and the SDK handles MFA automatically:
+
+```js
+// main.js
+app.use(
+  createAuth0({
+    domain: '<AUTH0_DOMAIN>',
+    clientId: '<AUTH0_CLIENT_ID>',
+    authorizationParams: { redirect_uri: window.location.origin },
+    useRefreshTokens: true,
+    interactiveErrorHandler: 'popup',
+  })
+);
+```
+
+With this configured, `getAccessTokenSilently()` opens a Universal Login popup automatically when MFA is required — no extra component code needed.
+
+### Custom MFA UI (challenge flow)
+
+For a fully custom MFA UI, catch `MfaRequiredError` from `getAccessTokenSilently` and drive the flow via the `mfa` object. Requires `useRefreshTokens: true`:
+
+```html
+<script>
+import { useAuth0, MfaRequiredError } from '@auth0/auth0-vue';
+import { ref } from 'vue';
+
+export default {
+  setup() {
+    const { getAccessTokenSilently, mfa, checkSession } = useAuth0();
+    const mfaToken = ref(null);
+    const authenticators = ref([]);
+    const otpCode = ref('');
+
+    const fetchToken = async () => {
+      try {
+        await getAccessTokenSilently({
+          authorizationParams: { audience: 'https://api.example.com' },
+        });
+      } catch (e) {
+        if (e instanceof MfaRequiredError) {
+          mfaToken.value = e.mfa_token;
+          if (e.mfa_requirements?.enroll?.length) {
+            const factors = await mfa.getEnrollmentFactors(e.mfa_token);
+            // present factors to user ...
+          } else {
+            authenticators.value = await mfa.getAuthenticators(e.mfa_token);
+          }
+        }
+      }
+    };
+
+    const verifyOtp = async () => {
+      await mfa.verify({ mfaToken: mfaToken.value, otp: otpCode.value });
+      // mfa.verify() does not update Vue reactive state — always call checkSession() after
+      await checkSession();
+    };
+
+    return { fetchToken, verifyOtp, authenticators, otpCode };
+  },
+};
+</script>
+```
+
+> For SMS/email OTP use `mfa.challenge()` then `mfa.verify()` with `oobCode` + `bindingCode`. See the [auth0-vue MFA examples](https://github.com/auth0/auth0-vue/blob/main/EXAMPLES.md#multi-factor-authentication-mfa) for full challenge and enrollment flows.
 
 ---
 
