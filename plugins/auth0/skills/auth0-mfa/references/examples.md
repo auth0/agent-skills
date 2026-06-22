@@ -220,43 +220,6 @@ const handleTransfer = async () => {
 </template>
 ```
 
-### Policy-driven MFA: interactiveErrorHandler: 'popup'
-
-When Auth0 tenant policy requires MFA (not app-initiated step-up), add `useRefreshTokens: true` and `interactiveErrorHandler: 'popup'` to your `createAuth0` setup. The SDK handles the `mfa_required` error from Auth0 by opening a Universal Login popup automatically — the app is not in control of when MFA is required, Auth0 is:
-
-```js
-// main.js
-app.use(
-  createAuth0({
-    domain: '<AUTH0_DOMAIN>',
-    clientId: '<AUTH0_CLIENT_ID>',
-    authorizationParams: { redirect_uri: window.location.origin },
-    useRefreshTokens: true,
-    interactiveErrorHandler: 'popup',
-  })
-);
-```
-
-```html
-<script setup>
-import { useAuth0 } from '@auth0/auth0-vue';
-
-const { getAccessTokenSilently } = useAuth0();
-
-const handleTransfer = async () => {
-  // If MFA is required, SDK opens Universal Login popup automatically
-  await getAccessTokenSilently({
-    authorizationParams: { audience: 'https://api.example.com' },
-  });
-  // Proceed — MFA was handled transparently
-};
-</script>
-
-<template>
-  <button @click="handleTransfer">Transfer Funds</button>
-</template>
-```
-
 ### Custom MFA UI (challenge flow)
 
 For a fully custom MFA UI, catch `MfaRequiredError` from `getAccessTokenSilently` and drive the flow via the `mfa` object. Requires `useRefreshTokens: true`:
