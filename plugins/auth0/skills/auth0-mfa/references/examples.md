@@ -191,13 +191,10 @@ import { useAuth0 } from '@auth0/auth0-vue';
 
 const { getAccessTokenSilently, loginWithRedirect, idTokenClaims } = useAuth0();
 
-const hasMFA = () => {
+const handleTransfer = async () => {
+  // Check amr claim — only proceed if mfa is present
   const amr = idTokenClaims.value?.amr || [];
-  return amr.includes('mfa');
-};
-
-const requireMFA = async () => {
-  if (!hasMFA()) {
+  if (!amr.includes('mfa')) {
     try {
       await getAccessTokenSilently({
         authorizationParams: {
@@ -211,21 +208,15 @@ const requireMFA = async () => {
           acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
         },
       });
-      return false;
+      return;
     }
   }
-  return true;
-};
-
-const handleSensitiveAction = async () => {
-  if (await requireMFA()) {
-    // MFA verified — proceed
-  }
+  // amr includes 'mfa' — execute transfer
 };
 </script>
 
 <template>
-  <button @click="handleSensitiveAction">Transfer Funds</button>
+  <button @click="handleTransfer">Transfer Funds</button>
 </template>
 ```
 
