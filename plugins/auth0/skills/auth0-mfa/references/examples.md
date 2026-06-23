@@ -220,54 +220,6 @@ const handleTransfer = async () => {
 </template>
 ```
 
-### Custom MFA UI (challenge flow)
-
-For a fully custom MFA UI, catch `MfaRequiredError` from `getAccessTokenSilently` and drive the flow via the `mfa` object. Requires `useRefreshTokens: true`:
-
-```html
-<script>
-import { useAuth0, MfaRequiredError } from '@auth0/auth0-vue';
-import { ref } from 'vue';
-
-export default {
-  setup() {
-    const { getAccessTokenSilently, mfa, checkSession } = useAuth0();
-    const mfaToken = ref(null);
-    const authenticators = ref([]);
-    const otpCode = ref('');
-
-    const fetchToken = async () => {
-      try {
-        await getAccessTokenSilently({
-          authorizationParams: { audience: 'https://api.example.com' },
-        });
-      } catch (e) {
-        if (e instanceof MfaRequiredError) {
-          mfaToken.value = e.mfa_token;
-          if (e.mfa_requirements?.enroll?.length) {
-            const factors = await mfa.getEnrollmentFactors(e.mfa_token);
-            // present factors to user ...
-          } else {
-            authenticators.value = await mfa.getAuthenticators(e.mfa_token);
-          }
-        }
-      }
-    };
-
-    const verifyOtp = async () => {
-      await mfa.verify({ mfaToken: mfaToken.value, otp: otpCode.value });
-      // mfa.verify() does not update Vue reactive state — always call checkSession() after
-      await checkSession();
-    };
-
-    return { fetchToken, verifyOtp, authenticators, otpCode };
-  },
-};
-</script>
-```
-
-> For SMS/email OTP use `mfa.challenge()` then `mfa.verify()` with `oobCode` + `bindingCode`. See the [auth0-vue MFA examples](https://github.com/auth0/auth0-vue/blob/main/EXAMPLES.md#multi-factor-authentication-mfa) for full challenge and enrollment flows.
-
 ---
 
 ## Angular
