@@ -16,7 +16,13 @@ reviews:
 
         Frontmatter:
         - `name` (required): max 64 chars, lowercase letters/numbers/hyphens only, must not start/end with hyphen, no consecutive hyphens, must match the parent directory name.
-        - `description` (required): max 1024 chars, must describe what the skill does AND when to use it. Flag vague descriptions.
+        - `description` (required): max 1024 chars. Flag any description that:
+            - Does NOT start with imperative phrasing ("Use when...", "Use this skill when...", "Use to...")
+            - Starts with a noun phrase or passive form ("This skill...", "Handles...", "Provides...")
+            - Contains keyword-dump patterns: "Triggers on:", "Also handles:", or comma-separated keyword lists
+            - Describes internal mechanics rather than user intent (what the user is trying to achieve)
+            - Missing scope hints for indirect invocation (e.g. "even if the user doesn't mention Auth0 explicitly")
+            - Exceeds 1024 characters
         - `license`: should be "Apache-2.0" for this repo.
         - `metadata.author`: should be present (e.g. "Auth0 <support@auth0.com>").
         - `metadata.version`: should be a semver string.
