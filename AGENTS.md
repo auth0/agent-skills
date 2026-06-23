@@ -73,3 +73,42 @@ Rules live in [`.skillsaw.yaml`](./.skillsaw.yaml) and
   (`plugins/auth0/README.md`); the linter enforces this.
 - Keep documentation single-sourced. `CONTRIBUTING.md` is the source of truth
   for contribution rules — link to it instead of restating its details.
+
+## Writing skill descriptions
+
+The `description` field is the only signal an agent uses to decide whether to
+load a skill. A poor description means the skill never triggers (or triggers
+when it shouldn't). Follow the
+[agentskills.io guide](https://agentskills.io/skill-creation/optimizing-descriptions)
+and these rules when writing or reviewing a `description`:
+
+**Do:**
+- Start with imperative phrasing: `Use when...` or `Use this skill when...`
+- Describe **user intent** (what they're trying to achieve), not skill mechanics
+- Call out indirect trigger cases: `even if the user doesn't mention "Auth0" explicitly`
+- Cover the full scope — framework name, SDK, and related concepts
+- Stay under **1024 characters** (hard limit enforced by the spec)
+
+**Don't:**
+- Open with `This skill...` or `Handles...` or a noun phrase
+- List keywords or comma-separated trigger words (`Triggers on: login, token, JWT`)
+- Use `Also handles:` patterns
+- Write a description that only triggers when the user names the skill directly
+
+**Before/after example:**
+
+```yaml
+# Bad — describes mechanics, passive phrasing, keyword dump
+description: >
+  Auth0 Express.js integration. Handles login, logout, token validation.
+  Triggers on: express, node, jwt, auth0-express.
+
+# Good — user intent, imperative, scope hints
+description: >
+  Use when adding Auth0 authentication to an Express.js app — login/logout
+  flows, session management, and protecting API routes with JWT validation.
+  Use even if the user says "add auth to my Node API" without mentioning Auth0.
+```
+
+When in doubt, ask: *"Would an agent reading only this description know exactly
+when to reach for this skill — and when not to?"*
