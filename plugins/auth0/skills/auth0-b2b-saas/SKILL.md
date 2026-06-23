@@ -168,6 +168,12 @@ auth0 orgs invitations create --org-id <org-id> \
 
 The invitee gets an email; the link lands on your login route with `invitation` + `organization`.
 
+**Brand the invitation email** with org Liquid variables (`organization.display_name`,
+`organization.branding.*`, `inviter.name`, `roles.name`) — and the verification email's redirect
+is what kicks off self-service org creation. Both, plus the custom-domain requirement and the
+`resultUrl` restriction on newer tenants, are covered in
+[Architecture → Onboarding & invitation emails](references/architecture.md#onboarding--invitation-emails).
+
 ---
 
 ## Step 4 — Token shaping (post-login Action)
@@ -220,12 +226,24 @@ authorization to it, then check `permissions`/roles. Full middleware pattern (Ex
 
 ---
 
+## Advanced organization capabilities
+
+Once the core flow works, Auth0 Organizations support more. See
+[Advanced Capabilities](references/advanced.md):
+
+- **Self-service enterprise SSO** — a hosted assistant lets a customer's admin connect their own
+  IdP (no UI work for you); on completion Auth0 creates the connection and enables it on the org.
+- **M2M (Client Credentials) scoped per org** — a customer's backend gets an `org_id`-bound machine
+  token; associate the client grant per org and shape claims via a **credentials-exchange** Action
+  (the post-login Action in Step 4 does **not** run for M2M).
+- **SCIM directory sync** — central provisioning/deprovisioning from the customer's IdP.
+- **Per-org branding**, **org metadata** (plan/feature gating), and **per-org token quota**.
+
 ## Verifying the setup
 
 After provisioning, confirm the tenant behaves as configured (login works, `org_id` lands in the
-token, scope enforcement rejects the wrong org). This scenario is a candidate for a runtime
-verify harness; until that ships, see [API & Token Reference](references/api.md#verification) for
-the manual checks (`auth0 test login`, decode the token, assert `org_id` + roles + permissions).
+token, scope enforcement rejects the wrong org). See [API & Token Reference](references/api.md#verification)
+for the manual checks (`auth0 test login`, decode the token, assert `org_id` + roles + permissions).
 
 ---
 
@@ -234,7 +252,8 @@ the manual checks (`auth0 test login`, decode the token, assert `org_id` + roles
 - `auth0-cli` — full command/flag reference for orgs, roles, actions, connections
 - `auth0-nextjs` / `auth0-react` / `express-oauth2-jwt-bearer` — framework login & API enforcement
 - `auth0-mfa` — add step-up MFA for sensitive org actions
-- `auth0-custom-domains` — per-tenant custom domains
+- `auth0-custom-domains` — per-tenant custom domains (required to customize the invitation flow)
+- `auth0-branding` — authoring the invitation / verification email templates and Universal Login text
 
 ## References in this skill
 
@@ -242,6 +261,7 @@ the manual checks (`auth0 test login`, decode the token, assert `org_id` + roles
 - [Architecture Patterns](references/architecture.md) — two-client setup, signup flows, login methods, role model
 - [Setup & Provisioning](references/setup.md) — CLI commands for organizations, connections, roles, actions
 - [Integration & Enforcement](references/integration.md) — app-side token validation, org scoping, enforcement middleware
+- [Advanced Capabilities](references/advanced.md) — self-service SSO, M2M-per-org, SCIM, per-org branding/metadata/token quota
 
 ## References
 

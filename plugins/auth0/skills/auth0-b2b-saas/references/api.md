@@ -57,6 +57,23 @@ this by hand when using the Dashboard toggle; via the Management API set
 
 `assign_membership_on_login` (boolean) on the enabled-connection object controls JIT membership.
 
+### Advanced endpoints
+
+See [Advanced Capabilities](advanced.md) for when/why to use these.
+
+| Action | Endpoint |
+|--------|----------|
+| Create self-service SSO profile | `POST self-service-profiles` |
+| Mint self-service SSO ticket | `POST self-service-profiles/{id}/sso-ticket` |
+| Revoke SSO ticket | `POST self-service-profiles/{profileId}/sso-ticket/{id}/revoke` |
+| Associate M2M client grant with org | `POST organizations/{org_id}/client-grants` |
+| Disassociate M2M client grant | `DELETE organizations/{org_id}/client-grants/{grant_id}` |
+| Update org metadata / branding / token quota | `PATCH organizations/{org_id}` |
+
+M2M org access is controlled by `organization_usage` (`deny`/`allow`/`require`) and
+`allow_any_organization` on the **client grant** — `allow_any_organization: true` is trusted-internal
+only. M2M tokens skip the post-login Action; shape their claims with a **credentials-exchange** Action.
+
 ## Common errors
 
 | Status / code | Cause | Fix |

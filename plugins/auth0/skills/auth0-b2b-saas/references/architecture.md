@@ -60,6 +60,32 @@ user lands on the org-creation step. Use a verified email before allowing org cr
 | **Invitation** | Admin adds named teammates, optionally with roles | `POST organizations/{id}/invitations`; email link carries `invitation` + `organization` |
 | **JIT (auto-membership)** | Everyone on a customer's IdP belongs to that org | `assign_membership_on_login: true` on the org's enabled connection |
 
+### Onboarding & invitation emails
+
+Two emails sit *inside* the flows above — customize them so onboarding feels like your product,
+not Auth0:
+
+- **User-invitation email** — sent on `POST organizations/{id}/invitations` (unless
+  `send_invitation_email: false`). It's **always** triggered in org context, so org Liquid
+  variables are available: `organization.display_name`, `organization.branding.logo_url`,
+  `organization.branding.colors.*`, plus `inviter.name` and the assigned `roles.name` /
+  `roles.description`. Use these to render a branded "{inviter} invited you to {company}" email.
+  Match the Universal Login `accept-invitation` screen text (`companyName`, `inviterName`) so the
+  email and the landing prompt feel consistent.
+- **Verification email** — its **Redirect To** (`resultUrl`) is what sends a freshly-verified user
+  to `/onboarding/create` to create their org (this is exactly what the reference app's bootstrap
+  sets). This is the hinge of the self-service Company Tenant flow.
+
+Two gotchas worth knowing up front:
+
+- **Customizing the invitation flow (prompt + email) requires a custom domain.** Free plans
+  include one; see the `auth0-custom-domains` skill.
+- **`resultUrl` is restricted on newer tenants.** Tenants created **on/after 2026-05-05** on a
+  **non-enterprise** subscription cannot set `resultUrl` (open-redirect mitigation); tenants created
+  before are exempt. If you can't set it, drive the post-verification redirect from a
+  **post-challenge** Action via `api.transaction.setResultURL()` instead, or land users on a fixed
+  app route. For email-template authoring details and Liquid syntax, see the `auth0-branding` skill.
+
 ## Login methods
 
 Think in terms of the **login experience** you want, not connection types. Pick one or more — they
