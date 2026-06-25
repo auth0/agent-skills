@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 set -euo pipefail
-SKILL_MD="plugins/auth0/skills/auth0/SKILL.md"
-REFS_DIR="plugins/auth0/skills/auth0/references"
+
+# Resolve repo root from script location (safe to run from any directory)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+
+SKILL_MD="$REPO_ROOT/plugins/auth0/skills/auth0/SKILL.md"
+REFS_DIR="$REPO_ROOT/plugins/auth0/skills/auth0/references"
+
+# Sanity check
+if [ ! -f "$SKILL_MD" ]; then
+  echo "ERROR: SKILL.md not found at $SKILL_MD — is this the right repo?"
+  exit 1
+fi
 
 # Extract description line
 DESC=$(grep "^description:" "$SKILL_MD" | sed 's/^description: //')
