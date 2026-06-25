@@ -72,4 +72,28 @@ if [ "$OLD_PATTERNS" -gt 0 ]; then
   exit 1
 fi
 
+# Feature file checks
+EXPECTED_FEATURES="mfa branding custom-domains migration acul"
+for feat in $EXPECTED_FEATURES; do
+  if [ ! -f "$REFS_DIR/feature-$feat.md" ]; then
+    echo "FAIL: missing references/feature-$feat.md"
+    exit 1
+  fi
+done
+OLD_FEATURE=$(ls "$REFS_DIR/mfa-"*.md "$REFS_DIR/branding-"*.md "$REFS_DIR/acul-"*.md 2>/dev/null | wc -l || true)
+if [ "$OLD_FEATURE" -gt 0 ]; then
+  echo "FAIL: old feature source files still exist ($OLD_FEATURE files)"
+  exit 1
+fi
+
+if [ ! -f "$REFS_DIR/feature-organizations.md" ]; then
+  echo "FAIL: missing references/feature-organizations.md"
+  exit 1
+fi
+ORG_LINES=$(wc -l < "$REFS_DIR/feature-organizations.md")
+if [ "$ORG_LINES" -lt 80 ]; then
+  echo "FAIL: feature-organizations.md too short ($ORG_LINES lines, need 80+)"
+  exit 1
+fi
+
 echo "PASS"
