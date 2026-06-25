@@ -15,8 +15,8 @@
         "url": "https://github.com/auth0/agent-skills.git",
         "path": "plugins/auth0"
       },
-      "description": "Auth0 skills for quickstarts, migration, MFA, branding, custom domains, Advanced Custom Universal Login (ACUL) screen generation, and framework-specific SDK integrations for React, Next.js, Vue, Nuxt, Angular, Express, Fastify, FastAPI, Flask, Go, Spring Boot, Java MVC, Swift, Android, ASP.NET Core, React Native, Expo, Ionic React (Capacitor), Ionic Angular (Capacitor), and Ionic Vue (Capacitor).",
-      "version": "1.1.0",
+      "description": "One skill for all Auth0 integrations. Covers authentication for React, Next.js, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Flutter, PHP, Laravel, Go, ASP.NET Core, React Native, Expo, Ionic, .NET MAUI, WinForms, WPF, and more. Includes debugging, security best practices, MFA, Organizations, custom domains, ACUL, branding, and migration from Clerk, Firebase, or Cognito.",
+      "version": "2.0.0",
       "repository": "https://github.com/auth0/agent-skills.git",
       "license": "Apache-2.0",
       "author": {
