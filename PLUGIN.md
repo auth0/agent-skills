@@ -29,12 +29,14 @@ Core skills:
 - `auth0-quickstart` - Framework detection and routing
 - `auth0-migration` - Migrate from other auth providers
 - `auth0-mfa` - Multi-Factor Authentication
+- `acul-screen-generator` - Custom Universal Login screens and theming
 
 Frontend framework skills:
 - `auth0-react` - React SPAs
 - `auth0-vue` - Vue.js 3
 - `auth0-angular` - Angular 12+
 - `auth0-spa-js` - Vanilla JS SPAs
+- `auth0-flutter-web` - Flutter Web (Dart)
 
 Backend/fullstack framework skills:
 - `auth0-nextjs` - Next.js
@@ -46,6 +48,7 @@ Backend/fullstack framework skills:
 - `auth0-fastapi-api` - FastAPI API authentication
 - `auth0-java-mvc-common` - Java Servlet web applications
 - `auth0-springboot-api` - Spring Boot API authentication
+- `auth0-aspnetcore-authentication` - ASP.NET Core MVC, Razor Pages, Blazor Server web applications
 - `auth0-aspnetcore-api` - ASP.NET Core API authentication
 - `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
 
@@ -54,10 +57,18 @@ Mobile skills:
 - `auth0-ionic-react` - Ionic React + Capacitor (iOS/Android)
 - `auth0-ionic-vue` - Ionic Vue + Capacitor (iOS/Android)
 - `auth0-android` - Android (Kotlin/Java)
+- `auth0-android-major-migration` - Auth0.Android major version upgrades (v3 → v4)
 - `auth0-swift` - iOS/macOS (Swift)
+- `auth0-swift-major-migration` - Auth0.swift major version upgrades
 - `auth0-react-native` - React Native CLI (bare workflow)
 - `auth0-expo` - Expo (managed workflow)
+- `auth0-maui` - .NET MAUI cross-platform (iOS, Android, macOS, Windows)
+- `auth0-net-android` - .NET Android (Xamarin)
+- `auth0-net-ios` - .NET iOS (Xamarin)
 
+Desktop Application skills:
+- `auth0-winforms` - .NET WinForms applications
+- `auth0-wpf` - .NET WPF applications
 ---
 
 ## Directory Structure
@@ -81,10 +92,12 @@ auth0/agent-skills/
 │           ├── auth0-quickstart/
 │           ├── auth0-migration/
 │           ├── auth0-mfa/
+│           ├── acul-screen-generator/
 │           ├── auth0-react/
 │           ├── auth0-vue/
 │           ├── auth0-angular/
 │           ├── auth0-spa-js/
+│           ├── auth0-flutter-web/
 │           ├── auth0-nextjs/
 │           ├── auth0-nuxt/
 │           ├── auth0-express/
@@ -94,6 +107,7 @@ auth0/agent-skills/
 │           ├── auth0-fastapi-api/
 │           ├── auth0-java-mvc-common/
 │           ├── auth0-springboot-api/
+│           ├── auth0-aspnetcore-authentication/
 │           ├── auth0-aspnetcore-api/
 │           ├── express-oauth2-jwt-bearer/
 │           ├── auth0-ionic-angular/
@@ -102,7 +116,14 @@ auth0/agent-skills/
 │           ├── auth0-react-native/
 │           ├── auth0-expo/
 │           ├── auth0-android/
-│           └── auth0-swift/
+│           ├── auth0-android-major-migration/
+│           ├── auth0-swift/
+│           ├── auth0-maui/
+│           ├── auth0-net-android/
+│           ├── auth0-winforms/
+│           ├── auth0-net-ios/
+│           └── auth0-wpf/
+│           └── auth0-swift-major-migration/
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
@@ -171,7 +192,7 @@ cp -r plugins/auth0/skills/* ~/.claude/skills/
 ## Use Cases
 
 ### Install Everything (Most Common)
-User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 26 skills.
+User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 31 skills.
 
 ### Install One Framework
 Developer working on React app -> uses CLI to install just `auth0-react` skill.
