@@ -96,4 +96,18 @@ if [ "$ORG_LINES" -lt 80 ]; then
   exit 1
 fi
 
+for t in cli mcp terraform; do
+  if [ ! -f "$REFS_DIR/tooling-$t.md" ]; then
+    echo "FAIL: missing references/tooling-$t.md"
+    exit 1
+  fi
+done
+
+for p in security token-handling multi-tenant rate-limiting common-errors; do
+  if [ ! -f "$REFS_DIR/pattern-$p.md" ]; then
+    echo "FAIL: missing references/pattern-$p.md"
+    exit 1
+  fi
+done
+
 echo "PASS"
