@@ -56,4 +56,20 @@ if ! grep -q "pattern-common-errors" "$SKILL_MD"; then
   exit 1
 fi
 
+# Framework file checks
+EXPECTED_FRAMEWORKS="react nextjs vue angular spa-js nuxt express flask fastify fastify-api java-mvc aspnetcore-auth aspnetcore-api php express-jwt fastapi-api springboot-api go react-native expo ionic-angular ionic-react ionic-vue android swift"
+for fw in $EXPECTED_FRAMEWORKS; do
+  if [ ! -f "$REFS_DIR/framework-$fw.md" ]; then
+    echo "FAIL: missing references/framework-$fw.md"
+    exit 1
+  fi
+done
+
+# Old files must be gone
+OLD_PATTERNS=$(ls "$REFS_DIR/react-"*.md "$REFS_DIR/nextjs-"*.md "$REFS_DIR/vue-"*.md 2>/dev/null | wc -l || true)
+if [ "$OLD_PATTERNS" -gt 0 ]; then
+  echo "FAIL: old framework-type files still exist (found $OLD_PATTERNS)"
+  exit 1
+fi
+
 echo "PASS"
