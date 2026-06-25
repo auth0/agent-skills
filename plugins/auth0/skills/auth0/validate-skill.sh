@@ -34,4 +34,26 @@ fi
 TOTAL=$(ls "$REFS_DIR"/*.md 2>/dev/null | wc -l)
 echo "Reference files: $TOTAL"
 
+# Router checks
+if ! grep -q "Detect intent" "$SKILL_MD"; then
+  echo "FAIL: SKILL.md missing 'Detect intent' section"
+  exit 1
+fi
+if ! grep -q "Detect framework" "$SKILL_MD"; then
+  echo "FAIL: SKILL.md missing 'Detect framework' section"
+  exit 1
+fi
+if ! grep -q "Detect tooling" "$SKILL_MD"; then
+  echo "FAIL: SKILL.md missing 'Detect tooling' section"
+  exit 1
+fi
+if ! grep -q "tooling-terraform" "$SKILL_MD"; then
+  echo "FAIL: SKILL.md missing tooling-terraform routing"
+  exit 1
+fi
+if ! grep -q "pattern-common-errors" "$SKILL_MD"; then
+  echo "FAIL: SKILL.md missing debug routing"
+  exit 1
+fi
+
 echo "PASS"
