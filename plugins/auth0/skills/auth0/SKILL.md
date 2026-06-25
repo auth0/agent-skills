@@ -1,10 +1,10 @@
 ---
-name: auth0-all
-description: Use when adding authentication to any application using Auth0 — covers all frameworks (React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Fastify, ASP.NET Core, Spring Boot, Go, PHP, Java, Swift, Android, React Native, Expo, Ionic), Auth0 CLI, MFA, migrations, branding, custom domains, and ACUL screen generation.
+name: auth0
+description: Use when adding authentication to any app, debugging auth errors (401, CORS, callback mismatch, token expiry), applying security best practices for tokens or multi-tenant architecture, adding enterprise features (MFA, Organizations, custom domains, ACUL), migrating from Clerk, Firebase Auth, Cognito, or another provider, or customizing Universal Login branding. Covers React, Next.js, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Flutter, Go, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and more.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
-  version: '1.0.0'
+  version: '2.0.0'
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
