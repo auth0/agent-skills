@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use when adding authentication to any app, debugging auth errors (401, CORS, callback mismatch, token expiry), applying security best practices for tokens or multi-tenant architecture, adding enterprise features (MFA, Organizations, custom domains, ACUL), migrating from Clerk, Firebase Auth, Cognito, or another provider, or customizing Universal Login branding. Covers React, Next.js, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Flutter, Go, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and more.
+description: Use when adding, fixing, or improving authentication in any app — login, logout, signup, route protection, JWT and access token validation, refresh token rotation, MFA, 2FA, passkeys, step-up auth, SSO, RBAC and permissions, Organizations for B2B multi-tenant SaaS, custom login domains, ACUL, or Universal Login branding. Use even if Auth0 isn't mentioned: applies any time a developer asks how to authenticate users, secure an API, debug a 401 Unauthorized or CORS error, fix a callback URL mismatch or redirect loop, handle 429 rate limits, or migrate from Clerk, NextAuth.js, Firebase Auth, Supabase, Cognito, or Passport.js. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android, Flutter, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and all Auth0 SDKs.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
