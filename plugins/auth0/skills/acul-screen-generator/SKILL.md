@@ -75,7 +75,7 @@ import <ScreenName>Form from './components/<ScreenName>Form'
 import Footer from './components/Footer'
 import { use<ScreenName>Manager } from './hooks/use<ScreenName>Manager'
 
-export const <ScreenName>Screen = () => {
+const <ScreenName>Screen = () => {
   const { sdkInstance, texts, locales } = use<ScreenName>Manager()
   applyAuth0Theme(sdkInstance)
   document.title = texts?.pageTitle ?? locales.pageTitle
@@ -92,7 +92,11 @@ export const <ScreenName>Screen = () => {
     </ULThemePageLayout>
   )
 }
+
+export default <ScreenName>Screen   // REQUIRED: screenLoader registers via lazy(), which needs a default export
 ```
+
+> **`index.tsx` must have a `export default`.** The project's screen registry (`src/utils/screen/screenLoader.ts`) loads each screen with `lazy(() => import('@/screens/<screen-name>'))`, and `React.lazy` resolves the module's **default** export. A named-only export (`export const <ScreenName>Screen`) compiles fine but renders blank / "screen not implemented" at runtime. See "Screen Registration" in Phase 6.
 
 **hooks/use\<ScreenName\>Manager.ts pattern:**
 ```ts
@@ -237,6 +241,21 @@ Proceed to Phase 3.
    Determine whether the example is React (JSX/TSX, hooks) or plain JS (class-based manager) and match it to the project’s framework. If the project is React but only a JS example exists (or vice versa), adapt the patterns accordingly using the appropriate SDK reference (`references/acul-react-sdk.md` or `references/acul-js-sdk.md`).
 
    **Step 4c — Generate the screen files using the project structure**, populated with the SDK reference data from step 4b. This ensures correct directory layout, config integration, and build compatibility. Follow the modular architecture pattern from the "auth0-acul-samples Architecture" section if React, or a single-file component if the example is simple enough.
+
+   **Step 4d — Register the screen in the screen loader (REQUIRED for local dev mode).**
+   The CLI auto-registers screens it scaffolds, but **manually generated screens are not registered** — so `auth0 acul dev` (local mode) renders **"Screen '<screen-name>' is not implemented"** even though the files exist and the build passes. Register the screen manually:
+
+   1. Open `src/utils/screen/screenLoader.ts` (the React project's screen registry).
+   2. Add an entry to the `SCREEN_COMPONENTS` map:
+      ```ts
+      const SCREEN_COMPONENTS: Record<string, React.ComponentType> = {
+        // ...existing entries...
+        "<screen-name>": lazy(() => import("@/screens/<screen-name>")),
+      }
+      ```
+   3. Confirm the screen's `index.tsx` has a **default export** (`export default <ScreenName>Screen`) — `lazy()` resolves the default export. A named-only export will load as blank / "not implemented".
+
+   This step is the difference between `--connected` mode (which reads from the tenant and works without registration) and local `auth0 acul dev` (which resolves screens through `screenLoader.ts`).
 
    For all screen names and their availability → read `references/screen-catalog.md`.
 
@@ -389,6 +408,18 @@ Submit button → Passkey button (conditional) → Social divider + buttons
 (conditional on alternateConnections) → Footer links
 ```
 
+### Screen Registration (Path B and Path C only)
+
+The CLI auto-registers any screen it scaffolds (Path A). **Manually generated screens (Path B, Path C) must be registered by hand**, or local `auth0 acul dev` renders **"Screen '<screen-name>' is not implemented"** — even though the files exist and the build succeeds. (Connected mode resolves screens from the tenant, so it works without this step — which is why the bug only shows in local dev.)
+
+For each manually generated screen:
+
+1. Add it to the `SCREEN_COMPONENTS` map in `src/utils/screen/screenLoader.ts`:
+   ```ts
+   "<screen-name>": lazy(() => import("@/screens/<screen-name>")),
+   ```
+2. Ensure the screen's `index.tsx` (or single-file component) has a `export default` — `React.lazy` resolves the **default** export, not a named one.
+
 ### Validation before outputting any code
 
 - SDK import path exactly matches the screen name (e.g., `@auth0/auth0-acul-react/mfa-otp-challenge`)
@@ -397,6 +428,7 @@ Submit button → Passkey button (conditional) → Social divider + buttons
 - Error state uses SDK source (`hasErrors` / `getErrors()`) — never local-only error state
 - No hardcoded UI strings — use `screen.texts.*` with locale fallback
 - `applyAuth0Theme()` called in index.tsx when using modular architecture (Path A, Path B)
+- **Manually generated screens (Path B, Path C) registered in `src/utils/screen/screenLoader.ts` with a matching `export default`** — required for local `auth0 acul dev`
 
 **All-screens scope:** repeat Path A, B, or C (whichever applies per screen) for every screen in the project, all importing from the shared theme file. Consistent component structure within each path.
 
@@ -469,9 +501,18 @@ If lint or build produces errors, parse each error and apply the appropriate fix
 - Importing a theme utility from a path that doesn't exist in the project — fix: verify the actual path in the project tree
 - Using `applyAuth0Theme` as a named import when it's a default export (or vice versa) — fix: match the module's actual export style
 
+### Runtime check the build CANNOT catch: unregistered screens
+
+A clean `npm run build` does **not** guarantee a manually added screen renders in local dev. The build passes, but `auth0 acul dev` shows **"Screen '<screen-name>' is not implemented"** when:
+
+- The screen is missing from the `SCREEN_COMPONENTS` map in `src/utils/screen/screenLoader.ts`, OR
+- The screen's `index.tsx` has no `export default` (so `lazy()` can't resolve the component).
+
+For every screen generated via Path B or Path C, verify both before finishing. This is a runtime/registry gap, not a compile error — lint and `tsc` will not flag it. (See "Screen Registration" in Phase 6.)
+
 ### Successful validation
 
-Once the build completes with **exit code 0** and no lint errors, proceed to Phase 8.
+Once the build completes with **exit code 0** and no lint errors, **and every manually added screen is registered in `screenLoader.ts` with a `export default`**, proceed to Phase 8.
 
 ---
 
