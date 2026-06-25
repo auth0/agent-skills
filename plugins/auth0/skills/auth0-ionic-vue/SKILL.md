@@ -1,7 +1,8 @@
 ---
 name: auth0-ionic-vue
-description: Use when adding Auth0 authentication to an Ionic Vue application with Capacitor — integrates @auth0/auth0-vue SDK with Capacitor Browser and App plugins for native iOS/Android deep linking, login, logout, and user profile display.
-license: Proprietary
+description: >
+  Use when adding Auth0 login, logout, or deep linking to an Ionic Vue app with Capacitor. Integrates @auth0/auth0-vue with Capacitor Browser and App plugins for native iOS/Android.
+license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
   version: '1.0.0'
@@ -166,7 +167,7 @@ import { IonButton } from '@ionic/vue';
 
 const domain = import.meta.env.VITE_AUTH0_DOMAIN;
 // Agent: read appId from capacitor.config.ts and replace this value
-const packageId = "YOUR_PACKAGE_ID";)
+const packageId = "YOUR_PACKAGE_ID";
 const logoutUri = `${packageId}://${domain}/capacitor/${packageId}/callback`;
 
 const { logout } = useAuth0();

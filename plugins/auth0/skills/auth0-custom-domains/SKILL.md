@@ -1,6 +1,7 @@
 ---
 name: auth0-custom-domains
-description: Use when setting up, troubleshooting, managing, removing, or checking the health of an Auth0 custom authentication domain (e.g. login.example.com), OR when diagnosing an error (400/403/404/409/429) from the /custom-domains Management API — especially Free-tier 403s (credit card on file, not a plan upgrade), self-managed cert 403s, PATCH-type 400s, `operation_not_supported` on `relying_party_identifier`, and 409 domain-already-exists. Handles CNAME creation in the user's DNS provider (Cloudflare, AWS Route 53, Azure DNS automated; other registrars guided), verification polling, Multiple Custom Domains (MCD), default-domain selection, TLS policy, client-IP header, per-domain passkey relying party identifier, and domain metadata.
+description: >
+  Use when setting up, verifying, or troubleshooting a custom Auth0 login domain (e.g. login.example.com). Covers CNAME setup, verification, TLS policy, Multiple Custom Domains, and Management API errors — even if the user just says "use my own domain for Auth0 login".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

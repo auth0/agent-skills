@@ -1,6 +1,7 @@
 ---
 name: auth0-react
-description: Use when adding authentication to React applications (login, logout, user sessions, protected routes) - integrates @auth0/auth0-react SDK for SPAs with Vite or Create React App
+description: >
+  Use when adding Auth0 login, logout, protected routes, or user sessions to a React SPA. Integrates @auth0/auth0-react — use even if the user says "add login to my React app" or "protect my React routes" without naming the SDK.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

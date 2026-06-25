@@ -1,6 +1,7 @@
 ---
 name: auth0-php
-description: Use when adding login, logout, and user profile to a PHP web application using session-based authentication - integrates auth0/auth0-php SDK for server-rendered apps with login/callback/profile/logout flows.
+description: >
+  Use when adding session-based login, logout, or user profile to a PHP web application. Integrates auth0/auth0-php — use even if the user says "add login to my PHP app".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

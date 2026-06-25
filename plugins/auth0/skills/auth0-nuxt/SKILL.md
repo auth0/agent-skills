@@ -1,6 +1,7 @@
 ---
 name: auth0-nuxt
-description: Use when implementing Auth0 authentication in Nuxt 3/4 applications, configuring session management, protecting routes with middleware, or integrating API access tokens - provides setup patterns, composable usage, and security best practices for the @auth0/auth0-nuxt SDK
+description: >
+  Use when adding Auth0 login, logout, session management, or protected routes to a Nuxt 3 or Nuxt 4 application. Integrates @auth0/auth0-nuxt — use even if the user says "add login to my Nuxt app".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -42,6 +43,7 @@ Server-side session authentication for Nuxt 3/4. NOT the same as @auth0/auth0-vu
 | Using `useUser()` for security checks | Use `useAuth0(event).getSession()` server-side |
 | Missing callback URLs in Auth0 Dashboard | Add `http://localhost:3000/auth/callback` |
 | Weak/missing session secret | Generate: `openssl rand -hex 64` |
+| Hardcoding credentials in `nuxt.config.ts` | Leave runtimeConfig values as empty strings; Nuxt auto-fills from `NUXT_AUTH0_*` env vars |
 
 ## Quick Setup
 
@@ -65,6 +67,8 @@ NUXT_AUTH0_AUDIENCE=https://your-api  # optional
 
 ```typescript
 // 4. nuxt.config.ts
+// Leave values as empty strings — Nuxt auto-fills them from NUXT_AUTH0_* env vars at runtime.
+// If you prefer explicit mapping, use: domain: process.env.NUXT_AUTH0_DOMAIN || ''
 export default defineNuxtConfig({
   modules: ['@auth0/auth0-nuxt'],
   runtimeConfig: {

@@ -2,7 +2,7 @@
   {"type": "matches", "pattern": "express-oauth2-jwt-bearer", "description": "Auth0 SDK (express-oauth2-jwt-bearer) present in project"},
   {"type": "matches", "pattern": "require\\s*\\(['\"]express-oauth2-jwt-bearer['\"]\\)|from\\s+['\"]express-oauth2-jwt-bearer['\"]", "description": "Has correct import statement (express-oauth2-jwt-bearer)"},
   {"type": "contains_any", "values": ["auth({", "auth()"], "description": "Auth0 SDK initialized (auth() middleware configured)"},
-  {"type": "contains", "value": "AUTH0_DOMAIN", "description": "AUTH0_DOMAIN environment variable configured"},
+  {"type": "contains", "value": "ISSUER_BASE_URL", "description": "ISSUER_BASE_URL environment variable configured"},
   {"type": "matches", "pattern": "auth\\s*\\(\\{|const\\s+\\w+\\s*=\\s*auth\\s*\\(|app\\.use\\s*\\(auth\\s*\\(", "description": "Configures JWT Bearer token validation middleware"},
   {"type": "matches", "pattern": "audience:|AUTH0_AUDIENCE|AUDIENCE", "description": "Configures API audience for token validation"},
   {"type": "matches", "pattern": "app\\.(get|post|put|delete|patch)\\s*\\([^,]+,\\s*checkJwt|app\\.use\\s*\\(checkJwt|router\\.(get|post|put|delete|patch)\\s*\\([^,]+,\\s*checkJwt", "description": "Has protected API endpoint with JWT middleware"},

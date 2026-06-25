@@ -63,14 +63,16 @@ app.get('/api-call', requiresAuth(), async (req, res) => {
 });
 ```
 
-Configure audience in middleware:
+Configure `authorizationParams` in middleware — **all three fields are required** to obtain an access token:
 
 ```javascript
+// SDK auto-loads SECRET, BASE_URL, CLIENT_ID, ISSUER_BASE_URL, CLIENT_SECRET from env vars
 app.use(auth({
   authorizationParams: {
-    audience: 'https://your-api-identifier'
-  },
-  // ... other config
+    response_type: 'code',               // required: authorization code flow
+    audience: 'https://your-api-identifier', // required: API identifier
+    scope: 'openid profile email'        // required: token scopes
+  }
 }));
 ```
 

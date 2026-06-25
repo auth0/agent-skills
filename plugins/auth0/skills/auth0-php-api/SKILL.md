@@ -1,6 +1,7 @@
 ---
 name: auth0-php-api
-description: "Use when securing PHP API endpoints with JWT Bearer token validation, scope/permission checks, or stateless auth - integrates auth0/auth0-php SDK in API mode (STRATEGY_API) for REST APIs receiving access tokens from SPAs, mobile apps, or other clients. Triggers on: auth0-php API, PHP JWT validation, getBearerToken, STRATEGY_API, PHP Bearer auth."
+description: >
+  Use when protecting PHP API endpoints with JWT Bearer token validation or scope checks. Integrates auth0/auth0-php in API mode for stateless APIs receiving access tokens.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

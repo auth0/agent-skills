@@ -1,6 +1,7 @@
 ---
 name: auth0-mfa
-description: Use when adding MFA, 2FA, TOTP, SMS codes, push notifications, passkeys, or when requiring step-up verification for sensitive operations or meeting compliance requirements (HIPAA, PCI-DSS) - covers adaptive and risk-based authentication with Auth0.
+description: >
+  Use when adding MFA or step-up authentication to an app — requiring users to verify with a second factor (TOTP, SMS, passkey, push) for login or before a sensitive action. Also use for adaptive/risk-based MFA or compliance requirements like HIPAA or PCI-DSS, even if the user just says "add two-factor auth" or "require MFA before this action".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

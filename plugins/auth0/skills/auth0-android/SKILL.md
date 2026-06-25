@@ -1,6 +1,7 @@
 ---
 name: auth0-android
-description: Use when adding authentication to Android applications (Kotlin/Java) with Web Auth, biometric-protected credentials, and MFA - integrates com.auth0.android:auth0 SDK for native Android apps
+description: >
+  Use when adding Auth0 login, logout, or credential management to an Android app in Kotlin or Java. Covers Web Auth, biometric-protected CredentialsManager, and MFA — even if the user just says "add login to my Android app" without mentioning Auth0. Integrates com.auth0.android:auth0.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -56,6 +57,8 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
    >
    > Then follow [**Setup Guide**](references/setup.md) for the chosen path.
    > **Do NOT proceed to step 3 until Auth0 credentials are confirmed.**
+   >
+   > **Note:** For native Android apps, Domain and Client ID are public configuration (not secrets). No client secret is used. Write values directly to `strings.xml` without displaying them in conversation output.
 
 3. **Initialize**: Create an Auth0 account instance:
    ```kotlin
@@ -63,6 +66,8 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
    val account = Auth0.getInstance(context)
    ```
+
+   > **IMPORTANT:** `Auth0.getInstance(context)` auto-reads `com_auth0_client_id` and `com_auth0_domain` from `strings.xml`. **Never** pass `clientId` or `domain` as arguments (e.g. `Auth0.getInstance(clientId, domain)`) — that hardcodes credentials in source.
 
 4. **Add Auth UI**: Implement login and logout with Web Auth:
 

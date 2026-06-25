@@ -9,7 +9,7 @@
         "Auth0 SDK (express-oauth2-jwt-bearer) present in project",
         "Has correct import statement (express-oauth2-jwt-bearer)",
         "Auth0 SDK initialized (auth() middleware configured)",
-        "AUTH0_DOMAIN environment variable configured",
+        "ISSUER_BASE_URL environment variable configured",
         "Configures JWT Bearer token validation middleware",
         "Configures API audience for token validation",
         "Has protected API endpoint with JWT middleware",

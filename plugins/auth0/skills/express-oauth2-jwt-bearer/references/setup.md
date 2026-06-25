@@ -6,6 +6,8 @@
 >
 > **Check if credentials are already provided in the user's prompt:** If the user's prompt already includes Auth0 Domain and API Audience (e.g. `your-tenant.us.auth0.com` and `https://api.example.com`), use them directly — skip to "Write the .env file" below. Do NOT call `AskUserQuestion` to re-confirm provided credentials, and do NOT run the bootstrap script.
 >
+> **Env var convention:** This skill uses the SDK-native variables `ISSUER_BASE_URL` (the full issuer URL, including `https://`) and `AUDIENCE`. `express-oauth2-jwt-bearer` reads them automatically, so `auth()` is called with no arguments.
+>
 > If credentials are NOT provided, offer setup choices:
 >
 > Use `AskUserQuestion` to ask the user:
@@ -39,18 +41,18 @@
 > - **Auth0 Domain** (e.g., `your-tenant.us.auth0.com`)
 > - **API Audience** — the API Identifier you set when creating the Auth0 API (e.g., `https://your-api.example.com`)
 >
-> Then write the `.env` file (see below).
+> Then write the `.env` file (see below). Prefix the domain with `https://` to form `ISSUER_BASE_URL`.
 >
 > **Write the .env file** (both paths):
 > ```env
-> AUTH0_DOMAIN=your-tenant.us.auth0.com
-> AUTH0_AUDIENCE=https://your-api.example.com
+> ISSUER_BASE_URL=https://your-tenant.us.auth0.com
+> AUDIENCE=https://your-api.example.com
 > PORT=3000
 > ```
 
 ### Auth0 API Registration (Resource Server)
 
-The bootstrap script automatically runs `auth0 apis create` to register your API as a Resource Server. This produces the `AUTH0_AUDIENCE` value (the API Identifier) that your middleware uses for token validation.
+The bootstrap script automatically runs `auth0 apis create` to register your API as a Resource Server. This produces the `AUDIENCE` value (the API Identifier) that your middleware uses for token validation.
 
 **Auth0 CLI command (for reference):**
 ```bash
@@ -66,7 +68,7 @@ auth0 apis create \
 2. Click **Create API**
 3. Set:
    - **Name**: Your API name (e.g., "My Node API")
-   - **Identifier**: A URL-like identifier (e.g., `https://my-api.example.com`) — this becomes `AUTH0_AUDIENCE`
+   - **Identifier**: A URL-like identifier (e.g., `https://my-api.example.com`) — this becomes `AUDIENCE`
    - **Signing Algorithm**: `RS256` (recommended)
 4. Click **Create**
 5. Note the **API Identifier** — this is your Audience value
@@ -121,15 +123,15 @@ npm install --save-dev @types/express @types/cors  # TypeScript projects
 `express-oauth2-jwt-bearer` requires only **Domain** and **Audience** — no Client Secret. The middleware validates tokens using the Auth0 JWKS (JSON Web Key Set) endpoint, which provides the public signing keys. This means:
 
 - **No client secret needed** for token validation
-- The JWKS endpoint is publicly accessible at `https://{AUTH0_DOMAIN}/.well-known/jwks.json`
+- The JWKS endpoint is publicly accessible at `{ISSUER_BASE_URL}/.well-known/jwks.json`
 - The middleware fetches and caches keys automatically
 
 ### .env file (development)
 
 ```env
 # .env — Never commit to source control
-AUTH0_DOMAIN=your-tenant.us.auth0.com
-AUTH0_AUDIENCE=https://your-api.example.com
+ISSUER_BASE_URL=https://your-tenant.us.auth0.com
+AUDIENCE=https://your-api.example.com
 PORT=3000
 ```
 
@@ -139,8 +141,8 @@ Set these as environment variables in your hosting platform (not in `.env` files
 
 | Variable | Example Value |
 |----------|--------------|
-| `AUTH0_DOMAIN` | `your-tenant.us.auth0.com` |
-| `AUTH0_AUDIENCE` | `https://your-api.example.com` |
+| `ISSUER_BASE_URL` | `https://your-tenant.us.auth0.com` |
+| `AUDIENCE` | `https://your-api.example.com` |
 | `PORT` | `3000` |
 
 **Never commit `.env` to source control.** Add `.env` to `.gitignore`:

@@ -1,6 +1,7 @@
 ---
 name: auth0-express
-description: Use when adding authentication (login, logout, protected routes) to Express.js web applications - integrates express-openid-connect for session-based auth.
+description: >
+  Use when adding session-based login, logout, or protected routes to an Express.js web application. Integrates express-openid-connect — use even if the user says "add login to my Express app" or "protect my Express routes".
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -54,6 +55,7 @@ BASE_URL=http://localhost:3000
 CLIENT_ID=your-client-id
 CLIENT_SECRET=your-client-secret
 ISSUER_BASE_URL=https://your-tenant.auth0.com
+AUDIENCE=https://your-api-identifier  # only required if calling external APIs (Step 3a)
 ```
 
 Generate secret: `openssl rand -hex 32`
@@ -85,10 +87,41 @@ app.listen(3000, () => {
 });
 ```
 
+> **Calling external APIs?** If you need an access token for a downstream API, you **must** add `authorizationParams` — see Step 3a below.
+
 This automatically creates:
 - `/login` - Login endpoint
 - `/logout` - Logout endpoint
 - `/callback` - OAuth callback
+
+### 3a. Configure Middleware for API Access (when calling external APIs)
+
+When you need an access token for an external API, `audience` **must** go inside `authorizationParams` — putting it at the top level is silently ignored and no access token is issued.
+
+```javascript
+// SDK auto-loads SECRET, BASE_URL, CLIENT_ID, ISSUER_BASE_URL, CLIENT_SECRET from env vars
+app.use(auth({
+  authRequired: false,
+  auth0Logout: true,
+  authorizationParams: {            // ← required for access tokens
+    response_type: 'code',          // ← required: authorization code flow
+    audience: process.env.AUDIENCE, // ← API identifier (never top-level)
+    scope: 'openid profile email'
+  }
+}));
+```
+
+Then access the token in your route:
+
+```javascript
+app.get('/api-call', requiresAuth(), async (req, res) => {
+  const { access_token } = req.oidc.accessToken; // object, not a string
+  const response = await fetch('https://your-api.com/data', {
+    headers: { Authorization: `Bearer ${access_token}` }
+  });
+  res.json(await response.json());
+});
+```
 
 ### 4. Add Routes
 
@@ -154,6 +187,8 @@ Visit `http://localhost:3000` and test the login flow.
 | Session secret exposed in code | Always use environment variables, never hardcode secrets |
 | Wrong baseURL for production | Update BASE_URL to match your production domain |
 | Not handling logout returnTo | Add your domain to Allowed Logout URLs in Auth0 Dashboard |
+| `audience` as a top-level config key | Move `audience` inside `authorizationParams` with `response_type: 'code'` and `scope` — top-level `audience` is silently ignored, no access token is issued |
+| `req.oidc.accessToken` used as a string | It is an object — destructure with `const { access_token } = req.oidc.accessToken` |
 
 ---
 
@@ -179,7 +214,7 @@ Visit `http://localhost:3000` and test the login flow.
 **Request Properties:**
 - `req.oidc.isAuthenticated()` - Check if user is logged in
 - `req.oidc.user` - User profile object
-- `req.oidc.accessToken` - Access token for API calls
+- `req.oidc.accessToken` - Access token object (`{ access_token, token_type, expires_in }`); `expires_in` is seconds remaining. Destructure with `const { access_token } = req.oidc.accessToken`. Also exposes `isExpired()` and `refresh()` methods. Only populated when `authorizationParams` with `audience` + `response_type: 'code'` is configured
 - `req.oidc.idToken` - ID token
 - `req.oidc.refreshToken` - Refresh token
 

@@ -1,6 +1,7 @@
 ---
 name: auth0-cli
-description: Reference for Auth0 CLI commands — apps, apis, users, roles, organizations, actions, logs, custom domains, universal-login, terraform, raw API mode, and --json output. Use this skill whenever you need to run Auth0 CLI commands to create or manage applications, APIs, users, roles, organizations, actions, log streams, custom domains, or Universal Login configuration, or when you need to call the Auth0 Management API directly. Trigger on prompts like "create an Auth0 app", "list my Auth0 users", "assign a role", "set up an organization", "deploy an action", "configure a custom domain", "generate Terraform for Auth0", "stream Auth0 logs", "call the Management API", or any task involving the auth0 CLI tool.
+description: >
+  Use when running Auth0 CLI commands to manage tenant resources — creating apps or APIs, managing users, roles, organizations, actions, log streams, custom domains, or Universal Login config. Also use when calling the Auth0 Management API directly via the CLI.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>

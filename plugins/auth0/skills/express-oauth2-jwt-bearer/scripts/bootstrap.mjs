@@ -48,8 +48,10 @@ async function main() {
   const envPath = path.join(projectPath, ".env")
   await writeEnvFile(
     {
-      AUTH0_DOMAIN: domain,
-      AUTH0_AUDIENCE: api.identifier,
+      // SDK-native env vars: express-oauth2-jwt-bearer auto-detects these.
+      // ISSUER_BASE_URL must include the https:// scheme.
+      ISSUER_BASE_URL: `https://${domain}`,
+      AUDIENCE: api.identifier,
     },
     envPath
   )

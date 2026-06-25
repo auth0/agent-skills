@@ -1,6 +1,7 @@
 ---
 name: auth0-fastify-api
-description: Use when securing Fastify API endpoints with JWT Bearer token validation, scope/permission checks, or stateless auth - integrates @auth0/auth0-fastify-api for REST APIs receiving access tokens from frontends or mobile apps.
+description: >
+  Use when protecting Fastify API endpoints with JWT Bearer token validation or scope checks. Integrates @auth0/auth0-fastify-api for stateless APIs receiving access tokens from frontends or mobile apps.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -128,8 +129,9 @@ curl http://localhost:3001/api/public
 Test protected endpoint (requires access token):
 
 ```bash
+# First, obtain an access token (e.g. via Auth0 Dashboard > APIs > Test tab)
 curl http://localhost:3001/api/private \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+  -H "Authorization: Bearer $ACCESS_TOKEN"
 ```
 
 ---
