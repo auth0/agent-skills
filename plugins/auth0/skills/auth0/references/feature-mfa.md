@@ -784,17 +784,18 @@ export default function TransferPage() {
 
 ## Vue.js
 
+`idTokenClaims` is a reactive ref from `useAuth0()` — read it as `idTokenClaims.value?.amr`, not via `getIdTokenClaims()`.
+
 ```typescript
 <script setup lang="ts">
 import { useAuth0 } from '@auth0/auth0-vue';
 import { ref } from 'vue';
 
-const { getAccessTokenSilently, getIdTokenClaims, loginWithRedirect } = useAuth0();
+const { getAccessTokenSilently, idTokenClaims, loginWithRedirect } = useAuth0();
 const isVerifying = ref(false);
 
-const hasMFA = async (): Promise<boolean> => {
-  const claims = await getIdTokenClaims();
-  const amr = claims?.amr || [];
+const hasMFA = (): boolean => {
+  const amr = idTokenClaims.value?.amr || [];
   return amr.includes('mfa');
 };
 
