@@ -44,6 +44,12 @@ key — a stolen token alone cannot be replayed by an attacker.
 - Meeting security or compliance requirements that mandate sender-constrained tokens
 - Any SPA or Vanilla JS app calling a protected Auth0 API with elevated security needs
 
+### When NOT to Use This Skill
+
+- **SSR / server-side environments** — DPoP relies on a private key held in the browser; it cannot be safely used server-side (Next.js, Nuxt, etc.)
+- **APIs that don't support DPoP** — the resource server must be configured to accept DPoP token dialect; Bearer-only APIs will reject DPoP proofs
+- **Flows requiring token sharing** — DPoP tokens are bound to a single key pair and cannot be forwarded to or reused by another client
+
 ### Requirements
 
 - Auth0 tenant with DPoP-capable authorization server
@@ -126,7 +132,9 @@ Servers may rotate their DPoP nonce. When this happens the SDK throws
 stored nonce automatically:
 
 ```typescript
-import { UseDpopNonceError } from '@auth0/auth0-spa-js'; // re-exported by framework SDKs
+// Import from your framework SDK:
+// @auth0/auth0-vue | @auth0/auth0-react | @auth0/auth0-angular | @auth0/auth0-spa-js
+import { UseDpopNonceError } from '@auth0/auth0-vue';
 
 try {
   const response = await apiFetch('/data');

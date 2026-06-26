@@ -38,8 +38,7 @@ app.mount('#app');
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAuth0 } from '@auth0/auth0-vue';
-import { UseDpopNonceError } from '@auth0/auth0-spa-js';
+import { useAuth0, UseDpopNonceError } from '@auth0/auth0-vue';
 
 const { createFetcher } = useAuth0();
 const data = ref(null);
@@ -157,19 +156,18 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
 ### 2. Make DPoP-protected API calls
 
 ```tsx
-import { useAuth0 } from '@auth0/auth0-react';
-import { UseDpopNonceError } from '@auth0/auth0-spa-js';
-import { useState } from 'react';
+import { useAuth0, UseDpopNonceError } from '@auth0/auth0-react';
+import { useState, useMemo } from 'react';
 
 export function DataFetcher() {
   const { createFetcher } = useAuth0();
   const [data, setData] = useState(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Create outside render or memoize to avoid recreating on each render
-  const apiFetch = createFetcher({
-    baseUrl: 'https://your-api.example.com'
-  });
+  const apiFetch = useMemo(
+    () => createFetcher({ baseUrl: 'https://your-api.example.com' }),
+    [createFetcher]
+  );
 
   const fetchData = async () => {
     setError(null);
@@ -280,8 +278,7 @@ export class AppModule {}
 
 ```typescript
 import { Component, inject, signal } from '@angular/core';
-import { AuthService } from '@auth0/auth0-angular';
-import { UseDpopNonceError } from '@auth0/auth0-spa-js';
+import { AuthService, UseDpopNonceError } from '@auth0/auth0-angular';
 
 @Component({
   selector: 'app-data',
