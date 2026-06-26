@@ -181,58 +181,42 @@ export default function TransferPage() {
 
 ## Vue.js
 
-```typescript
-<script setup lang="ts">
+### Step-Up Authentication: acr_values + amr check
+
+`idTokenClaims` is a reactive ref from `useAuth0()` — read it as `idTokenClaims.value?.amr`. Check the `amr` claim directly before executing the sensitive action, then request MFA via `acr_values` if not already completed:
+
+```html
+<script setup>
 import { useAuth0 } from '@auth0/auth0-vue';
-import { ref } from 'vue';
 
-const { getAccessTokenSilently, getIdTokenClaims, loginWithRedirect } = useAuth0();
-const isVerifying = ref(false);
+const { getAccessTokenSilently, loginWithRedirect, idTokenClaims } = useAuth0();
 
-const hasMFA = async (): Promise<boolean> => {
-  const claims = await getIdTokenClaims();
-  const amr = claims?.amr || [];
-  return amr.includes('mfa');
-};
-
-const requireMFA = async () => {
-  isVerifying.value = true;
-  try {
-    if (!(await hasMFA())) {
-      try {
-        await getAccessTokenSilently({
-          authorizationParams: {
-            acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
-            max_age: 0,
-          },
-        });
-      } catch {
-        await loginWithRedirect({
-          authorizationParams: {
-            acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
-          },
-        });
-        return false;
-      }
+const handleTransfer = async () => {
+  // Check amr claim — only proceed if mfa is present
+  const amr = idTokenClaims.value?.amr || [];
+  if (!amr.includes('mfa')) {
+    try {
+      await getAccessTokenSilently({
+        authorizationParams: {
+          acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
+          max_age: 0,
+        },
+      });
+    } catch {
+      await loginWithRedirect({
+        authorizationParams: {
+          acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
+        },
+      });
+      return;
     }
-    return true;
-  } finally {
-    isVerifying.value = false;
   }
-};
-
-const handleSensitiveAction = async () => {
-  if (await requireMFA()) {
-    // Proceed with sensitive action
-    console.log('MFA verified, proceeding...');
-  }
+  // amr includes 'mfa' — execute transfer
 };
 </script>
 
 <template>
-  <button @click="handleSensitiveAction" :disabled="isVerifying">
-    {{ isVerifying ? 'Verifying...' : 'Transfer Funds' }}
-  </button>
+  <button @click="handleTransfer">Transfer Funds</button>
 </template>
 ```
 
