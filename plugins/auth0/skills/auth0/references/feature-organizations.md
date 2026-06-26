@@ -136,4 +136,4 @@ The invitee receives an email. When they click the link, they authenticate and a
 
 ## Multi-tenant architecture
 
-For B2B SaaS architecture guidance, load `pattern-multi-tenant.md` alongside this file.
+For B2B SaaS architecture guidance, see `references/pattern-multi-tenant.md` — the router loads both files for architecture questions.

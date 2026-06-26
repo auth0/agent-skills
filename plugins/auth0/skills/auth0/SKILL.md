@@ -145,6 +145,7 @@ If framework detected: Read references/framework-{framework}.md (for SDK-side st
 Read: references/feature-organizations.md
 Read: references/tooling-{tooling}.md
 If framework detected: Read references/framework-{framework}.md
+If multi-tenant architecture / B2B SaaS design question: also Read references/pattern-multi-tenant.md
 ```
 
 ### feature:custom-domains

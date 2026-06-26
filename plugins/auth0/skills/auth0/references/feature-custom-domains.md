@@ -49,7 +49,7 @@ If the user's message is primarily about an HTTP error code from the Management 
 | **404** on any custom-domain endpoint | Wrong `custom_domain_id`, or wrong tenant. Verify with `auth0 tenants list` + `auth0 domains list`. |
 | **429** | Rate limited. Back off; the skill's verify-poll backoff pattern (5s, 10s, 20s, 30s, 60s) avoids this. |
 
-Full error-code reference with all cases and resolutions: [references/api.md#error-codes](custom-domains-api.md#error-codes).
+Full error-code reference with all cases and resolutions: see the API Reference section below (Error Codes).
 
 ## Capabilities
 
@@ -57,11 +57,11 @@ When this skill is invoked and the user is NOT asking about an error code, ask t
 
 | # | Capability | What it does |
 |---|---|---|
-| 1 | **Set up a custom domain** | End-to-end: create the domain in Auth0, detect the DNS provider, write the CNAME record (automated on Cloudflare / Route 53 / Azure; guided on other providers), verify ownership, and report what to update in the user's apps. Handles first-time setup and adding to MCD. See [references/capability-setup.md](custom-domains-capability-setup.md) |
-| 2 | **Troubleshoot verification** | Domain stuck in `pending_verification` or verification failing. Diagnostic ladder: compare DNS to expected, check for proxies / CNAME flattening / conflicting records / propagation / private-zone issues, then retry. See [references/capability-troubleshoot.md](custom-domains-capability-troubleshoot.md) |
-| 3 | **Manage existing domains** | Surgical edits on already-configured domains: set or change the default (for MCD), update TLS policy, configure the custom client IP header, set the relying party identifier for passkeys, manage per-domain metadata (up to 10 key-value pairs readable from Actions), list domains and show status. Intent-driven. Certificate type is fixed at create time; PATCH rejects `type` changes. See [references/capability-manage.md](custom-domains-capability-manage.md) |
-| 4 | **Remove a custom domain** | Delete a domain safely: warn if it's the default, surface dependent applications, delete in Auth0, clean up the CNAME in DNS. See [references/capability-remove.md](custom-domains-capability-remove.md) |
-| 5 | **Check domain health** | Read-only: list all custom domains, check DNS records match expected values, surface default-domain config, flag anything needing attention. Safe starter capability. See [references/capability-health.md](custom-domains-capability-health.md) |
+| 1 | **Set up a custom domain** | End-to-end: create the domain in Auth0, detect the DNS provider, write the CNAME record (automated on Cloudflare / Route 53 / Azure; guided on other providers), verify ownership, and report what to update in the user's apps. Handles first-time setup and adding to MCD. (guidance inline below) |
+| 2 | **Troubleshoot verification** | Domain stuck in `pending_verification` or verification failing. Diagnostic ladder: compare DNS to expected, check for proxies / CNAME flattening / conflicting records / propagation / private-zone issues, then retry. (guidance inline below) |
+| 3 | **Manage existing domains** | Surgical edits on already-configured domains: set or change the default (for MCD), update TLS policy, configure the custom client IP header, set the relying party identifier for passkeys, manage per-domain metadata (up to 10 key-value pairs readable from Actions), list domains and show status. Intent-driven. Certificate type is fixed at create time; PATCH rejects `type` changes. (guidance inline below) |
+| 4 | **Remove a custom domain** | Delete a domain safely: warn if it's the default, surface dependent applications, delete in Auth0, clean up the CNAME in DNS. (guidance inline below) |
+| 5 | **Check domain health** | Read-only: list all custom domains, check DNS records match expected values, surface default-domain config, flag anything needing attention. Safe starter capability. (guidance inline below) |
 
 Pick a capability, then follow the flow in its reference file. The **Prerequisites** and **Key Concepts** sections below apply across all capabilities.
 
@@ -80,7 +80,7 @@ Pick a capability, then follow the flow in its reference file. The **Prerequisit
 | Custom Client IP Header | `custom_client_ip_header` tells Auth0 which request header carries the real client IP when traffic passes through a reverse proxy. Valid values: `true-client-ip`, `cf-connecting-ip`, `x-forwarded-for`, `x-azure-clientip`. Set at create or via PATCH |
 | Domain Metadata | Up to 10 custom key-value pairs attached to a custom domain (keys and values ≤ 255 chars). Read from Actions via `event.custom_domain.domain_metadata` for per-domain logic (region, brand, env tagging) |
 
-Full schema and token / `iss` behavior live in [references/advanced.md](custom-domains-advanced.md).
+Full schema and token / `iss` behavior live in the Advanced Topics section below.
 
 ## Prerequisites
 
@@ -90,7 +90,7 @@ These apply to any capability that writes to the tenant. **Check domain health**
 
 All capabilities use the Management API. Either:
 - The Auth0 CLI (`auth0 ...`) authenticated to the target tenant (`auth0 tenants use <name>`), or
-- A Machine-to-Machine application with the scopes in [references/api.md](custom-domains-api.md#management-api-token-scopes).
+- A Machine-to-Machine application with the scopes in the API Reference section below.
 
 **Check the active tenant immediately before the first Auth0 CLI command in a capability, not at skill invocation.** Do not check the tenant before the user has chosen a capability. If a capability uses only non-CLI tools (e.g., DNS lookups, Cloudflare MCP, direct Management API calls via curl), skip the tenant check entirely.
 
@@ -117,7 +117,7 @@ Then re-confirm before proceeding. For mutating calls (create, PATCH, delete), r
 - **Tier 3 Azure DNS**: Azure CLI signed in. Verified with `az account show`.
 - **Tier 4 other**: no programmatic access; user manually adds the record in their provider's dashboard.
 
-**Plan requirements for automation**: None of the three automated tiers require a paid plan on the DNS provider side. Cloudflare DNS record CRUD via the MCP works on the Free plan (Free zones created after Sept 2024 cap at 200 DNS records per zone; Auth0's CNAME counts as one). Route 53 is pay-per-use (~$0.50/hosted zone/month + query costs, not in AWS free tier). Azure DNS is subscription-based with no tier gating; the signed-in identity needs the DNS Zone Contributor role. Full detail per tier in the per-provider sub-files under [references/providers/](custom-domains-providers-) (router: [references/providers.md](custom-domains-providers.md)).
+**Plan requirements for automation**: None of the three automated tiers require a paid plan on the DNS provider side. Cloudflare DNS record CRUD via the MCP works on the Free plan (Free zones created after Sept 2024 cap at 200 DNS records per zone; Auth0's CNAME counts as one). Route 53 is pay-per-use (~$0.50/hosted zone/month + query costs, not in AWS free tier). Azure DNS is subscription-based with no tier gating; the signed-in identity needs the DNS Zone Contributor role. Full detail per tier in the DNS Provider Playbook section below.
 
 ### Credit card on file (Free-tier tenants)
 
@@ -127,19 +127,19 @@ Surface this as the likely cause on any 403 rather than suggesting a plan upgrad
 
 ## Common Mistakes
 
-Quick index; each entry links to the canonical treatment in the relevant capability file.
+Quick index; each entry references the canonical treatment in the relevant section below.
 
 | Mistake | See |
 |---|---|
-| Assuming a 403 on create means plan upgrade | [api.md error codes](custom-domains-api.md#error-codes) |
-| Removing the CNAME after verification (breaks cert renewal) | [capability-5 interpreting results](custom-domains-capability-health.md#interpreting-results) |
-| Using a subdomain with passkeys without setting `relying_party_identifier` | [capability-3 RPID section](custom-domains-capability-manage.md#set-the-relying-party-identifier-passkeys) |
-| Trying to change certificate type via PATCH | [capability-3 scope note](custom-domains-capability-manage.md#scope-note) |
-| Enabling DNS proxy on the CNAME (Cloudflare orange cloud) | [capability-2 proxy check](custom-domains-capability-troubleshoot.md#2-check-for-dns-proxy) |
-| Enabling CNAME flattening on the zone | [capability-2 flattening check](custom-domains-capability-troubleshoot.md#3-check-for-cname-flattening) |
-| Deleting and recreating to "unstick" verification | [capability-2 what not to do](custom-domains-capability-troubleshoot.md#what-not-to-do) |
-| Not updating SDK `domain` / `issuerBaseURL` after verification | [capability-1 report next steps](custom-domains-capability-setup.md#report-next-steps) |
-| Calling Management API via tenant domain under MCD | [advanced.md auth0-custom-domain header](custom-domains-advanced.md#the-auth0-custom-domain-header) |
+| Assuming a 403 on create means plan upgrade | API Reference section: Error Codes |
+| Removing the CNAME after verification (breaks cert renewal) | Check Domain Health section: interpreting results |
+| Using a subdomain with passkeys without setting `relying_party_identifier` | Manage Existing Domains section: Set the relying party identifier |
+| Trying to change certificate type via PATCH | Manage Existing Domains section: scope note |
+| Enabling DNS proxy on the CNAME (Cloudflare orange cloud) | Troubleshoot section: proxy check |
+| Enabling CNAME flattening on the zone | Troubleshoot section: flattening check |
+| Deleting and recreating to "unstick" verification | Troubleshoot section: what not to do |
+| Not updating SDK `domain` / `issuerBaseURL` after verification | Set Up section: report next steps |
+| Calling Management API via tenant domain under MCD | Advanced Topics section: the auth0-custom-domain header |
 
 ## Related Skills
 
@@ -148,15 +148,7 @@ Quick index; each entry links to the canonical treatment in the relevant capabil
 
 ## References
 
-- [references/capability-setup.md](custom-domains-capability-setup.md): Set up a custom domain
-- [references/capability-troubleshoot.md](custom-domains-capability-troubleshoot.md): Troubleshoot verification
-- [references/capability-manage.md](custom-domains-capability-manage.md): Manage existing domains
-- [references/capability-remove.md](custom-domains-capability-remove.md): Remove a custom domain
-- [references/capability-health.md](custom-domains-capability-health.md): Check domain health
-- [references/providers.md](custom-domains-providers.md): DNS provider router — NS → provider map; links into per-provider sub-files under `references/providers/` (`cloudflare.md`, `route53.md`, `azure-dns.md`, `manual.md`). Open only the sub-file matching the detected provider.
-- [references/examples.md](custom-domains-examples.md): cURL samples plus end-to-end CI/CD automation and multi-environment patterns
-- [references/api.md](custom-domains-api.md): Endpoint reference, CLI commands, error codes, scopes
-- [references/advanced.md](custom-domains-advanced.md): MCD, default-domain, `auth0-custom-domain` header, self-managed certs, token `iss` behavior, verification troubleshooting deep-dive
+This file contains all custom domain guidance inline. Sections: Setup · Troubleshoot · Manage · Remove · Health Check · DNS Providers (Cloudflare, Route 53, Azure, Manual) · API Reference · Examples.
 
 ## External Docs
 
@@ -236,7 +228,7 @@ The dedicated `auth0 domains` subcommands and the `auth0 api` passthrough use di
 | `tls_policy` | string | TLS posture for Auth0-managed certs. Default `recommended` | create + PATCH |
 | `custom_client_ip_header` | string | Header carrying real client IP. One of `true-client-ip`, `cf-connecting-ip`, `x-forwarded-for`, `x-azure-clientip`. `null` to clear | create + PATCH |
 | `relying_party_identifier` | string | Per-domain passkey `rpId`. Must be a registrable suffix of `domain`. `null` to clear (defaults to domain hostname) | create + PATCH |
-| `domain_metadata` | object | Up to 10 key-value pairs (≤ 255 chars each). To remove a key, PATCH the full merged object without it (GET → merge client-side → PATCH). See [capability-manage.md](capability-manage.md#manage-domain-metadata) | create + PATCH |
+| `domain_metadata` | object | Up to 10 key-value pairs (≤ 255 chars each). To remove a key, PATCH the full merged object without it (GET → merge client-side → PATCH). See Manage Existing Domains section below. | create + PATCH |
 | `primary` | boolean | Whether this is the default domain (set via `PATCH /tenants/settings`, not here) | read-only here |
 | `status` | string | `disabled`, `pending`, `pending_verification`, `ready` | read-only |
 | `verification.methods` | array | DNS records needed to prove ownership | read-only |
@@ -261,7 +253,7 @@ Only these fields are accepted on `PATCH /custom-domains/{id}`. Omit fields you 
 }
 ```
 
-Scalar fields (`tls_policy`, `custom_client_ip_header`, `relying_party_identifier`) can be cleared by PATCHing with `null`. For `domain_metadata`, use the GET → merge client-side → PATCH pattern and submit the full post-merge object (see [capability-manage.md](capability-manage.md#manage-domain-metadata)).
+Scalar fields (`tls_policy`, `custom_client_ip_header`, `relying_party_identifier`) can be cleared by PATCHing with `null`. For `domain_metadata`, use the GET → merge client-side → PATCH pattern and submit the full post-merge object (see the Manage Existing Domains section below).
 
 ## POST body reference
 
@@ -437,7 +429,7 @@ Auth0-managed certificates are the default and recommended. Self-managed certifi
 
 ### Verification difference
 
-Self-managed domains use **TXT record verification** instead of CNAME. The skill's provider playbook handles CNAME creation; for TXT records, the same tier logic applies, with the record type swapped. The provider-specific instructions in the per-provider sub-files (see the router at [providers.md](providers.md)) are identical except for the record type field.
+Self-managed domains use **TXT record verification** instead of CNAME. The skill's provider playbook handles CNAME creation; for TXT records, the same tier logic applies, with the record type swapped. The provider-specific instructions in the DNS Provider Playbook section below are identical except for the record type field.
 
 See [Auth0-managed](https://auth0.com/docs/customize/custom-domains/auth0-managed-certificates) and [Self-managed](https://auth0.com/docs/customize/custom-domains/self-managed-certificates) for full configuration.
 
@@ -507,7 +499,7 @@ If the record is correct in DNS but Auth0 still reports `pending_verification`:
 
 # Auth0 Custom Domains: Management API Examples
 
-cURL patterns for the Auth0 API calls the skill makes (create the custom domain, trigger verification, poll status until `ready`), plus end-to-end CI/CD automation that stitches Auth0 together with a DNS provider. DNS-provider-specific calls live in the per-provider sub-files — [providers/cloudflare.md](providers/cloudflare.md), [providers/route53.md](providers/route53.md), [providers/azure-dns.md](providers/azure-dns.md), or [providers/manual.md](providers/manual.md); the router at [providers.md](providers.md) picks one based on the root domain's NS records.
+cURL patterns for the Auth0 API calls the skill makes (create the custom domain, trigger verification, poll status until `ready`), plus end-to-end CI/CD automation that stitches Auth0 together with a DNS provider. DNS-provider-specific calls live in the DNS Provider Playbook section below (Cloudflare, Route 53, Azure DNS, Manual); the router there picks the right provider based on the root domain's NS records.
 
 ## cURL
 
@@ -730,38 +722,38 @@ dig +short NS example.com
 
 | NS pattern | Provider | Tier | Reference |
 |------------|----------|------|-----------|
-| `*.ns.cloudflare.com` | Cloudflare | 1: Full automation (Cloudflare MCP) | [providers/cloudflare.md](providers/cloudflare.md) |
-| `*.awsdns-*.com`, `*.awsdns-*.net`, `*.awsdns-*.org`, `*.awsdns-*.co.uk` | AWS Route 53 | 2: Assisted (AWS CLI) | [providers/route53.md](providers/route53.md) |
-| `*.azure-dns.com`, `*.azure-dns.net`, `*.azure-dns.org`, `*.azure-dns.info` | Azure DNS | 3: Assisted (Azure CLI) | [providers/azure-dns.md](providers/azure-dns.md) |
-| `ns*.domaincontrol.com` | GoDaddy | 4: Manual | [providers/manual.md](providers/manual.md) |
-| `dns*.registrar-servers.com` | Namecheap | 4: Manual | [providers/manual.md](providers/manual.md) |
-| `ns*.hover.com` | Hover | 4: Manual | [providers/manual.md](providers/manual.md) |
-| `ns*.squarespacedns.com` | Squarespace Domains | 4: Manual | [providers/manual.md](providers/manual.md) |
-| `curitiba.ns.porkbun.com`, `fortaleza.ns.porkbun.com`, etc. | Porkbun | 4: Manual | [providers/manual.md](providers/manual.md) |
-| `ns*.name.com` | Name.com | 4: Manual | [providers/manual.md](providers/manual.md) |
-| `*.gandi.net` | Gandi | 4: Manual | [providers/manual.md](providers/manual.md) |
-| `ns*.worldnic.com` | Network Solutions | 4: Manual | [providers/manual.md](providers/manual.md) |
-| `ns*.ui-dns.*` | IONOS | 4: Manual | [providers/manual.md](providers/manual.md) |
-| `ns*.dreamhost.com` | DreamHost | 4: Manual | [providers/manual.md](providers/manual.md) |
-| `ns*.googledomains.com` | Google Domains (legacy, migrated to Squarespace) | 4: Manual | [providers/manual.md](providers/manual.md) |
-| Anything else | Unknown | 4: Generic manual | [providers/manual.md](providers/manual.md) |
+| `*.ns.cloudflare.com` | Cloudflare | 1: Full automation (Cloudflare MCP) | Cloudflare section below |
+| `*.awsdns-*.com`, `*.awsdns-*.net`, `*.awsdns-*.org`, `*.awsdns-*.co.uk` | AWS Route 53 | 2: Assisted (AWS CLI) | Route 53 section below |
+| `*.azure-dns.com`, `*.azure-dns.net`, `*.azure-dns.org`, `*.azure-dns.info` | Azure DNS | 3: Assisted (Azure CLI) | Azure DNS section below |
+| `ns*.domaincontrol.com` | GoDaddy | 4: Manual | Manual Guided section below |
+| `dns*.registrar-servers.com` | Namecheap | 4: Manual | Manual Guided section below |
+| `ns*.hover.com` | Hover | 4: Manual | Manual Guided section below |
+| `ns*.squarespacedns.com` | Squarespace Domains | 4: Manual | Manual Guided section below |
+| `curitiba.ns.porkbun.com`, `fortaleza.ns.porkbun.com`, etc. | Porkbun | 4: Manual | Manual Guided section below |
+| `ns*.name.com` | Name.com | 4: Manual | Manual Guided section below |
+| `*.gandi.net` | Gandi | 4: Manual | Manual Guided section below |
+| `ns*.worldnic.com` | Network Solutions | 4: Manual | Manual Guided section below |
+| `ns*.ui-dns.*` | IONOS | 4: Manual | Manual Guided section below |
+| `ns*.dreamhost.com` | DreamHost | 4: Manual | Manual Guided section below |
+| `ns*.googledomains.com` | Google Domains (legacy, migrated to Squarespace) | 4: Manual | Manual Guided section below |
+| Anything else | Unknown | 4: Generic manual | Manual Guided section below |
 
-When the NS pattern is unrecognized, fall back to generic Tier 4 instructions in [providers/manual.md](providers/manual.md) and surface the NS records to the user so they can identify the provider themselves.
+When the NS pattern is unrecognized, fall back to generic Tier 4 instructions in the Manual Guided section below and surface the NS records to the user so they can identify the provider themselves.
 
-## Tier summary (high-level only; details live in each tier file)
+## Tier summary
 
-- **Tier 1 — Cloudflare**: fully automated via the Cloudflare MCP. OAuth, no plan tier required, `proxied: false` is critical. See [providers/cloudflare.md](providers/cloudflare.md).
-- **Tier 2 — Route 53**: AWS CLI if credentials are configured. `UPSERT` for create, exact-match DELETE (Name, Type, TTL, Value). Poll `get-change` until `INSYNC`. See [providers/route53.md](providers/route53.md).
-- **Tier 3 — Azure DNS**: Azure CLI if signed in. `az network dns record-set cname set-record`. Propagates in <30s. See [providers/azure-dns.md](providers/azure-dns.md).
-- **Tier 4 — Manual**: copy-pasteable record block plus per-registrar dashboard URLs and UI-label cheat sheet. See [providers/manual.md](providers/manual.md).
+- **Tier 1 — Cloudflare**: fully automated via the Cloudflare MCP. OAuth, no plan tier required, `proxied: false` is critical. See Cloudflare section below.
+- **Tier 2 — Route 53**: AWS CLI if credentials are configured. `UPSERT` for create, exact-match DELETE (Name, Type, TTL, Value). Poll `get-change` until `INSYNC`. See Route 53 section below.
+- **Tier 3 — Azure DNS**: Azure CLI if signed in. `az network dns record-set cname set-record`. Propagates in <30s. See Azure DNS section below.
+- **Tier 4 — Manual**: copy-pasteable record block plus per-registrar dashboard URLs and UI-label cheat sheet. See Manual Guided section below.
 
 ## How to use this router
 
 1. Run `dig +short NS <root-domain>` and match against the table above.
-2. Open only the matching sub-file. The sub-file is self-contained — it covers plan requirements, pre-flight, create, (if applicable) delete, error handling, and fallback for that one provider.
-3. If the automated tier's pre-flight fails (missing MCP, unconfigured CLI, private zone, etc.), each tier file tells you to drop to [providers/manual.md](providers/manual.md) with a provider-specific deep-link.
+2. Find the matching tier section below (Cloudflare / Route 53 / Azure DNS / Manual Guided). Each section is self-contained — it covers plan requirements, pre-flight, create, (if applicable) delete, error handling, and fallback for that one provider.
+3. If the automated tier's pre-flight fails (missing MCP, unconfigured CLI, private zone, etc.), each tier section tells you to drop to the Manual Guided section below with a provider-specific deep-link.
 
-If you are handling the **Remove a custom domain** flow, the delete mechanics for Route 53 (exact-match requirement) live in [providers/route53.md#delete-the-cname-record-the-remove-a-custom-domain-flow](providers/route53.md#delete-the-cname-record-the-remove-a-custom-domain-flow). The other tiers delete via the same commands/UIs they create with; no special rules.
+If you are handling the **Remove a custom domain** flow, the delete mechanics for Route 53 (exact-match requirement) live in the Route 53 section below. The other tiers delete via the same commands/UIs they create with; no special rules.
 
 ---
 
@@ -838,14 +830,14 @@ if (existing.result.length === 0) {
 
 ## Fallback
 
-If the Cloudflare MCP can't be used (auth failure, zone not in account, unexpected error), drop to [manual guided](manual.md) with Cloudflare dashboard deep-link:
+If the Cloudflare MCP can't be used (auth failure, zone not in account, unexpected error), drop to the Manual Guided section below with Cloudflare dashboard deep-link:
 `https://dash.cloudflare.com/?to=/:account/:zone/dns/records` (the user needs to know their account and zone; a simpler fallback is `https://dash.cloudflare.com/` and instruct them to navigate).
 
 ---
 
 # AWS Route 53 (Tier 2: Assisted Automation)
 
-Uses the AWS CLI. If the user already has AWS credentials configured (env vars, shared config, or SSO session), this tier handles the CNAME creation automatically. Otherwise it falls back to [manual guided](manual.md).
+Uses the AWS CLI. If the user already has AWS credentials configured (env vars, shared config, or SSO session), this tier handles the CNAME creation automatically. Otherwise it falls back to the Manual Guided section below.
 
 ## Plan requirements
 
@@ -869,7 +861,7 @@ The `AmazonRoute53FullAccess` managed policy covers all of these; a least-privil
 aws sts get-caller-identity
 ```
 
-If this returns identity info, proceed. If it errors with credentials/expired token, drop to [manual guided](manual.md) with a Route 53 console deep-link.
+If this returns identity info, proceed. If it errors with credentials/expired token, drop to the Manual Guided section below with a Route 53 console deep-link.
 
 ## Find the hosted zone
 
@@ -969,7 +961,7 @@ Instruct the user to click their zone, then "Create record".
 
 # Azure DNS (Tier 3: Assisted Automation)
 
-Uses the Azure CLI. If the user is signed in, this tier handles the CNAME creation automatically. Otherwise it falls back to [manual guided](manual.md).
+Uses the Azure CLI. If the user is signed in, this tier handles the CNAME creation automatically. Otherwise it falls back to the Manual Guided section below.
 
 ## Plan requirements
 
@@ -987,7 +979,7 @@ The `Reader` role alone is insufficient; record-set writes return 403. Default s
 az account show
 ```
 
-If this returns an active subscription, proceed. Otherwise drop to [manual guided](manual.md) with the Azure portal deep-link.
+If this returns an active subscription, proceed. Otherwise drop to the Manual Guided section below with the Azure portal deep-link.
 
 ## Find the DNS zone
 
@@ -1160,7 +1152,7 @@ The response contains `custom_domain_id`, `status: "pending_verification"`, and 
 
 **If the API returns 409**: the domain already exists on this or another tenant. `auth0 api get "custom-domains"` to list existing. If it's already on this tenant and just needs verification, skip to the verify step below with the existing `custom_domain_id`.
 
-See [examples.md](examples.md) for curl, node-auth0, and auth0-python code patterns.
+See the Examples section below for curl, node-auth0, and auth0-python code patterns.
 
 ## Detect the DNS provider and route to a tier
 
@@ -1168,12 +1160,12 @@ See [examples.md](examples.md) for curl, node-auth0, and auth0-python code patte
 dig +short NS example.com
 ```
 
-Match the NS pattern against the table in [providers.md](providers.md#ns-pattern-to-provider-mapping) to select a tier, then open **only** the matching sub-file:
+Match the NS pattern against the table in the DNS Provider Playbook section below to select a tier, then follow the matching provider section:
 
-- **Tier 1 Cloudflare** → [providers/cloudflare.md](providers/cloudflare.md) (full automation via Cloudflare MCP)
-- **Tier 2 AWS Route 53** → [providers/route53.md](providers/route53.md) (assisted via AWS CLI)
-- **Tier 3 Azure DNS** → [providers/azure-dns.md](providers/azure-dns.md) (assisted via Azure CLI)
-- **Tier 4 other** → [providers/manual.md](providers/manual.md) (guided manual record entry)
+- **Tier 1 Cloudflare** → Cloudflare section below (full automation via Cloudflare MCP)
+- **Tier 2 AWS Route 53** → Route 53 section below (assisted via AWS CLI)
+- **Tier 3 Azure DNS** → Azure DNS section below (assisted via Azure CLI)
+- **Tier 4 other** → Manual Guided section below (guided manual record entry)
 
 Each sub-file is self-contained (plan requirements, pre-flight, create, error handling, fallback). Don't load every tier — load only the one that matches the detected NS pattern. Return here for the verify step once the record is written.
 
@@ -1232,7 +1224,7 @@ If the tenant now has multiple custom domains for the first time, mention that t
 The flow above is identical whether this is the tenant's first custom domain or the Nth. A few things to mention when MCD is in play:
 
 - The new domain gets its own `custom_domain_id`, CNAME verification record, and certificate lifecycle.
-- Consider setting a default custom domain after adding the second domain (the Manage existing domains flow). Without a default, notification-triggering Management API calls route through the tenant domain unless the caller sends the `auth0-custom-domain` header. See [advanced.md](advanced.md#the-auth0-custom-domain-header).
+- Consider setting a default custom domain after adding the second domain (the Manage existing domains flow). Without a default, notification-triggering Management API calls route through the tenant domain unless the caller sends the `auth0-custom-domain` header. See the Advanced Topics section below.
 - MCD is Enterprise-only with a base of 20 domains per tenant. If the user is on a non-Enterprise plan, creating a second domain returns a 403 with a different error than the Free-tier CC case; surface the full error body so the user knows which limit they hit.
 
 ## Edge cases to handle during setup
@@ -1803,7 +1795,7 @@ Recommend the user file a support ticket if:
 - Multiple create/delete cycles have been performed (the domain may be in a state only support can resolve)
 - The domain status is `disabled` rather than `pending_verification` (rare; indicates an internal state mismatch)
 
-For general guidance beyond this ladder, see [advanced.md](advanced.md#verification-troubleshooting).
+For general guidance beyond this ladder, see the Verification Troubleshooting section in Advanced Topics below.
 
 ---
 
@@ -2011,9 +2003,9 @@ Note the current CNAME target value before deletion; after deletion, the Managem
 
 ### Automated path (preferred)
 
-- **Tier 1 Cloudflare (via MCP)**: If the Cloudflare MCP is connected, `search("dns records")` then `execute()` a script that calls `cf.dns.records.delete(record_id)` for the CNAME at the target name. No user action needed. Full mechanics: [providers/cloudflare.md](providers/cloudflare.md).
-- **Tier 2 Route 53**: If AWS credentials are configured (`aws sts get-caller-identity` succeeds), run `aws route53 change-resource-record-sets` with action `DELETE` (requires the full record set to match). Use `list-resource-record-sets` first to get the exact current value, then poll `get-change` until `INSYNC`. No user action needed. Full mechanics including the exact-match DELETE gotcha: [providers/route53.md](providers/route53.md#delete-the-cname-record-the-remove-a-custom-domain-flow).
-- **Tier 3 Azure DNS**: If the Azure CLI is signed in (`az account show` succeeds), run `az network dns record-set cname delete --resource-group my-rg --zone-name example.com --name login --yes`. No user action needed. Full mechanics: [providers/azure-dns.md](providers/azure-dns.md).
+- **Tier 1 Cloudflare (via MCP)**: If the Cloudflare MCP is connected, `search("dns records")` then `execute()` a script that calls `cf.dns.records.delete(record_id)` for the CNAME at the target name. No user action needed. Full mechanics: see Cloudflare section below.
+- **Tier 2 Route 53**: If AWS credentials are configured (`aws sts get-caller-identity` succeeds), run `aws route53 change-resource-record-sets` with action `DELETE` (requires the full record set to match). Use `list-resource-record-sets` first to get the exact current value, then poll `get-change` until `INSYNC`. No user action needed. Full mechanics including the exact-match DELETE gotcha: see Route 53 section below.
+- **Tier 3 Azure DNS**: If the Azure CLI is signed in (`az account show` succeeds), run `az network dns record-set cname delete --resource-group my-rg --zone-name example.com --name login --yes`. No user action needed. Full mechanics: see Azure DNS section below.
 
 Open only the sub-file matching the detected provider; don't load all three.
 
@@ -2035,7 +2027,7 @@ Reply 'done' when removed so I can confirm the DNS record is gone, or 'skip' if
 you want to leave it in place (harmless but clutters your zone).
 ```
 
-Use the provider cheat-sheet in [providers/manual.md](providers/manual.md#per-provider-cheat-sheet) for the right deep-link and UI labels. On "done", run `dig +short CNAME login.example.com` to verify the record is gone; warn the user if it still resolves (propagation can take a few minutes).
+Use the provider cheat-sheet in the Manual Guided section below for the right deep-link and UI labels. On "done", run `dig +short CNAME login.example.com` to verify the record is gone; warn the user if it still resolves (propagation can take a few minutes).
 
 ### Why automate by default
 

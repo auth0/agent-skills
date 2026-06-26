@@ -13,7 +13,7 @@ One Auth0 tenant, multiple Organizations. Each customer gets an Organization wit
 
 Best for: SaaS platforms serving business customers who want SSO and user management isolation.
 
-Load `feature-organizations.md` for implementation details.
+(Organizations implementation is in feature-organizations.md — the router loads both for architecture questions.)
 
 ### Model 2: Multiple Auth0 tenants
 

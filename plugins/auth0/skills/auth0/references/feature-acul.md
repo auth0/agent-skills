@@ -22,7 +22,7 @@ Always resolve the correct reference for a screen using this priority order:
    → Structural component pattern only — never use their hooks/actions for other screens
 ```
 
-For which screens are in auth0-acul-samples → read `references/screen-catalog.md`.
+For which screens are in auth0-acul-samples → see the Screen Catalog section in this file.
 
 
 ## auth0-acul-samples Architecture
@@ -117,7 +117,7 @@ auth0 acul config list --rendering-mode advanced
 
 If `auth0 acul config list` returns an error about custom domain: stop and inform the customer they must configure a custom domain on their tenant before ACUL is available.
 
-For full CLI flag reference → read `references/cli-commands.md`.
+For full CLI flag reference → see the CLI Commands section in this file.
 
 
 ## Phase 1: Intent Detection
@@ -157,7 +157,7 @@ Verify `acul_config.json` is created in the project directory. Proceed to Phase 
 3. **Always resolve the reference using the hierarchy** (regardless of CLI success or failure):
 
    **Step 3a — Check auth0-acul-samples first:**
-   - Read `references/screen-catalog.md` to check if the screen has a `✅` in the Samples column
+   - Check the Screen Catalog section in this file to see if the screen has a `✅` in the Samples column
    - If yes → fetch the screen directory from:
      - React: `https://github.com/auth0-samples/auth0-acul-samples/tree/main/react/src/screens/<screen-name>`
      - React-JS: `https://github.com/auth0-samples/auth0-acul-samples/tree/main/react-js/src/screens/<screen-name>`
@@ -172,7 +172,7 @@ Verify `acul_config.json` is created in the project directory. Proceed to Phase 
 
    This step is mandatory. The 68+ ACUL screens use fundamentally different hook patterns — wrong pattern = broken code.
 
-   For all screen names and which are in samples → read `references/screen-catalog.md`.
+   For all screen names and which are in samples → see the Screen Catalog section in this file.
 
 
 ## Phase 2C: Modify Screen — Fetch Current State
@@ -194,7 +194,7 @@ Verify `acul_config.json` is created in the project directory. Proceed to Phase 
 
 Gather from the customer:
 
-- **Screen type** — for full list of available screens → read `references/screen-catalog.md`
+- **Screen type** — for full list of available screens → see the Screen Catalog section in this file
 - **Components needed:**
   - Social providers: Google, GitHub, Apple, Microsoft, Facebook
   - Form fields: email, username, phone, password, confirm-password
@@ -212,10 +212,10 @@ Confirm or detect:
 - **Existing theme file?** Check for `tailwind.config.ts`, `styles/tokens.css`, `theme/index.ts`
 
 Load the appropriate SDK reference:
-- React → read `references/acul-react-sdk.md`
-- JS → read `references/acul-js-sdk.md`
+- React → see the React SDK section in this file
+- JS → see the JS SDK section in this file
 
-For social button implementation → read `references/social-providers.md`.
+For social button implementation → see the Social Providers section in this file.
 
 
 ## Phase 5: Theme Extraction & Scope
@@ -251,7 +251,7 @@ success        → #22C55E (unless specified)
 - **Single screen:** apply tokens inline to just this component's styles
 - **All screens:** generate a shared theme file first, then apply consistently across every screen
 
-For theme file patterns per styling library → read `references/theming-patterns.md`.
+For theme file patterns per styling library → see the Theming Patterns section in this file.
 
 **Theme file to generate per styling library (all-screens scope):**
 
@@ -339,12 +339,12 @@ auth0 acul dev --connected -s <screen-name> -d <project-dir>
 
 | File | Load when |
 |------|-----------|
-| `references/acul-react-sdk.md` | Framework is React |
-| `references/acul-js-sdk.md` | Framework is JS / Vanilla |
-| `references/screen-catalog.md` | Selecting screen type or triggering CLI fallback |
-| `references/social-providers.md` | Social login buttons are needed |
-| `references/theming-patterns.md` | Generating or applying a shared theme file |
-| `references/cli-commands.md` | Need full CLI flag details |
+| React SDK section (in this file) | Framework is React |
+| JS SDK section (in this file) | Framework is JS / Vanilla |
+| Screen Catalog section (in this file) | Selecting screen type or triggering CLI fallback |
+| Social Providers section (in this file) | Social login buttons are needed |
+| Theming Patterns section (in this file) | Generating or applying a shared theme file |
+| CLI Commands section (in this file) | Need full CLI flag details |
 
 ## Asset Templates
 
@@ -592,7 +592,7 @@ export const LoginIdScreen: React.FC = () => {
 | reset-password | `@auth0/auth0-acul-react/reset-password` |
 | passkey-enrollment | `@auth0/auth0-acul-react/passkey-enrollment` |
 
-For full screen list and fallback URLs → see `screen-catalog.md`.
+For full screen list and fallback URLs → see the Screen Catalog section in this file.
 
 ---
 
@@ -779,7 +779,7 @@ render()
 | reset-password | `@auth0/auth0-acul-js/reset-password` | `ResetPassword` |
 | passkey-enrollment | `@auth0/auth0-acul-js/passkey-enrollment` | `PasskeyEnrollment` |
 
-For full screen list and fallback URLs → see `screen-catalog.md`.
+For full screen list and fallback URLs → see the Screen Catalog section in this file.
 
 ---
 
@@ -834,7 +834,7 @@ auth0 acul screen add mfa-otp-challenge -d ./my-project
 | `--dir` | `-d` | Path to project directory (must contain `acul_config.json`) |
 | `--tenant` | | Target a specific tenant |
 
-**ON ERROR:** Fall back to SDK examples — see `screen-catalog.md` for URLs.
+**ON ERROR:** Fall back to SDK examples — see the Screen Catalog section in this file for URLs.
 
 ---
 

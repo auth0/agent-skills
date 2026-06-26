@@ -106,11 +106,11 @@ auth0 tenants use <name> # switch active tenant; prompts for browser login if no
 
 **Before any write operation in any capability, run `auth0 tenants list`, show the active tenant to the user, and get explicit confirmation to proceed.** If it's the wrong tenant, stop. Tell the user to run `auth0 tenants use <name>` (or `auth0 login` if the target isn't in the list) themselves and re-invoke the skill. Do not try to switch tenants on the user's behalf.
 
-For non-interactive or multi-tenant automation, skip the CLI and call the **Management API** directly with an explicit domain + bearer token per call. See `references/examples.md`.
+For non-interactive or multi-tenant automation, skip the CLI and call the **Management API** directly with an explicit domain + bearer token per call. (see the cURL examples section below)
 
 ### Universal Login Active for the Flows You Want to Brand
 
-Themes and templates only apply to flows actually running in Universal Login. Tenants can run in hybrid mode where some flows are Classic. Run Capability 5 ("Check my setup") to diagnose which flows will and won't be affected. See `references/capability-check.md` for the Classic-toggle mechanics.
+Themes and templates only apply to flows actually running in Universal Login. Tenants can run in hybrid mode where some flows are Classic. Run Capability 5 ("Check my setup") to diagnose which flows will and won't be affected. (see the Check Setup section below for the Classic-toggle mechanics)
 
 ### Custom Domain (only if working with page templates)
 
@@ -120,31 +120,31 @@ Page templates require a custom domain on the tenant. Branding settings, theme, 
 
 End-to-end branding from a website URL, inline brand values, or a short ask — fills primary color, logo, font, and page background, shows one proposal, and applies the theme.
 
-**See `references/capability-brand.md`.**
+**See the Brand My Tenant section below.**
 
 ## Capability 2: Change specific settings
 
 Manual branding update driven by the user's natural-language intent — the skill resolves the phrase to specific fields, stages changes, and applies as a batch.
 
-**See `references/capability-manual.md`.**
+**See the Change Specific Settings section below.**
 
 ## Capability 3: Match my brand voice
 
 Rewrite Universal Login text to match a source the user provides (website, sample copy, or voice descriptor); doesn't touch colors, layout, or logo.
 
-**See `references/capability-voice.md`. See `references/screens.md` for the category → prompts → screens map.**
+**See the Match Brand Voice section below.**
 
 ## Capability 4: Rollback to Auth0 defaults
 
 Clear one or more branding surfaces and restore Auth0's defaults, per-surface. Destructive; always confirms before writing.
 
-**See `references/capability-rollback.md`.**
+**See the Rollback section below.**
 
 ## Capability 5: Check my setup
 
 Read-only diagnosis. Answers "will theme changes actually show up on the flows I care about?" Safe to run first when diagnosing "why doesn't my theme show up?"
 
-**See `references/capability-check.md`.**
+**See the Check Setup section below.**
 
 ## Common Mistakes
 
@@ -156,21 +156,11 @@ Read-only diagnosis. Answers "will theme changes actually show up on the flows I
 | Missing `auth0:head` or `auth0:widget` in templates (both are required; the page will not render without them) | Always include both; refuse the PUT otherwise |
 | Using PUT for custom text without merging (PUT replaces all text for that prompt/language) | GET current text first, merge, then PUT the full object |
 
-For the extended list (theme field requirements, Brandfetch ToS, homepage-only extraction gaps, CSS class names, CLI tenant context), see `references/api.md`.
+For the extended list (theme field requirements, Brandfetch ToS, homepage-only extraction gaps, CSS class names, CLI tenant context), see the API Reference section below.
 
 ## References
 
-In-skill (progressive disclosure):
-
-- `references/capability-brand.md`: "Brand my tenant" flow; extraction pipeline, source priority, Apply step
-- `references/capability-manual.md`: "Change specific settings" flow; intent mapping, per-surface write mechanics, Apply/Guardrails
-- `references/capability-voice.md`: "Match my brand voice" flow; source prompt, category checklist, opt-in detection, locale handling, generate-and-apply
-- `references/capability-rollback.md`: "Rollback to Auth0 defaults" flow; scope pre-check, surface selection, backup, execute
-- `references/capability-check.md`: "Check my setup" flow; Classic-toggle background, checks, output format
-- `references/screens.md`: category → prompts → screens map for "Match my brand voice" (starting point; Auth0 adds new screens over time)
-- `references/api.md`: Management API endpoints, theme/branding schema, CLI commands, error codes
-- `references/examples.md`: cURL code samples plus CI/CD deployment and tenant migration patterns
-- `references/advanced.md`: Page template creation with Liquid syntax, template variables, text customization details
+This file contains all branding guidance inline. Sections: Brand My Tenant · Change Specific Settings · Match Brand Voice · Rollback · Check Setup · API Reference · Examples.
 
 Related skills:
 
@@ -440,7 +430,7 @@ These complement the top-5 table in SKILL.md with longer-tail edge cases that te
 | Omitting required fields on theme create (`fonts.font_url`, `fonts.links_style`, each font element's `bold`, `widget.logo_url`, `page_background.background_image_url`) | Use `""` for URL fields when no custom value is needed; set `bold: false` on each font element. All top-level sections (colors, fonts, borders, widget, page_background) must be present |
 | Targeting CSS class names in page templates | Auth0 regenerates class names on each build; custom CSS keyed off internal classes will break. Use the theme API or no-code editor for styling, and page templates only for structure around the widget |
 | Assuming there is a per-client toggle for Classic login | There isn't. Classic vs Universal is tenant-wide for every flow. Login/signup is driven by `GET /prompts` → `universal_login_experience` (new/classic); password reset by `change_password.enabled` on tenant settings; MFA by `guardian_mfa_page.enabled`. All three apply to every client in the tenant |
-| Extracting brand only from the homepage in Capability 1 | Homepage gives brand identity; the login page gives layout. Follow the login link before capturing layout; see `references/capability-brand.md` Stage 1 |
+| Extracting brand only from the homepage in Capability 1 | Homepage gives brand identity; the login page gives layout. Follow the login link before capturing layout; see the Brand My Tenant section (Stage 1) |
 | Fetching Brandfetch logos server-side | Violates Brandfetch ToS. Use the hotlink pattern `https://cdn.brandfetch.io/<domain>?c=<client-id>` in `widget.logo_url`; the browser fetches at render time |
 | `PUT` template uses key `template`; `GET` template returns key `body` | Expected API asymmetry. When round-tripping (GET → edit → PUT), remap before the PUT |
 
@@ -645,9 +635,9 @@ The custom-text API is **per-prompt, not per-screen**. Multiple screens under th
 
 **Single-screen prompts:** Many prompts have exactly one screen, where the screen name matches the prompt name (e.g., prompt `login-id`, screen `login-id`). These still require their own individual PUT call — batching doesn't apply, but the structure is the same. Do not attempt to nest them under a parent prompt.
 
-**Currency of this list:** The tables below reflect the known screen inventory as of last update. Auth0 adds screens over time — new screens may appear under existing prompts, or entirely new prompts may be introduced. Treat this list as a reliable baseline, not a closed registry. If the API accepts a screen or prompt not listed here, that is expected; follow the "Learn new screens" flow in `capability-voice.md` to record it.
+**Currency of this list:** The tables below reflect the known screen inventory as of last update. Auth0 adds screens over time — new screens may appear under existing prompts, or entirely new prompts may be introduced. Treat this list as a reliable baseline, not a closed registry. If the API accepts a screen or prompt not listed here, that is expected; follow the "Learn new screens" flow in the Match Brand Voice section to record it.
 
-**Important: `GET /prompts/{prompt}/custom-text/{lang}` returns only keys the tenant has explicitly customized**, not Auth0's default built-in text. For a screen the tenant has never customized, GET returns an empty object (or the key is absent) and the skill cannot read the default copy via the API. See `capability-voice.md` "Generate and apply" for how to handle this.
+**Important: `GET /prompts/{prompt}/custom-text/{lang}` returns only keys the tenant has explicitly customized**, not Auth0's default built-in text. For a screen the tenant has never customized, GET returns an empty object (or the key is absent) and the skill cannot read the default copy via the API. See the Match Brand Voice section "Generate and apply" for how to handle this.
 
 ## Login
 
@@ -1227,20 +1217,20 @@ Target tenant: acme-prod  (active in the Auth0 CLI)
 
 If it's the wrong tenant, cancel. Tell the user to run `auth0 tenants use <name>` (or `auth0 login`) themselves and re-invoke the skill. Do not try to switch tenants on the user's behalf.
 
-For non-interactive / multi-tenant workflows, accept an explicit tenant domain + bearer token inline instead of the CLI; see `references/examples.md`.
+For non-interactive / multi-tenant workflows, accept an explicit tenant domain + bearer token inline instead of the CLI; see the cURL examples section below.
 
 ## Apply
 
 Execute based on what the user approved in the review:
 
-Before writing, validate any URL-valued fields (logo, favicon, font, background image) using the HEAD request check in `references/api.md#url-validation`. Block writes for URLs that fail. Skip validation for `cdn.brandfetch.io` URLs.
+Before writing, validate any URL-valued fields (logo, favicon, font, background image) using the HEAD request check in the API Reference section below (URL Validation). Block writes for URLs that fail. Skip validation for `cdn.brandfetch.io` URLs.
 
 1. **Tenant branding settings** (logo, favicon, primary color, page background): `PATCH /api/v2/branding`.
 2. **Theme** (colors, fonts, widget): `GET /branding/themes/default` → merge → `PATCH /branding/themes/{themeId}` with the full object. Partial PATCH is not supported; always send the full theme.
 3. **Page template** (only if the user pasted one via `[edit]` AND the tenant has a custom domain): `PUT /api/v2/branding/templates/universal-login`. Refuse the PUT if the template is missing `auth0:head` or `auth0:widget`.
-4. **Voice rewrites** (only if `[edit] → voice rewriting` was enabled): hand off to `capability-voice.md` with the primary-color/font context so it doesn't re-ask.
+4. **Voice rewrites** (only if `[edit] → voice rewriting` was enabled): hand off to the Match Brand Voice section with the primary-color/font context so it doesn't re-ask.
 
-Before writing, diff the proposed changes against current tenant state. In production environments, require explicit confirmation. Auth0 does not retain prior theme/template/text versions; if the user wants a backup, suggest exporting current state locally before applying (see the backup flow in `capability-rollback.md`).
+Before writing, diff the proposed changes against current tenant state. In production environments, require explicit confirmation. Auth0 does not retain prior theme/template/text versions; if the user wants a backup, suggest exporting current state locally before applying (see the backup flow in the Rollback section below).
 
 Report what was written and what was skipped (for example, "page template skipped — no custom domain configured"). If voice rewriting was opted in, chain into Capability 3 after the theme write succeeds.
 
@@ -1373,7 +1363,7 @@ The user can still respond in natural language from there.
 
 Once the target is resolved, these are the mechanics for writing each surface. The user does not see these details; they're for this skill's execution.
 
-Before staging any URL-valued field (`logo_url`, `favicon_url`, `font.url`, `widget.logo_url`, `fonts.font_url`, `page_background.background_image_url`), validate the URL resolves using the HEAD request check in `references/api.md#url-validation`. Block staging for URLs that fail. Skip validation for `cdn.brandfetch.io` URLs.
+Before staging any URL-valued field (`logo_url`, `favicon_url`, `font.url`, `widget.logo_url`, `fonts.font_url`, `page_background.background_image_url`), validate the URL resolves using the HEAD request check in the API Reference section below (URL Validation). Block staging for URLs that fail. Skip validation for `cdn.brandfetch.io` URLs.
 
 - **Logo**: Auth0 does not host uploaded assets. Ask the user for an HTTPS URL where the logo is already hosted. For theme logo: GET default theme, replace `widget.logo_url`, PATCH back. For tenant logo: `PATCH /branding` with `logo_url`. If the user only has a file, pause and ask them to host it first (their CDN, an S3 bucket, GitHub raw content, etc.).
 - **Favicon**: URL only, same constraint as logo. `PATCH /branding` with `favicon_url`.
@@ -1520,7 +1510,7 @@ Free-text prompt. Accept whatever the user gives and route based on what it is:
 
 Parse the reply:
 
-- **URL** (http/https) → sample the copy and classify the voice. Run Stage 4 of the "Brand my tenant" pipeline (voice extraction) without the rest; see `capability-brand.md`.
+- **URL** (http/https) → sample the copy and classify the voice. Run Stage 4 of the "Brand my tenant" pipeline (voice extraction) without the rest; see the Brand My Tenant section.
 - **Pasted sample text** → classify directly.
 - **A voice descriptor** (short phrase, no URL, no paragraph of sample copy) → use as-is.
 - **Ambiguous** (e.g., a URL plus a descriptor, or text that could be either a sample or a descriptor) → ask one short clarifying question in free text; don't kick back to a picker.
@@ -1536,7 +1526,7 @@ Universal Login has 80+ screens. Most tenants use under 10. Ask the user in one 
 
 Parse the reply:
 
-- **Listed explicitly** (`"login and signup"`, `login-id, signup-password`, category names) → map to (prompt, screen) pairs via `references/screens.md` and skip straight to locale handling. Only fall back to the picker if the listing is ambiguous.
+- **Listed explicitly** (`"login and signup"`, `login-id, signup-password`, category names) → map to (prompt, screen) pairs via the screens map below and skip straight to locale handling. Only fall back to the picker if the listing is ambiguous.
 - **"detect"** → run detection (next section), then render the pre-filled picker for confirmation.
 - **"pick"** → render `AskUserQuestion` with `multiSelect: true` and no pre-checks. This is the only path that forces the picker.
 
@@ -1556,10 +1546,10 @@ Category list when the picker is rendered (`AskUserQuestion` options):
 Expansion rules (apply after picker submit, or when parsing a listed reply):
 
 - If **MFA** is selected, show a sub-picker for factors: OTP (authenticator apps), SMS, push, email, phone, voice, WebAuthn, recovery code. Also include the MFA "landing" screens (`mfa-begin-enroll-options`, `mfa-login-options`, etc.) as a default. Only rewrite sub-screens for factors the user confirms are enabled.
-- If **Other** is selected, show the full list of long-tail screens from `references/screens.md` so they can tick specific ones.
-- For each selected category, expand to the set of (prompt, screen) pairs via `references/screens.md`.
+- If **Other** is selected, show the full list of long-tail screens from the screens map below so they can tick specific ones.
+- For each selected category, expand to the set of (prompt, screen) pairs via the screens map below.
 
-**New screens:** `references/screens.md` is a canonical starting point, not an authoritative registry. Auth0 adds screens over time. If the user mentions a screen name the skill doesn't recognize, accept it: probe `GET /api/v2/prompts/{prompt}/custom-text/{lang}` for the prompt they expect it under, or ask the user to confirm the prompt name. The skill should not refuse a rewrite because the screen isn't in the reference map. After a successful rewrite of an unknown screen, offer to add it to `screens.md` so the user doesn't have to re-enter it next time; see "Learn new screens" below.
+**New screens:** The screens catalog below is a canonical starting point, not an authoritative registry. Auth0 adds screens over time. If the user mentions a screen name the skill doesn't recognize, accept it: probe `GET /api/v2/prompts/{prompt}/custom-text/{lang}` for the prompt they expect it under, or ask the user to confirm the prompt name. The skill should not refuse a rewrite because the screen isn't in the catalog. After a successful rewrite of an unknown screen, offer to add it to the screens catalog so the user doesn't have to re-enter it next time; see "Learn new screens" below.
 
 ## Help me figure it out (optional detection)
 
@@ -1683,7 +1673,7 @@ After all PUTs succeed, run the "Verify in browser (post-apply)" step from SKILL
 
 ## Learn new screens
 
-If the run included a screen that was not in `references/screens.md` (because Auth0 shipped a new one, or the user named a screen the reference didn't cover) AND the PUT succeeded, offer to persist it so the user doesn't have to re-enter it next time:
+If the run included a screen that was not in the screens catalog below (because Auth0 shipped a new one, or the user named a screen the catalog didn't cover) AND the PUT succeeded, offer to persist it so the user doesn't have to re-enter it next time:
 
 ```text
 I rewrote `<screen-name>` under the `<prompt-name>` prompt. It wasn't in my
@@ -1704,7 +1694,7 @@ Infer the default category from the prompt name where possible:
 - `signup*` → **Signup**
 - anything else → **Other**
 
-If the user accepts, append a new row to the matching category's table in `references/screens.md` with the `(prompt, screen)` pair. Only persist after a successful PUT so a failed or canceled rewrite doesn't pollute the reference. If multiple new screens came up in the same run, batch the confirmations into one question listing all of them.
+If the user accepts, append a new row to the matching category's table in the screens catalog below with the `(prompt, screen)` pair. Only persist after a successful PUT so a failed or canceled rewrite doesn't pollute the catalog. If multiple new screens came up in the same run, batch the confirmations into one question listing all of them.
 
 The reference map grows with real usage this way; users only name a new screen once.
 
