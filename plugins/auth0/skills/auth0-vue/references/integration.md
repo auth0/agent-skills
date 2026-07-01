@@ -368,6 +368,18 @@ onMounted(async () => {
 
 ---
 
+## DPoP (Device-Bound Tokens)
+
+To bind access tokens cryptographically to the client so stolen tokens cannot be
+replayed, use the [`auth0-dpop`](/auth0-dpop) skill. It covers:
+
+- Enabling DPoP on your Auth0 API
+- Adding `useDpop: true` to your `createAuth0` config
+- Making DPoP-protected API calls with `createFetcher()`
+- Nonce handling and `UseDpopNonceError` recovery
+
+---
+
 ## Next Steps
 
 - [API Reference](api.md) - Complete SDK documentation

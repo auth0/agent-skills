@@ -143,6 +143,7 @@ npm run dev
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-migration` - Migrate from another auth provider
 - `auth0-mfa` - Add Multi-Factor Authentication
+- `auth0-dpop` - Add DPoP device-bound token binding
 - `auth0-cli` - Manage Auth0 resources from the terminal
 
 ---
@@ -156,6 +157,12 @@ npm run dev
 - `loginWithRedirect()` - Initiate login
 - `logout()` - Log out user
 - `getAccessTokenSilently()` - Get access token for API calls
+
+**DPoP Composables** (requires `useDpop: true` in `createAuth0` config — see [`auth0-dpop`](/auth0-dpop)):
+- `createFetcher(config)` - Returns a DPoP-aware `fetch`-compatible function
+- `generateDpopProof(params)` - Manually generate a DPoP proof JWT
+- `getDpopNonce(id?)` - Get the current stored DPoP nonce
+- `setDpopNonce(nonce, id?)` - Store a server-issued DPoP nonce
 
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
