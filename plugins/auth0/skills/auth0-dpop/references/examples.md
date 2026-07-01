@@ -293,19 +293,20 @@ export class DataComponent {
   data = signal<unknown>(null);
   error = signal<string | null>(null);
 
+  // Created once — reused across all fetchData() calls so nonce state is preserved
+  private apiFetch = this.auth.createFetcher({
+    baseUrl: 'https://your-api.example.com'
+  });
+
   async fetchData() {
     this.error.set(null);
-    const apiFetch = this.auth.createFetcher({
-      baseUrl: 'https://your-api.example.com'
-    });
-
     try {
-      const response = await apiFetch('/data');
+      const response = await this.apiFetch('/data');
       this.data.set(await response.json());
     } catch (err) {
       if (err instanceof UseDpopNonceError) {
         // Server rotated its nonce — retry once
-        const response = await apiFetch('/data');
+        const response = await this.apiFetch('/data');
         this.data.set(await response.json());
       } else {
         this.error.set((err as Error).message);
@@ -318,11 +319,8 @@ export class DataComponent {
 ### 3. POST / PUT / DELETE requests
 
 ```typescript
-const apiFetch = this.auth.createFetcher({
-  baseUrl: 'https://your-api.example.com'
-});
-
-const response = await apiFetch('/items', {
+// Uses the same class-field fetcher — pass standard fetch options as the second argument
+const response = await this.apiFetch('/items', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ name: 'example' })
