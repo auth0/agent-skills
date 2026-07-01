@@ -29,8 +29,10 @@ its own connections, members, and roles — and the app enforces tenant isolatio
 
 This is a **scenario skill**: it composes primitives end to end (CLI provisioning →
 org-aware login → JIT membership & invitations → org-scoped RBAC → token shaping → app
-enforcement). For raw command flags see `auth0-cli`; for the framework login wiring see the
-matching framework skill (`auth0-nextjs`, `auth0-react`, `express-oauth2-jwt-bearer`, etc.).
+enforcement). For raw command flags see `auth0-cli`; for full framework SDK setup see the matching
+framework skill (`auth0-nextjs`, `auth0-react`, `express-oauth2-jwt-bearer`, etc.). The
+**org-scoped enforcement pattern** (reading `org_id` from the token and scoping all data to it) is
+B2B-specific and lives in this skill's stack-specific integration references (Step 5).
 
 ---
 
@@ -96,7 +98,7 @@ trustworthy statement of which org this request acts on. Authorization checks (r
 permissions) must be evaluated **relative to that `org_id`** — a role grants access only inside
 the org it was assigned in. Skipping this is the classic B2B cross-tenant data-leak bug.
 
-See [Integration & Enforcement](references/integration.md) for the enforcement pattern.
+See [Integration & Enforcement](references/integration-js.md) for the JavaScript/TypeScript enforcement pattern, or the stack-specific reference in Step 5.
 
 ---
 
@@ -148,8 +150,7 @@ Prefer IDs as the trust anchor — names are mutable.
 How the app *resolves which org* to pass (subdomain, org name, identifier-first + Home Realm
 Discovery, or post-login prompt) is an architecture choice — see the resolution table in
 [Architecture Patterns](references/architecture.md#organization-resolution-at-login--how-the-user-reaches-the-right-org).
-How you pass `organization` for a given SDK is in
-[Integration & Enforcement](references/integration.md) (Next.js, React SPA, Express).
+How you pass `organization` for a given SDK is in the stack-specific integration reference in Step 5.
 
 ---
 
@@ -206,8 +207,15 @@ three-Action sequence in [Architecture Patterns](references/architecture.md#post
 ## Step 5 — Enforce in the app
 
 On every protected request: validate the access token, read `org_id`, scope all data and
-authorization to it, then check `permissions`/roles. Full middleware pattern (Express, Next.js):
-[Integration & Enforcement](references/integration.md).
+authorization to it, then check `permissions`/roles. Choose the reference for your stack:
+
+| Stack | Reference |
+|-------|-----------|
+| JavaScript / TypeScript (Next.js, React SPA, Express) | [Integration & Enforcement — JS](references/integration-js.md) |
+| Python (FastAPI, Flask) | [Integration & Enforcement — Python](references/integration-python.md) |
+| Java (Spring Boot) | [Integration & Enforcement — Java](references/integration-java.md) |
+| Go | [Integration & Enforcement — Go](references/integration-go.md) |
+| .NET (ASP.NET Core) | [Integration & Enforcement — .NET](references/integration-dotnet.md) |
 
 ---
 
@@ -260,7 +268,11 @@ for the manual checks (`auth0 test login`, decode the token, assert `org_id` + r
 - [Account Models](references/account-models.md) — map market-leading B2B SaaS account shapes (personal/team, workspace-first, platform/marketplace) to Auth0 patterns
 - [Architecture Patterns](references/architecture.md) — two-client setup, signup flows, login methods, role model
 - [Setup & Provisioning](references/setup.md) — CLI commands for organizations, connections, roles, actions
-- [Integration & Enforcement](references/integration.md) — app-side token validation, org scoping, enforcement middleware
+- [Integration & Enforcement — JS](references/integration-js.md) — Next.js, React SPA, Express: org-aware login + org_id-scoped middleware
+- [Integration & Enforcement — Python](references/integration-python.md) — FastAPI and Flask: org-aware login + org_id-scoped enforcement
+- [Integration & Enforcement — Java](references/integration-java.md) — Spring Boot: org_id claim extraction + scoped controller/aspect pattern
+- [Integration & Enforcement — Go](references/integration-go.md) — go-jwt-middleware: typed B2B claims + org_id-scoped handler
+- [Integration & Enforcement — .NET](references/integration-dotnet.md) — ASP.NET Core: ClaimsPrincipal org_id + scoped OrgContext service
 - [Advanced Capabilities](references/advanced.md) — self-service SSO, M2M-per-org, SCIM, per-org branding/metadata/token quota
 
 ## References
