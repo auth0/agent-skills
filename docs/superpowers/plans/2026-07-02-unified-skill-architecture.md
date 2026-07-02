@@ -16,9 +16,9 @@
 - `description` field ≤ 1024 characters (spec hard limit; `validate-skill.sh` enforces).
 - `SKILL.md` ≤ 600 lines (`validate-skill.sh` enforces).
 - Only `SKILL.md` may live in a skill root; other content in `references/` (kebab-case `.md`), `scripts/`, `assets/`, `tests/`.
-- **No reference file may link to another reference file** (Claude Code linking rule; new checker enforces).
+- **No reference file may link to any `.md` file** (Claude Code one-hop rule; the new checker flags every intra-references `.md` link, existing target or dead).
 - After the fold-ins there must be exactly **one** skill directory: `plugins/auth0/skills/auth0/`.
-- `uvx skillsaw --strict` and `scripts/validate-skill.sh` and the new reachability check must all pass before merge.
+- `skillsaw --strict` and `scripts/validate-skill.sh` and the new reachability check must all pass before merge. **Local skillsaw note:** the sandbox `uvx` shim has no `uv` behind it; run skillsaw via a venv — `python3 -m venv /tmp/skillsaw-venv && /tmp/skillsaw-venv/bin/pip -q install "skillsaw==0.4.3" && /tmp/skillsaw-venv/bin/skillsaw --strict` (already set up at `/tmp/skillsaw-venv`). CI uses `uvx skillsaw==0.4.3` and is the authoritative gate.
 - Tier-1 (Auth0-SDK-present) detection behavior stays byte-for-byte unchanged.
 
 ---
@@ -516,6 +516,141 @@ git commit -m "ci(auth0): run router reachability check in CI and local validato
 
 ---
 
+## Task 5b: Harden checker to derive routable slugs from the router (fixes B2-detection flaw)
+
+**Files:**
+- Modify: `scripts/check_router_reachability.py`
+- Modify: `scripts/test_check_router_reachability.py` (add a regression test)
+
+**Interfaces:**
+- Produces: `check_router()` whose reachability universe is derived FROM the
+  router's own tables, not a hardcoded list — so an orphan like `php-api`
+  (present as a file but never emitted by the router) is correctly flagged.
+
+**Background (why this task exists):** the Task-4 checker hardcoded a
+`FRAMEWORKS` list that included `php-api`. Because the router SKILL.md emits no
+`php-api` value, `framework-php-api.md` is a real orphan (B2) — but the hardcoded
+list made the checker call it "reachable," so the checker could NOT catch the
+very bug it exists to catch. The fix: derive the framework/tooling slug universe
+from the router text itself (single source of truth). The B3 feedback demands
+exactly this ("parse the router and enumerate every reference filename it can
+route to").
+
+- [ ] **Step 1: Add a failing regression test**
+
+Append to `scripts/test_check_router_reachability.py`:
+
+```python
+    def test_template_slug_universe_comes_from_router_not_hardcode(self):
+        # A framework file whose slug the router NEVER mentions must be flagged
+        # unreachable — even though it matches the framework-*.md shape.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                # Router mentions only `react`; template read for {framework}.
+                "Read: references/framework-{framework}.md\n"
+                "| `@auth0/auth0-react` | `react` |\n",
+                {"framework-react.md": "ok", "framework-php-api.md": "orphan"},
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertIn("framework-php-api.md", unreachable)
+            self.assertNotIn("framework-react.md", unreachable)
+```
+
+Run it — it FAILS today because `php-api` is hardcoded into `FRAMEWORKS`:
+```bash
+cd scripts && python3 -m unittest test_check_router_reachability -v; cd ..
+```
+Expected: the new test FAILS (php-api considered reachable).
+
+- [ ] **Step 2: Replace the hardcoded lists with router-derived slugs**
+
+In `scripts/check_router_reachability.py`, delete the `FRAMEWORKS` and
+`TOOLINGS` constants and derive both from the router text. Replace the top
+constants and `_expand`/`check_router` with:
+
+```python
+# Every bare `slug` token in a router table's value column is a routable
+# framework/target slug. The router is the single source of truth — no
+# hardcoded mirror list (which could mask an orphaned file, e.g. php-api).
+SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
+READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
+LINK_RE = re.compile(r"\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)")
+
+
+def _router_slugs(skill_md: str) -> set:
+    """All backticked slugs the router mentions — the routable value universe.
+    A superset of framework/tooling slugs; safe because we only intersect it
+    with `{...}`-template expansions, and any real reference file must have a
+    slug the router actually names to be reachable."""
+    return set(SLUG_RE.findall(skill_md))
+
+
+def _expand(token: str, slugs: set) -> list:
+    # Replace any {placeholder} with each known router slug.
+    ph = re.search(r"\{([a-z]+)\}", token)
+    if not ph:
+        return [token]
+    return [token.replace(ph.group(0), s) for s in slugs]
+
+
+def check_router(skill_dir: Path):
+    skill_md = (skill_dir / "SKILL.md").read_text()
+    refs_dir = skill_dir / "references"
+
+    slugs = _router_slugs(skill_md)
+    routed = set()
+    for m in READ_RE.finditer(skill_md):
+        for name in _expand(m.group(1), slugs):
+            routed.add(name)
+
+    present = {p.name for p in refs_dir.glob("*.md")}
+    unreachable = sorted(present - routed)
+
+    bad_links = []
+    for ref in sorted(present):
+        for lm in LINK_RE.finditer((refs_dir / ref).read_text()):
+            bad_links.append((ref, lm.group(1)))
+
+    return unreachable, bad_links
+```
+
+Keep `main()` unchanged. Note `_expand` now takes `slugs` — update no other
+callers (only `check_router` calls it).
+
+- [ ] **Step 3: Run the full unit suite**
+
+```bash
+cd scripts && python3 -m unittest test_check_router_reachability -v; cd ..
+```
+Expected: all tests pass INCLUDING the new regression test. The prior template
+test (`test_template_expansion_reaches_files`) uses a `<!-- frameworks: react
+php-api -->` comment; note the new derivation reads backticked slugs, so that
+fixture must mention the slugs in backticks. If that older test now fails,
+update its fixture to put the slugs in backticks (e.g. add
+"`react` `php-api`" to its skill_md) so both slugs are in the router's slug
+universe — the test's intent (template expansion reaches both files) is
+preserved.
+
+- [ ] **Step 4: Confirm behavior against the real skill (php-api now flagged)**
+
+```bash
+python3 scripts/check_router_reachability.py plugins/auth0/skills/auth0 || true
+```
+Expected: NOW reports `framework-php-api.md` under UNREACHABLE (B2 orphan
+correctly caught), plus the dead links until Task 5a runs. This is the proof the
+checker works — the orphan is fixed in Task 6 by adding `php-api` to the router.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add scripts/check_router_reachability.py scripts/test_check_router_reachability.py
+git commit -m "fix(ci): derive routable slugs from router so orphaned files are caught (B2)"
+```
+
+---
+
 ## Task 5a: Remove dead intra-references cross-links (pre-existing defect)
 
 **Files:**
@@ -710,34 +845,52 @@ rather than silently picking. Workspace signals outrank the prompt when both are
 present and consistent.
 ````
 
-- [ ] **Step 2: Add a machine-readable framework list comment for the checker**
+- [ ] **Step 2: Verify every framework file's slug is named in a router table**
 
-At the end of Step 2 (or near the `FRAMEWORKS` needs), the checker enumerates frameworks from its own constant, so no marker is strictly required. Verify the checker's `FRAMEWORKS` list matches every `framework-*.md` present:
+The hardened checker (Task 5b) derives routable slugs from the backticked
+values in the router's own tables — there is NO `FRAMEWORKS` constant to keep in
+sync. So the invariant is: **every `framework-<slug>.md` file must have its
+`<slug>` appear as a backticked value somewhere in `SKILL.md`** (Tier 1/2/3
+tables or the variant table). Check for any file stem the router never names:
 
 ```bash
-ls plugins/auth0/skills/auth0/references/framework-*.md | sed 's#.*/framework-##;s#\.md##' | sort > /tmp/have.txt
-(cd scripts && python3 -c "from check_router_reachability import FRAMEWORKS; print(chr(10).join(sorted(FRAMEWORKS)))") > /tmp/known.txt
-comm -23 /tmp/have.txt /tmp/known.txt   # any output = files missing from the checker's FRAMEWORKS list
+# Slugs the router names (backticked tokens):
+grep -oE '`[a-z0-9-]+`' plugins/auth0/skills/auth0/SKILL.md | tr -d '`' | sort -u > /tmp/router-slugs.txt
+# Slugs that exist as framework files:
+ls plugins/auth0/skills/auth0/references/framework-*.md | sed 's#.*/framework-##;s#\.md##' | sort -u > /tmp/file-slugs.txt
+comm -23 /tmp/file-slugs.txt /tmp/router-slugs.txt   # any output = a framework file the router never emits (orphan)
 ```
-Ensure every file stem is in `FRAMEWORKS`. If any file (e.g. `flutter-native`, `flutter-web`, `maui`, `net-android`, `net-ios`, `winforms`, `wpf`) is missing from the list, add it to `scripts/check_router_reachability.py` `FRAMEWORKS` and commit that fix here.
+Expected after your Step-1 rewrite: EMPTY. If any slug prints (e.g. `php-api`
+before you add it, or `net-android`/`net-ios`/`maui`/`winforms`/`wpf` if the
+Tier-3 table abbreviates them), add that exact slug as a backticked value in the
+appropriate router table so the file is reachable.
 
-- [ ] **Step 3: Confirm `php-api` (and every variant) is now routed**
+- [ ] **Step 3: Confirm the checker now passes on the real skill**
 
-Step 4's `integrate` block reads `references/framework-{framework}.md`; with `php-api` now a valid framework value the template expansion covers it. Run the checker:
+Task 5b confirmed the checker FLAGS `framework-php-api.md` as an orphan while the
+router lacked a `php-api` value; your Step-1 rewrite added `php-api` (and every
+other variant slug) to the router tables, and Task 5a cleared the dead links.
+Run the checker:
 
 ```bash
 python3 scripts/check_router_reachability.py plugins/auth0/skills/auth0
 ```
-Expected: `PASS: all references routable; no intra-references .md links` (the
-`php-api` orphan is now routed, and Task 5a already cleared the dead links).
+Expected: `PASS: all references routable; no intra-references .md links`.
 
 - [ ] **Step 4: Run the full local validation**
 
 ```bash
 bash plugins/auth0/skills/auth0/scripts/validate-skill.sh
-uvx skillsaw --strict
 ```
-Expected: `validate-skill.sh` → `PASS`; skillsaw → no errors. Confirm `SKILL.md` is still ≤ 600 lines:
+Also run skillsaw at the CI-pinned version. `uvx` may be unavailable locally; if
+so, use a venv:
+```bash
+uvx skillsaw --strict 2>/dev/null || {
+  python3 -m venv /tmp/skillsaw-venv 2>/dev/null; /tmp/skillsaw-venv/bin/pip -q install "skillsaw==0.4.3"
+  /tmp/skillsaw-venv/bin/skillsaw --strict
+}
+```
+Expected: `validate-skill.sh` → `PASS`; skillsaw → 0 errors. Confirm `SKILL.md` is still ≤ 600 lines:
 ```bash
 wc -l plugins/auth0/skills/auth0/SKILL.md
 ```
@@ -746,7 +899,7 @@ Expected: ≤ 600. If over, tighten Tier-3 wording (it is the most compressible)
 - [ ] **Step 5: Commit**
 
 ```bash
-git add plugins/auth0/skills/auth0/SKILL.md scripts/check_router_reachability.py
+git add plugins/auth0/skills/auth0/SKILL.md
 git commit -m "feat(auth0): detect framework without SDK via workspace+prompt cascade; fix php-api reachability (B2)"
 ```
 
@@ -840,8 +993,10 @@ from the router).
 - **New framework:** add detection in **all three tiers** of Step 2 — Tier 1
   (Auth0 SDK package), Tier 2 (non-Auth0 workspace dependency), Tier 3 (prompt
   keyword) — and, if it has a web-vs-API split, a row in "Variant
-  disambiguation." Add the framework value to the `FRAMEWORKS` list in
-  `scripts/check_router_reachability.py`.
+  disambiguation." The reachability checker derives routable slugs directly from
+  these router tables (the backticked value column), so simply naming your
+  `<slug>` in a table makes `framework-<slug>.md` reachable — there is no
+  separate list to update.
 
 ### Validate
 ```bash
