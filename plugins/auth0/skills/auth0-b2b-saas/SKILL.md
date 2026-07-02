@@ -36,6 +36,55 @@ B2B-specific and lives in this skill's stack-specific integration references (St
 
 ---
 
+## Before you start — ask these questions in order
+
+Before reading any further or writing any code, ask the user these questions **one step at a time**
+(do not ask all at once; wait for each answer before proceeding):
+
+**Step 1 — Account model** (foundational — determines provisioning pattern, sign-up flow, and
+invitation logic for the entire skill):
+
+> Which of these best describes how your customers are structured?
+> 1. **Company Tenant** — a company signs up, one user becomes admin, invites teammates (most B2B SaaS default)
+> 2. **Isolated Workspace** — each workspace/company is completely isolated, separate subscription
+> 3. **Cross-Org Member** — one user belongs to many companies with different roles
+> 4. **Project Platform** — users create projects/apps, each with its own team
+
+If the user is unsure, recommend **Company Tenant** and explain it covers Vercel, GitHub, and most B2B SaaS patterns.
+
+**Step 2 — Language / runtime** (determines which Step 5 integration reference to use):
+
+> What language or runtime is your app built on?
+> 1. **JavaScript / TypeScript** (Node.js — Next.js, React SPA, Express, Fastify, etc.)
+> 2. **Python** (FastAPI, Flask, Django)
+> 3. **Java** (Spring Boot)
+> 4. **Go**
+> 5. **.NET** (ASP.NET Core)
+> 6. **Other** — describe it
+
+**Step 3 — Framework** (only if the language has meaningful variants; skip if already specific):
+
+For JavaScript/TypeScript only, ask:
+> Which framework?
+> 1. **Next.js App Router** — full-stack with server components and route handlers
+> 2. **Next.js Pages Router** — `getServerSideProps` / API routes
+> 3. **React SPA + separate API** — frontend SPA (React/Vite) with a separate backend
+> 4. **Express / Fastify** — pure backend API, no frontend SSR
+
+For other languages, skip this step — the per-language reference already covers the common frameworks.
+
+**Step 4 — Auth0 tenant**:
+
+> Do you have an Auth0 tenant already, or do you need to create one?
+> 1. **Existing tenant** — I have a tenant and its domain
+> 2. **Need to create one** — walk me through `auth0 login` first
+
+Once you have all four answers, proceed through the skill steps using the account model to shape
+provisioning (Step 1), the framework to set up login (Step 2), and the language-specific reference
+for enforcement (Step 5).
+
+---
+
 ## Overview
 
 ### When to use this skill
