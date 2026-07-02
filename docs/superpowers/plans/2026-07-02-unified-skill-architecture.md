@@ -253,7 +253,7 @@ git commit -m "feat(auth0): fold acul-screen-generator into unified skill (one s
 ## Task 4: Add the router reachability check (B3) — as a failing test first
 
 **Files:**
-- Create: `scripts/check-router-reachability.py`
+- Create: `scripts/check_router_reachability.py`
 - Create: `scripts/test_check_router_reachability.py`
 
 **Interfaces:**
@@ -301,7 +301,7 @@ class ReachabilityTest(unittest.TestCase):
             unreachable, bad_links = check_router(skill)
             self.assertEqual(unreachable, [])
 
-    def test_reference_linking_another_reference_is_flagged(self):
+    def test_reference_linking_existing_reference_is_flagged(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
             skill = _make_skill(
@@ -311,6 +311,33 @@ class ReachabilityTest(unittest.TestCase):
             )
             unreachable, bad_links = check_router(skill)
             self.assertIn(("framework-react.md", "feature-mfa.md"), bad_links)
+
+    def test_reference_linking_nonexistent_md_is_flagged(self):
+        # Dead cross-refs (target does not exist) must ALSO be caught.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-react.md\n",
+                {"framework-react.md": "see [setup](setup.md) and [api](react-api.md)"},
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertIn(("framework-react.md", "setup.md"), bad_links)
+            self.assertIn(("framework-react.md", "react-api.md"), bad_links)
+
+    def test_external_and_asset_links_not_flagged(self):
+        # https:// links and non-.md asset paths are fine.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-react.md\n",
+                {"framework-react.md":
+                    "[docs](https://auth0.com/docs/x.md) "
+                    "[tpl](../assets/acul/react-templates/login-id.tsx)"},
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertEqual(bad_links, [])
 
 if __name__ == "__main__":
     unittest.main()
@@ -325,11 +352,14 @@ Expected: FAIL with `ModuleNotFoundError: No module named 'check_router_reachabi
 
 - [ ] **Step 3: Implement the checker**
 
-Create `scripts/check-router-reachability.py`. Because the module is imported as `check_router_reachability` in the test, also expose it under that name — create the file as `scripts/check_router_reachability.py` (underscore) and make `scripts/check-router-reachability.py` a thin CLI shim, OR name the implementation with an underscore and invoke it directly. Use the underscore filename `scripts/check_router_reachability.py` as the importable module and CLI entry (simplest):
+Create `scripts/check_router_reachability.py` (underscore — it is both the importable module for the test and the CLI entry point; there is no hyphenated variant):
 
 ```python
 #!/usr/bin/env python3
-"""Assert every references/*.md is routable from SKILL.md and no reference links another reference."""
+"""Assert every references/*.md is routable from SKILL.md and no reference file
+links to ANY .md file (neither an existing reference nor a dead/nonexistent one).
+Claude Code follows only one hop from the router, so all intra-references .md
+links are defects — including stale links left by earlier consolidation."""
 import re, sys
 from pathlib import Path
 
@@ -346,6 +376,9 @@ FRAMEWORKS = [
 TOOLINGS = ["cli", "mcp", "terraform"]
 
 READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md|[a-z0-9-]+\.md)")
+# A bare .md link target: only [a-z0-9-] then .md, so "https://…/x.md" (has "/")
+# and asset paths like "../assets/…/x.tsx" (not .md) do NOT match — only
+# intra-references links such as "](setup.md)" or "](react-api.md)".
 LINK_RE = re.compile(r"\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)")
 
 
@@ -372,9 +405,8 @@ def check_router(skill_dir: Path):
     bad_links: list[tuple[str, str]] = []
     for ref in sorted(present):
         for lm in LINK_RE.finditer((refs_dir / ref).read_text()):
-            target = lm.group(1)
-            if target in present:
-                bad_links.append((ref, target))
+            # Flag EVERY intra-references .md link — existing target or dead.
+            bad_links.append((ref, lm.group(1)))
 
     return unreachable, bad_links
 
@@ -392,11 +424,11 @@ def main() -> int:
             print(f"  - references/{f}")
     if bad_links:
         ok = False
-        print("REFERENCE→REFERENCE links (forbidden):")
+        print("INTRA-REFERENCES .md LINKS (forbidden — existing or dead target):")
         for src, tgt in bad_links:
             print(f"  - {src} -> {tgt}")
     if ok:
-        print("PASS: all references routable; no reference→reference links")
+        print("PASS: all references routable; no intra-references .md links")
         return 0
     return 1
 
@@ -405,14 +437,14 @@ if __name__ == "__main__":
     raise SystemExit(main())
 ```
 
-Update the test import to `from check_router_reachability import check_router` (matches the underscore filename). Remove the hyphenated-filename plan note — there is only `scripts/check_router_reachability.py`.
+The test imports `from check_router_reachability import check_router` (matches the underscore filename). There is only `scripts/check_router_reachability.py` — no hyphenated variant.
 
 - [ ] **Step 4: Run the test to verify it passes**
 
 ```bash
 cd scripts && python -m pytest test_check_router_reachability.py -v; cd ..
 ```
-Expected: 3 passed.
+Expected: 5 passed (orphan, template-expansion, existing-ref link, dead-ref link, external/asset-not-flagged).
 
 - [ ] **Step 5: Commit**
 
@@ -431,7 +463,7 @@ git commit -m "test(ci): add router reachability + no-reference-link checker"
 
 **Interfaces:**
 - Consumes: `scripts/check_router_reachability.py` from Task 4.
-- Produces: CI fails when a reference is orphaned or a reference links another reference.
+- Produces: CI fails when a reference is orphaned or a reference file contains any intra-references `.md` link (existing or dead).
 
 - [ ] **Step 1: Add a CI step to `skillsaw.yml`**
 
@@ -449,7 +481,7 @@ After the "Run skillsaw in strict mode" job's steps (as a new step in the same `
 In `plugins/auth0/skills/auth0/scripts/validate-skill.sh`, immediately before the final `echo "PASS"`, add:
 
 ```bash
-# Router reachability + no reference→reference links
+# Router reachability + no intra-references .md links
 REACH="$REPO_ROOT/scripts/check_router_reachability.py"
 if [ -f "$REACH" ]; then
   echo "Running router reachability check..."
@@ -459,12 +491,21 @@ if [ -f "$REACH" ]; then
 fi
 ```
 
-- [ ] **Step 3: Run the local validator (expect it to FAIL on the php-api orphan)**
+- [ ] **Step 3: Run the local validator (expect it to FAIL — this proves the check works)**
 
 ```bash
 bash plugins/auth0/skills/auth0/scripts/validate-skill.sh
 ```
-Expected: FAIL — `framework-php-api.md` reported UNREACHABLE (this is B2, fixed in Task 6). This proves the check works. If any *other* file is unreachable, note it for Task 6.
+Expected: FAIL on TWO fronts:
+1. `framework-php-api.md` reported UNREACHABLE (B2, fixed in Task 6).
+2. ~60+ INTRA-REFERENCES `.md` LINKS reported across ~19 `framework-*.md` files
+   (dead cross-refs like `](setup.md)`, `](nextjs-integration.md)`,
+   `](vue-api.md)` left by an earlier consolidation — cleaned in Task 5a).
+
+Both are expected here. Capture the full list for reference:
+```bash
+bash plugins/auth0/skills/auth0/scripts/validate-skill.sh 2>&1 | tee /tmp/reach-before.txt || true
+```
 
 - [ ] **Step 4: Commit**
 
@@ -475,13 +516,85 @@ git commit -m "ci(auth0): run router reachability check in CI and local validato
 
 ---
 
+## Task 5a: Remove dead intra-references cross-links (pre-existing defect)
+
+**Files:**
+- Modify: ~19 `plugins/auth0/skills/auth0/references/framework-*.md` files (and any other reference file the checker flags) — strip/repair dead `.md` cross-links.
+
+**Interfaces:**
+- Consumes: the checker's `INTRA-REFERENCES .md LINKS` report from Task 5 Step 3.
+- Produces: zero intra-references `.md` links across the whole `references/` pool (the link half of the checker passes; the `php-api` orphan is still expected until Task 6).
+
+**Background:** An earlier consolidation commit (`ec8b9c9`) flattened per-skill
+sub-files (`setup.md`, `integration.md`, `api.md`, `nextjs-integration.md`,
+`vue-api.md`, `mfa-backend.md`, …) into single `framework-*.md` / `feature-*.md`
+files but left the *links* pointing at the now-deleted targets. These are broken
+links in shipped content and violate the one-hop rule. They are NOT
+reference→reference links to existing files (Task 2's review confirmed the new
+`feature-dpop.md` adds none) — they are dead links to files that no longer exist.
+
+- [ ] **Step 1: Enumerate every flagged link**
+
+```bash
+cd plugins/auth0/skills/auth0/references
+grep -rnoE '\]\(([a-z0-9-]+\.md)(#[^)]*)?\)' . | tee /tmp/dead-links.txt
+cd -
+```
+Expected: ~60+ hits across ~19 files. Each is a link whose target is a bare
+`name.md` (not an `https://` URL, not an asset path). Record the distinct source
+files.
+
+- [ ] **Step 2: Repair each link in place**
+
+For every flagged link, apply the correct fix based on what the link says:
+- **"See [Setup](setup.md)" / "[Integration](integration.md)" / "[API](api.md)"
+  style pointers to old sub-files:** the content now lives in the SAME file. Replace
+  the link with a plain-text cross-reference to the section within the same file
+  (e.g. "see the Setup section above"), or delete the pointer sentence if it adds
+  nothing. Do NOT introduce a new `.md` link.
+- **Links inside a table-of-contents / "Additional resources" block** that only
+  existed to fan out to the old sub-files: remove those list items.
+- **A link that clearly meant an external Auth0 docs page:** replace with the
+  full `https://auth0.com/docs/...` URL if one is obviously intended; otherwise
+  convert to plain text. Only do this when unambiguous — when unsure, convert to
+  plain text rather than invent a URL.
+
+Do not delete prose content — only the link syntax/pointer. Preserve every
+heading and code block.
+
+- [ ] **Step 3: Verify zero intra-references links remain**
+
+```bash
+grep -rnoE '\]\(([a-z0-9-]+\.md)(#[^)]*)?\)' plugins/auth0/skills/auth0/references/ && echo "STILL HAS LINKS" || echo "clean"
+python3 scripts/check_router_reachability.py plugins/auth0/skills/auth0 || true
+```
+Expected: `clean`; the checker now reports ONLY the `framework-php-api.md`
+orphan under UNREACHABLE and an empty intra-references links section.
+
+- [ ] **Step 4: Confirm no prose was lost**
+
+```bash
+git diff --stat plugins/auth0/skills/auth0/references/
+```
+Expected: only deletions/edits on link lines; spot-check 3 files in `git diff`
+to confirm headings and code blocks are intact.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add plugins/auth0/skills/auth0/references/
+git commit -m "fix(auth0): remove dead cross-reference links left by consolidation"
+```
+
+---
+
 ## Task 6: Rewrite router Step 2 as a three-tier cascade + fix variant reachability (B2)
 
 **Files:**
 - Modify: `plugins/auth0/skills/auth0/SKILL.md` (Step 2 restructure; add prompt-keyword table; php-api + variant disambiguation)
 
 **Interfaces:**
-- Consumes: reachability checker from Tasks 4–5 (must pass after this task).
+- Consumes: reachability checker from Tasks 4–5a (must pass fully after this task).
 - Produces: `SKILL.md` that routes to every `framework-*.md` including `framework-php-api.md`; framework detection works with no Auth0 SDK present.
 
 - [ ] **Step 1: Replace Step 2 with the three-tier cascade**
@@ -615,7 +728,8 @@ Step 4's `integrate` block reads `references/framework-{framework}.md`; with `ph
 ```bash
 python3 scripts/check_router_reachability.py plugins/auth0/skills/auth0
 ```
-Expected: `PASS: all references routable; no reference→reference links`.
+Expected: `PASS: all references routable; no intra-references .md links` (the
+`php-api` orphan is now routed, and Task 5a already cleared the dead links).
 
 - [ ] **Step 4: Run the full local validation**
 
@@ -661,9 +775,10 @@ Create `docs/architecture.md` covering: (a) **why unified** — one always-on `d
 - Routing is **file-based and deterministic**: the router reads `package.json`,
   `composer.json`, `go.mod`, `*.csproj`, `pubspec.yaml`, etc. — code-driven, not
   a model guess.
-- **No reference file links another reference file.** Claude Code loads the
-  router, then the files it names — one hop. Links between references are not
-  guaranteed to be followed, so all detection logic lives in `SKILL.md`.
+- **No reference file links to any `.md` file.** Claude Code loads the router,
+  then the files it names — one hop. Links between references (or to now-deleted
+  sub-files) are not guaranteed to be followed, so all detection and navigation
+  logic lives in `SKILL.md`, and reference files are self-contained.
 
 ## Structure
 `plugins/auth0/skills/auth0/`
@@ -689,8 +804,9 @@ Create `docs/architecture.md` covering: (a) **why unified** — one always-on `d
 ## Reachability invariant (CI-enforced)
 `scripts/check_router_reachability.py` asserts every `references/*.md` is
 routable from `SKILL.md` (via template expansion over the known framework and
-tooling value sets) and that no reference links another reference. This runs in
-the `skillsaw` GitHub Actions workflow and inside `validate-skill.sh`.
+tooling value sets) and that no reference file contains an intra-references
+`.md` link (existing target or dead). This runs in the `skillsaw` GitHub Actions
+workflow and inside `validate-skill.sh`.
 
 To add or extend a capability, see
 [CONTRIBUTING.md](../CONTRIBUTING.md#adding-a-capability-to-the-unified-skill).
@@ -715,7 +831,9 @@ for why. To add or change coverage:
 
 ### Make it routable (required — CI enforces this)
 Every file in `references/` MUST be reachable from `SKILL.md`, and no reference
-file may link to another reference file.
+file may contain a link to any `.md` file (reference files are self-contained —
+inline the content instead of linking, since Claude Code follows only one hop
+from the router).
 
 - **New feature:** add an intent row in Step 1 and a load block in Step 4 of
   `SKILL.md`.
@@ -772,10 +890,10 @@ Expected: `PASS`; tests pass; `PASS: all references routable...`; skillsaw no er
 ```bash
 ls plugins/auth0/skills/                                  # expect only: auth0
 git grep -n "auth0-dpop\|acul-screen-generator" -- plugins/auth0/README.md || echo "readme clean"
-grep -rn "]\((feature\|framework\|tooling\|pattern)-[a-z-]*\.md" plugins/auth0/skills/auth0/references/ || echo "no reference->reference links"
+grep -rnoE '\]\(([a-z0-9-]+\.md)(#[^)]*)?\)' plugins/auth0/skills/auth0/references/ && echo "HAS LINKS (bad)" || echo "no intra-references links"
 wc -l plugins/auth0/skills/auth0/SKILL.md                 # <= 600
 ```
-Expected: one skill dir; README clean; no reference→reference links; SKILL.md ≤ 600 lines.
+Expected: one skill dir; README clean; no intra-references `.md` links; SKILL.md ≤ 600 lines.
 
 - [ ] **Step 3: Review the full diff against main**
 
@@ -788,7 +906,8 @@ Expected: two skill directories deleted (`auth0-dpop`, `acul-screen-generator`),
 
 ## Self-Review notes (author)
 
-- **Spec coverage:** merge (T1) ✓; dpop fold-in routed like MFA (T2) ✓; ACUL fold-in B1 (T3) ✓; framework cascade SDK→workspace→prompt (T6) ✓; variant disambiguation + php-api B2 (T6) ✓; reachability check B3 (T4–T5) ✓; docs in `docs/` + contributor guide (T7) ✓.
-- **Ordering rationale:** the checker (T4/T5) lands *before* the router rewrite (T6) so B2's fix is demonstrated by the check going red→green (T5 Step 3 → T6 Step 3).
+- **Spec coverage:** merge (T1) ✓; dpop fold-in routed like MFA (T2) ✓; ACUL fold-in B1 (T3) ✓; reachability+dead-link check B3 (T4–T5) ✓; dead-link cleanup (T5a) ✓; framework cascade SDK→workspace→prompt (T6) ✓; variant disambiguation + php-api B2 (T6) ✓; docs in `docs/` + contributor guide (T7) ✓.
+- **Ordering rationale:** the checker (T4/T5) lands *before* the router rewrite (T6) so it goes red→green: T5 Step 3 fails on the php-api orphan AND the dead links; T5a clears the link half; T6 clears the orphan half; T6 Step 3 is the first full PASS.
+- **Dead-link discovery (added post-Task-2):** review of Task 2 surfaced ~60+ pre-existing dead `.md` cross-links (targets deleted by consolidation commit `ec8b9c9`). User chose "fix + strengthen checker": the checker flags EVERY intra-references `.md` link (existing or dead), and T5a strips them. This makes the "zero links" invariant real rather than aspirational.
 - **SKILL.md ≤ 600 lines** is the main risk from the Step-2 expansion; T6 Step 4 guards it.
 - **Checker filename:** implementation and import name are both `scripts/check_router_reachability.py` (underscore) — no hyphen variant.
