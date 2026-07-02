@@ -36,6 +36,10 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 
 ## Step 2: Detect framework
 
+Work top-down. **Stop at the first tier that yields a framework.**
+
+### Tier 1 — Auth0 SDK already installed (strongest signal)
+
 Read the project files. **Stop at the first match.**
 
 ### Node.js / JavaScript / TypeScript — check `package.json` → `dependencies`
@@ -107,7 +111,102 @@ Read the project files. **Stop at the first match.**
 | `pubspec.yaml` + `auth0_flutter` + `flutter.web: false` | `flutter-native` |
 | `pubspec.yaml` + `auth0_flutter` + web enabled | `flutter-web` |
 
-If no match: ask the developer what framework/language they're using.
+### Tier 2 — Framework from non-Auth0 workspace dependencies
+
+If no Auth0 SDK matched, detect the framework from ordinary (non-Auth0)
+dependencies. **Stop at the first match.** For frameworks with a web-vs-API
+split, the base framework is chosen here; the variant is resolved in
+"Variant disambiguation" below.
+
+| Signal | Base framework |
+|---|---|
+| `next` in `package.json` | `nextjs` |
+| `nuxt` in `package.json` | `nuxt` |
+| `@angular/core` in `package.json` | `angular` |
+| `vue` in `package.json` (no `nuxt`) | `vue` |
+| `@ionic/*` + `@angular/core` | `ionic-angular` |
+| `@ionic/*` + `react` | `ionic-react` |
+| `@ionic/*` + `vue` | `ionic-vue` |
+| `expo` in `package.json` | `expo` |
+| `react-native` (no `expo`) | `react-native` |
+| `react` (no meta-framework above) | `react` (SPA) — see note |
+| `express` in `package.json` | `express` (variant below) |
+| `fastify` in `package.json` | `fastify` (variant below) |
+| `flask` in `requirements.txt`/`pyproject.toml` | `flask` |
+| `fastapi` in `requirements.txt`/`pyproject.toml` | `fastapi-api` |
+| `spring-boot` in `pom.xml`/`build.gradle` | `springboot-api` |
+| `laravel/framework` in `composer.json` | `laravel` (variant below) |
+| `composer.json` present (no Laravel) | `php` (variant below) |
+| `go.mod` present + HTTP server/router | `go` |
+| `Package.swift` or `.xcodeproj` | `swift` |
+| `pubspec.yaml` (Flutter, web disabled) | `flutter-native` |
+| `pubspec.yaml` (Flutter, web enabled) | `flutter-web` |
+| `*.csproj` referencing MAUI | `maui` |
+| `*.csproj` (WinForms) | `winforms` |
+| `*.csproj` (WPF) | `wpf` |
+| `*.csproj` ASP.NET (web app) | `aspnetcore-auth` (variant below) |
+
+> **`react` note:** a plain React project maps to `react` for an SPA using the
+> React SDK, or `spa-js` if the app is framework-agnostic vanilla JS. If unclear,
+> ask before loading.
+
+### Tier 3 — Framework from the prompt
+
+If no workspace signal matched, read the developer's request for a framework or
+language name and map it here. **Stop at the first match.**
+
+| Developer mentions... | Framework |
+|---|---|
+| Next.js / `next` | `nextjs` |
+| Nuxt | `nuxt` |
+| Angular (not Ionic) | `angular` |
+| Vue (not Nuxt/Ionic) | `vue` |
+| React SPA (not Next.js) | `react` |
+| vanilla JS / plain JS / no framework SPA | `spa-js` |
+| Express (web app / server-rendered) | `express` |
+| Express API / protect API routes | `express-jwt` |
+| Fastify (web) / Fastify API | `fastify` / `fastify-api` |
+| Flask | `flask` |
+| FastAPI | `fastapi-api` |
+| Spring Boot | `springboot-api` |
+| Java MVC / servlet | `java-mvc` |
+| ASP.NET Core web app / API | `aspnetcore-auth` / `aspnetcore-api` |
+| MAUI / WinForms / WPF | `maui` / `winforms` / `wpf` |
+| PHP web app / PHP API | `php` / `php-api` |
+| Laravel web app / Laravel API | `laravel` / `laravel-api` |
+| Go / Golang API | `go` |
+| Swift / iOS | `swift` |
+| Android / Kotlin | `android` |
+| Flutter (native / web) | `flutter-native` / `flutter-web` |
+| React Native / Expo | `react-native` / `expo` |
+| Ionic (Angular/React/Vue) | `ionic-angular` / `ionic-react` / `ionic-vue` |
+
+### Variant disambiguation (web app vs API)
+
+Some frameworks have separate web-app and API references. When Tier 1 did not
+pin the variant, choose **intent-first**:
+
+| Base | Web-app variant | API variant | Choose API when… |
+|---|---|---|---|
+| express | `express` | `express-jwt` | protecting API routes / validating JWTs, no server-rendered UI |
+| fastify | `fastify` | `fastify-api` | resource server / JWT validation only |
+| php | `php` | `php-api` | building/protecting a PHP API, no web UI |
+| laravel | `laravel` | `laravel-api` | API-only (token guard), no Blade UI |
+| aspnetcore | `aspnetcore-auth` | `aspnetcore-api` | Web API / JWT bearer, no cookie login UI |
+
+If intent is still ambiguous (both a UI and protected endpoints, or unclear),
+**state what you detected and ask the developer** web app vs API before loading.
+
+### If nothing matched
+
+Ask the developer what framework/language they are using. Do not guess.
+
+### Conflicts
+
+If Tier 2 (workspace) and Tier 3 (prompt) disagree materially (e.g. the prompt
+says "Next.js" but `package.json` has no `next`), **state the conflict and ask**
+rather than silently picking. Workspace signals outrank the prompt when both are
+present and consistent.
 
 ---
 
