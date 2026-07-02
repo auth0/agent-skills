@@ -3,7 +3,6 @@
 
 Protect PHP API endpoints with JWT access token validation using `auth0/auth0-php` in API mode (`STRATEGY_API`).
 
-
 ## Prerequisites
 
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
@@ -18,7 +17,6 @@ Protect PHP API endpoints with JWT access token validation using `auth0/auth0-ph
 - **Symfony applications** - Use `auth0/symfony` with its security bundle
 - **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
 - **Issuing tokens** - This skill is for *validating* access tokens, not issuing them
-
 
 ## Quick Start Workflow
 
@@ -408,7 +406,6 @@ curl http://localhost:8000/api/private-scoped \
 
 Get a test token via Auth0 Dashboard -> APIs -> Test tab, or via the M2M flow described above.
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -427,7 +424,6 @@ Get a test token via Auth0 Dashboard -> APIs -> Test tab, or via the M2M flow de
 | Using `clientSecret` for RS256 validation | `clientSecret` is only needed for HS256 - RS256 uses the public key from JWKS |
 | Passing `$_SERVER` directly to `getBearerToken()` | The `server` param takes an array of key names to look up, e.g. `['HTTP_AUTHORIZATION']` - not `$_SERVER` itself |
 
-
 ## Key SDK Methods
 
 | Method | Returns | Purpose |
@@ -441,14 +437,12 @@ Get a test token via Auth0 Dashboard -> APIs -> Test tab, or via the M2M flow de
 | `Token::getAudience` | `?array` | Returns the `aud` claim |
 | `Token::getExpiration` | `?int` | Returns the `exp` claim (Unix timestamp) |
 
-
 ## Related Skills
 
 - `auth0-php` - For PHP web apps with login/logout using session-based auth
 - `auth0-quickstart` - Basic Auth0 setup and framework detection
 - `auth0-cli` - Manage Auth0 resources from the terminal
 - `auth0-mfa` - Add Multi-Factor Authentication
-
 
 ## Quick Reference
 
@@ -491,7 +485,6 @@ $token = $auth0->decode(
 - CORS setup -> see the CORS Configuration section below
 - Multi-audience validation -> see the Multi-Audience Validation section below
 - Advanced configuration -> see the API Reference section below
-
 
 ## References
 
@@ -1259,9 +1252,6 @@ curl -s http://localhost:8000/api/private \
 
 ---
 
-## References
-
-
 ---
 
 # Auth0 PHP API Setup Guide
@@ -1500,9 +1490,6 @@ If you prefer a different HTTP client:
 **"audience is required":** Ensure `audience` is passed as a non-empty array in `SdkConfiguration`.
 
 ---
-
-## Next Steps
-
 
 ---
 

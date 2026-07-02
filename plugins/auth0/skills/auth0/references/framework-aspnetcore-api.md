@@ -3,7 +3,6 @@
 
 Protect ASP.NET Core Web API endpoints with JWT access token validation using Auth0.AspNetCore.Authentication.Api.
 
-
 ## Prerequisites
 
 - .NET 8.0 SDK or higher
@@ -16,7 +15,6 @@ Protect ASP.NET Core Web API endpoints with JWT access token validation using Au
 - **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
 - **Mobile applications** - Use `auth0-react-native` for React Native/Expo
 - **Blazor WebAssembly** - Requires different auth approach (OIDC client-side)
-
 
 ## Quick Start Workflow
 
@@ -150,7 +148,6 @@ curl http://localhost:5000/api/private \
 
 Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Test tab.
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -162,23 +159,19 @@ Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Tes
 | Using ID token instead of access token | Must use **access token** for API auth, not ID token |
 | HTTPS certificate errors locally | Run `dotnet dev-certs https --trust` |
 
-
 ## Scope-Based Authorization
 
 See the Scope-Based Authorization section below for defining and enforcing scope policies.
 
-
 ## DPoP Support
 
 Built-in proof-of-possession token binding per RFC 9449. See the DPoP Support section below for configuration.
-
 
 ## Related Skills
 
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-mfa` - Add Multi-Factor Authentication
 - `auth0-cli` - Manage Auth0 resources from the terminal
-
 
 ## Quick Reference
 
@@ -198,7 +191,6 @@ Built-in proof-of-possession token binding per RFC 9449. See the DPoP Support se
 - Scope enforcement → see the Scope-Based Authorization section below
 - DPoP token binding → see the DPoP Support section below
 - Advanced JWT Bearer config → see the API Reference section below
-
 
 ## References
 
@@ -754,9 +746,6 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
 
 ---
 
-## References
-
-
 ---
 
 # Auth0 ASP.NET Core Web API Setup Guide
@@ -893,9 +882,6 @@ curl -X POST https://your-tenant.auth0.com/oauth/token \
 **Token expired:** Test tokens from the Dashboard are short-lived. Request a fresh token.
 
 ---
-
-## Next Steps
-
 
 ---
 

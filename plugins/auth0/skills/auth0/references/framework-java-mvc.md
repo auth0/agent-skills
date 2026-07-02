@@ -3,7 +3,6 @@
 
 Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-auth-commons`. Provides `AuthenticationController` for building authorize URLs and handling callbacks, with session-based authentication and support for Organizations and Multiple Custom Domains.
 
-
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
 > gh api repos/auth0/auth0-java-mvc-common/releases/latest --jq '.tag_name'
@@ -27,7 +26,6 @@ Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-a
 | Single Page Applications | Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth |
 | Mobile applications | Use `auth0-android` or `auth0-swift` for native mobile |
 | Machine-to-machine API calls | Use Auth0 Management API SDK for server-to-server |
-
 
 ## Quick Start Workflow
 
@@ -265,7 +263,6 @@ public class AuthenticationFilter implements Filter {
 2. You should be redirected to the Auth0 Universal Login page
 3. After login, the callback servlet handles the response and redirects to `/dashboard`
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -279,22 +276,18 @@ public class AuthenticationFilter implements Filter {
 | Using `response_type=token` | Regular web apps must use `code` flow (the default) — never implicit |
 | Session not invalidated on logout | Call `request.getSession().invalidate()` before redirecting to Auth0 logout |
 
-
 ## Scope and Audience Configuration
 
 See the Integration Patterns sections below for requesting custom scopes, audience for API access tokens, and Organizations support.
-
 
 ## Multiple Custom Domains (MCD)
 
 Built-in support for routing users to the correct Auth0 domain via `DomainResolver`. See the Multiple Custom Domains (MCD) section below for configuration.
 
-
 ## Related Skills
 
 - `auth0-quickstart` — Basic Auth0 setup and account creation
 - `auth0-springboot-api` — Spring Boot REST APIs with JWT Bearer token validation
-
 
 ## Quick Reference
 
@@ -322,7 +315,6 @@ Built-in support for routing users to the correct Auth0 domain via `DomainResolv
 - `tokens.getType()` — Token type (usually "Bearer")
 - `tokens.getDomain()` — Auth0 domain that issued the tokens
 - `tokens.getIssuer()` — Token issuer URL
-
 
 ## References
 
@@ -1051,9 +1043,6 @@ If your project uses `jakarta.servlet` (Jakarta EE 9+), this SDK is not compatib
 
 ---
 
-## References
-
-
 ---
 
 # Auth0 Java MVC Common Setup Guide
@@ -1131,7 +1120,6 @@ AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 ```
-
 
 > **Agent instruction:** Never write actual credential values to files. Instruct the user to populate `.env` with their credentials. If `.env` already exists, remind the user to append (not overwrite). Always add `.env` to `.gitignore` automatically.
 
@@ -1286,9 +1274,6 @@ String redirectUrl = scheme + "://" + request.getServerName()
 | `NullPointerException` reading env vars | Environment variables not set | Verify `.env` is loaded or vars are exported |
 
 ---
-
-## References
-
 
 ---
 

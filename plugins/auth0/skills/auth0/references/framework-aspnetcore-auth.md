@@ -3,7 +3,6 @@
 
 Add login, logout, and user profile to an ASP.NET Core MVC, Razor Pages, or Blazor Server application using `Auth0.AspNetCore.Authentication`.
 
-
 ## Prerequisites
 
 - ASP.NET Core application (.NET 8 or higher)
@@ -17,7 +16,6 @@ Add login, logout, and user profile to an ASP.NET Core MVC, Razor Pages, or Blaz
 - **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
 - **Next.js applications** - Use `auth0-nextjs` which handles both client and server
 - **Python web apps** - Use `auth0-flask` for Flask or see the Django quickstart
-
 
 ## Quick Start Workflow
 
@@ -199,7 +197,6 @@ dotnet run
 
 Visit `http://localhost:5000` and click Login to start the Auth0 login flow.
 
-
 ## Blazor Server Variant
 
 For Blazor Server apps, use Razor Pages as auth endpoints - Blazor components cannot perform the HTTP redirects required by OAuth challenges.
@@ -347,11 +344,9 @@ Wrap the `Router` in `CascadingAuthenticationState` to enable authorization thro
 </CascadingAuthenticationState>
 ```
 
-
 ## Razor Pages Variant
 
 For Razor Pages apps (without Blazor), use `AddRazorPages()` instead of `AddControllersWithViews()` in `Program.cs`. Auth endpoints are the same Login/Logout page models shown in the Blazor Server section. Replace navigation in `_Layout.cshtml` using the same `User.Identity.IsAuthenticated` check shown in the MVC section.
-
 
 ## Common Mistakes
 
@@ -371,7 +366,6 @@ For Razor Pages apps (without Blazor), use `AddRazorPages()` instead of `AddCont
 | Using `AddJwtBearer` instead of `AddAuth0WebAppAuthentication` | `AddJwtBearer` is for stateless API auth - session-based web apps require `AddAuth0WebAppAuthentication` |
 | Not creating `Views/Account/` directory for Profile view | MVC requires the directory to exist before creating the view |
 
-
 ## Key SDK Methods
 
 | Method/Property | Usage | Purpose |
@@ -387,13 +381,11 @@ For Razor Pages apps (without Blazor), use `AddRazorPages()` instead of `AddCont
 | `[Authorize]` | `[Authorize]` attribute on controller action or Razor component | Protects routes requiring authentication |
 | `AddCascadingAuthenticationState` | `builder.Services.AddCascadingAuthenticationState()` | Required for Blazor Server auth state propagation |
 
-
 ## Related Skills
 
 - `auth0-aspnetcore-api` - For ASP.NET Core Web APIs with JWT Bearer token validation
 - `auth0-express` - For server-rendered Express web apps with login/logout sessions
 - `auth0-flask` - For Flask web applications with session-based auth
-
 
 ## Quick Reference
 
@@ -430,7 +422,6 @@ public IActionResult Profile() { return View(); }
 - `Auth0:Domain` - Auth0 tenant domain (e.g., `tenant.us.auth0.com`)
 - `Auth0:ClientId` - Application client ID
 - `Auth0:ClientSecret` - Application client secret (use user-secrets in development)
-
 
 ## References
 
@@ -672,9 +663,6 @@ Use this constant instead of the string `"Auth0"` to avoid typos.
 - [ASP.NET Core Authentication Documentation](https://learn.microsoft.com/en-us/aspnet/core/security/authentication)
 
 ---
-
-## Next Steps
-
 
 ---
 
@@ -1085,9 +1073,6 @@ app.UseStatusCodePages(async statusCodeContext =>
 
 ---
 
-## Next Steps
-
-
 ---
 
 # Auth0 ASP.NET Core Setup Guide
@@ -1258,9 +1243,6 @@ Application type must be **Regular Web Application** (not SPA or Native).
 **SignOut not clearing session:** Ensure both `SignOutAsync(Auth0Constants.AuthenticationScheme)` and `SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme)` are called in the `Logout` action.
 
 ---
-
-## Next Steps
-
 
 ---
 

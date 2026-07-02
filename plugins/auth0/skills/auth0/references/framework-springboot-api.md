@@ -3,7 +3,6 @@
 
 Protect Spring Boot API endpoints with JWT access token validation using `com.auth0:auth0-springboot-api`. Features auto-configuration, scope-based authorization, and built-in DPoP (RFC 9449) support.
 
-
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
 > gh api repos/auth0/auth0-auth-java/releases/latest --jq '.tag_name'
@@ -25,7 +24,6 @@ Protect Spring Boot API endpoints with JWT access token validation using `com.au
 | Single Page Applications | Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth |
 | Mobile applications | Use `auth0-android` or `auth0-swift` for native mobile |
 | Non-Spring Java APIs | Use `auth0-spring-security-api` for plain Spring Security |
-
 
 ## Quick Start Workflow
 
@@ -171,7 +169,6 @@ curl http://localhost:8080/api/protected \
 
 Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Test tab.
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -184,22 +181,18 @@ Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Tes
 | Checking `scope` claim in wrong format | Scopes map to `SCOPE_` prefixed authorities: use `hasAuthority("SCOPE_read:data")` |
 | Spring Boot env var binding | Use `AUTH0_DOMAIN` not `AUTH0_DOMAIN` with underscores inside property names; Spring removes dashes and is case-insensitive |
 
-
 ## Scope-Based Authorization
 
 See the Integration Guide section below for defining and enforcing scope-based access control via filter chain, `@PreAuthorize`, or programmatic checks.
-
 
 ## DPoP Support
 
 Built-in proof-of-possession token binding per RFC 9449. See the Integration Guide section below for configuration modes (DISABLED, ALLOWED, REQUIRED).
 
-
 ## Related Skills
 
 - `auth0-quickstart` — Basic Auth0 setup and account creation
 - `auth0-java` — Spring Boot web apps with login UI (Regular Web Application)
-
 
 ## Quick Reference
 
@@ -221,7 +214,6 @@ Built-in proof-of-possession token binding per RFC 9449. See the Integration Gui
 - Scope enforcement → `hasAuthority("SCOPE_read:data")` or `@PreAuthorize` (see the Integration Guide section below)
 - DPoP token binding → see the Integration Guide section below
 - Complete API reference → see the API Reference section below
-
 
 ## References
 
@@ -955,9 +947,6 @@ curl http://localhost:8080/api/protected \
 
 ---
 
-## References
-
-
 ---
 
 # Auth0 Spring Boot API Setup Guide
@@ -1182,9 +1171,6 @@ curl -X POST https://your-tenant.auth0.com/oauth/token \
 **Token expired:** Test tokens from the Dashboard are short-lived. Request a fresh token.
 
 ---
-
-## Next Steps
-
 
 ---
 

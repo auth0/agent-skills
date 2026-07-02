@@ -3,7 +3,6 @@
 
 Add authentication to Vue.js 3 single-page applications using @auth0/auth0-vue.
 
-
 ## Prerequisites
 
 - Vue 3+ application (Vite or Vue CLI)
@@ -16,7 +15,6 @@ Add authentication to Vue.js 3 single-page applications using @auth0/auth0-vue.
 - **Vue 2 applications** - This SDK requires Vue 3+, use legacy @auth0/auth0-spa-js wrapper
 - **Embedded login** - This SDK uses Auth0 Universal Login (redirect-based)
 - **Backend API authentication** - Use express-openid-connect or JWT validation instead
-
 
 ## Quick Start Workflow
 
@@ -101,7 +99,6 @@ Start your dev server and test the login flow:
 npm run dev
 ```
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -113,14 +110,12 @@ npm run dev
 | Missing createAuth0 plugin registration | Must call `app.use(createAuth0({...}))` before mounting app |
 | Accessing auth before plugin loads | Wrap auth-dependent code in `v-if="!isLoading"` |
 
-
 ## Related Skills
 
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-migration` - Migrate from another auth provider
 - `auth0-mfa` - Add Multi-Factor Authentication
 - `auth0-cli` - Manage Auth0 resources from the terminal
-
 
 ## Quick Reference
 
@@ -143,7 +138,6 @@ For full DPoP setup, ask for DPoP token binding (feature:dpop).
 - Protected routes with navigation guards → see the Protected Routes section below
 - API calls with tokens → see the Calling APIs section below
 - Error handling → see the Error Handling section below
-
 
 ## References
 
@@ -790,9 +784,6 @@ onMounted(async () => {
    - Verify API responds correctly
 
 ---
-
-## Next Steps
-
 
 ---
 

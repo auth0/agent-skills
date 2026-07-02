@@ -3,7 +3,6 @@
 
 Add authentication to Angular applications using @auth0/auth0-angular.
 
-
 ## Prerequisites
 
 - Angular 13+ application
@@ -15,7 +14,6 @@ Add authentication to Angular applications using @auth0/auth0-angular.
 - **AngularJS (1.x)** - This SDK requires Angular 13+, use legacy solutions for AngularJS
 - **Mobile applications** - Use `auth0-react-native` for React Native or native SDKs for Ionic
 - **Backend APIs** - Use JWT validation middleware for your server language
-
 
 ## Quick Start Workflow
 
@@ -139,7 +137,6 @@ Start your dev server and test the login flow:
 ng serve
 ```
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -151,14 +148,12 @@ ng serve
 | No token sent to API | Use either `authHttpInterceptorFn` for automatic token attachment, or `getAccessTokenSilently()` for manual control — see the Calling a Protected API section below |
 | Route guard not protecting routes | Apply `AuthGuard` (or `authGuardFn`) to protected routes in routing config |
 
-
 ## Related Skills
 
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-migration` - Migrate from another auth provider
 - `auth0-mfa` - Add Multi-Factor Authentication
 - `auth0-cli` - Manage Auth0 resources from the terminal
-
 
 ## Quick Reference
 
@@ -175,7 +170,6 @@ ng serve
 - Protected routes with guards → see the Protected Routes section below
 - Calling a protected API → see the Calling a Protected API section below
 - Error handling → see the Error Handling section below
-
 
 ## References
 
@@ -782,9 +776,6 @@ describe('AppComponent', () => {
 
 ---
 
-## Next Steps
-
-
 ---
 
 # Auth0 Angular Setup Guide
@@ -925,9 +916,6 @@ Or via [Auth0 Dashboard](https://manage.auth0.com):
 - Rebuild app after changing environment files
 
 ---
-
-## Next Steps
-
 
 ---
 

@@ -5,7 +5,6 @@ Protect FastAPI API endpoints with JWT access token validation using `auth0-fast
 
 > **Note:** This SDK is currently in beta. The API surface may change before the stable 1.0 release. Check [PyPI](https://pypi.org/project/auth0-fastapi-api/) for the latest version. Requires Python >= 3.9 and FastAPI >= 0.115.11.
 
-
 ## Prerequisites
 
 - FastAPI application (Python 3.9+)
@@ -18,7 +17,6 @@ Protect FastAPI API endpoints with JWT access token validation using `auth0-fast
 - **Single Page Applications** — Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
 - **Mobile applications** — Use `auth0-react-native` or `auth0-android`
 - **Issuing tokens** — This skill is for *validating* access tokens, not issuing them
-
 
 ## Quick Start Workflow
 
@@ -172,7 +170,6 @@ curl http://localhost:8000/api/private \
 
 Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Test tab.
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -188,18 +185,15 @@ Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Tes
 | Not configuring CORS for SPA clients | Add `CORSMiddleware` to allow requests from your frontend origin |
 | `os.getenv()` returns `None` silently | Ensure `python-dotenv` is installed and `load_dotenv()` is called before `Auth0FastAPI()` initialization — or use `os.environ[]` to fail fast |
 
-
 ## DPoP Support
 
 Built-in proof-of-possession token binding per RFC 9449. DPoP is enabled by default in mixed mode (accepts both Bearer and DPoP tokens). See the DPoP Support section below for configuration.
-
 
 ## Related Skills
 
 - `auth0-quickstart` - Basic Auth0 setup and framework detection
 - `auth0-mfa` - Add Multi-Factor Authentication
 - `auth0-cli` - Manage Auth0 resources from the terminal
-
 
 ## Quick Reference
 
@@ -236,7 +230,6 @@ claims["scope"]         # space-separated scopes
 - DPoP token binding → see the DPoP Support section below
 - Reverse proxy setup → see the Reverse Proxy Support section below
 - Advanced configuration → see the API Reference section below
-
 
 ## References
 
@@ -971,9 +964,6 @@ async def test_with_mocked_auth(mock_verify):
 
 ---
 
-## References
-
-
 ---
 
 # Auth0 FastAPI API Setup Guide
@@ -1133,9 +1123,6 @@ curl -X POST https://your-tenant.us.auth0.com/oauth/token \
 **`ValueError: audience is required.`:** The `audience` parameter cannot be empty. Ensure your `.env` file is loaded and the value is set.
 
 ---
-
-## Next Steps
-
 
 ---
 

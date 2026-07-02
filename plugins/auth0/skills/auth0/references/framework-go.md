@@ -9,7 +9,6 @@ Protect Go HTTP API endpoints with JWT access token validation using github.com/
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below.
 
-
 ## Prerequisites
 
 - Go 1.21 or higher
@@ -22,7 +21,6 @@ Protect Go HTTP API endpoints with JWT access token validation using github.com/
 - **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
 - **Mobile applications** - Use `auth0-swift`, `auth0-android`, or `auth0-react-native`
 - **Non-Go backends** - Use `auth0-aspnetcore-api` for .NET, `express-jwt` for Node.js
-
 
 ## Quick Start Workflow
 
@@ -396,7 +394,6 @@ TEST_TOKEN=$(auth0 test token <M2M_CLIENT_ID> --audience https://my-api.example.
 curl -s http://localhost:8080/api/private -H "Authorization: Bearer $TEST_TOKEN"
 ```
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -410,11 +407,9 @@ curl -s http://localhost:8080/api/private -H "Authorization: Bearer $TEST_TOKEN"
 | Missing `godotenv.Load()` call | Add `github.com/joho/godotenv` and call `godotenv.Load()` before reading env vars |
 | Using `ContextKey{}` to access claims (v2 pattern) | Use `jwtmiddleware.GetClaims[T]()` type-safe generics instead |
 
-
 ## Scope-Based Authorization
 
 See the Integration Guide section below for defining and enforcing scope and permission policies.
-
 
 ## CORS Configuration
 
@@ -444,17 +439,14 @@ log.Fatal(http.ListenAndServe(":8080", handler))
 
 See the Integration Guide section below for detailed CORS patterns.
 
-
 ## DPoP Support
 
 Built-in proof-of-possession token binding per RFC 9449. See the Integration Guide section below for configuration.
-
 
 ## Related Skills
 
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-mfa` - Add Multi-Factor Authentication
-
 
 ## Quick Reference
 
@@ -478,7 +470,6 @@ Built-in proof-of-possession token binding per RFC 9449. See the Integration Gui
 - DPoP token binding → see the Integration Guide section below
 - Framework adapters (Gin, Echo) → see the Integration Guide section below
 - Advanced JWT config → see the API Reference section below
-
 
 ## References
 
@@ -1282,9 +1273,6 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/private
 
 ---
 
-## References
-
-
 ---
 
 # Go JWT Middleware Setup Guide
@@ -1634,9 +1622,6 @@ curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
 **panic: nil pointer:** Always check the `err` return value from `jwtmiddleware.New()`, `validator.New()`, and `jwks.NewCachingProvider()`.
 
 ---
-
-## Next Steps
-
 
 ---
 

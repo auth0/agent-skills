@@ -3,7 +3,6 @@
 
 Add authentication to React Native and Expo mobile applications using react-native-auth0.
 
-
 ## Prerequisites
 
 - React Native or Expo application
@@ -17,7 +16,6 @@ Add authentication to React Native and Expo mobile applications using react-nati
 - **React Server Components** - Use `auth0-nextjs` for Next.js applications
 - **Non-React native apps** - Use platform-specific SDKs (Swift for iOS, Kotlin for Android)
 - **Backend APIs** - Use JWT validation libraries for your server language
-
 
 ## Quick Start Workflow
 
@@ -184,7 +182,6 @@ npx react-native run-ios
 npx react-native run-android
 ```
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -197,14 +194,12 @@ npx react-native run-android
 | Not handling auth errors | Wrap authorize/clearSession calls in try-catch blocks |
 | Deep link not working on Android | Verify `android:exported="true"` is set on RedirectActivity |
 
-
 ## Related Skills
 
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-migration` - Migrate from another auth provider
 - `auth0-mfa` - Add Multi-Factor Authentication
 - `auth0-cli` - Manage Auth0 resources from the terminal
-
 
 ## Quick Reference
 
@@ -222,7 +217,6 @@ npx react-native run-android
 - Biometric authentication → see the Biometric Auth section below
 - API calls with tokens → see the Calling APIs section below
 - Token refresh → Automatic with `getCredentials()`
-
 
 ## References
 
@@ -631,9 +625,6 @@ Update `app.json`:
 - Check scheme matches package name
 
 ---
-
-## Next Steps
-
 
 ---
 

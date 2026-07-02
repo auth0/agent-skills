@@ -3,7 +3,6 @@
 
 Add authentication to React single-page applications using @auth0/auth0-react.
 
-
 ## Prerequisites
 
 - React 16.11+ application (Vite or Create React App) - supports React 16, 17, 18, and 19
@@ -17,7 +16,6 @@ Add authentication to React single-page applications using @auth0/auth0-react.
 - **Server-side rendered React** - Use framework-specific SDK (Next.js, Remix, etc.)
 - **Embedded login** - This SDK uses Auth0 Universal Login (redirect-based)
 - **Backend API authentication** - Use express-openid-connect or JWT validation instead
-
 
 ## Quick Start Workflow
 
@@ -107,7 +105,6 @@ npm run dev  # Vite
 npm start    # CRA
 ```
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -124,14 +121,12 @@ npm start    # CRA
 | Making direct HTTP calls to MFA endpoints | Use the `mfa` property from `useAuth0()` — it handles token management automatically |
 | Forgetting refresh tokens for step-up MFA | Set `useRefreshTokens={true}` on Auth0Provider when using `interactiveErrorHandler="popup"` |
 
-
 ## Related Skills
 
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-migration` - Migrate from another auth provider
 - `auth0-mfa` - Add Multi-Factor Authentication
 - `auth0-cli` - Manage Auth0 resources from the terminal
-
 
 ## Quick Reference
 
@@ -159,7 +154,6 @@ npm start    # CRA
 - API calls with tokens → see the Calling APIs section below
 - Error handling → see the Error Handling section below
 - MFA handling → see the MFA Handling section below
-
 
 ## References
 
@@ -1362,9 +1356,6 @@ logout({
 
 ---
 
-## Next Steps
-
-
 ---
 
 # Auth0 React Setup Guide
@@ -1425,7 +1416,6 @@ if ! command -v auth0 &> /dev/null; then
     exit 1
   fi
 fi
-
 
 # Check if logged in to Auth0
 if ! auth0 tenants list &> /dev/null; then

@@ -3,7 +3,6 @@
 
 Add authentication to Next.js applications using @auth0/nextjs-auth0. Supports both App Router and Pages Router.
 
-
 ## Prerequisites
 
 - Next.js 13+ application (App Router or Pages Router)
@@ -16,7 +15,6 @@ Add authentication to Next.js applications using @auth0/nextjs-auth0. Supports b
 - **React Native mobile apps** - Use `auth0-react-native` for iOS/Android
 - **Non-Next.js frameworks** - Use framework-specific SDKs (Express, Vue, Angular, etc.)
 - **Stateless APIs only** - Use JWT validation middleware if you don't need session management
-
 
 ## Quick Start Workflow
 
@@ -203,7 +201,6 @@ npm run dev
 
 Visit `http://localhost:3000` and test the login flow.
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -219,14 +216,12 @@ Visit `http://localhost:3000` and test the login flow.
 | Using useUser in Server Component | useUser is client-only, use `auth0.getSession()` for Server Components |
 | AUTH0_DOMAIN includes https:// | v4 `AUTH0_DOMAIN` should be just the domain (e.g., `example.auth0.com`), no scheme |
 
-
 ## Related Skills
 
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-migration` - Migrate from another auth provider
 - `auth0-mfa` - Add Multi-Factor Authentication
 - `auth0-cli` - Manage Auth0 resources from the terminal
-
 
 ## Quick Reference
 
@@ -253,7 +248,6 @@ Visit `http://localhost:3000` and test the login flow.
 - Protected pages (Pages Router) → see the Protected Pages (Pages Router) section below
 - API routes with auth → see the Protected API Routes section below
 - Middleware protection → see the Middleware section below
-
 
 ## References
 
@@ -669,9 +663,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 ---
 
-## Next Steps
-
-
 ---
 
 # Auth0 Next.js Setup Guide
@@ -840,9 +831,6 @@ Via Dashboard:
 - Check `APP_BASE_URL` matches your domain
 
 ---
-
-## Next Steps
-
 
 ---
 

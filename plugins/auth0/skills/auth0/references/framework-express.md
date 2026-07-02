@@ -3,7 +3,6 @@
 
 Add authentication to Express.js web applications using express-openid-connect.
 
-
 ## Prerequisites
 
 - Express.js application
@@ -17,7 +16,6 @@ Add authentication to Express.js web applications using express-openid-connect.
 - **Mobile applications** - Use `auth0-react-native` for React Native/Expo
 - **Stateless APIs** - Use JWT validation middleware instead of session-based auth
 - **Microservices** - Use JWT validation for service-to-service auth
-
 
 ## Quick Start Workflow
 
@@ -120,7 +118,6 @@ node app.js
 
 Visit `http://localhost:3000` and test the login flow.
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -133,14 +130,12 @@ Visit `http://localhost:3000` and test the login flow.
 | Wrong baseURL for production | Update BASE_URL to match your production domain |
 | Not handling logout returnTo | Add your domain to Allowed Logout URLs in Auth0 Dashboard |
 
-
 ## Related Skills
 
 - `auth0-quickstart` - Basic Auth0 setup
 - `auth0-migration` - Migrate from another auth provider
 - `auth0-mfa` - Add Multi-Factor Authentication
 - `auth0-cli` - Manage Auth0 resources from the terminal
-
 
 ## Quick Reference
 
@@ -164,7 +159,6 @@ Visit `http://localhost:3000` and test the login flow.
 - Check auth status → `req.oidc.isAuthenticated()`
 - Get user info → `req.oidc.user`
 - Call APIs → see the Calling APIs section below
-
 
 ## References
 
@@ -708,9 +702,6 @@ app.use((err, req, res, next) => {
 
 ---
 
-## Next Steps
-
-
 ---
 
 # Auth0 Express Setup Guide
@@ -852,9 +843,6 @@ Dashboard: Create Regular Web Application, copy credentials
 **Callback URL mismatch:** Add `/callback` to Allowed Callback URLs
 
 ---
-
-## Next Steps
-
 
 ---
 

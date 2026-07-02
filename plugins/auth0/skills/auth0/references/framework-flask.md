@@ -3,7 +3,6 @@
 
 Add login, logout, and user profile to a Flask web application using `auth0-server-python`.
 
-
 ## Prerequisites
 
 - Flask application
@@ -17,7 +16,6 @@ Add login, logout, and user profile to a Flask web application using `auth0-serv
 - **Single Page Applications** — Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
 - **Next.js applications** — Use `auth0-nextjs` which handles both client and server
 - **Node.js web apps** — Use `auth0-express` or `auth0-fastify` for session-based auth
-
 
 ## Quick Start Workflow
 
@@ -63,7 +61,6 @@ from dotenv import load_dotenv
 
 load_dotenv()  # Uses .env by default; pass load_dotenv(".env.local") if credentials are in .env.local
 
-
 class FlaskSessionStateStore(StateStore):
     """State store that uses Flask's session for persistence."""
 
@@ -88,7 +85,6 @@ class FlaskSessionStateStore(StateStore):
     async def delete_by_logout_token(self, claims, options=None):
         pass
 
-
 class FlaskSessionTransactionStore(TransactionStore):
     """Transaction store that uses Flask's session for persistence."""
 
@@ -109,7 +105,6 @@ class FlaskSessionTransactionStore(TransactionStore):
 
     async def delete(self, identifier, options=None):
         flask_session.pop(identifier, None)
-
 
 secret = os.getenv("AUTH0_SECRET")
 
@@ -231,7 +226,6 @@ flask run
 
 Visit `http://localhost:5000/login` to start the login flow.
 
-
 ## Stateful Setup with Redis
 
 For production apps or when session data exceeds cookie size limits, use **Flask-Session** with Redis to store sessions server-side. Only a session ID is stored in the cookie.
@@ -274,7 +268,6 @@ The same `FlaskSessionStateStore` and `FlaskSessionTransactionStore` from `auth.
 
 **Routes are identical** to the stateless setup — no code changes needed.
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -296,7 +289,6 @@ The same `FlaskSessionStateStore` and `FlaskSessionTransactionStore` from `auth.
 | Expecting backchannel logout to work | Not supported with cookie-based sessions — `delete_by_logout_token` is a no-op. Use standard `/logout` route |
 | Deploying with `SESSION_COOKIE_SECURE=False` | Must set to `True` in production — cookies are sent over HTTP otherwise |
 
-
 ## Key SDK Methods
 
 All methods are async:
@@ -309,13 +301,11 @@ All methods are async:
 | `get_access_token` | `await auth0.get_access_token()` | Returns the access token for calling external APIs |
 | `logout` | `await auth0.logout()` | Returns Auth0 logout URL string |
 
-
 ## Related Skills
 
 - `auth0-express` — For server-rendered Express web apps with login/logout sessions
 - `auth0-fastify` — For Fastify web applications with session-based auth
 - `auth0-cli` — Manage Auth0 resources from the terminal
-
 
 ## Quick Reference
 
@@ -346,7 +336,6 @@ if user is None:
 - `AUTH0_CLIENT_SECRET` — your Application's client secret
 - `AUTH0_SECRET` — encryption and session secret key
 - `AUTH0_REDIRECT_URI` — callback URL (e.g. `http://localhost:5000/callback`)
-
 
 ## References
 
@@ -552,7 +541,6 @@ from flask import session as flask_session
 from auth0_server_python.auth_types import StateData
 from auth0_server_python.store import StateStore
 
-
 class FlaskSessionStateStore(StateStore):
     """State store that uses Flask's session for persistence."""
 
@@ -585,7 +573,6 @@ Stores transaction data (PKCE code_verifier, nonce, state) during the login flow
 from flask import session as flask_session
 from auth0_server_python.auth_types import TransactionData
 from auth0_server_python.store import TransactionStore
-
 
 class FlaskSessionTransactionStore(TransactionStore):
     """Transaction store that uses Flask's session for persistence."""
@@ -674,9 +661,6 @@ Stateless cookie sessions are limited to ~4KB by browsers. The SDK encrypts toke
 
 ---
 
-## Next Steps
-
-
 ---
 
 # Auth0 Flask Integration Patterns
@@ -694,7 +678,6 @@ from functools import wraps
 from flask import redirect, render_template
 from auth import auth0
 
-
 def require_auth(f):
     @wraps(f)
     async def decorated_function(*args, **kwargs):
@@ -703,7 +686,6 @@ def require_auth(f):
             return redirect("/login")
         return await f(*args, **kwargs)
     return decorated_function
-
 
 @app.route("/admin")
 @require_auth
@@ -731,19 +713,16 @@ from auth import auth0
 
 admin = Blueprint("admin", __name__, url_prefix="/admin")
 
-
 @admin.before_request
 async def check_auth():
     user = await auth0.get_user()
     if user is None:
         return redirect("/login")
 
-
 @admin.route("/settings")
 async def settings():
     user = await auth0.get_user()
     return render_template("settings.html", user=user)
-
 
 app.register_blueprint(admin)
 ```
@@ -758,7 +737,6 @@ app.register_blueprint(admin)
 import httpx
 from flask import jsonify, redirect
 from auth import auth0
-
 
 @app.route("/api-call")
 async def api_call():
@@ -809,7 +787,6 @@ auth0 = ServerClient(
 ```python
 from auth0_server_python.auth_types import StartInteractiveLoginOptions
 
-
 @app.route("/login-google")
 async def login_google():
     authorization_url = await auth0.start_interactive_login(
@@ -824,7 +801,6 @@ async def login_google():
 
 ```python
 from auth0_server_python.auth_types import LogoutOptions
-
 
 @app.route("/logout")
 async def logout():
@@ -858,7 +834,6 @@ async def user_info():
 
 ```python
 from flask import session as flask_session
-
 
 @app.route("/callback")
 async def callback():
@@ -934,9 +909,6 @@ def unauthorized(error):
 | Redirect loop on login | Check that `/login` route is not itself protected by `require_auth` |
 
 ---
-
-## Next Steps
-
 
 ---
 
@@ -1086,9 +1058,6 @@ In your Auth0 Application settings:
 **Async routes not working:** Ensure you installed `flask[async]` (not just `flask`). Without the `[async]` extra, async route handlers silently fail.
 
 ---
-
-## Next Steps
-
 
 ---
 

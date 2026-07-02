@@ -3,7 +3,6 @@
 
 Add login, logout, and user profile to a PHP web application using `auth0/auth0-php`.
 
-
 ## Prerequisites
 
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
@@ -19,7 +18,6 @@ Add login, logout, and user profile to a PHP web application using `auth0/auth0-
 - **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
 - **Next.js applications** - Use `auth0-nextjs` which handles both client and server
 - **Node.js web apps** - Use `auth0-express` or `auth0-fastify` for session-based auth
-
 
 ## Quick Start Workflow
 
@@ -497,7 +495,6 @@ php -S localhost:3000 index.php
 
 Visit `http://localhost:3000/login` to start the login flow.
 
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -517,7 +514,6 @@ Visit `http://localhost:3000/login` to start the login flow.
 | Calling `login()` or `logout()` without redirecting | Both return URL strings, not responses - must use `header('Location: ...')` |
 | "Network error resulted in unfulfilled request" on callback | Usually means `AUTH0_CLIENT_SECRET` is wrong, not an actual network issue - verify your credentials in `.env` |
 
-
 ## Key SDK Methods
 
 | Method | Signature | Purpose |
@@ -529,7 +525,6 @@ Visit `http://localhost:3000/login` to start the login flow.
 | `logout` | `$auth0->logout(?string $returnUri, ?array $params): string` | Returns Auth0 logout URL string |
 | `renew` | `$auth0->renew(?array $params): self` | Refreshes expired access token (requires `offline_access` scope) |
 | `clear` | `$auth0->clear(bool $transient = true): self` | Clears local session without Auth0 logout |
-
 
 ## Credentials Object
 
@@ -554,14 +549,12 @@ $credentials->accessTokenScope;        // array - granted scopes
 - `given_name`, `family_name`
 - `updated_at`, `locale`
 
-
 ## Related Skills
 
 - `auth0-php-api` - For protecting PHP APIs with JWT Bearer token validation
 - `auth0-quickstart` - Basic Auth0 setup and framework detection
 - `auth0-cli` - Manage Auth0 resources from the terminal
 - `auth0-mfa` - Add Multi-Factor Authentication
-
 
 ## Quick Reference
 
@@ -593,7 +586,6 @@ if (null === $credentials) {
 - `AUTH0_CLIENT_SECRET` - your Application's client secret
 - `AUTH0_COOKIE_SECRET` - encryption secret key (generate: `openssl rand -hex 32`)
 - `AUTH0_REDIRECT_URI` - callback URL (e.g. `http://localhost:3000/callback`)
-
 
 ## References
 
@@ -964,9 +956,6 @@ The SDK validates tokens automatically during `exchange()`. Claims checked:
 JWKS keys are cached using PSR-6 if a `tokenCache` is provided.
 
 ---
-
-## Related
-
 
 ---
 
@@ -1345,9 +1334,6 @@ $app->run();
 
 ---
 
-## Next Steps
-
-
 ---
 
 # Auth0 PHP Setup Guide
@@ -1525,9 +1511,6 @@ If you prefer a different HTTP client:
 **Cookie not persisting:** Ensure `cookieSecure` is `false` for local development (HTTP). Set to `true` only in production with HTTPS.
 
 ---
-
-## Next Steps
-
 
 ---
 
