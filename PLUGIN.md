@@ -21,54 +21,33 @@ One `marketplace.json` at the root level lists the plugin:
 }
 ```
 
-### One Plugin, All Skills
+### One Plugin, One Skill
 
-**Plugin: auth0** — All Auth0 agent skills in a single plugin.
+**Plugin: auth0** — a single unified `auth0` skill.
 
-Core skills:
-- `auth0-quickstart` - Framework detection and routing
-- `auth0-migration` - Migrate from other auth providers
-- `auth0-mfa` - Multi-Factor Authentication
-- `acul-screen-generator` - Custom Universal Login screens and theming
+The plugin ships exactly one skill, `auth0`, built as a **router + reference
+pool**:
 
-Frontend framework skills:
-- `auth0-react` - React SPAs
-- `auth0-vue` - Vue.js 3
-- `auth0-angular` - Angular 12+
-- `auth0-spa-js` - Vanilla JS SPAs
-- `auth0-flutter-web` - Flutter Web (Dart)
+- `SKILL.md` is a router. It detects intent → framework → tooling and then
+  loads the 2–3 matching reference files. Routing is file-based and
+  deterministic (it reads `package.json`, `composer.json`, `go.mod`,
+  `*.csproj`, `pubspec.yaml`, etc.), not a model guess.
+- `references/` is a flat pool of self-contained Markdown files:
+  - `feature-*.md` — a capability spanning frameworks (MFA, Organizations,
+    custom domains, ACUL, branding, migration, DPoP).
+  - `framework-*.md` — one SDK/framework integration (React, Next.js, Vue,
+    Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android,
+    Flutter, Laravel, PHP, ASP.NET Core, React Native, Expo, Ionic, .NET MAUI,
+    WinForms, WPF, and more).
+  - `tooling-*.md` — CLI / MCP / Terraform.
+  - `pattern-*.md` — cross-cutting guidance (security, token handling,
+    multi-tenant, rate limiting, common errors).
 
-Backend/fullstack framework skills:
-- `auth0-nextjs` - Next.js
-- `auth0-nuxt` - Nuxt 3/4
-- `auth0-express` - Express.js
-- `auth0-flask` - Flask
-- `auth0-fastify` - Fastify web applications
-- `auth0-fastify-api` - Fastify API authentication
-- `auth0-fastapi-api` - FastAPI API authentication
-- `auth0-java-mvc-common` - Java Servlet web applications
-- `auth0-springboot-api` - Spring Boot API authentication
-- `auth0-aspnetcore-authentication` - ASP.NET Core MVC, Razor Pages, Blazor Server web applications
-- `auth0-aspnetcore-api` - ASP.NET Core API authentication
-- `express-oauth2-jwt-bearer` - Node.js/Express API JWT Bearer validation
+One skill means one `description` competing for activation, and reference files
+never link to each other (the router loads them in one hop). See
+[`docs/architecture.md`](./docs/architecture.md) for the full rationale, routing
+flow, and the CI-enforced reachability invariant.
 
-Mobile skills:
-- `auth0-ionic-angular` - Ionic Angular + Capacitor (iOS/Android)
-- `auth0-ionic-react` - Ionic React + Capacitor (iOS/Android)
-- `auth0-ionic-vue` - Ionic Vue + Capacitor (iOS/Android)
-- `auth0-android` - Android (Kotlin/Java)
-- `auth0-android-major-migration` - Auth0.Android major version upgrades (v3 → v4)
-- `auth0-swift` - iOS/macOS (Swift)
-- `auth0-swift-major-migration` - Auth0.swift major version upgrades
-- `auth0-react-native` - React Native CLI (bare workflow)
-- `auth0-expo` - Expo (managed workflow)
-- `auth0-maui` - .NET MAUI cross-platform (iOS, Android, macOS, Windows)
-- `auth0-net-android` - .NET Android (Xamarin)
-- `auth0-net-ios` - .NET iOS (Xamarin)
-
-Desktop Application skills:
-- `auth0-winforms` - .NET WinForms applications
-- `auth0-wpf` - .NET WPF applications
 ---
 
 ## Directory Structure
@@ -89,41 +68,14 @@ auth0/agent-skills/
 │       │   └── plugin.json       # Codex plugin config
 │       ├── README.md
 │       └── skills/
-│           ├── auth0-quickstart/
-│           ├── auth0-migration/
-│           ├── auth0-mfa/
-│           ├── acul-screen-generator/
-│           ├── auth0-react/
-│           ├── auth0-vue/
-│           ├── auth0-angular/
-│           ├── auth0-spa-js/
-│           ├── auth0-flutter-web/
-│           ├── auth0-nextjs/
-│           ├── auth0-nuxt/
-│           ├── auth0-express/
-│           ├── auth0-flask/
-│           ├── auth0-fastify/
-│           ├── auth0-fastify-api/
-│           ├── auth0-fastapi-api/
-│           ├── auth0-java-mvc-common/
-│           ├── auth0-springboot-api/
-│           ├── auth0-aspnetcore-authentication/
-│           ├── auth0-aspnetcore-api/
-│           ├── express-oauth2-jwt-bearer/
-│           ├── auth0-ionic-angular/
-│           ├── auth0-ionic-vue/
-│           ├── auth0-ionic-react/
-│           ├── auth0-react-native/
-│           ├── auth0-expo/
-│           ├── auth0-android/
-│           ├── auth0-android-major-migration/
-│           ├── auth0-swift/
-│           ├── auth0-maui/
-│           ├── auth0-net-android/
-│           ├── auth0-winforms/
-│           ├── auth0-net-ios/
-│           └── auth0-wpf/
-│           └── auth0-swift-major-migration/
+│           └── auth0/                 # The single unified skill
+│               ├── SKILL.md           # Router (intent → framework → tooling)
+│               ├── references/        # Flat pool: feature-*, framework-*,
+│               │                      #   tooling-*, pattern-* .md files
+│               ├── assets/            # Templates (e.g. ACUL screens)
+│               └── scripts/           # validate-skill.sh, reachability check
+├── docs/
+│   └── architecture.md               # Why one skill + routing details
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
@@ -170,11 +122,8 @@ auth0/agent-skills/
 ### Method 2: CLI Installation
 
 ```bash
-# Install all skills
+# Install the auth0 skill
 npx skills add auth0/agent-skills
-
-# Install individual skill
-npx skills add auth0/agent-skills/plugins/auth0/skills/auth0-quickstart
 ```
 
 ### Method 3: Manual Installation
@@ -183,19 +132,18 @@ npx skills add auth0/agent-skills/plugins/auth0/skills/auth0-quickstart
 git clone https://github.com/auth0/agent-skills.git
 cd agent-skills
 
-# Copy all skills
-cp -r plugins/auth0/skills/* ~/.claude/skills/
+# Copy the auth0 skill
+cp -r plugins/auth0/skills/auth0 ~/.claude/skills/
 ```
 
 ---
 
 ## Use Cases
 
-### Install Everything (Most Common)
-User installs "Auth0 Agent Skills" from marketplace -> gets the plugin with all 31 skills.
-
-### Install One Framework
-Developer working on React app -> uses CLI to install just `auth0-react` skill.
+User installs "Auth0 Agent Skills" from the marketplace -> gets the plugin with
+the single `auth0` skill. When the user asks to add or fix authentication, the
+router detects their framework and loads the matching reference files — there is
+no per-framework skill to pick.
 
 ---
 

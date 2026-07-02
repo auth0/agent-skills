@@ -57,38 +57,10 @@ npx skills add auth0/agent-skills --agent claude-code cursor
 
 ### ClawHub Marketplace
 
-Install individual skills from [ClawHub.ai](https://clawhub.ai/search?q=auth0):
+Install the Auth0 skill from [ClawHub.ai](https://clawhub.ai/search?q=auth0):
 
 ```bash
-# Install each Auth0 skill separately.
-npx clawhub install auth0-quickstart
-npx clawhub install auth0-migration
-npx clawhub install auth0-mfa
-npx clawhub install auth0-react
-npx clawhub install auth0-nextjs
-npx clawhub install auth0-vue
-npx clawhub install auth0-nuxt
-npx clawhub install auth0-angular
-npx clawhub install auth0-express
-npx clawhub install auth0-fastify
-npx clawhub install auth0-fastify-api
-npx clawhub install auth0-react-native
-npx clawhub install auth0-android
-npx clawhub install auth0-android-major-migration
-npx clawhub install auth0-swift
-npx clawhub install auth0-swift-major-migration
-npx clawhub install auth0-flutter-native
-npx clawhub install auth0-flutter-web
-npx clawhub install auth0-maui
-npx clawhub install auth0-aspnetcore-api
-npx clawhub install auth0-ionic-react
-npx clawhub install auth0-ionic-angular
-npx clawhub install auth0-ionic-vue
-npx clawhub install auth0-aspnetcore-authentication
-npx clawhub install auth0-net-android
-npx clawhub install auth0-net-ios
-npx clawhub install auth0-winforms
-npx clawhub install auth0-wpf
+npx clawhub install auth0
 ```
 
 Or browse and install from the [ClawHub web UI](https://clawhub.ai) — search for "auth0".
@@ -98,22 +70,25 @@ Or browse and install from the [ClawHub web UI](https://clawhub.ai) — search f
 
 When you ask your AI assistant something like "add Auth0 login to my app," the assistant:
 
-1. Loads the **quickstart router** skill, which reads your project files (`package.json`, `requirements.txt`, `build.gradle`, etc.)
-2. Detects your framework and selects the matching skill (e.g., `auth0-nextjs` for a Next.js project)
-3. Follows the skill's step-by-step instructions to install the right SDK, create auth routes, configure environment variables, and wire up login/logout
+1. Loads the single `auth0` skill, whose **router** reads your project files (`package.json`, `requirements.txt`, `build.gradle`, etc.)
+2. Detects your framework and loads the matching reference files (e.g., the Next.js reference for a Next.js project)
+3. Follows the step-by-step instructions to install the right SDK, create auth routes, configure environment variables, and wire up login/logout
 
-You don't pick skills manually — framework detection handles it.
+You don't pick anything manually — framework detection handles it.
 
-## Skills
+## Coverage
 
-32 skills covering web, mobile, and API authentication.
+A single `auth0` skill covers web, mobile, desktop, and API authentication
+across all of the frameworks below. You install one skill; its router detects
+your framework and loads the matching guidance — you don't choose a
+per-framework skill.
 
-| Skill | SDK | Frameworks |
+| Area | SDK | Frameworks |
 |-------|-----|------------|
-| **Quickstart Router** | — | Detects your framework and routes to the right skill |
+| **Quickstart Router** | — | Detects your framework and loads the right reference files |
 | **Migration** | — | Migrate from Firebase, Cognito, Supabase, Clerk, or custom auth |
 | **MFA** | — | TOTP, SMS, email, push, WebAuthn |
-| **ACUL Screen Generator** | [`@auth0/auth0-acul-react`](https://github.com/auth0/universal-login) | Custom Universal Login screens and theming |
+| **ACUL Screen Generation** | [`@auth0/auth0-acul-react`](https://github.com/auth0/universal-login) | Custom Universal Login screens and theming |
 | **React** | [`@auth0/auth0-react`](https://github.com/auth0/auth0-react) | React SPAs (Vite, CRA) |
 | **Vue** | [`@auth0/auth0-vue`](https://github.com/auth0/auth0-vue) | Vue 3 |
 | **Angular** | [`@auth0/auth0-angular`](https://github.com/auth0/auth0-angular) | Angular 13+ |
