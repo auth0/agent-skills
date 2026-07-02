@@ -21,14 +21,15 @@ Two problems remain:
    router keys entirely off Auth0 SDK packages (`@auth0/auth0-react`, etc.). A
    developer who hasn't installed an SDK yet — the common case when *adding* auth
    — gets no framework match and falls straight through to "ask the developer."
-2. The branch is behind `main`, which added a standalone `auth0-dpop` skill and
+2. The branch is behind `main` (already merged once), which added a standalone
+   `auth0-dpop` skill and
    updated `acul-screen-generator` / `auth0-vue`. The branch also still ships a
    second skill (`acul-screen-generator`) alongside the "one skill," and has an
    unreachable reference file (`framework-php-api.md`).
 
 ## Goals
 
-1. Rebase onto latest `main`; bring in `auth0-dpop` and the acul/vue updates.
+1. Merge latest `main`; bring in `auth0-dpop` and the acul/vue updates.
 2. Fold `auth0-dpop` into the one skill, routed like MFA (intent row, no
    SDK-signal detection). Delete the standalone skill.
 3. Fold `acul-screen-generator` into the one skill (B1); reconcile its richer
@@ -68,9 +69,11 @@ that yields a framework wins.**
   - Native: `Package.swift`/`.xcodeproj` → swift, `pubspec.yaml` → flutter,
     `*.csproj` → .NET variant.
 
-  A new **`references/framework-signals.md`** holds this non-Auth0 dependency →
-  framework table. It is a *detection aid*, not a loadable target — the
-  reachability checker must whitelist it (not require it to be routed to).
+  This non-Auth0 dependency → framework table lives **inline in `SKILL.md`**,
+  in the same Step 2 as the Tier-1 tables. It is *not* a separate reference
+  file: agents are not guaranteed to read references loaded from other
+  references, and detection logic must be in front of the router, not behind an
+  indirection.
 - **Tier 3 — Prompt-derived.** No workspace signal → parse the developer's
   message for a framework name ("my Next.js app", "add auth to my Go API"). A
   keyword → framework table lives in the router `SKILL.md`.
@@ -123,7 +126,7 @@ New `scripts/check-router-reachability.py`, run in CI alongside skillsaw:
    emit (including the `{framework}`/`{tooling}` template expansions against the
    known framework/tooling value sets).
 2. Assert every file in `references/` is reachable (catches orphans like
-   `php-api`). Whitelist `framework-signals.md` (a detection aid, not routed).
+   `php-api`). No whitelist needed — every reference file is a routed target.
 3. Assert no reference file links to another reference file (Claude Code linking
    rule).
 
@@ -134,7 +137,9 @@ New `scripts/check-router-reachability.py`, run in CI alongside skillsaw:
 - `framework-<name>.md` — one SDK/framework integration.
 - `tooling-<name>.md` — cli / mcp / terraform.
 - `pattern-<name>.md` — cross-cutting guidance.
-- `framework-signals.md` — Tier-2 non-Auth0 detection table (detection aid).
+
+The Tier-2 non-Auth0 detection table is inline in `SKILL.md`, not a reference
+file.
 
 ### Documentation
 
@@ -149,12 +154,13 @@ New `scripts/check-router-reachability.py`, run in CI alongside skillsaw:
 
 ## Implementation sequence
 
-1. Rebase onto `main`; resolve conflicts keeping the re-architecture.
+1. Merge `main`; resolve conflicts keeping the re-architecture.
 2. Fold `auth0-dpop` → `feature-dpop.md` + router rows; delete standalone skill.
 3. Fold `acul-screen-generator` → reconcile into `feature-acul.md`; delete
    standalone skill; update README.
-4. Rewrite router Step 2 as the three-tier cascade; add `framework-signals.md`;
-   add prompt keyword table; add variant disambiguation + `php-api` route.
+4. Rewrite router Step 2 as the three-tier cascade with the Tier-2 table inline
+   in `SKILL.md`; add prompt keyword table; add variant disambiguation +
+   `php-api` route.
 5. Add `scripts/check-router-reachability.py`; wire into CI.
 6. Write `docs/architecture.md`; extend `CONTRIBUTING.md`.
 7. `uvx skillsaw --strict` + new reachability check must pass.
