@@ -132,3 +132,38 @@ Please follow [Auth0's Code of Conduct](https://github.com/auth0/open-source-tem
 ## Questions?
 
 If you have questions about contributing, please [open an issue](https://github.com/auth0/agent-skills/issues/new) with the "question" label.
+
+## Adding a Capability to the Unified Skill
+
+All Auth0 guidance ships in the single `auth0` skill
+(`plugins/auth0/skills/auth0/`). See [docs/architecture.md](./docs/architecture.md)
+for why. To add or change coverage:
+
+### Pick the right reference prefix
+- `feature-<name>.md` — a capability spanning frameworks (e.g. mfa, dpop).
+- `framework-<name>.md` — a single SDK/framework integration.
+- `tooling-<name>.md` — a provisioning tool (cli, mcp, terraform).
+- `pattern-<name>.md` — cross-cutting guidance.
+
+### Make it routable (required — CI enforces this)
+Every file in `references/` MUST be reachable from `SKILL.md`, and no reference
+file may contain a link to any `.md` file (reference files are self-contained —
+inline the content instead of linking, since Claude Code follows only one hop
+from the router).
+
+- **New feature:** add an intent row in Step 1 and a load block in Step 4 of
+  `SKILL.md`.
+- **New framework:** add detection in **all three tiers** of Step 2 — Tier 1
+  (Auth0 SDK package), Tier 2 (non-Auth0 workspace dependency), Tier 3 (prompt
+  keyword) — and, if it has a web-vs-API split, a row in "Variant
+  disambiguation." The reachability checker derives routable slugs directly from
+  these router tables (the backticked value column), so simply naming your
+  `<slug>` in a table makes `framework-<slug>.md` reachable — there is no
+  separate list to update.
+
+### Validate
+```bash
+bash plugins/auth0/skills/auth0/scripts/validate-skill.sh
+python3 scripts/check_router_reachability.py plugins/auth0/skills/auth0
+uvx skillsaw --strict
+```
