@@ -18,19 +18,28 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 
 ## Step 1: Detect intent
 
-| Developer asks about... | Intent |
+Match the developer's request against the **What the developer wants** column —
+it describes the goal in plain language, not just the Auth0 term. A developer
+who has never heard "MFA" but says *"make users confirm with a code from their
+phone"* still lands on `feature:mfa`.
+
+The **Intent** value you pick here is a lookup key: in **Step 4: Load reference
+files** it appears verbatim as a section heading (`### feature:mfa`) that lists
+which reference files to load.
+
+| What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
-| Adding login, signup, auth, authentication to an app | **integrate** |
-| MFA, 2FA, passkeys, step-up authentication | **feature:mfa** |
-| Organizations, multi-org, B2B SaaS | **feature:organizations** |
-| Custom domain (login.example.com, auth.company.com) | **feature:custom-domains** |
-| ACUL, advanced custom universal login screens | **feature:acul** |
-| Branding, login page appearance, logo, colors, theme | **feature:branding** |
-| DPoP, sender-constrained tokens, "bind tokens to the client", prevent token theft/replay | **feature:dpop** |
-| "best practice", "secure", token security, "how should I" | **guidance** |
-| Error: 401, 403, CORS, callback URL mismatch, redirect loop | **debug** |
-| Rate limit, 429, quota exceeded | **debug:rate-limit** |
-| Migrating from Clerk, Firebase, Cognito, Okta, another provider | **migrate** |
+| Add login, signup, sign-in, or "let users log in / create accounts" to an app | **integrate** |
+| Require a second step after the password — a one-time code, SMS or email code, authenticator app, passkey, fingerprint/face (biometric), or security key; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
+| Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
+| Serve the login page from your own web address (e.g. `login.example.com`, `auth.company.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
+| Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
+| Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
+| Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
+| Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
+| Hit an error: 401 Unauthorized, 403 Forbidden, CORS, callback URL mismatch, redirect loop. *Auth0: debugging.* | **debug** |
+| Hit rate limiting: 429 Too Many Requests, quota exceeded. *Auth0: rate limits.* | **debug:rate-limit** |
+| Move an existing app off Clerk, NextAuth.js, Firebase, Cognito, Okta, Supabase, Passport.js, or another auth provider. *Auth0: migration.* | **migrate** |
 
 ---
 
@@ -224,6 +233,9 @@ The feature configuration is identical across all three tools.
 ---
 
 ## Step 4: Load reference files
+
+Find the section below whose heading matches the **Intent** you picked in
+Step 1, then read the reference files it lists.
 
 ### integrate
 ```
