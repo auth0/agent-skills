@@ -588,7 +588,12 @@ constants and `_expand`/`check_router` with:
 # Every bare `slug` token in a router table's value column is a routable
 # framework/target slug. The router is the single source of truth — no
 # hardcoded mirror list (which could mask an orphaned file, e.g. php-api).
-SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
+# A routable slug is a backticked token in a table VALUE position — followed by
+# `|` (next cell / row end) or `/` (slash-list like `php` / `php-api`). The
+# lookahead EXCLUDES left-column dependency names (`authlib`, `python-jose`,
+# `express-openid-connect`), so a phantom `framework-<depname>.md` cannot be
+# wrongly considered reachable. Router stays the single source of truth.
+SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`(?=\s*[|/])")
 READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
 # A bare `<name>.md` named in backticks (a decision-table load target).
 BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
@@ -596,10 +601,10 @@ LINK_RE = re.compile(r"\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)")
 
 
 def _router_slugs(skill_md: str) -> set:
-    """All backticked slugs the router mentions — the routable value universe.
-    A superset of framework/tooling slugs; safe because we only intersect it
-    with `{...}`-template expansions, and any real reference file must have a
-    slug the router actually names to be reachable."""
+    """Routable value-slug universe: backticked tokens in table value positions
+    (followed by `|` or `/`). Derived from the router — no hardcoded list — and
+    scoped to value columns so left-column dependency names are not mistaken for
+    routable framework slugs."""
     return set(SLUG_RE.findall(skill_md))
 
 
