@@ -1499,7 +1499,7 @@ android {
 }
 ```
 
-See [references/process.md](references/process.md) for Kotlin DSL, version-catalog, and Gradle/AGP wrapper edge cases.
+See the Migration Process section below for Kotlin DSL, version-catalog, and Gradle/AGP wrapper edge cases.
 
 ---
 
@@ -1659,7 +1659,7 @@ val mfaClient = authentication.mfaClient(mfaToken)
 // e.g. mfaClient.verifyWithOTP(otp) — use the exact method/parameters from the fetched source
 ```
 
-The `mfaToken` still comes from the same place — an `AuthenticationException` where the challenge is required. List every migrated MFA flow in the Step 10 summary and ask the user to **re-test each MFA flow end-to-end** against their tenant. See [references/process.md](references/process.md#mfa-migration) for the full method map.
+The `mfaToken` still comes from the same place — an `AuthenticationException` where the challenge is required. List every migrated MFA flow in the Step 10 summary and ask the user to **re-test each MFA flow end-to-end** against their tenant. See the Migration Process section below (MFA migration) for the full method map.
 
 ---
 
@@ -1842,7 +1842,7 @@ Present a concise summary covering:
 - `clearAll()` — full credential **and** cryptographic key cleanup on logout/account removal.
 - `WebAuthProvider.registerCallbacks()` in `onCreate()` — prevents lost callbacks / memory leaks on configuration change or process death during authentication.
 - `DefaultClient.Builder` — the constructor is deprecated (not removed); the builder adds write/call timeouts, custom interceptors, and loggers.
-- Gson 2.8.9 → 2.11.0 (transitive) — stricter `TypeToken` / type coercion; see [references/process.md](references/process.md#gson-transitive-dependency).
+- Gson 2.8.9 → 2.11.0 (transitive) — stricter `TypeToken` / type coercion; see the Migration Process section below (Gson transitive dependency).
 
 **7. Ask the user** whether to commit the migration, explore an optional improvement, or step through specific files together.
 
@@ -1852,8 +1852,8 @@ Present a concise summary covering:
 
 ## Detailed References
 
-- **[Migration Process](references/process.md)** — version-argument validation, prerequisite/toolchain handling, build-system edge cases (Groovy DSL, Kotlin DSL, version catalogs), MFA method map, Management-API backend pattern, Gson transitive notes, rollback, and "deprecated ≠ removed" guidance.
-- **[Security Checklist](references/security.md)** — invariants that must hold before and after migration.
+- **Migration Process** (see below) — version-argument validation, prerequisite/toolchain handling, build-system edge cases (Groovy DSL, Kotlin DSL, version catalogs), MFA method map, Management-API backend pattern, Gson transitive notes, rollback, and "deprecated ≠ removed" guidance.
+- **Security Checklist** (see below) — invariants that must hold before and after migration.
 
 ## Common Mistakes
 

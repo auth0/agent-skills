@@ -28,7 +28,7 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 
 ### 1. Configure Auth0
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](./references/setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see the Setup Guide section (below) for complete scripts.
 
 **For manual setup**, configure a **Native** application in the [Auth0 Dashboard](https://manage.auth0.com/) and note your Domain and Client ID.
 
@@ -76,7 +76,7 @@ Add the react-native-auth0 plugin to `app.json` (or `app.config.js`) with your A
 }
 ```
 
-The `customScheme` must be all lowercase with no special characters (e.g., `auth0sample`). See [**Setup Guide**](./references/setup.md) for HTTPS callbacks, multiple domains, EAS Build, and secret management.
+The `customScheme` must be all lowercase with no special characters (e.g., `auth0sample`). See the **Setup Guide** section (below) for HTTPS callbacks, multiple domains, EAS Build, and secret management.
 
 ### 5. Configure Callback URLs
 
@@ -87,7 +87,7 @@ YOUR_CUSTOM_SCHEME://YOUR_AUTH0_DOMAIN/ios/YOUR_BUNDLE_ID/callback,
 YOUR_CUSTOM_SCHEME://YOUR_AUTH0_DOMAIN/android/YOUR_PACKAGE/callback
 ```
 
-All values must be **lowercase** with **no trailing slash**. For HTTPS callback URLs (App Links / Universal Links), see [Setup Guide](./references/setup.md#using-https-callback-urls-android-app-links).
+All values must be **lowercase** with **no trailing slash**. For HTTPS callback URLs (App Links / Universal Links), see the Setup Guide — Using HTTPS Callback URLs section (below).
 
 ### 6. Add Authentication with Auth0Provider
 
@@ -179,9 +179,9 @@ export default function App() {
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Dev client requirement, automated setup, Expo config plugin, callback URLs, EAS Build, secret management
-- **[Integration Patterns](./references/integration.md)** — Login/logout, credential management, biometric auth, token refresh, organizations, DPoP, error handling
-- **[API Reference & Testing](./references/api.md)** — Configuration options, useAuth0 hook API, testing checklist, common issues, security
+- **Setup Guide** (see the Setup Guide section below) — Dev client requirement, automated setup, Expo config plugin, callback URLs, EAS Build, secret management
+- **Integration Patterns** (see the Integration Patterns section below) — Login/logout, credential management, biometric auth, token refresh, organizations, DPoP, error handling
+- **API Reference & Testing** (see the API Reference & Testing section below) — Configuration options, useAuth0 hook API, testing checklist, common issues, security
 
 ## Common Mistakes
 

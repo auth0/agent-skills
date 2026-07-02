@@ -675,7 +675,6 @@ Use this constant instead of the string `"Auth0"` to avoid typos.
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -1088,7 +1087,6 @@ app.UseStatusCodePages(async statusCodeContext =>
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -1263,7 +1261,6 @@ Application type must be **Regular Web Application** (not SPA or Native).
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 

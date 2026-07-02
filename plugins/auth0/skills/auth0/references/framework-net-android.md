@@ -43,7 +43,7 @@ Add Auth0 authentication to .NET Android applications. This skill integrates the
 > 4. Look for existing `Auth0Client` or `Auth0ClientOptions` usage to avoid duplicate configuration
 
 1. **Install SDK**: `dotnet add package Auth0.OidcClient.AndroidX`
-2. **Configure Auth0**: See [Setup Guide](./references/setup.md) for automatic or manual configuration.
+2. **Configure Auth0**: See the Setup Guide section (below) for automatic or manual configuration.
 3. **Integrate authentication**: Add `Auth0Client` instantiation, configure the `IntentFilter` on your Activity, and wire login/logout to UI actions.
 4. **Handle callback**: Override `OnNewIntent` and call `ActivityMediator.Instance.Send(intent.DataString)` to complete the authentication flow.
 5. **Build and verify**: `dotnet build`
@@ -107,9 +107,9 @@ This URL must be:
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 tenant configuration, SDK installation, IntentFilter setup
-- **[Integration Patterns](./references/integration.md)** — Login/logout flows, token access, user profile, error handling
-- **[API Reference & Testing](./references/api.md)** — Full `Auth0ClientOptions` reference, claims, testing checklist, troubleshooting
+- **Setup Guide** (see below) — Auth0 tenant configuration, SDK installation, IntentFilter setup
+- **Integration Patterns** (see below) — Login/logout flows, token access, user profile, error handling
+- **API Reference & Testing** (see below) — Full `Auth0ClientOptions` reference, claims, testing checklist, troubleshooting
 
 ## Common Mistakes
 

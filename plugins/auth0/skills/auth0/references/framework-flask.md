@@ -676,7 +676,6 @@ Stateless cookie sessions are limited to ~4KB by browsers. The SDK encrypts toke
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -938,7 +937,6 @@ def unauthorized(error):
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -1091,7 +1089,6 @@ In your Auth0 Application settings:
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 

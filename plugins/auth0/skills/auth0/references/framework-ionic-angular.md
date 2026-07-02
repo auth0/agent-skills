@@ -51,7 +51,7 @@ npm install @auth0/auth0-angular @capacitor/browser @capacitor/app
 >       description: "You provide an .env file with your Auth0 Domain and Client ID, and the agent reads it and writes the project configuration for you."
 > ```
 >
-> Follow the chosen path in the [Setup Guide](./references/setup.md) which has the full step-by-step instructions for both options.
+> Follow the chosen path in the Setup Guide section (below) which has the full step-by-step instructions for both options.
 
 **Auth0 Dashboard settings (Native application type):**
 
@@ -247,9 +247,9 @@ export class ProfileComponent {
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 configuration, Auth0 CLI setup, Capacitor platform setup, deep linking
-- **[Integration Patterns](./references/integration.md)** — Login/logout flows, token management, user profile, error handling, Capacitor lifecycle
-- **[API Reference & Testing](./references/api.md)** — AuthService API, configuration options, claims reference, testing checklist
+- **Setup Guide** (see below) — Auth0 configuration, Auth0 CLI setup, Capacitor platform setup, deep linking
+- **Integration Patterns** (see below) — Login/logout flows, token management, user profile, error handling, Capacitor lifecycle
+- **API Reference & Testing** (see below) — AuthService API, configuration options, claims reference, testing checklist
 
 ## Common Mistakes
 

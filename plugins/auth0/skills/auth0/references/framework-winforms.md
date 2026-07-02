@@ -45,7 +45,7 @@ The SDK performs WebAuth (OIDC authorization code flow with PKCE) by opening the
 > 3. Note the project's namespace and directory conventions
 
 1. **Install SDK**: `dotnet add package Auth0.OidcClient.WinForms`
-2. **Configure Auth0**: See [Setup Guide](./references/setup.md) for automatic or manual configuration.
+2. **Configure Auth0**: See the Setup Guide section (below) for automatic or manual configuration.
 3. **Integrate authentication**: Add `Auth0Client` initialization and wire login/logout to button click handlers.
 4. **Build and verify**: `dotnet build`
 
@@ -86,9 +86,9 @@ Configure in the Auth0 Dashboard:
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 tenant configuration, SDK installation, callback URL setup
-- **[Integration Patterns](./references/integration.md)** — Login/logout flows, token refresh, user profile, error handling
-- **[API Reference & Testing](./references/api.md)** — Full `Auth0ClientOptions` reference, claims, testing checklist, troubleshooting
+- **Setup Guide** (see below) — Auth0 tenant configuration, SDK installation, callback URL setup
+- **Integration Patterns** (see below) — Login/logout flows, token refresh, user profile, error handling
+- **API Reference & Testing** (see below) — Full `Auth0ClientOptions` reference, claims, testing checklist, troubleshooting
 
 ## Common Mistakes
 

@@ -1053,7 +1053,6 @@ If your project uses `jakarta.servlet` (Jakarta EE 9+), this SDK is not compatib
 
 ## References
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -1290,7 +1289,6 @@ String redirectUrl = scheme + "://" + request.getServerName()
 
 ## References
 
-- [Main Skill](../SKILL.md)
 
 ---
 

@@ -71,9 +71,9 @@ You need an **API** (not Application) in Auth0.
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](references/setup.md) for complete CLI scripts. The automated path writes `.env` for you - skip Step 4 below and proceed directly to Step 5.
+**If the user chose Automated**, follow the Setup Guide section below for complete CLI scripts. The automated path writes `.env` for you - skip Step 4 below and proceed directly to Step 5.
 
-**If the user chose Manual**, follow the [Setup Guide](references/setup.md) (Manual Setup section) for full instructions. Then continue with Step 4 below.
+**If the user chose Manual**, follow the Setup Guide section below (Manual Setup section) for full instructions. Then continue with Step 4 below.
 
 Quick reference for manual API creation:
 
@@ -451,15 +451,15 @@ $user->getAttribute('iss');   // explicit claim access
 - Protect routes -> `auth:auth0-api` middleware (see Step 7)
 - Scope enforcement -> `hasScope()` (see Step 8)
 - Permission enforcement -> `hasPermission()` (see Step 8)
-- Advanced configuration -> [API Reference](references/api.md)
+- Advanced configuration -> API Reference (see below)
 
 ---
 
 ## Detailed Documentation
 
-- **[Setup Guide](references/setup.md)** - Auth0 CLI setup, environment configuration, getting test tokens
-- **[Integration Guide](references/integration.md)** - Scopes, permissions, CORS, custom user repositories, error handling, multi-guard
-- **[API Reference](references/api.md)** - Complete AuthorizationGuard API, StatelessUser, CredentialEntity, configuration options
+- **Setup Guide** (see below) - Auth0 CLI setup, environment configuration, getting test tokens
+- **Integration Guide** (see below) - Scopes, permissions, CORS, custom user repositories, error handling, multi-guard
+- **API Reference** (see below) - Complete AuthorizationGuard API, StatelessUser, CredentialEntity, configuration options
 
 ---
 

@@ -306,9 +306,9 @@ Route::middleware('auth')->group(function () {
 
 ## Detailed Documentation
 
-- **[Setup Guide](references/setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
-- **[Integration Guide](references/integration.md)** - Scope checking, calling APIs, events, custom user models, session management
-- **[API Reference](references/api.md)** - Complete guard API, configuration options, user model methods
+- **Setup Guide** (see below) - Automated setup scripts, environment configuration, Auth0 CLI usage
+- **Integration Guide** (see below) - Scope checking, calling APIs, events, custom user models, session management
+- **API Reference** (see below) - Complete guard API, configuration options, user model methods
 
 ---
 

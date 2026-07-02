@@ -57,7 +57,7 @@
 > - **If Auth0 credentials (domain AND client ID) are already in the user's prompt:** Proceed to Step 3 and use those values directly in the `Auth0Web(...)` constructor.
 > - **If no credentials are provided:** Create the application with the Auth0 CLI — do NOT ask the user to create or configure an Auth0 application manually in the Dashboard. Always use the CLI path.
 >
-> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for the pre-flight checks and the `auth0 apps create` command.
+> Follow the Setup Guide — Auth0 Configuration section (below) for the pre-flight checks and the `auth0 apps create` command.
 
 ### Step 3 — Add Auth0 SPA JS to index.html
 
@@ -326,7 +326,7 @@ void main() {
 }
 ```
 
-For complete patterns with Riverpod, Bloc, and advanced scenarios, see [Integration Patterns](./references/integration.md).
+For complete patterns with Riverpod, Bloc, and advanced scenarios, see the Integration Patterns section (below).
 
 ### Step 6 — Verify Build
 
@@ -346,9 +346,9 @@ For complete patterns with Riverpod, Bloc, and advanced scenarios, see [Integrat
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 application creation via the Auth0 CLI, web/index.html setup, callback URL registration
-- **[Integration Patterns](./references/integration.md)** — Redirect login, popup login, credential management, state management patterns, organization support, error handling
-- **[API Reference & Testing](./references/api.md)** — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
+- **Setup Guide** (see the Setup Guide section below) — Auth0 application creation via the Auth0 CLI, web/index.html setup, callback URL registration
+- **Integration Patterns** (see the Integration Patterns section below) — Redirect login, popup login, credential management, state management patterns, organization support, error handling
+- **API Reference & Testing** (see the API Reference & Testing section below) — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
 
 ## Common Mistakes
 

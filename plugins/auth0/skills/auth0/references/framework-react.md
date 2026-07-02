@@ -1364,7 +1364,6 @@ logout({
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md) - Return to main skill guide
 
 ---
 
@@ -1728,7 +1727,7 @@ auth0 login --force
 ## Next Steps
 
 After setup is complete:
-1. Return to [main skill guide](../SKILL.md) for integration steps
+1. Return to the main skill guide for integration steps
 
 ---
 

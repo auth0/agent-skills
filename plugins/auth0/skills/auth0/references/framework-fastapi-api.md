@@ -528,7 +528,6 @@ Requires `client_id` and `client_secret` to be set in the constructor.
 
 - [auth0-fastapi-api GitHub](https://github.com/auth0/auth0-fastapi-api)
 - [auth0-fastapi-api on PyPI](https://pypi.org/project/auth0-fastapi-api/)
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -974,7 +973,6 @@ async def test_with_mocked_auth(mock_verify):
 
 ## References
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -1138,7 +1136,6 @@ curl -X POST https://your-tenant.us.auth0.com/oauth/token \
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 

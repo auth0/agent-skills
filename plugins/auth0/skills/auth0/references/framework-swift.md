@@ -45,7 +45,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > **Swift Package Manager — Xcode project (`.xcodeproj`, no `Package.swift`):** The CLI command does not apply. Instruct the user to add the package via Xcode: File → Add Package Dependencies → `https://github.com/auth0/Auth0.swift` → Up to Next Major Version from `2.18.0`.
 >
-> **CocoaPods or Carthage:** Follow the matching installation steps in [Setup Guide](./references/setup.md#sdk-installation). Do not just show the instructions — perform the file edits and run the commands.
+> **CocoaPods or Carthage:** Follow the matching installation steps in the Setup Guide — SDK Installation section (below). Do not just show the instructions — perform the file edits and run the commands.
 
 ### Step 2 — Configure Auth0
 
@@ -55,8 +55,8 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >   - **Automatic (Auth0 CLI)** — I'll create the application, set callback URLs, and configure everything using the Auth0 CLI.
 >   - **Manual** — You provide a pre-configured `Auth0.plist` file and I'll add it to your project.
 >
-> If the user chooses **automatic**: Follow [Setup Guide — Automated Setup via Auth0 CLI](./references/setup.md#automated-setup-via-auth0-cli).
-> If the user chooses **manual**: Follow [Setup Guide — Manual Setup](./references/setup.md#manual-setup-user-provided-auth0plist).
+> If the user chooses **automatic**: Follow the Setup Guide — Automated Setup via Auth0 CLI section (below).
+> If the user chooses **manual**: Follow the Setup Guide — Manual Setup section (below).
 
 ### Step 3 — Configure Callback URLs
 
@@ -88,7 +88,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 > ```
 > If there are no existing URLs, omit the `EXISTING_` prefix and use only the new URL.
 >
-> Then follow the [URL scheme registration steps in Setup Guide](./references/setup.md#register-url-scheme-required-for-custom-scheme-callbacks) to register `$(PRODUCT_BUNDLE_IDENTIFIER)` as a URL type in Xcode.
+> Then follow the URL scheme registration steps in the Setup Guide section (below) to register `$(PRODUCT_BUNDLE_IDENTIFIER)` as a URL type in Xcode.
 
 #### Path B — HTTPS Universal Links
 
@@ -122,7 +122,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 > Auth0 will now host the `apple-app-site-association` file automatically — required for Universal Links to work on device.
 >
 > **Step B3 — Add Associated Domains entitlement in Xcode:**
-> Add `com.apple.developer.associated-domains` to the app's `.entitlements` file with both `applinks:` and `webcredentials:` entries for the Auth0 domain. See [Setup Guide — Associated Domains](./references/setup.md#associated-domains-setup-https-universal-links) for the complete entitlements XML, Xcode capability steps, and build settings verification.
+> Add `com.apple.developer.associated-domains` to the app's `.entitlements` file with both `applinks:` and `webcredentials:` entries for the Auth0 domain. See the Setup Guide — Associated Domains section (below) for the complete entitlements XML, Xcode capability steps, and build settings verification.
 >
 > **Step B4 — Use `.useHTTPS()` in the SDK:**
 > ```swift
@@ -180,7 +180,7 @@ class AuthenticationService: ObservableObject {
 // In body: if auth.isAuthenticated { HomeView() } else { LoginView() }
 ```
 
-For complete SwiftUI app lifecycle wiring, see [Integration Patterns](./references/integration.md#swiftui-app-lifecycle-recommended).
+For complete SwiftUI app lifecycle wiring, see the Integration Patterns — SwiftUI App Lifecycle section (below).
 
 #### UIKit
 
@@ -234,7 +234,7 @@ private let auth = AuthenticationService()
 }
 ```
 
-> **Note — SFSafariViewController only:** If the app uses `.provider(WebAuthentication.safariProvider())` instead of the default `ASWebAuthenticationSession`, add `WebAuthentication.resume(with: url)` to `AppDelegate.application(_:open:url:options:)` and `SceneDelegate.scene(_:openURLContexts:)`. See [Integration Patterns](./references/integration.md#uikit-app-lifecycle) for the exact code.
+> **Note — SFSafariViewController only:** If the app uses `.provider(WebAuthentication.safariProvider())` instead of the default `ASWebAuthenticationSession`, add `WebAuthentication.resume(with: url)` to `AppDelegate.application(_:open:url:options:)` and `SceneDelegate.scene(_:openURLContexts:)`. See the Integration Patterns — UIKit App Lifecycle section (below) for the exact code.
 
 ### Step 5 — Verify Build
 
@@ -246,9 +246,9 @@ private let auth = AuthenticationService()
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 CLI configuration, Auth0.plist, URL scheme registration, Associated Domains, CocoaPods/SPM/Carthage install
-- **[Integration Patterns](./references/integration.md)** — Web Auth login/logout, CredentialsManager, biometric protection, MFA, organizations, error handling, SwiftUI/UIKit patterns
-- **[API Reference & Testing](./references/api.md)** — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
+- **Setup Guide** (see the Setup Guide section below) — Auth0 CLI configuration, Auth0.plist, URL scheme registration, Associated Domains, CocoaPods/SPM/Carthage install
+- **Integration Patterns** (see the Integration Patterns section below) — Web Auth login/logout, CredentialsManager, biometric protection, MFA, organizations, error handling, SwiftUI/UIKit patterns
+- **API Reference & Testing** (see the API Reference & Testing section below) — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
 
 ## Common Mistakes
 
@@ -2527,8 +2527,8 @@ Present a concise summary covering:
 
 ## Detailed References
 
-- **[Migration Process](./references/process.md)** — Multi-version jumps, rollback, CocoaPods/Carthage edge cases, Swift version compatibility
-- **[Security Checklist](./references/security.md)** — Invariants that must hold before and after migration
+- **Migration Process** (see the Migration Process section below) — Multi-version jumps, rollback, CocoaPods/Carthage edge cases, Swift version compatibility
+- **Security Checklist** (see the Security Checklist section below) — Invariants that must hold before and after migration
 
 ## Common Mistakes
 

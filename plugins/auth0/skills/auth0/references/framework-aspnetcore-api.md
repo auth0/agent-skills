@@ -756,7 +756,6 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
 
 ## References
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -897,7 +896,6 @@ curl -X POST https://your-tenant.auth0.com/oauth/token \
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 

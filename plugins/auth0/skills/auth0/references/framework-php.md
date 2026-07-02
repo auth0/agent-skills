@@ -967,7 +967,6 @@ JWKS keys are cached using PSR-6 if a `tokenCache` is provided.
 
 ## Related
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -1348,7 +1347,6 @@ $app->run();
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -1530,7 +1528,6 @@ If you prefer a different HTTP client:
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 

@@ -710,7 +710,6 @@ app.use((err, req, res, next) => {
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -856,7 +855,6 @@ Dashboard: Create Regular Web Application, copy credentials
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 

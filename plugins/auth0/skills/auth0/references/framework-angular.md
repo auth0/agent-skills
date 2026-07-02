@@ -784,7 +784,6 @@ describe('AppComponent', () => {
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md) - Quick start workflow
 
 ---
 
@@ -929,7 +928,6 @@ Or via [Auth0 Dashboard](https://manage.auth0.com):
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md) - Quick start guide
 
 ---
 

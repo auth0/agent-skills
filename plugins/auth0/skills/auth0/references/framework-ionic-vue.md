@@ -32,7 +32,7 @@ Add Auth0 authentication to Ionic Vue applications using Capacitor. This skill c
 
 ### Step 1: Configure Auth0
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](./references/setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see the Setup Guide section (below) for complete scripts.
 
 **For manual setup**, configure a **Native** application in the [Auth0 Dashboard](https://manage.auth0.com/) and note your Domain and Client ID.
 
@@ -186,9 +186,9 @@ const doLogout = async () => {
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 CLI automated setup (login, app creation, credential injection), Capacitor URL scheme registration, secret management
-- **[Integration Patterns](./references/integration.md)** — Login/logout with Capacitor Browser, deep link callback handling, user profile, protected routes, token access, error handling
-- **[Testing & Reference](./references/api.md)** — Full API reference for createAuth0 options, useAuth0 composable, Capacitor plugin configuration, testing checklist, common issues
+- **Setup Guide** (see below) — Auth0 CLI automated setup (login, app creation, credential injection), Capacitor URL scheme registration, secret management
+- **Integration Patterns** (see below) — Login/logout with Capacitor Browser, deep link callback handling, user profile, protected routes, token access, error handling
+- **Testing & Reference** (see below) — Full API reference for createAuth0 options, useAuth0 composable, Capacitor plugin configuration, testing checklist, common issues
 
 ## Common Mistakes
 

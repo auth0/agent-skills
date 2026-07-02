@@ -671,7 +671,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md) - Quick start
 
 ---
 
@@ -844,7 +843,6 @@ Via Dashboard:
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md) - Quick start
 
 ---
 

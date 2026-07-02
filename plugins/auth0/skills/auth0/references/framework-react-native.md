@@ -634,7 +634,6 @@ Update `app.json`:
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md) - Quick start workflow
 
 ---
 

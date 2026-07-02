@@ -87,9 +87,9 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 API registration, .env configuration, bootstrap script for automated setup, and secret management
-- **[Integration Patterns](./references/integration.md)** — Protected endpoints, RBAC with scopes and claims, DPoP, CORS setup, error handling, and testing with curl
-- **[API Reference & Testing](./references/api.md)** — Full configuration options, claims reference, complete code example, testing checklist, and common issues
+- **Setup Guide** (see the Setup Guide section below) — Auth0 API registration, .env configuration, bootstrap script for automated setup, and secret management
+- **Integration Patterns** (see the Integration Patterns section below) — Protected endpoints, RBAC with scopes and claims, DPoP, CORS setup, error handling, and testing with curl
+- **API Reference & Testing** (see the API Reference & Testing section below) — Full configuration options, claims reference, complete code example, testing checklist, and common issues
 
 ## Common Mistakes
 

@@ -45,7 +45,7 @@ Add Auth0 authentication to .NET MAUI applications targeting iOS, Android, macOS
 > 4. Look for existing `Auth0Client` or `Auth0ClientOptions` usage to avoid duplicate configuration
 
 1. **Install SDK**: `dotnet add package Auth0.OidcClient.MAUI`
-2. **Configure Auth0**: See [Setup Guide](./references/setup.md) for automatic or manual configuration.
+2. **Configure Auth0**: See the Setup Guide section (below) for automatic or manual configuration.
 3. **Integrate authentication**: Add `Auth0Client` instantiation and wire login/logout to UI actions.
    - **IMPORTANT:** Always set `Scope = "openid profile email offline_access"` — the `offline_access` scope is required to receive a refresh token for silent token renewal.
 4. **Persist tokens with SecureStorage**: After login, store the refresh token using `await SecureStorage.Default.SetAsync("refresh_token", loginResult.RefreshToken)`. On app startup, restore the session with `RefreshTokenAsync`. Clear on logout with `SecureStorage.Default.Remove("refresh_token")`.
@@ -99,9 +99,9 @@ approach. You can customize the scheme (e.g., `com.mycompany.myapp://callback`).
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 tenant configuration, SDK installation, platform-specific callback setup
-- **[Integration Patterns](./references/integration.md)** — Login/logout flows, token refresh, user profile, error handling, MVVM patterns
-- **[API Reference & Testing](./references/api.md)** — Full `Auth0ClientOptions` reference, claims, testing checklist, troubleshooting
+- **Setup Guide** (see below) — Auth0 tenant configuration, SDK installation, platform-specific callback setup
+- **Integration Patterns** (see below) — Login/logout flows, token refresh, user profile, error handling, MVVM patterns
+- **API Reference & Testing** (see below) — Full `Auth0ClientOptions` reference, claims, testing checklist, troubleshooting
 
 ## Common Mistakes
 

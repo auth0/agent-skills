@@ -1284,7 +1284,6 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/private
 
 ## References
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -1638,7 +1637,6 @@ curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 

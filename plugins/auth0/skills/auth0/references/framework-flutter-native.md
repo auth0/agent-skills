@@ -69,7 +69,7 @@
 >   - **Automatic:** Follow the Auth0 CLI steps in the Setup Guide to create the Native application.
 >   - **Manual:** Ask the user for their Auth0 Domain and Client ID and use them directly.
 >
-> Follow [Setup Guide — Auth0 Configuration](./references/setup.md#auth0-configuration) for the pre-flight checks and the `auth0 apps create` command.
+> Follow the Setup Guide — Auth0 Configuration section (below) for the pre-flight checks and the `auth0 apps create` command.
 
 ### Step 3 — Configure Android
 
@@ -94,7 +94,7 @@ android {
 }
 ```
 
-> **Agent instruction:** Use `auth0Scheme: "https"` to use Android App Links (recommended). If the app targets a custom scheme instead, set it to a lowercase scheme string and pass the same scheme to `webAuthentication(scheme: ...)` in Dart. See [Setup Guide](./references/setup.md) for details.
+> **Agent instruction:** Use `auth0Scheme: "https"` to use Android App Links (recommended). If the app targets a custom scheme instead, set it to a lowercase scheme string and pass the same scheme to `webAuthentication(scheme: ...)` in Dart. See the Setup Guide section (below) for details.
 
 ### Step 4 — Configure iOS
 
@@ -365,7 +365,7 @@ void main() {
 }
 ```
 
-For complete patterns with Riverpod, Bloc, biometrics, and advanced scenarios, see [Integration Patterns](./references/integration.md).
+For complete patterns with Riverpod, Bloc, biometrics, and advanced scenarios, see the Integration Patterns section (below).
 
 ### Step 7 — Verify Build
 
@@ -384,9 +384,9 @@ For complete patterns with Riverpod, Bloc, biometrics, and advanced scenarios, s
 
 ## Detailed Documentation
 
-- **[Setup Guide](./references/setup.md)** — Auth0 application creation via the Auth0 CLI, Android `manifestPlaceholders`, iOS `Info.plist` / Associated Domains, callback URL registration
-- **[Integration Patterns](./references/integration.md)** — Web Auth login/logout, CredentialsManager, biometric protection, custom schemes, organizations, API access tokens, state management patterns, error handling
-- **[API Reference & Testing](./references/api.md)** — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
+- **Setup Guide** (see the Setup Guide section below) — Auth0 application creation via the Auth0 CLI, Android `manifestPlaceholders`, iOS `Info.plist` / Associated Domains, callback URL registration
+- **Integration Patterns** (see the Integration Patterns section below) — Web Auth login/logout, CredentialsManager, biometric protection, custom schemes, organizations, API access tokens, state management patterns, error handling
+- **API Reference & Testing** (see the API Reference & Testing section below) — Full API reference, configuration options, claims reference, testing checklist, troubleshooting
 
 ## Common Mistakes
 

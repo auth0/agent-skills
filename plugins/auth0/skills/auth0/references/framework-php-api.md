@@ -846,7 +846,6 @@ $userId = $token->getSubject();
 ## References
 
 - [auth0/auth0-PHP on GitHub](https://github.com/auth0/auth0-PHP)
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -1262,7 +1261,6 @@ curl -s http://localhost:8000/api/private \
 
 ## References
 
-- [Main Skill](../SKILL.md)
 
 ---
 
@@ -1505,7 +1503,6 @@ If you prefer a different HTTP client:
 
 ## Next Steps
 
-- [Main Skill](../SKILL.md)
 
 ---
 
