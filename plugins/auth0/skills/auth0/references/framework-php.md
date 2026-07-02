@@ -595,13 +595,6 @@ if (null === $credentials) {
 - `AUTH0_REDIRECT_URI` - callback URL (e.g. `http://localhost:3000/callback`)
 
 
-## Detailed Documentation
-
-- **[Setup Guide](php-setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
-- **[Integration Guide](php-integration.md)** - Protected routes, calling APIs, session management, error handling
-- **[API Reference](php-api.md)** - Complete Auth0 SDK API, configuration options, session storage, security
-
-
 ## References
 
 - [auth0/auth0-php on Packagist](https://packagist.org/packages/auth0/auth0-php)
@@ -974,8 +967,6 @@ JWKS keys are cached using PSR-6 if a `tokenCache` is provided.
 
 ## Related
 
-- [Setup Guide](setup.md)
-- [Integration Guide](integration.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -1357,8 +1348,6 @@ $app->run();
 
 ## Next Steps
 
-- [API Reference](api.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -1541,8 +1530,6 @@ If you prefer a different HTTP client:
 
 ## Next Steps
 
-- [Integration Guide](integration.md)
-- [API Reference](api.md)
 - [Main Skill](../SKILL.md)
 
 ---

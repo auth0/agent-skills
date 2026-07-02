@@ -432,13 +432,6 @@ public IActionResult Profile() { return View(); }
 - `Auth0:ClientSecret` - Application client secret (use user-secrets in development)
 
 
-## Detailed Documentation
-
-- **[Setup Guide](aspnetcore-auth-setup.md)** - Automated setup scripts, credential configuration, Auth0 CLI usage
-- **[Integration Guide](aspnetcore-auth-integration.md)** - Protected routes, calling APIs, Blazor patterns, error handling
-- **[API Reference](aspnetcore-auth-api.md)** - Complete SDK configuration, builder options, claims reference
-
-
 ## References
 
 - [Auth0.AspNetCore.Authentication on NuGet](https://www.nuget.org/packages/Auth0.AspNetCore.Authentication)
@@ -682,8 +675,6 @@ Use this constant instead of the string `"Auth0"` to avoid typos.
 
 ## Next Steps
 
-- [Integration Guide](integration.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -1097,8 +1088,6 @@ app.UseStatusCodePages(async statusCodeContext =>
 
 ## Next Steps
 
-- [API Reference](api.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -1274,8 +1263,6 @@ Application type must be **Regular Web Application** (not SPA or Native).
 
 ## Next Steps
 
-- [Integration Guide](integration.md)
-- [API Reference](api.md)
 - [Main Skill](../SKILL.md)
 
 ---

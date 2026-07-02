@@ -73,9 +73,9 @@ You need a **Regular Web Application** (not SPA or Native) in Auth0.
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](java-mvc-setup.md) for the complete Auth0 CLI steps. The automated path writes configuration for you — skip Step 3 below and proceed directly to Step 4.
+**If the user chose Automated**, follow the Setup Guide section below for the complete Auth0 CLI steps. The automated path writes configuration for you — skip Step 3 below and proceed directly to Step 4.
 
-**If the user chose Manual**, follow the [Setup Guide](java-mvc-setup.md) (Manual Setup section). Then continue with Step 3.
+**If the user chose Manual**, follow the Setup Guide section below (Manual Setup section). Then continue with Step 3.
 
 Quick reference for manual application creation:
 
@@ -282,12 +282,12 @@ public class AuthenticationFilter implements Filter {
 
 ## Scope and Audience Configuration
 
-See [Integration Guide](java-mvc-integration.md) for requesting custom scopes, audience for API access tokens, and Organizations support.
+See the Integration Patterns sections below for requesting custom scopes, audience for API access tokens, and Organizations support.
 
 
 ## Multiple Custom Domains (MCD)
 
-Built-in support for routing users to the correct Auth0 domain via `DomainResolver`. See [Integration Guide](java-mvc-integration.md) for configuration.
+Built-in support for routing users to the correct Auth0 domain via `DomainResolver`. See the Multiple Custom Domains (MCD) section below for configuration.
 
 
 ## Related Skills
@@ -322,13 +322,6 @@ Built-in support for routing users to the correct Auth0 domain via `DomainResolv
 - `tokens.getType()` — Token type (usually "Bearer")
 - `tokens.getDomain()` — Auth0 domain that issued the tokens
 - `tokens.getIssuer()` — Token issuer URL
-
-
-## Detailed Documentation
-
-- **[Setup Guide](java-mvc-setup.md)** — Auth0 CLI automation, environment configuration, secret management
-- **[Integration Guide](java-mvc-integration.md)** — Organizations, MCD, custom scopes, logout, error handling, advanced patterns
-- **[API Reference](java-mvc-api.md)** — Complete configuration options, builder methods, claims reference, testing checklist
 
 
 ## References
@@ -1060,8 +1053,6 @@ If your project uses `jakarta.servlet` (Jakarta EE 9+), this SDK is not compatib
 
 ## References
 
-- [API Reference](api.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -1299,8 +1290,6 @@ String redirectUrl = scheme + "://" + request.getServerName()
 
 ## References
 
-- [API Reference](api.md)
-- [Integration Guide](integration.md)
 - [Main Skill](../SKILL.md)
 
 ---

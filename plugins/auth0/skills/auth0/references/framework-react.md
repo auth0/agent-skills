@@ -29,7 +29,7 @@ npm install @auth0/auth0-react
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](react-setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see the Setup Guide section below for complete scripts.
 
 **For manual setup:**
 
@@ -108,13 +108,6 @@ npm start    # CRA
 ```
 
 
-## Detailed Documentation
-
-- **[Setup Guide](react-setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
-- **[Integration Guide](react-integration.md)** - Protected routes, API calls, error handling, advanced patterns
-- **[API Reference](react-api.md)** - Complete SDK API, configuration options, hooks reference, testing strategies
-
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -162,10 +155,10 @@ npm start    # CRA
 
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
-- Protected routes → [Integration Guide](react-integration.md#protected-routes)
-- API calls with tokens → [Integration Guide](react-integration.md#calling-apis)
-- Error handling → [Integration Guide](react-integration.md#error-handling)
-- MFA handling → [Integration Guide](react-integration.md#mfa-handling)
+- Protected routes → see the Protected Routes section below
+- API calls with tokens → see the Calling APIs section below
+- Error handling → see the Error Handling section below
+- MFA handling → see the MFA Handling section below
 
 
 ## References
@@ -1371,8 +1364,6 @@ logout({
 
 ## Next Steps
 
-- [API Reference](api.md) - Complete SDK documentation, configuration options, hooks reference
-- [Setup Guide](setup.md) - Detailed setup instructions and scripts
 - [Main Skill](../SKILL.md) - Return to main skill guide
 
 ---
@@ -1738,8 +1729,6 @@ auth0 login --force
 
 After setup is complete:
 1. Return to [main skill guide](../SKILL.md) for integration steps
-2. See [Integration Guide](integration.md) for advanced patterns
-3. Check [API Reference](api.md) for complete SDK documentation
 
 ---
 

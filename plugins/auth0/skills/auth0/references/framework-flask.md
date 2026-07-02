@@ -348,13 +348,6 @@ if user is None:
 - `AUTH0_REDIRECT_URI` — callback URL (e.g. `http://localhost:5000/callback`)
 
 
-## Detailed Documentation
-
-- **[Setup Guide](flask-setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
-- **[Integration Guide](flask-integration.md)** - Protected routes, calling APIs, session management, error handling
-- **[API Reference](flask-api.md)** - Complete ServerClient API, configuration options, store implementation, security
-
-
 ## References
 
 - [auth0-server-python on PyPI](https://pypi.org/project/auth0-server-python/)
@@ -683,8 +676,6 @@ Stateless cookie sessions are limited to ~4KB by browsers. The SDK encrypts toke
 
 ## Next Steps
 
-- [Integration Guide](integration.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -947,8 +938,6 @@ def unauthorized(error):
 
 ## Next Steps
 
-- [API Reference](api.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -1102,8 +1091,6 @@ In your Auth0 Application settings:
 
 ## Next Steps
 
-- [Integration Guide](integration.md)
-- [API Reference](api.md)
 - [Main Skill](../SKILL.md)
 
 ---

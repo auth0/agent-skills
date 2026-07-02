@@ -27,7 +27,7 @@ npm install @auth0/auth0-angular
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](angular-setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see the Setup Guide section below for complete scripts.
 
 **For manual setup:**
 
@@ -140,13 +140,6 @@ ng serve
 ```
 
 
-## Detailed Documentation
-
-- **[Setup Guide](angular-setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
-- **[Integration Guide](angular-integration.md)** - Protected routes with guards, HTTP interceptors, error handling
-- **[API Reference](angular-api.md)** - Complete SDK API, configuration options, services reference, testing strategies
-
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -155,7 +148,7 @@ ng serve
 | Not configuring AuthModule properly | Must call `AuthModule.forRoot()` in NgModule or `provideAuth0()` in standalone config |
 | Accessing auth before initialization | Use `isLoading$` observable to wait for SDK initialization |
 | Storing tokens manually | Never manually store tokens - SDK handles secure storage automatically |
-| No token sent to API | Use either `authHttpInterceptorFn` for automatic token attachment, or `getAccessTokenSilently()` for manual control — see [Integration Guide](angular-integration.md#calling-a-protected-api) |
+| No token sent to API | Use either `authHttpInterceptorFn` for automatic token attachment, or `getAccessTokenSilently()` for manual control — see the Calling a Protected API section below |
 | Route guard not protecting routes | Apply `AuthGuard` (or `authGuardFn`) to protected routes in routing config |
 
 
@@ -179,9 +172,9 @@ ng serve
 
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
-- Protected routes with guards → [Integration Guide](angular-integration.md#protected-routes)
-- Calling a protected API → [Integration Guide](angular-integration.md#calling-a-protected-api)
-- Error handling → [Integration Guide](angular-integration.md#error-handling)
+- Protected routes with guards → see the Protected Routes section below
+- Calling a protected API → see the Calling a Protected API section below
+- Error handling → see the Error Handling section below
 
 
 ## References
@@ -273,7 +266,7 @@ export class ProfileComponent {
 
 ### Call Protected API (Manual Token Approach)
 
-This example uses `getAccessTokenSilently()` to manually obtain and attach tokens. This is an alternative to using the built-in HTTP interceptor — see the [Integration Guide](integration.md#calling-a-protected-api) for both approaches.
+This example uses `getAccessTokenSilently()` to manually obtain and attach tokens. This is an alternative to using the built-in HTTP interceptor — see the Calling a Protected API section for both approaches.
 
 Create `src/app/api-test/api-test.component.ts`:
 
@@ -347,7 +340,7 @@ AuthModule.forRoot({
 
 ### Custom HTTP Interceptor for API Calls
 
-This shows how to build a custom interceptor from scratch. In most cases, you should use the SDK's built-in `authHttpInterceptorFn` instead — see the [Integration Guide](integration.md#calling-a-protected-api). A custom interceptor is only needed when you require logic beyond what `allowedList` provides.
+This shows how to build a custom interceptor from scratch. In most cases, you should use the SDK's built-in `authHttpInterceptorFn` instead — see the Calling a Protected API section. A custom interceptor is only needed when you require logic beyond what `allowedList` provides.
 
 Create `src/app/auth.interceptor.ts`:
 
@@ -791,8 +784,6 @@ describe('AppComponent', () => {
 
 ## Next Steps
 
-- [API Reference](api.md) - Complete SDK documentation
-- [Setup Guide](setup.md) - Installation and configuration
 - [Main Skill](../SKILL.md) - Quick start workflow
 
 ---
@@ -938,8 +929,6 @@ Or via [Auth0 Dashboard](https://manage.auth0.com):
 
 ## Next Steps
 
-- [Integration Guide](integration.md) - Implementation patterns
-- [API Reference](api.md) - Complete SDK documentation
 - [Main Skill](../SKILL.md) - Quick start guide
 
 ---

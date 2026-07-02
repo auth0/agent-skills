@@ -29,7 +29,7 @@ npm install express-openid-connect dotenv
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](express-setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see the Setup Guide section below for complete scripts.
 
 **For manual setup:**
 
@@ -121,13 +121,6 @@ node app.js
 Visit `http://localhost:3000` and test the login flow.
 
 
-## Detailed Documentation
-
-- **[Setup Guide](express-setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
-- **[Integration Guide](express-integration.md)** - Protected routes, sessions, API integration, error handling
-- **[API Reference](express-api.md)** - Complete middleware API, configuration options, request properties
-
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -170,7 +163,7 @@ Visit `http://localhost:3000` and test the login flow.
 - Protected routes → Use `requiresAuth()` middleware (see Step 4)
 - Check auth status → `req.oidc.isAuthenticated()`
 - Get user info → `req.oidc.user`
-- Call APIs → [Integration Guide](express-integration.md#calling-apis)
+- Call APIs → see the Calling APIs section below
 
 
 ## References
@@ -717,8 +710,6 @@ app.use((err, req, res, next) => {
 
 ## Next Steps
 
-- [API Reference](api.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -865,8 +856,6 @@ Dashboard: Create Regular Web Application, copy credentials
 
 ## Next Steps
 
-- [Integration Guide](integration.md)
-- [API Reference](api.md)
 - [Main Skill](../SKILL.md)
 
 ---

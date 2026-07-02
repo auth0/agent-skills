@@ -44,7 +44,7 @@ VERSION=$(npm view @auth0/auth0-spa-js version)
 
 ### 2. Configure Auth0
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](spa-js-setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see the Setup Guide section below for complete scripts.
 
 **For manual setup**, create `.env` (Vite):
 
@@ -134,12 +134,6 @@ const response = await fetch('https://your-api.example.com/data', {
 > - **Fix it manually** — show the remaining errors and let the user resolve them
 > - **Skip build verification** — proceed without a successful build
 
-## Detailed Documentation
-
-- [**Setup Guide**](spa-js-setup.md) — Automated setup scripts (Bash/PowerShell), Auth0 CLI commands, `.env` configuration, callback URL setup
-- [**Integration Patterns**](spa-js-integration.md) — Token management, calling APIs, refresh tokens, organizations, MFA, DPoP, error handling, advanced patterns
-- [**Testing & Reference**](spa-js-api.md) — Configuration options, claims reference, testing checklist, common issues, security considerations
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -182,12 +176,12 @@ const response = await fetch('https://your-api.example.com/data', {
 ### Common Use Cases
 
 - Login/Logout → See Step 4 above
-- Protecting content → [Integration Guide](spa-js-integration.md#protecting-content)
-- API calls with tokens → [Integration Guide](spa-js-integration.md#calling-protected-apis)
-- Refresh tokens → [Integration Guide](spa-js-integration.md#refresh-token-rotation)
-- Organizations → [Integration Guide](spa-js-integration.md#organizations)
-- MFA handling → [Integration Guide](spa-js-integration.md#mfa-handling)
-- Error handling → [Integration Guide](spa-js-integration.md#error-handling)
+- Protecting content → see the Protecting Content section below
+- API calls with tokens → see the Calling Protected APIs section below
+- Refresh tokens → see the Refresh Token Rotation section below
+- Organizations → see the Organizations section below
+- MFA handling → see the MFA Handling section below
+- Error handling → see the Error Handling section below
 
 ## References
 
@@ -1176,8 +1170,6 @@ auth0 login --force
 
 After setup is complete:
 1. Return to [main skill guide](../SKILL.md) for integration steps
-2. See [Integration Guide](integration.md) for advanced patterns
-3. Check [API Reference](api.md) for complete SDK documentation
 
 ---
 

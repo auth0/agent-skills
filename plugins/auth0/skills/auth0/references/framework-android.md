@@ -34,12 +34,12 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 2. **Configure Auth0**:
 
    > **Agent instruction:** Check whether the user prompt already includes both Auth0 **Client ID** and **Domain**.
-   > - If both are provided, proceed directly to **Manual Setup** in [**Setup Guide**](android-setup.md) using those values.
+   > - If both are provided, proceed directly to **Manual Setup** in the Setup Guide section below using those values.
    > - If either is missing, you MUST ask the user BEFORE writing any code or files:
    >   - Question: "How would you like to configure Auth0 for this project?"
    >   - Options: "Automatic setup (Recommended) — Auth0 CLI creates the app and writes credentials to strings.xml" / "Manual setup — I'll provide my Client ID and Domain"
    >
-   > Then follow [**Setup Guide**](android-setup.md) for the chosen path.
+   > Then follow the Setup Guide section below for the chosen path.
    > **Do NOT proceed to step 3 until Auth0 credentials are confirmed.**
 
 3. **Initialize**: Create an Auth0 account instance:
@@ -125,12 +125,6 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
    The callback URL must match your Auth0 application settings: `{SCHEME}://{YOUR_AUTH0_DOMAIN}/android/{YOUR_APP_PACKAGE_NAME}/callback`
 
-## Detailed Documentation
-
-- [**Setup Guide**](android-setup.md) — Install SDK, configure Auth0 application, set up callback URLs, Android App Links, custom schemes, ProGuard/R8
-- [**Integration Patterns**](android-integration.md) — Web Auth login/logout, credential storage, biometric authentication, database login, passwordless authentication, MFA handling, custom tabs, error handling
-- [**Testing & Reference**](android-api.md) — Testing checklist, common issues, security considerations, API reference
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -164,14 +158,14 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 ### Common Use Cases
 
-- [Log in with Web Auth](android-integration.md#web-auth-login)
-- [Log out](android-integration.md#web-auth-logout)
-- [Store credentials securely](android-integration.md#credential-storage)
-- [Require biometric authentication](android-integration.md#biometric-protected-credentials)
-- [Database login](android-integration.md#database-login)
-- [Passwordless authentication](android-integration.md#passwordless-authentication)
-- [Handle MFA](android-integration.md#mfa-handling)
-- [Call protected APIs](android-integration.md#calling-protected-apis)
+- Log in with Web Auth (see the Web Auth Login section below)
+- Log out (see the Web Auth Logout section below)
+- Store credentials securely (see the Credential Storage section below)
+- Require biometric authentication (see the Biometric-Protected Credentials section below)
+- Database login (see the Database Login section below)
+- Passwordless authentication (see the Passwordless Authentication section below)
+- Handle MFA (see the MFA Handling section below)
+- Call protected APIs (see the Calling Protected APIs section below)
 
 ## References
 

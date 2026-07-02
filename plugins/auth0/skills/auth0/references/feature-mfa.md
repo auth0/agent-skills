@@ -103,7 +103,7 @@ The general pattern for all frameworks:
 2. If not, request MFA via `acr_values` parameter
 3. Proceed with sensitive action once MFA is verified
 
-**For complete framework-specific examples, see [Examples Guide](mfa-examples.md):**
+**For complete framework-specific examples, see the sections below:**
 - React (basic and custom hook)
 - Next.js (App Router)
 - Vue.js
@@ -114,26 +114,26 @@ The general pattern for all frameworks:
 
 This skill is split into multiple files for better organization:
 
-### [Step-Up Examples](mfa-examples.md)
+### Step-Up Examples
 Complete code examples for all frameworks:
 - React (basic and custom hook patterns)
 - Next.js (App Router with API routes)
 - Vue.js (composition API)
 - Angular (services and components)
 
-### [Backend Validation](mfa-backend.md)
+### Backend Validation
 Learn how to validate MFA status on your backend:
 - Node.js / Express JWT validation
 - Python / Flask validation
 - Middleware examples
 
-### [Advanced Topics](mfa-advanced.md)
+### Advanced Topics
 Advanced MFA implementation patterns:
 - Adaptive MFA with Auth0 Actions
 - Conditional MFA based on risk signals
 - MFA Enrollment API
 
-### [Reference Guide](mfa-api.md)
+### Reference Guide
 Common patterns and troubleshooting:
 - Remember MFA for 30 days
 - MFA for high-value transactions

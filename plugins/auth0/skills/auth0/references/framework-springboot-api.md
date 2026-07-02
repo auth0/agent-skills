@@ -65,9 +65,9 @@ You need an **API** (not Application) in Auth0.
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](springboot-api-setup.md) for complete CLI scripts. The automated path writes `application.yml` for you — skip Step 3 below and proceed directly to Step 4.
+**If the user chose Automated**, follow the Setup Guide section below for complete CLI scripts. The automated path writes `application.yml` for you — skip Step 3 below and proceed directly to Step 4.
 
-**If the user chose Manual**, follow the [Setup Guide](springboot-api-setup.md) (Manual Setup section). Then continue with Step 3.
+**If the user chose Manual**, follow the Setup Guide section below (Manual Setup). Then continue with Step 3.
 
 Quick reference for manual API creation:
 
@@ -187,12 +187,12 @@ Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Tes
 
 ## Scope-Based Authorization
 
-See [Integration Guide](springboot-api-integration.md) for defining and enforcing scope-based access control via filter chain, `@PreAuthorize`, or programmatic checks.
+See the Integration Guide section below for defining and enforcing scope-based access control via filter chain, `@PreAuthorize`, or programmatic checks.
 
 
 ## DPoP Support
 
-Built-in proof-of-possession token binding per RFC 9449. See [Integration Guide](springboot-api-integration.md) for configuration modes (DISABLED, ALLOWED, REQUIRED).
+Built-in proof-of-possession token binding per RFC 9449. See the Integration Guide section below for configuration modes (DISABLED, ALLOWED, REQUIRED).
 
 
 ## Related Skills
@@ -218,16 +218,9 @@ Built-in proof-of-possession token binding per RFC 9449. See [Integration Guide]
 
 **Common Use Cases:**
 - Protect routes → `requestMatchers("/path").authenticated()` (see Step 4)
-- Scope enforcement → `hasAuthority("SCOPE_read:data")` or `@PreAuthorize` (see [Integration Guide](springboot-api-integration.md))
-- DPoP token binding → [Integration Guide](springboot-api-integration.md)
-- Complete API reference → [API Reference](springboot-api-api.md)
-
-
-## Detailed Documentation
-
-- **[Setup Guide](springboot-api-setup.md)** — Auth0 CLI automation, environment configuration, secret management
-- **[Integration Guide](springboot-api-integration.md)** — Scope policies, DPoP, controller patterns, error handling
-- **[API Reference](springboot-api-api.md)** — Complete configuration options, claims reference, testing checklist
+- Scope enforcement → `hasAuthority("SCOPE_read:data")` or `@PreAuthorize` (see the Integration Guide section below)
+- DPoP token binding → see the Integration Guide section below
+- Complete API reference → see the API Reference section below
 
 
 ## References
@@ -964,8 +957,6 @@ curl http://localhost:8080/api/protected \
 
 ## References
 
-- [API Reference](api.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -1195,8 +1186,6 @@ curl -X POST https://your-tenant.auth0.com/oauth/token \
 
 ## Next Steps
 
-- [Integration Guide](integration.md)
-- [API Reference](api.md)
 - [Main Skill](../SKILL.md)
 
 ---

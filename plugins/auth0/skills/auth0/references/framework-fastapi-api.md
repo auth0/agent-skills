@@ -44,9 +44,9 @@ You need an **API** (not Application) in Auth0.
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](fastapi-api-setup.md) for complete CLI scripts. The automated path writes `.env` for you — skip Step 3 below and proceed directly to Step 4.
+**If the user chose Automated**, follow the Setup Guide section below for complete CLI scripts. The automated path writes `.env` for you — skip Step 3 below and proceed directly to Step 4.
 
-**If the user chose Manual**, follow the [Setup Guide](fastapi-api-setup.md) (Manual Setup section) for full instructions. Then continue with Step 3 below.
+**If the user chose Manual**, follow the Setup Guide section below (Manual Setup) for full instructions. Then continue with Step 3 below.
 
 Quick reference for manual API creation:
 
@@ -191,7 +191,7 @@ Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Tes
 
 ## DPoP Support
 
-Built-in proof-of-possession token binding per RFC 9449. DPoP is enabled by default in mixed mode (accepts both Bearer and DPoP tokens). See [Integration Guide](fastapi-api-integration.md#dpop-support) for configuration.
+Built-in proof-of-possession token binding per RFC 9449. DPoP is enabled by default in mixed mode (accepts both Bearer and DPoP tokens). See the DPoP Support section below for configuration.
 
 
 ## Related Skills
@@ -233,16 +233,9 @@ claims["scope"]         # space-separated scopes
 **Common Use Cases:**
 - Protect routes → `Depends(auth0.require_auth())` (see Step 5)
 - Scope enforcement → `Depends(auth0.require_auth(scopes="..."))` (see Step 6)
-- DPoP token binding → [Integration Guide](fastapi-api-integration.md#dpop-support)
-- Reverse proxy setup → [Integration Guide](fastapi-api-integration.md#reverse-proxy-support)
-- Advanced configuration → [API Reference](fastapi-api-api.md)
-
-
-## Detailed Documentation
-
-- **[Setup Guide](fastapi-api-setup.md)** — Auth0 CLI setup, environment configuration, getting test tokens
-- **[Integration Guide](fastapi-api-integration.md)** — DPoP, scopes, error handling, reverse proxy, testing
-- **[API Reference](fastapi-api-api.md)** — Complete constructor options, method signatures, error codes
+- DPoP token binding → see the DPoP Support section below
+- Reverse proxy setup → see the Reverse Proxy Support section below
+- Advanced configuration → see the API Reference section below
 
 
 ## References
@@ -535,8 +528,6 @@ Requires `client_id` and `client_secret` to be set in the constructor.
 
 - [auth0-fastapi-api GitHub](https://github.com/auth0/auth0-fastapi-api)
 - [auth0-fastapi-api on PyPI](https://pypi.org/project/auth0-fastapi-api/)
-- [Integration Guide](integration.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -983,8 +974,6 @@ async def test_with_mocked_auth(mock_verify):
 
 ## References
 
-- [API Reference](api.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -1149,8 +1138,6 @@ curl -X POST https://your-tenant.us.auth0.com/oauth/token \
 
 ## Next Steps
 
-- [Integration Guide](integration.md)
-- [API Reference](api.md)
 - [Main Skill](../SKILL.md)
 
 ---

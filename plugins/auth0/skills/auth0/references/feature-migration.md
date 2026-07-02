@@ -53,11 +53,11 @@ Search for common auth-related patterns in the codebase:
 
 ### Step 1: Export Existing Users
 
-Export users from your current provider. See [User Import Guide](migration-user-import.md) for detailed instructions:
-- [Exporting from Firebase](migration-user-import.md#firebase)
-- [Exporting from AWS Cognito](migration-user-import.md#aws-cognito)
-- [Exporting from Supabase](migration-user-import.md#supabase)
-- [Exporting from Custom Database](migration-user-import.md#custom-database)
+Export users from your current provider. See the User Import section below for detailed instructions:
+- Exporting from Firebase
+- Exporting from AWS Cognito
+- Exporting from Supabase
+- Exporting from Custom Database
 
 **Required data per user:**
 - Email address
@@ -79,35 +79,35 @@ auth0 api post "jobs/users-imports" \
   --data "users=@users.json"
 ```
 
-**For detailed instructions:**
-- [User JSON Format](migration-user-import.md#auth0-user-import-format)
-- [Password Hash Algorithms](migration-user-import.md#password-hash-algorithms)
-- [Import Methods](migration-user-import.md#importing-to-auth0)
-- [Monitoring Import Progress](migration-user-import.md#monitoring-import-progress)
-- [Common Import Errors](migration-user-import.md#common-import-errors)
+**For detailed instructions, see the sections below:**
+- User JSON Format
+- Password Hash Algorithms
+- Import Methods
+- Monitoring Import Progress
+- Common Import Errors
 
 
 ### Step 3: Migrate Application Code
 
 Update your application code to use Auth0 SDKs.
 
-**See [Code Migration Patterns](migration-code-patterns.md) for detailed before/after examples:**
+**See the Code Migration Patterns section below for detailed before/after examples:**
 
 **Frontend:**
-- [React Migration](migration-code-patterns.md#react-migration)
-- [Next.js Migration](migration-code-patterns.md#nextjs-migration)
-- [Vue.js Migration](migration-code-patterns.md#vuejs-migration)
-- [Angular Migration](migration-code-patterns.md#angular-migration)
-- [React Native Migration](migration-code-patterns.md#react-native-migration)
+- React Migration
+- Next.js Migration
+- Vue.js Migration
+- Angular Migration
+- React Native Migration
 
 **Backend:**
-- [Express.js Migration](migration-code-patterns.md#expressjs-migration)
-- [API JWT Validation](migration-code-patterns.md#backend-api-jwt-validation)
+- Express.js Migration
+- API JWT Validation
 
 **Provider-Specific:**
-- [Firebase to Auth0](migration-code-patterns.md#firebase-to-auth0)
-- [Supabase to Auth0](migration-code-patterns.md#supabase-to-auth0)
-- [Clerk to Auth0](migration-code-patterns.md#clerk-to-auth0)
+- Firebase to Auth0
+- Supabase to Auth0
+- Clerk to Auth0
 
 **After migrating code, use framework-specific skills:**
 - `auth0-react` for React applications
@@ -127,7 +127,7 @@ If your API validates JWTs, update to validate Auth0 tokens.
 - **Issuer:** Custom → `https://YOUR_TENANT.auth0.com/`
 - **JWKS URL:** `https://YOUR_TENANT.auth0.com/.well-known/jwks.json`
 
-**See [JWT Validation Examples](migration-code-patterns.md#backend-api-jwt-validation) for:**
+**See the Backend API JWT Validation section below for:**
 - Node.js / Express implementation
 - Python / Flask implementation
 - Key differences and migration checklist
@@ -188,21 +188,21 @@ const getUser = async () => {
 
 ### User Import
 Complete guide to exporting and importing users:
-- [Exporting from Common Providers](migration-user-import.md#exporting-users-from-common-providers)
-- [User JSON Format](migration-user-import.md#auth0-user-import-format)
-- [Password Hash Algorithms](migration-user-import.md#password-hash-algorithms)
-- [Import Methods](migration-user-import.md#importing-to-auth0)
-- [Monitoring & Troubleshooting](migration-user-import.md#monitoring-import-progress)
+- Exporting from Common Providers
+- User JSON Format
+- Password Hash Algorithms
+- Import Methods
+- Monitoring & Troubleshooting
 
 ### Code Migration
 Before/after examples for all major frameworks:
-- [React Patterns](migration-code-patterns.md#react-migration)
-- [Next.js Patterns](migration-code-patterns.md#nextjs-migration)
-- [Express Patterns](migration-code-patterns.md#expressjs-migration)
-- [Vue.js Patterns](migration-code-patterns.md#vuejs-migration)
-- [Angular Patterns](migration-code-patterns.md#angular-migration)
-- [React Native Patterns](migration-code-patterns.md#react-native-migration)
-- [API JWT Validation](migration-code-patterns.md#backend-api-jwt-validation)
+- React Patterns
+- Next.js Patterns
+- Express Patterns
+- Vue.js Patterns
+- Angular Patterns
+- React Native Patterns
+- API JWT Validation
 
 
 ## Related Skills

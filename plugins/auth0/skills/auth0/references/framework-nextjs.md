@@ -28,7 +28,7 @@ npm install @auth0/nextjs-auth0
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](nextjs-setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see the Setup Guide section below for complete scripts.
 
 **For manual setup:**
 
@@ -204,13 +204,6 @@ npm run dev
 Visit `http://localhost:3000` and test the login flow.
 
 
-## Detailed Documentation
-
-- **[Setup Guide](nextjs-setup.md)** - Automated setup scripts, environment configuration, Auth0 CLI usage
-- **[Integration Guide](nextjs-integration.md)** - Server-side auth, protected routes, API routes, middleware
-- **[API Reference](nextjs-api.md)** - Complete SDK API, hooks, helpers, session management
-
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -256,10 +249,10 @@ Visit `http://localhost:3000` and test the login flow.
 
 **Common Use Cases:**
 - Login/Logout links → Use `/auth/login` and `/auth/logout` paths (see Step 5)
-- Protected pages (App Router) → [Integration Guide](nextjs-integration.md#protected-pages-app-router)
-- Protected pages (Pages Router) → [Integration Guide](nextjs-integration.md#protected-pages-pages-router)
-- API routes with auth → [Integration Guide](nextjs-integration.md#protected-api-routes)
-- Middleware protection → [Integration Guide](nextjs-integration.md#middleware)
+- Protected pages (App Router) → see the Protected Pages (App Router) section below
+- Protected pages (Pages Router) → see the Protected Pages (Pages Router) section below
+- API routes with auth → see the Protected API Routes section below
+- Middleware protection → see the Middleware section below
 
 
 ## References
@@ -678,8 +671,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 ## Next Steps
 
-- [API Reference](api.md) - Complete SDK documentation
-- [Setup Guide](setup.md) - Installation guide
 - [Main Skill](../SKILL.md) - Quick start
 
 ---
@@ -853,8 +844,6 @@ Via Dashboard:
 
 ## Next Steps
 
-- [Integration Guide](integration.md) - Implementation patterns
-- [API Reference](api.md) - Complete SDK documentation
 - [Main Skill](../SKILL.md) - Quick start
 
 ---

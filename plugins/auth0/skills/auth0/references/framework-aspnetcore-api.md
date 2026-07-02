@@ -42,9 +42,9 @@ You need an **API** (not Application) in Auth0.
 >
 > Do NOT proceed to any setup steps until the user has answered. Do NOT default to manual.
 
-**If the user chose Automated**, follow the [Setup Guide](aspnetcore-api-setup.md) for complete CLI scripts. The automated path writes `appsettings.json` for you — skip Step 3 below and proceed directly to Step 4.
+**If the user chose Automated**, follow the Setup Guide section below for complete CLI scripts. The automated path writes `appsettings.json` for you — skip Step 3 below and proceed directly to Step 4.
 
-**If the user chose Manual**, follow the [Setup Guide](aspnetcore-api-setup.md) (Manual Setup section) for full instructions including User Secrets and environment variable options. Then continue with Step 3 below.
+**If the user chose Manual**, follow the Setup Guide section below (Manual Setup) for full instructions including User Secrets and environment variable options. Then continue with Step 3 below.
 
 Quick reference for manual API creation:
 
@@ -165,12 +165,12 @@ Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Tes
 
 ## Scope-Based Authorization
 
-See [Integration Guide](aspnetcore-api-integration.md#scope-based-authorization) for defining and enforcing scope policies.
+See the Scope-Based Authorization section below for defining and enforcing scope policies.
 
 
 ## DPoP Support
 
-Built-in proof-of-possession token binding per RFC 9449. See [Integration Guide](aspnetcore-api-integration.md#dpop-support) for configuration.
+Built-in proof-of-possession token binding per RFC 9449. See the DPoP Support section below for configuration.
 
 
 ## Related Skills
@@ -195,16 +195,9 @@ Built-in proof-of-possession token binding per RFC 9449. See [Integration Guide]
 **Common Use Cases:**
 - Protect Minimal API routes → `.RequireAuthorization()` (see Step 5)
 - Protect controller actions → `[Authorize]` attribute (see Step 5)
-- Scope enforcement → [Integration Guide](aspnetcore-api-integration.md#scope-based-authorization)
-- DPoP token binding → [Integration Guide](aspnetcore-api-integration.md#dpop-support)
-- Advanced JWT Bearer config → [API Reference](aspnetcore-api-api.md)
-
-
-## Detailed Documentation
-
-- **[Setup Guide](aspnetcore-api-setup.md)** - Auth0 CLI setup, environment configuration
-- **[Integration Guide](aspnetcore-api-integration.md)** - Scope policies, DPoP, controller patterns, error handling
-- **[API Reference](aspnetcore-api-api.md)** - Complete configuration options and extension methods
+- Scope enforcement → see the Scope-Based Authorization section below
+- DPoP token binding → see the DPoP Support section below
+- Advanced JWT Bearer config → see the API Reference section below
 
 
 ## References
@@ -763,8 +756,6 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
 
 ## References
 
-- [API Reference](api.md)
-- [Setup Guide](setup.md)
 - [Main Skill](../SKILL.md)
 
 ---
@@ -906,8 +897,6 @@ curl -X POST https://your-tenant.auth0.com/oauth/token \
 
 ## Next Steps
 
-- [Integration Guide](integration.md)
-- [API Reference](api.md)
 - [Main Skill](../SKILL.md)
 
 ---

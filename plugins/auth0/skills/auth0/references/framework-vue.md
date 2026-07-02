@@ -28,7 +28,7 @@ npm install @auth0/auth0-vue
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see [Setup Guide](vue-setup.md) for complete scripts.
+**For automated setup with Auth0 CLI**, see the Setup Guide section below for complete scripts.
 
 **For manual setup:**
 
@@ -102,13 +102,6 @@ npm run dev
 ```
 
 
-## Detailed Documentation
-
-- **[Setup Guide](vue-setup.md)** - Automated setup scripts (Bash/PowerShell), CLI commands, manual configuration
-- **[Integration Guide](vue-integration.md)** - Protected routes, API calls, error handling, composables
-- **[API Reference](vue-api.md)** - Complete SDK API, configuration options, composables reference, testing strategies
-
-
 ## Common Mistakes
 
 | Mistake | Fix |
@@ -147,9 +140,9 @@ For full DPoP setup, ask for DPoP token binding (feature:dpop).
 
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
-- Protected routes with navigation guards → [Integration Guide](vue-integration.md#protected-routes)
-- API calls with tokens → [Integration Guide](vue-integration.md#calling-apis)
-- Error handling → [Integration Guide](vue-integration.md#error-handling)
+- Protected routes with navigation guards → see the Protected Routes section below
+- API calls with tokens → see the Calling APIs section below
+- Error handling → see the Error Handling section below
 
 
 ## References
@@ -800,8 +793,6 @@ onMounted(async () => {
 
 ## Next Steps
 
-- [API Reference](api.md) - Complete SDK documentation
-- [Setup Guide](setup.md) - Detailed setup instructions
 - [Main Skill](../SKILL.md) - Return to main skill guide
 
 ---
@@ -1090,8 +1081,6 @@ auth0 login --force
 
 After setup is complete:
 1. Return to [main skill guide](../SKILL.md) for integration steps
-2. See [Integration Guide](integration.md) for advanced patterns
-3. Check [API Reference](api.md) for complete SDK documentation
 
 ---
 
