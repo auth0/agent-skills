@@ -101,6 +101,13 @@ jobs:
         uv run --with pytest python -m pytest scripts/test_check_router_reachability.py -q
         uv run python scripts/check_router_reachability.py plugins/auth0/skills/auth0
 
+    - name: Router routing evals
+      run: |
+        # Assert curated developer requests (features + SDK+feature combos)
+        # resolve to an existing Step 4 section and reference files.
+        uv run --with pytest python -m pytest scripts/test_check_routing_evals.py -q
+        uv run python scripts/check_routing_evals.py plugins/auth0/skills/auth0
+
     - name: Upload linter output
       if: always()
       uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.4.0

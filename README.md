@@ -76,6 +76,36 @@ When you ask your AI assistant something like "add Auth0 login to my app," the a
 
 You don't pick anything manually — framework detection handles it.
 
+### Forcing the skill with `/auth0`
+
+Auto-detection is reliable on capable models. If you're on a smaller/faster
+model in a session with **many** other skills installed, the assistant can
+occasionally miss the trigger — most often on open-ended *questions* ("how do
+I…?") rather than direct instructions. When that happens, invoke the skill
+explicitly:
+
+```
+/auth0 how do I configure brand colors in Auth0?
+```
+
+Naming the skill removes the selection step entirely, so it always activates.
+
+## Migrating from the individual skills
+
+Earlier versions shipped one skill per SDK/framework (`auth0-react`,
+`auth0-nextjs`, `express-oauth2-jwt-bearer`, …). These are now **consolidated
+into the single `auth0` skill** above, which routes to the same guidance by
+detecting your framework.
+
+- **Plugin / marketplace installs (Claude Code, Cursor):** nothing to do — your
+  next update swaps in the consolidated skill automatically.
+- **ClawHub installs:** existing installs keep working; `npx clawhub install
+  auth0` gets you the consolidated skill.
+- **If you referenced an old skill by name** — in your `CLAUDE.md`, another
+  skill's `requires.skills`, or any instruction file — those names
+  (`auth0-react`, etc.) no longer exist and the reference will dangle. Replace
+  them with `auth0`.
+
 ## Coverage
 
 A single `auth0` skill covers web, mobile, desktop, and API authentication

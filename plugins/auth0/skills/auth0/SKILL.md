@@ -75,8 +75,9 @@ Read the project files. **Stop at the first match.**
 
 | Package | Framework |
 |---|---|
+| `auth0-server-python` + `flask` | `flask` |
 | `authlib` or `python-jose` + `flask` | `flask` |
-| `fastapi` + (`python-jose` or `authlib`) | `fastapi-api` |
+| `auth0-fastapi-api` or `fastapi` + (`python-jose` or `authlib`) | `fastapi-api` |
 
 ### Java / Kotlin — check `build.gradle` or `pom.xml`
 
