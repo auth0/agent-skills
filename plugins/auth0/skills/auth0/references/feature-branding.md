@@ -167,7 +167,7 @@ Related skills:
 - **auth0-custom-domains**: Configure custom domains (required for page templates)
 - **auth0-organizations**: Organization-specific branding for B2B multi-tenancy
 - **auth0-actions**: Custom logic in login flows via Auth0 Actions
-- **acul-screen-generator**: Advanced Customizations for Universal Login (ACUL) — build fully custom screens beyond what theme + template can do
+- **feature:acul**: Advanced Customizations for Universal Login (ACUL) — build fully custom screens beyond what theme + template can do
 
 External:
 

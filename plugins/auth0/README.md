@@ -28,5 +28,4 @@ npx skills add auth0/agent-skills/plugins/auth0
 
 | Skill | Description | Documentation |
 |-------|-------------|---------------|
-| [auth0](skills/auth0) | Adds Auth0 authentication to any app. Covers 35+ frameworks (React, Next.js, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Flutter, Laravel, Go, PHP, .NET MAUI, ASP.NET Core, React Native, Expo, Ionic, and more), MFA, Organizations, custom domains, ACUL, branding, debugging auth errors, security best practices, and migration from other providers. | [SKILL.md](skills/auth0/SKILL.md) |
-| [acul-screen-generator](skills/acul-screen-generator) | Generates complete, branded ACUL screen implementations using the React or Vanilla JS SDK. Handles project setup, screen generation, theming, and dev mode wiring. | [SKILL.md](skills/acul-screen-generator/SKILL.md) |
+| [auth0](skills/auth0) | Adds Auth0 authentication to any app. Covers 35+ frameworks (React, Next.js, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Flutter, Laravel, Go, PHP, .NET MAUI, ASP.NET Core, React Native, Expo, Ionic, and more), MFA, Organizations, custom domains, ACUL screen generation, branding, debugging auth errors, security best practices, and migration from other providers. | [SKILL.md](skills/auth0/SKILL.md) |
