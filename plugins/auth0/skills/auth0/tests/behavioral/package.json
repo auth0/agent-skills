@@ -1,0 +1,14 @@
+{
+  "name": "auth0-behavioral-evals",
+  "version": "1.0.0",
+  "description": "Consolidated behavioral eval runner for the unified auth0 skill",
+  "type": "module",
+  "scripts": {
+    "eval": "node run-evals.mjs",
+    "eval:list": "node run-evals.mjs --list",
+    "eval:dry-run": "node run-evals.mjs --dry-run"
+  },
+  "dependencies": {
+    "execa": "^9.0.0"
+  }
+}

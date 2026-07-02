@@ -1,0 +1,244 @@
+// Shared grader engine for the consolidated Auth0 behavioral evals.
+//
+// Extracted verbatim (semantics-preserving) from the per-skill run-evals.mjs
+// harnesses that used to live under each individual skill's tests/ folder.
+// Those 5 runners were near-identical copies; this is the single de-duplicated
+// home for the grading logic. Case files under cases/ supply the graders; the
+// runner (run-evals.mjs) drives the agent and calls runGraders() here.
+//
+// Grader types (from the original graders.json schema):
+//   contains / contains_any        — substring present (case-insensitive)
+//   not_contains / not_contains_any — substring absent (hallucination guard)
+//   matches                         — regex present in any source file
+//   file_contains                   — value present in a glob-matched file
+//   all                             — composite; all sub-graders must pass
+//   judge                           — LLM YES/NO verdict via `claude -p`
+import fs from "node:fs"
+import path from "node:path"
+import { $ } from "execa"
+
+const SOURCE_EXTENSIONS = new Set([
+  ".js", ".ts", ".jsx", ".tsx", ".mjs", ".cjs",
+  ".swift", ".kt", ".java", ".cs", ".go", ".py", ".rb", ".php", ".dart",
+  ".vue", ".svelte", ".astro",
+  ".gradle", ".kts",
+  ".xml", ".plist", ".json", ".env", ".yaml", ".yml", ".toml", ".properties",
+  ".html", ".css", ".scss",
+  ".csproj", ".sln",
+  ".lock",
+  ".pbxproj", ".resolved", ".podspec",
+])
+
+function collectSourceFiles(dir, files = []) {
+  if (!fs.existsSync(dir)) return files
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory()) {
+      if (["node_modules", ".git", "build", "dist", ".gradle"].includes(entry.name)) continue
+      collectSourceFiles(full, files)
+    } else if (SOURCE_EXTENSIONS.has(path.extname(entry.name))) {
+      files.push(full)
+    }
+  }
+  return files
+}
+
+export function readAllSources(dir) {
+  const files = collectSourceFiles(dir)
+  const contents = []
+  for (const f of files) {
+    try {
+      contents.push({ path: f, content: fs.readFileSync(f, "utf-8") })
+    } catch {
+      // skip unreadable files
+    }
+  }
+  return contents
+}
+
+function gradeFileContains(grader, workspaceDir) {
+  const pattern = grader.file_pattern
+  const matchingFiles = []
+
+  function walkAndMatch(dir, globPattern) {
+    const filename = globPattern.replace(/^\*\*\//, "")
+    const isWildcard = filename.includes("*")
+
+    function matchesPattern(name) {
+      if (!isWildcard) return name === filename
+      const escaped = filename.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^/]*")
+      return new RegExp("^" + escaped + "$").test(name)
+    }
+
+    if (!fs.existsSync(dir)) return
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name)
+      if (entry.isDirectory()) {
+        if (["node_modules", ".git", "build", "dist", ".gradle"].includes(entry.name)) continue
+        walkAndMatch(full, globPattern)
+      } else if (matchesPattern(entry.name)) {
+        try {
+          matchingFiles.push({ path: full, content: fs.readFileSync(full, "utf-8") })
+        } catch { /* skip unreadable */ }
+      }
+    }
+  }
+
+  walkAndMatch(workspaceDir, pattern)
+
+  if (matchingFiles.length === 0) {
+    return { pass: false, detail: `No files matching "${pattern}" found in workspace` }
+  }
+  for (const f of matchingFiles) {
+    if (f.content.includes(grader.value)) {
+      return { pass: true, detail: `Found "${grader.value}" in ${path.relative(workspaceDir, f.path)}` }
+    }
+  }
+  const fileNames = matchingFiles.map((f) => path.relative(workspaceDir, f.path)).join(", ")
+  return { pass: false, detail: `"${grader.value}" not found in matching files: ${fileNames}` }
+}
+
+function gradeContains(grader, sources) {
+  for (const src of sources) {
+    if (src.content.toLowerCase().includes(grader.value.toLowerCase())) {
+      return { pass: true, detail: `Found "${grader.value}" in ${path.basename(src.path)}` }
+    }
+  }
+  return { pass: false, detail: `"${grader.value}" not found in any source file` }
+}
+
+function gradeContainsAny(grader, sources) {
+  const allContent = sources.map((s) => s.content.toLowerCase()).join("\n")
+  for (const value of grader.values) {
+    if (allContent.includes(value.toLowerCase())) {
+      return { pass: true, detail: `Found "${value}" in workspace` }
+    }
+  }
+  return { pass: false, detail: `None of [${grader.values.join(", ")}] found in any source file` }
+}
+
+function gradeNotContains(grader, sources) {
+  for (const src of sources) {
+    if (src.content.toLowerCase().includes(grader.value.toLowerCase())) {
+      return { pass: false, detail: `Found "${grader.value}" in ${path.basename(src.path)} (should not be present)` }
+    }
+  }
+  return { pass: true, detail: `"${grader.value}" correctly absent` }
+}
+
+function gradeNotContainsAny(grader, sources) {
+  for (const src of sources) {
+    const lower = src.content.toLowerCase()
+    for (const value of grader.values) {
+      if (lower.includes(value.toLowerCase())) {
+        return { pass: false, detail: `Found "${value}" in ${path.basename(src.path)} (should not be present)` }
+      }
+    }
+  }
+  return { pass: true, detail: `None of [${grader.values.join(", ")}] found (correct)` }
+}
+
+function gradeMatches(grader, sources) {
+  let regex
+  try {
+    regex = new RegExp(grader.pattern)
+  } catch {
+    return { pass: false, detail: `Invalid regex pattern: ${grader.pattern}` }
+  }
+  for (const src of sources) {
+    if (regex.test(src.content)) {
+      return { pass: true, detail: `Pattern matched in ${path.basename(src.path)}` }
+    }
+  }
+  return { pass: false, detail: `Pattern /${grader.pattern}/ not matched in any source file` }
+}
+
+function gradeSync(grader, sources, workspaceDir) {
+  switch (grader.type) {
+    case "contains": return gradeContains(grader, sources)
+    case "contains_any": return gradeContainsAny(grader, sources)
+    case "file_contains": return gradeFileContains(grader, workspaceDir)
+    case "not_contains": return gradeNotContains(grader, sources)
+    case "not_contains_any": return gradeNotContainsAny(grader, sources)
+    case "matches": return gradeMatches(grader, sources)
+    default: return { pass: false, detail: `Unsupported sub-grader type: ${grader.type}` }
+  }
+}
+
+function gradeAll(grader, sources, workspaceDir) {
+  for (const sub of grader.graders) {
+    const result = gradeSync(sub, sources, workspaceDir)
+    if (!result.pass) {
+      return { pass: false, detail: `Sub-grader failed: ${sub.description || sub.type} — ${result.detail}` }
+    }
+  }
+  return { pass: true, detail: `All ${grader.graders.length} sub-graders passed` }
+}
+
+async function gradeJudge(grader, sources, workspaceDir, model) {
+  const fileSummary = sources
+    .slice(0, 20)
+    .map((s) => `--- ${path.relative(workspaceDir, s.path)} ---\n${s.content.slice(0, 3000)}`)
+    .join("\n\n")
+
+  let questionBlock = grader.question
+  if (grader.examples) questionBlock += `\n\n## Examples\n${grader.examples}`
+
+  const judgePrompt = `You are evaluating code quality. Review the following source files and answer this question:
+
+${questionBlock}
+
+Answer with exactly "YES" or "NO" on the first line, followed by a brief explanation.
+
+${fileSummary}`
+
+  const judgeArgs = ["-p", judgePrompt, "--permission-mode", "dontAsk", "--no-session-persistence"]
+  if (model) judgeArgs.push("--model", model)
+
+  try {
+    const { stdout } = await $({ timeout: 60000 })`claude ${judgeArgs}`
+    const firstLine = stdout.trim().split("\n")[0].toUpperCase()
+    return { pass: firstLine.startsWith("YES"), detail: stdout.trim().slice(0, 300) }
+  } catch (e) {
+    return { pass: false, detail: `Judge failed: ${e.message}` }
+  }
+}
+
+// Run every grader against the workspace. `model` (optional) is forwarded to
+// judge graders as the --model flag for `claude -p`.
+export async function runGraders(graders, workspaceDir, model = null) {
+  const sources = readAllSources(workspaceDir)
+  const results = []
+
+  for (const grader of graders) {
+    let result
+    switch (grader.type) {
+      case "contains": result = gradeContains(grader, sources); break
+      case "contains_any": result = gradeContainsAny(grader, sources); break
+      case "file_contains": result = gradeFileContains(grader, workspaceDir); break
+      case "not_contains": result = gradeNotContains(grader, sources); break
+      case "not_contains_any": result = gradeNotContainsAny(grader, sources); break
+      case "matches": result = gradeMatches(grader, sources); break
+      case "all": result = gradeAll(grader, sources, workspaceDir); break
+      case "judge": result = await gradeJudge(grader, sources, workspaceDir, model); break
+      default: result = { pass: false, detail: `Unknown grader type: ${grader.type}` }
+    }
+    results.push({ type: grader.type, description: grader.description, ...result })
+  }
+
+  // Empty-workspace guard: not_contains graders trivially pass when the agent
+  // wrote no code (nothing bad can be present in nothing). Demote them to FAIL
+  // unless at least one positive grader passed. Preserved from the original.
+  const positiveTypes = new Set(["contains", "contains_any", "file_contains", "matches"])
+  const anyPositivePassed = results.some((r) => positiveTypes.has(r.type) && r.pass)
+  if (!anyPositivePassed) {
+    for (const r of results) {
+      if ((r.type === "not_contains" || r.type === "not_contains_any") && r.pass) {
+        r.pass = false
+        r.detail = `Invalidated: no positive graders passed (agent likely wrote no integration code). Original: ${r.detail}`
+      }
+    }
+  }
+
+  return results
+}
