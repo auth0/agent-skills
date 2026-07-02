@@ -11,6 +11,7 @@ from pathlib import Path
 # hardcoded mirror list (which could mask an orphaned file, e.g. php-api).
 SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
 READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
+BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
 LINK_RE = re.compile(r"\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)")
 
 
@@ -39,6 +40,8 @@ def check_router(skill_dir: Path):
     for m in READ_RE.finditer(skill_md):
         for name in _expand(m.group(1), slugs):
             routed.add(name)
+    for name in BACKTICK_MD_RE.findall(skill_md):
+        routed.add(name)
 
     present = {p.name for p in refs_dir.glob("*.md")}
     unreachable = sorted(present - routed)

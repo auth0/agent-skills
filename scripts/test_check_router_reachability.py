@@ -89,5 +89,17 @@ class ReachabilityTest(unittest.TestCase):
             self.assertIn("framework-php-api.md", unreachable)
             self.assertNotIn("framework-react.md", unreachable)
 
+    def test_backticked_bare_md_target_is_reachable(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "| `terraform/` dir | `tooling-terraform.md` |\n",
+                {"tooling-terraform.md": "ok", "tooling-orphan.md": "orphan"},
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertNotIn("tooling-terraform.md", unreachable)
+            self.assertIn("tooling-orphan.md", unreachable)
+
 if __name__ == "__main__":
     unittest.main()
