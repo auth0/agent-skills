@@ -100,11 +100,6 @@
     },
     {
       "type": "matches",
-      "pattern": "2\\.18|~> 2\\.18|~> 2\\.[0-9]+|from: \"2\\.[0-9]+|upToNextMajor.*2\\.",
-      "description": "Uses current SDK version (2.18.0) in dependency declaration"
-    },
-    {
-      "type": "matches",
       "pattern": "offline_access",
       "description": "Requests offline_access scope to enable refresh token issuance and silent token renewal"
     },
@@ -121,7 +116,7 @@
     {
       "type": "judge",
       "description": "Contains skill-specific advanced patterns beyond basic SDK usage (offline_access, error types, biometrics, version)",
-      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like webAuth, clearSession, CredentialsManager, start, credentials, import Auth0). Look for at least 2 of: (1) SDK version 2.18.0 in a dependency declaration, (2) offline_access scope in a login call, (3) Auth0-specific error types (WebAuthError, CredentialsManagerError, AuthenticationError — not just generic catch), (4) biometric protection setup (enableBiometrics, LAPolicy). These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
+      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like webAuth, clearSession, CredentialsManager, start, credentials, import Auth0). Look for at least 2 of: (1) SDK version 2.18.0 in a dependency declaration, (2) offline_access scope in a login call, (3) Auth0-specific error types (WebAuthError, CredentialsManagerError, AuthenticationError \u2014 not just generic catch), (4) biometric protection setup (enableBiometrics, LAPolicy). These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
       "examples": "PASS: Login call includes offline_access scope AND code catches WebAuthError.userCancelled specifically.\nPASS: Package declares version 2.18.0 AND credentialsManager.enableBiometrics(withTitle:) is called.\nFAIL: Code only uses basic webAuth().start() with no offline_access, no SDK-specific error types, no biometrics.\nFAIL: Code has correct basic structure but only catches generic Error, never the SDK-specific WebAuthError or CredentialsManagerError.",
       "framework": "swift"
     }

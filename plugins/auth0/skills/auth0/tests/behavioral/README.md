@@ -75,7 +75,26 @@ Edit the JSON under `cases/`. Shape:
 ```
 
 Grader types: `contains`, `contains_any`, `not_contains`, `not_contains_any`,
-`matches` (regex), `file_contains` (`file_pattern` glob + `value`), `all`
-(composite), `judge` (LLM YES/NO). `not_contains*` graders are auto-invalidated
-if no positive grader passed, so an empty workspace can't score by writing
-nothing.
+`matches` (regex), `not_matches` (regex must be absent), `file_contains`
+(`file_pattern` glob + `value`), `all` (composite), `judge` (LLM YES/NO).
+
+Notes on the negative graders:
+
+- Prefer **`not_matches`** over `not_contains` when a bare substring would
+  false-positive. E.g. asserting the deprecated `express-jwt` package is absent:
+  a plain `not_contains` for `"express-jwt"` also fires on the *correct* package
+  `express-oauth2-jwt-bearer` (via its dep graph) and on natural project names
+  like `express-jwt-api`. A regex like `["']express-jwt["']` (dep key / import
+  target only) avoids that.
+- **Generated lockfiles** (`package-lock.json`, `Podfile.lock`, `*.lock`, …) are
+  excluded from the source scan entirely — they pin the full transitive graph,
+  so substrings there don't reflect the authored code.
+- `not_contains*` / `not_matches` graders are auto-invalidated if no positive
+  grader passed, so an empty workspace can't score by writing nothing.
+
+The `judge` grader asks a live model for a `VERDICT: YES/NO` (parsed from the
+end of the reply, so a judge that reasons before concluding is read correctly).
+
+Don't hardcode a specific SDK version in a grader — the references deliberately
+teach "use the current version," so a `"^1.7.4"`-style pin tests removed advice
+and rots on every release. Match "a version is present" only if you must.

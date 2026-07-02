@@ -156,7 +156,9 @@ async function main() {
     for (const c of cases) {
       if (!c.evals?.length) { console.log(`  BAD  ${c.slug}: no evals`); bad++; continue }
       if (c.graders) for (const g of c.graders) {
-        if (g.type === "matches") { try { new RegExp(g.pattern) } catch { console.log(`  BAD  ${c.slug}: invalid regex ${g.pattern}`); bad++ } }
+        if (g.type === "matches" || g.type === "not_matches") {
+          try { new RegExp(g.pattern) } catch { console.log(`  BAD  ${c.slug}: invalid regex ${g.pattern}`); bad++ }
+        }
       }
       console.log(`  OK   ${c.slug}: ${c.evals.length} eval(s), ${c.graders ? c.graders.length + " graders" : "expectations-only"}`)
       ok++

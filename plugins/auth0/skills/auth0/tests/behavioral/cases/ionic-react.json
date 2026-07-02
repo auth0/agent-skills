@@ -107,11 +107,6 @@
     },
     {
       "type": "matches",
-      "pattern": "2\\.1[6-9]\\.|2\\.[2-9]\\d\\.|[3-9]\\.\\d",
-      "description": "Uses current SDK version (2.16.2 or newer) in dependency declaration"
-    },
-    {
-      "type": "matches",
       "pattern": "useRefreshTokens\\s*=\\s*\\{?\\s*true|useRefreshTokens:\\s*true",
       "description": "Enables refresh tokens (required for Capacitor - no iframe available)"
     },

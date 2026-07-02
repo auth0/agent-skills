@@ -114,11 +114,6 @@
     },
     {
       "type": "matches",
-      "pattern": "2\\.1|\\^2\\.1|\\^2\\.[0-9]+",
-      "description": "Uses current SDK version (2.1.0) in pubspec.yaml dependency"
-    },
-    {
-      "type": "matches",
       "pattern": "offline_access",
       "description": "Requests offline_access scope to enable refresh token renewal"
     },
@@ -130,7 +125,7 @@
     {
       "type": "judge",
       "description": "Contains skill-specific advanced patterns beyond basic SDK usage (offline_access, error types, session restore, manifestPlaceholders, version)",
-      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like Auth0, webAuthentication, login, logout, credentials). Look for at least 2 of: (1) SDK version 2.1.0 in pubspec.yaml, (2) offline_access scope in the login call, (3) Auth0-specific mobile error handling (WebAuthenticationException or CredentialsManagerException with flags like isUserCancelledException / isNoCredentialsFound / isTokenRenewFailed — not just generic catch), (4) Android manifestPlaceholders (auth0Domain + auth0Scheme) in build.gradle, (5) session restoration on startup via hasValidCredentials() + credentials() with branching logic. These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
+      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like Auth0, webAuthentication, login, logout, credentials). Look for at least 2 of: (1) SDK version 2.1.0 in pubspec.yaml, (2) offline_access scope in the login call, (3) Auth0-specific mobile error handling (WebAuthenticationException or CredentialsManagerException with flags like isUserCancelledException / isNoCredentialsFound / isTokenRenewFailed \u2014 not just generic catch), (4) Android manifestPlaceholders (auth0Domain + auth0Scheme) in build.gradle, (5) session restoration on startup via hasValidCredentials() + credentials() with branching logic. These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
       "examples": "PASS: Login call includes offline_access scope AND build.gradle declares manifestPlaceholders with auth0Domain/auth0Scheme.\nPASS: pubspec.yaml declares ^2.1.0 AND code catches CredentialsManagerException checking isNoCredentialsFound.\nFAIL: Code only uses basic Auth0().webAuthentication().login() with no offline_access, no error handling, no manifestPlaceholders.\nFAIL: Correct basic structure but only catches generic Exception, never the Auth0 exception types.",
       "framework": "dart"
     }

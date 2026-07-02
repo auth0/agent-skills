@@ -25,9 +25,23 @@ const SOURCE_EXTENSIONS = new Set([
   ".xml", ".plist", ".json", ".env", ".yaml", ".yml", ".toml", ".properties",
   ".html", ".css", ".scss",
   ".csproj", ".sln",
-  ".lock",
   ".pbxproj", ".resolved", ".podspec",
 ])
+
+// Generated lock/manifest files. They pin the full transitive dependency graph,
+// so a substring like "express-jwt" appears in them as part of an unrelated
+// package name — which makes not_contains* graders false-positive even when the
+// hand-written source is correct. Grade against authored source, not lockfiles.
+// (Removed ".lock" from SOURCE_EXTENSIONS above for the same reason.)
+const LOCKFILES = new Set([
+  "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "npm-shrinkwrap.json",
+  "Podfile.lock", "Package.resolved", "Gemfile.lock", "composer.lock",
+  "poetry.lock", "pubspec.lock", "Cargo.lock", "gradle.lockfile",
+])
+
+function isLockfile(name) {
+  return LOCKFILES.has(name) || name.endsWith(".lock")
+}
 
 function collectSourceFiles(dir, files = []) {
   if (!fs.existsSync(dir)) return files
@@ -36,7 +50,7 @@ function collectSourceFiles(dir, files = []) {
     if (entry.isDirectory()) {
       if (["node_modules", ".git", "build", "dist", ".gradle"].includes(entry.name)) continue
       collectSourceFiles(full, files)
-    } else if (SOURCE_EXTENSIONS.has(path.extname(entry.name))) {
+    } else if (SOURCE_EXTENSIONS.has(path.extname(entry.name)) && !isLockfile(entry.name)) {
       files.push(full)
     }
   }
@@ -153,6 +167,27 @@ function gradeMatches(grader, sources) {
   return { pass: false, detail: `Pattern /${grader.pattern}/ not matched in any source file` }
 }
 
+// Negative regex: pass only if the pattern matches NO source file. Use this
+// instead of not_contains when a bare substring would false-positive — e.g.
+// "express-jwt" is a substring of both the correct package
+// "express-oauth2-jwt-bearer" (via lockfiles) and natural project names like
+// "express-jwt-api", so a regex like `express-jwt['"]` (dep key / import only)
+// is required to test "the deprecated express-jwt package is absent".
+function gradeNotMatches(grader, sources) {
+  let regex
+  try {
+    regex = new RegExp(grader.pattern)
+  } catch {
+    return { pass: false, detail: `Invalid regex pattern: ${grader.pattern}` }
+  }
+  for (const src of sources) {
+    if (regex.test(src.content)) {
+      return { pass: false, detail: `Pattern /${grader.pattern}/ matched in ${path.basename(src.path)} (should be absent)` }
+    }
+  }
+  return { pass: true, detail: `Pattern /${grader.pattern}/ correctly absent` }
+}
+
 function gradeSync(grader, sources, workspaceDir) {
   switch (grader.type) {
     case "contains": return gradeContains(grader, sources)
@@ -161,6 +196,7 @@ function gradeSync(grader, sources, workspaceDir) {
     case "not_contains": return gradeNotContains(grader, sources)
     case "not_contains_any": return gradeNotContainsAny(grader, sources)
     case "matches": return gradeMatches(grader, sources)
+    case "not_matches": return gradeNotMatches(grader, sources)
     default: return { pass: false, detail: `Unsupported sub-grader type: ${grader.type}` }
   }
 }
@@ -188,7 +224,10 @@ async function gradeJudge(grader, sources, workspaceDir, model) {
 
 ${questionBlock}
 
-Answer with exactly "YES" or "NO" on the first line, followed by a brief explanation.
+Think briefly if you need to, then end your response with a final line in exactly this form:
+VERDICT: YES
+or
+VERDICT: NO
 
 ${fileSummary}`
 
@@ -197,11 +236,22 @@ ${fileSummary}`
 
   try {
     const { stdout } = await $({ timeout: 60000 })`claude ${judgeArgs}`
-    const firstLine = stdout.trim().split("\n")[0].toUpperCase()
-    return { pass: firstLine.startsWith("YES"), detail: stdout.trim().slice(0, 300) }
+    const pass = parseVerdict(stdout)
+    return { pass, detail: stdout.trim().slice(-300) }
   } catch (e) {
     return { pass: false, detail: `Judge failed: ${e.message}` }
   }
+}
+
+// Extract the judge's verdict. Prefer an explicit `VERDICT: YES/NO` tag (scanned
+// from the end, since the model may reason first); fall back to the first line
+// for older-style replies. A model that reasons-then-concludes ("...wait, let me
+// check... PASS") would be misread if we only looked at line 1.
+function parseVerdict(stdout) {
+  const text = stdout.trim()
+  const tags = [...text.matchAll(/VERDICT:\s*(YES|NO)/gi)]
+  if (tags.length) return tags[tags.length - 1][1].toUpperCase() === "YES"
+  return text.split("\n")[0].trim().toUpperCase().startsWith("YES")
 }
 
 // Run every grader against the workspace. `model` (optional) is forwarded to
@@ -219,6 +269,7 @@ export async function runGraders(graders, workspaceDir, model = null) {
       case "not_contains": result = gradeNotContains(grader, sources); break
       case "not_contains_any": result = gradeNotContainsAny(grader, sources); break
       case "matches": result = gradeMatches(grader, sources); break
+      case "not_matches": result = gradeNotMatches(grader, sources); break
       case "all": result = gradeAll(grader, sources, workspaceDir); break
       case "judge": result = await gradeJudge(grader, sources, workspaceDir, model); break
       default: result = { pass: false, detail: `Unknown grader type: ${grader.type}` }
@@ -230,10 +281,11 @@ export async function runGraders(graders, workspaceDir, model = null) {
   // wrote no code (nothing bad can be present in nothing). Demote them to FAIL
   // unless at least one positive grader passed. Preserved from the original.
   const positiveTypes = new Set(["contains", "contains_any", "file_contains", "matches"])
+  const negativeTypes = new Set(["not_contains", "not_contains_any", "not_matches"])
   const anyPositivePassed = results.some((r) => positiveTypes.has(r.type) && r.pass)
   if (!anyPositivePassed) {
     for (const r of results) {
-      if ((r.type === "not_contains" || r.type === "not_contains_any") && r.pass) {
+      if (negativeTypes.has(r.type) && r.pass) {
         r.pass = false
         r.detail = `Invalidated: no positive graders passed (agent likely wrote no integration code). Original: ${r.detail}`
       }
