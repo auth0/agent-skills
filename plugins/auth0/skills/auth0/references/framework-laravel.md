@@ -17,7 +17,7 @@ Add login, logout, and user profile to a Laravel web application using `auth0/lo
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
 - Composer installed
 - Auth0 Regular Web Application configured (not an API - must be an Application)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
@@ -250,11 +250,11 @@ Access any ID token claim as a property: `$user->nickname`, `$user->updated_at`,
 
 ## Related Skills
 
-- `auth0-laravel-api` - Protect Laravel API routes with JWT Bearer token validation
-- `auth0-php` - Plain PHP web apps without a framework
-- `auth0-quickstart` - Initial Auth0 setup
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Protecting Laravel API routes with JWT Bearer token validation → the Auth0 integration workflow for Laravel APIs
+- Plain PHP web apps without a framework → the Auth0 integration workflow for plain PHP
+- Initial Auth0 setup → run the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ---
 

@@ -7,15 +7,15 @@ Add login, logout, and user profile to a Flask web application using `auth0-serv
 
 - Flask application
 - Auth0 Regular Web Application configured (not an API — must be an Application)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
 - **Python APIs with JWT Bearer validation** — Use `auth0-fastapi-api` for FastAPI, or see the [Django REST Framework quickstart](https://auth0.com/docs/quickstart/backend/django)
 - **FastAPI web app with login/logout UI** — No dedicated skill yet; see the [FastAPI quickstart](https://auth0.com/docs/quickstart/webapp/python)
-- **Single Page Applications** — Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
-- **Next.js applications** — Use `auth0-nextjs` which handles both client and server
-- **Node.js web apps** — Use `auth0-express` or `auth0-fastify` for session-based auth
+- **Single Page Applications** — Use the Auth0 integration workflow for React, Vue, or Angular for client-side auth
+- **Next.js applications** — Use the Auth0 integration workflow for Next.js, which handles both client and server
+- **Node.js web apps** — Use the Auth0 integration workflow for Express or Fastify for session-based auth
 
 ## Quick Start Workflow
 
@@ -303,9 +303,8 @@ All methods are async:
 
 ## Related Skills
 
-- `auth0-express` — For server-rendered Express web apps with login/logout sessions
-- `auth0-fastify` — For Fastify web applications with session-based auth
-- `auth0-cli` — Manage Auth0 resources from the terminal
+- Server-rendered Node.js web apps with login/logout sessions → the Auth0 integration workflow for Express or Fastify
+- Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 

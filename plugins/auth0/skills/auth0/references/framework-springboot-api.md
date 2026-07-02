@@ -14,16 +14,16 @@ Protect Spring Boot API endpoints with JWT access token validation using `com.au
 - Java 17+ and Spring Boot 3.2+
 - Maven 3.6+ or Gradle 7+
 - Auth0 API configured (not Application — must be API resource)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
-| Use Case | Recommended Skill |
+| Use Case | Use Instead |
 |----------|------------------|
-| Server-rendered web applications (Spring MVC with sessions) | Use `auth0-java` for Spring Boot web apps with login UI |
-| Single Page Applications | Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth |
-| Mobile applications | Use `auth0-android` or `auth0-swift` for native mobile |
-| Non-Spring Java APIs | Use `auth0-spring-security-api` for plain Spring Security |
+| Server-rendered web applications (Spring MVC with sessions) | Use the Auth0 integration workflow for Spring Boot web apps with login UI (Regular Web Application) |
+| Single Page Applications | Use the Auth0 integration workflow for React, Vue, or Angular for client-side auth |
+| Mobile applications | Use the Auth0 integration workflow for Android or iOS/Swift for native mobile |
+| Non-Spring Java APIs | Use the Auth0 integration workflow for plain Spring Security |
 
 ## Quick Start Workflow
 
@@ -189,10 +189,10 @@ See the Integration Guide section below for defining and enforcing scope-based a
 
 Built-in proof-of-possession token binding per RFC 9449. See the Integration Guide section below for configuration modes (DISABLED, ALLOWED, REQUIRED).
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` — Basic Auth0 setup and account creation
-- `auth0-java` — Spring Boot web apps with login UI (Regular Web Application)
+- Basic Auth0 setup and account creation → set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Spring Boot web apps with login UI (Regular Web Application) → the Auth0 integration workflow for Spring Boot web apps
 
 ## Quick Reference
 

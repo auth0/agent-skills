@@ -7,15 +7,15 @@ Add login, logout, and user profile to an ASP.NET Core MVC, Razor Pages, or Blaz
 
 - ASP.NET Core application (.NET 8 or higher)
 - Auth0 Regular Web Application configured (not an API - must be an Application)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
-- **ASP.NET Core Web APIs with JWT Bearer validation** - Use `auth0-aspnetcore-api` for JWT-protected REST APIs
+- **ASP.NET Core Web APIs with JWT Bearer validation** - Use the ASP.NET Core Web API integration workflow for JWT-protected REST APIs
 - **Blazor WebAssembly** - Requires OIDC client-side auth; see the Auth0 Blazor WebAssembly quickstart
-- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
-- **Next.js applications** - Use `auth0-nextjs` which handles both client and server
-- **Python web apps** - Use `auth0-flask` for Flask or see the Django quickstart
+- **Single Page Applications** - Use the Auth0 integration workflow for React, Vue, or Angular for client-side auth
+- **Next.js applications** - Use the Auth0 integration workflow for Next.js, which handles both client and server
+- **Python web apps** - Use the Auth0 integration workflow for Flask or see the Django quickstart
 
 ## Quick Start Workflow
 
@@ -381,11 +381,11 @@ For Razor Pages apps (without Blazor), use `AddRazorPages()` instead of `AddCont
 | `[Authorize]` | `[Authorize]` attribute on controller action or Razor component | Protects routes requiring authentication |
 | `AddCascadingAuthenticationState` | `builder.Services.AddCascadingAuthenticationState()` | Required for Blazor Server auth state propagation |
 
-## Related Skills
+## Related Workflows
 
-- `auth0-aspnetcore-api` - For ASP.NET Core Web APIs with JWT Bearer token validation
-- `auth0-express` - For server-rendered Express web apps with login/logout sessions
-- `auth0-flask` - For Flask web applications with session-based auth
+- ASP.NET Core Web APIs with JWT Bearer token validation → ask for the ASP.NET Core Web API integration
+- Server-rendered Express web apps with login/logout sessions → ask for the Express integration
+- Flask web applications with session-based auth → ask for the Flask integration
 
 ## Quick Reference
 

@@ -13,13 +13,13 @@
 
 ## When NOT to Use
 
-- **Flutter mobile (iOS/Android)**: Use [auth0-flutter-native](/auth0-flutter-native) — mobile uses a different platform interface with Web Auth via system browser
-- **Native iOS (Swift)**: Use [auth0-swift](/auth0-swift)
-- **Native Android (Kotlin/Java)**: Use [auth0-android](/auth0-android)
-- **React SPA**: Use [auth0-react](/auth0-react)
-- **Angular SPA**: Use [auth0-angular](/auth0-angular)
-- **Vue SPA**: Use [auth0-vue](/auth0-vue)
-- **Node.js/Express servers**: Use [auth0-express](/auth0-express)
+- **Flutter mobile (iOS/Android)**: use the Auth0 integration workflow for Flutter native — mobile uses a different platform interface with Web Auth via system browser
+- **Native iOS (Swift)**: use the Auth0 integration workflow for Swift
+- **Native Android (Kotlin/Java)**: use the Auth0 integration workflow for Android
+- **React SPA**: use the Auth0 integration workflow for React
+- **Angular SPA**: use the Auth0 integration workflow for Angular
+- **Vue SPA**: use the Auth0 integration workflow for Vue
+- **Node.js/Express servers**: use the Auth0 integration workflow for Express
 
 ## Prerequisites
 

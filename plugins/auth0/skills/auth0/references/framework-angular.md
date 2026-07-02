@@ -7,12 +7,12 @@ Add authentication to Angular applications using @auth0/auth0-angular.
 
 - Angular 13+ application
 - Auth0 account and application configured
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
 - **AngularJS (1.x)** - This SDK requires Angular 13+, use legacy solutions for AngularJS
-- **Mobile applications** - Use `auth0-react-native` for React Native or native SDKs for Ionic
+- **Mobile applications** - Use the Auth0 integration workflow for React Native, or native SDKs for Ionic
 - **Backend APIs** - Use JWT validation middleware for your server language
 
 ## Quick Start Workflow
@@ -148,12 +148,12 @@ ng serve
 | No token sent to API | Use either `authHttpInterceptorFn` for automatic token attachment, or `getAccessTokenSilently()` for manual control — see the Calling a Protected API section below |
 | Route guard not protecting routes | Apply `AuthGuard` (or `authGuardFn`) to protected routes in routing config |
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Auth0 setup — run the CLI (`auth0 login`, then `auth0 apps create`)
+- Migrating from another auth provider → ask for migration (feature:migration)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Managing Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 
@@ -484,13 +484,13 @@ After the redirect callback, `handleRedirectCallback` will be called with the de
 
 ---
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Initial Auth0 account setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-organizations` - B2B multi-tenancy support
-- `auth0-passkeys` - Add passkey authentication
+- Auth0 setup — run the CLI (`auth0 login`, then `auth0 apps create`)
+- Migrating from another auth provider → ask for migration (feature:migration)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- B2B multi-tenancy → ask for Organizations (feature:organizations)
+- Passkey authentication → ask for MFA (feature:mfa)
 
 ---
 

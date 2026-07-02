@@ -13,14 +13,14 @@ Protect Go HTTP API endpoints with JWT access token validation using github.com/
 
 - Go 1.21 or higher
 - Auth0 API configured (not Application - must be API resource)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
 - **Go server-rendered web applications** - Use `go-auth0` for session-based web apps
-- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
-- **Mobile applications** - Use `auth0-swift`, `auth0-android`, or `auth0-react-native`
-- **Non-Go backends** - Use `auth0-aspnetcore-api` for .NET, `express-jwt` for Node.js
+- **Single Page Applications** - Use the Auth0 integration workflow for React, Vue, or Angular for client-side auth
+- **Mobile applications** - Use the Auth0 integration workflow for Swift, Android, or React Native
+- **Non-Go backends** - Use the Auth0 integration workflow for ASP.NET Core (.NET), or `express-jwt` for Node.js
 
 ## Quick Start Workflow
 
@@ -445,8 +445,8 @@ Built-in proof-of-possession token binding per RFC 9449. See the Integration Gui
 
 ## Related Skills
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-mfa` - Add Multi-Factor Authentication
+- Auth0 setup → set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Multi-factor authentication → ask for MFA (feature:mfa)
 
 ## Quick Reference
 

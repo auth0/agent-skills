@@ -7,13 +7,13 @@ Protect ASP.NET Core Web API endpoints with JWT access token validation using Au
 
 - .NET 8.0 SDK or higher
 - Auth0 API configured (not Application - must be API resource)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
 - **Server-rendered web applications** - Use session-based auth (Auth0.AspNetCore.Authentication) for MVC/Razor Pages apps
-- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
-- **Mobile applications** - Use `auth0-react-native` for React Native/Expo
+- **Single Page Applications** - Use the Auth0 React, Vue, or Angular integration workflow for client-side auth
+- **Mobile applications** - Use the Auth0 React Native integration workflow for React Native/Expo
 - **Blazor WebAssembly** - Requires different auth approach (OIDC client-side)
 
 ## Quick Start Workflow
@@ -167,11 +167,11 @@ See the Scope-Based Authorization section below for defining and enforcing scope
 
 Built-in proof-of-possession token binding per RFC 9449. See the DPoP Support section below for configuration.
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Basic Auth0 setup → set up Auth0 with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 

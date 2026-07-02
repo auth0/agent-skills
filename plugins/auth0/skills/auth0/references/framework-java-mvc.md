@@ -15,16 +15,16 @@ Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-a
 - Servlet container (Tomcat, Jetty, etc.) with javax.servlet 3+
 - Maven 3.6+ or Gradle 7+
 - Auth0 Regular Web Application configured
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
 | Use Case | Recommended Skill |
 |----------|-------------------|
 | Spring Boot web applications with auto-configuration | Use Spring Boot + Okta starter for auto-configured Spring Boot login |
-| Spring Boot REST APIs (stateless JWT) | Use `auth0-springboot-api` for JWT Bearer token validation |
-| Single Page Applications | Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth |
-| Mobile applications | Use `auth0-android` or `auth0-swift` for native mobile |
+| Spring Boot REST APIs (stateless JWT) | Use the Auth0 integration workflow for Spring Boot REST APIs (JWT Bearer token validation) |
+| Single Page Applications | Use the Auth0 integration workflow for React, Vue, or Angular for client-side auth |
+| Mobile applications | Use the Auth0 integration workflow for Android or Swift for native mobile |
 | Machine-to-machine API calls | Use Auth0 Management API SDK for server-to-server |
 
 ## Quick Start Workflow
@@ -286,8 +286,8 @@ Built-in support for routing users to the correct Auth0 domain via `DomainResolv
 
 ## Related Skills
 
-- `auth0-quickstart` — Basic Auth0 setup and account creation
-- `auth0-springboot-api` — Spring Boot REST APIs with JWT Bearer token validation
+- Basic Auth0 setup and account creation → set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Spring Boot REST APIs with JWT Bearer token validation → the Auth0 integration workflow for Spring Boot APIs
 
 ## Quick Reference
 

@@ -27,14 +27,14 @@ Add Auth0 authentication to .NET MAUI applications targeting iOS, Android, macOS
 
 ## When NOT to Use
 
-| Use Case | Recommended Skill |
+| Use Case | Use instead |
 |----------|------------------|
-| ASP.NET Core server-side web app | `auth0-aspnetcore-authentication` |
-| ASP.NET Core Web API (JWT validation) | `auth0-aspnetcore-api` |
-| React Native mobile app | `auth0-react-native` |
-| iOS-only Swift app | `auth0-swift` |
-| Android-only Kotlin app | `auth0-android` |
-| Expo React Native app | `auth0-expo` |
+| ASP.NET Core server-side web app | the Auth0 integration workflow for ASP.NET Core |
+| ASP.NET Core Web API (JWT validation) | the Auth0 integration workflow for ASP.NET Core Web API |
+| React Native mobile app | the Auth0 integration workflow for React Native |
+| iOS-only Swift app | the Auth0 integration workflow for Swift (iOS/macOS) |
+| Android-only Kotlin app | the Auth0 integration workflow for Android |
+| Expo React Native app | the Auth0 integration workflow for Expo |
 
 ## Quick Start Workflow
 
@@ -132,12 +132,7 @@ approach. You can customize the scheme (e.g., `com.mycompany.myapp://callback`).
 
 ## Related Skills
 
-- **auth0-aspnetcore-authentication** — ASP.NET Core server-side web apps
-- **auth0-aspnetcore-api** — ASP.NET Core Web API with JWT validation
-- **auth0-android** — Android-native Kotlin apps
-- **auth0-swift** — iOS/macOS Swift apps
-- **auth0-react-native** — React Native mobile apps
-- **auth0-net-android-ios** — .NET Android/iOS (non-MAUI)
+All of this lives in the one `auth0` skill — just describe what you need (e.g. "add MFA", "protect my API").
 
 ## Quick Reference
 

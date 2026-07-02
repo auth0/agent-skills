@@ -15,18 +15,18 @@ Add Auth0 authentication to Ionic Vue applications using Capacitor. This skill c
 
 ## When NOT to Use
 
-| Use Case | Recommended Skill |
+| Use Case | Use Instead |
 |----------|------------------|
-| Vue SPA (no Capacitor/Ionic) | `auth0-vue` |
-| React SPA (no Capacitor/Ionic) | `auth0-react` |
-| React Native (bare CLI) | `auth0-react-native` |
-| Expo (React Native) | `auth0-expo` |
-| Ionic + React + Capacitor | `auth0-ionic-react` |
-| Ionic + Angular + Capacitor | `auth0-ionic-angular` |
-| Next.js (server-side) | `auth0-nextjs` |
-| Nuxt (server-side) | `auth0-nuxt` |
-| iOS native (Swift) | `auth0-swift` |
-| Android native (Kotlin) | `auth0-android` |
+| Vue SPA (no Capacitor/Ionic) | the Auth0 integration workflow for Vue |
+| React SPA (no Capacitor/Ionic) | the Auth0 integration workflow for React |
+| React Native (bare CLI) | the Auth0 integration workflow for React Native |
+| Expo (React Native) | the Auth0 integration workflow for Expo |
+| Ionic + React + Capacitor | the Auth0 integration workflow for Ionic React |
+| Ionic + Angular + Capacitor | the Auth0 integration workflow for Ionic Angular |
+| Next.js (server-side) | the Auth0 integration workflow for Next.js |
+| Nuxt (server-side) | the Auth0 integration workflow for Nuxt |
+| iOS native (Swift) | the Auth0 integration workflow for iOS (Swift) |
+| Android native (Kotlin) | the Auth0 integration workflow for Android (Kotlin) |
 
 ## Quick Start Workflow
 
@@ -214,11 +214,7 @@ Unlike standard native SDKs that use `https://{domain}/android/{packageId}/callb
 
 ## Related Skills
 
-- **auth0-vue** — Vue SPA (browser-only, no Capacitor)
-- **auth0-ionic-react** — Ionic with React and Capacitor
-- **auth0-ionic-angular** — Ionic with Angular and Capacitor
-- **auth0-react-native** — React Native (bare CLI, no Ionic/Capacitor)
-- **auth0-expo** — Expo (React Native) with Auth0
+All of this lives in the one `auth0` skill — just describe what you need (e.g. "add MFA", "protect my API").
 
 ## Quick Reference
 

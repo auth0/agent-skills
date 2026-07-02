@@ -25,14 +25,14 @@ Add Auth0 authentication to .NET Android applications. This skill integrates the
 
 ## When NOT to Use
 
-| Use Case | Recommended Skill |
+| Use Case | Use instead |
 |----------|------------------|
-| .NET MAUI cross-platform app (iOS + Android + Windows) | `auth0-maui` |
-| .NET iOS-only app | `auth0-net-ios` |
-| Android-only Kotlin app | `auth0-android` |
-| ASP.NET Core server-side web app | `auth0-aspnetcore-authentication` |
-| ASP.NET Core Web API (JWT validation) | `auth0-aspnetcore-api` |
-| React Native mobile app | `auth0-react-native` |
+| .NET MAUI cross-platform app (iOS + Android + Windows) | the .NET MAUI integration workflow |
+| .NET iOS-only app | the .NET iOS integration workflow |
+| Android-only Kotlin app | the Android (Kotlin) integration workflow |
+| ASP.NET Core server-side web app | the ASP.NET Core integration workflow |
+| ASP.NET Core Web API (JWT validation) | the ASP.NET Core Web API integration workflow |
+| React Native mobile app | the React Native integration workflow |
 
 ## Quick Start Workflow
 
@@ -137,13 +137,13 @@ This URL must be:
 - Logout flow: Browser opens → session cleared → returns to app
 - Cancel: User presses back → app handles `UserCancel` gracefully
 
-## Related Skills
+## Related Workflows
 
-- **auth0-maui** — .NET MAUI cross-platform apps (iOS + Android + Windows)
-- **auth0-net-ios** — .NET iOS-only apps
-- **auth0-android** — Android-native Kotlin apps
-- **auth0-aspnetcore-authentication** — ASP.NET Core server-side web apps
-- **auth0-aspnetcore-api** — ASP.NET Core Web API with JWT validation
+- .NET MAUI cross-platform apps (iOS + Android + Windows) → the .NET MAUI integration workflow
+- .NET iOS-only apps → the .NET iOS integration workflow
+- Android-native Kotlin apps → the Android (Kotlin) integration workflow
+- ASP.NET Core server-side web apps → the ASP.NET Core integration workflow
+- ASP.NET Core Web API with JWT validation → the ASP.NET Core Web API integration workflow
 
 ## Quick Reference
 

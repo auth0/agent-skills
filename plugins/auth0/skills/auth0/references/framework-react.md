@@ -7,12 +7,12 @@ Add authentication to React single-page applications using @auth0/auth0-react.
 
 - React 16.11+ application (Vite or Create React App) - supports React 16, 17, 18, and 19
 - Auth0 account and application configured
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
-- **Next.js applications** - Use `auth0-nextjs` skill for both App Router and Pages Router
-- **React Native mobile apps** - Use `auth0-react-native` skill for iOS/Android
+- **Next.js applications** - Use the Auth0 integration workflow for Next.js (App Router and Pages Router)
+- **React Native mobile apps** - Use the Auth0 integration workflow for React Native (iOS/Android)
 - **Server-side rendered React** - Use framework-specific SDK (Next.js, Remix, etc.)
 - **Embedded login** - This SDK uses Auth0 Universal Login (redirect-based)
 - **Backend API authentication** - Use express-openid-connect or JWT validation instead
@@ -123,10 +123,10 @@ npm start    # CRA
 
 ## Related Skills
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Basic Auth0 setup → set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Migrate from another auth provider → ask for migration (feature:migration)
+- Add Multi-Factor Authentication → ask for MFA (feature:mfa)
+- Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 
@@ -774,11 +774,11 @@ console.log(user?.app_metadata?.roles);
 
 ## Related Skills
 
-- `auth0-quickstart` - Initial Auth0 account setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-organizations` - B2B multi-tenancy support
-- `auth0-passkeys` - Add passkey authentication
+- Initial Auth0 account setup → set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Migrate from another auth provider → ask for migration (feature:migration)
+- Add Multi-Factor Authentication → ask for MFA (feature:mfa)
+- B2B multi-tenancy support → ask for Organizations (feature:organizations)
+- Add passkey authentication → ask for passkeys (feature:mfa)
 
 ---
 

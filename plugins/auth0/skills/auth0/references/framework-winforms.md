@@ -28,14 +28,14 @@ The SDK performs WebAuth (OIDC authorization code flow with PKCE) by opening the
 
 ## When NOT to Use
 
-| Use Case | Recommended Skill |
+| Use Case | Use Instead |
 |----------|------------------|
-| .NET MAUI cross-platform app | `auth0-maui` |
-| WPF desktop app | `auth0-wpf` |
-| ASP.NET Core server-side web app | `auth0-aspnetcore-authentication` |
-| ASP.NET Core Web API (JWT validation) | `auth0-aspnetcore-api` |
-| iOS-only Swift app | `auth0-swift` |
-| Android-only Kotlin app | `auth0-android` |
+| .NET MAUI cross-platform app | the Auth0 integration workflow for .NET MAUI |
+| WPF desktop app | the Auth0 integration workflow for WPF |
+| ASP.NET Core server-side web app | the Auth0 integration workflow for ASP.NET Core |
+| ASP.NET Core Web API (JWT validation) | the Auth0 integration workflow for ASP.NET Core Web API |
+| iOS-only Swift app | the Auth0 integration workflow for iOS/Swift |
+| Android-only Kotlin app | the Auth0 integration workflow for Android |
 
 ## Quick Start Workflow
 
@@ -114,12 +114,12 @@ Configure in the Auth0 Dashboard:
 - Physical device: Test on a real Windows machine (not just virtual environment)
 - Multiple logins: Verify login works after logout (no stale state)
 
-## Related Skills
+## Related Workflows
 
-- **auth0-wpf** — WPF desktop apps
-- **auth0-maui** — .NET MAUI cross-platform apps
-- **auth0-aspnetcore-authentication** — ASP.NET Core server-side web apps
-- **auth0-aspnetcore-api** — ASP.NET Core Web API with JWT validation
+- The Auth0 integration workflow for WPF desktop apps
+- The Auth0 integration workflow for .NET MAUI cross-platform apps
+- The Auth0 integration workflow for ASP.NET Core server-side web apps
+- The Auth0 integration workflow for ASP.NET Core Web API with JWT validation
 
 ## Quick Reference
 

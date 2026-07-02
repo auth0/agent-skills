@@ -144,11 +144,11 @@ Common patterns and troubleshooting:
 - Security considerations
 
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-passkeys` - WebAuthn/passkey implementation
-- `auth0-actions` - Custom authentication logic
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Passkeys / WebAuthn — ask for MFA (feature:mfa)
+- Auth0 Actions — custom login-flow logic for adaptive/conditional authentication
 
 
 ## References
@@ -325,11 +325,11 @@ auth0 api get "guardian/policies"
 
 ---
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-passkeys` - WebAuthn/passkey implementation
-- `auth0-actions` - Custom authentication logic
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Passkeys / WebAuthn — ask for MFA (feature:mfa)
+- Auth0 Actions — custom login-flow logic for adaptive/conditional authentication
 
 ---
 

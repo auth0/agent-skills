@@ -14,17 +14,17 @@ Add authentication to any browser-based single-page application using `@auth0/au
 - Modern browser with ES2017+ support
 - npm or yarn (or use CDN for no-bundler apps)
 - Auth0 account with a Single Page Application configured
-- If you don't have Auth0 set up, see [auth0-quickstart](/auth0-quickstart)
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
-- **React SPAs** (hooks, Auth0Provider): Use [auth0-react](/auth0-react)
-- **Angular SPAs** (AuthModule, AuthGuard): Use [auth0-angular](/auth0-angular)
-- **Vue 3 SPAs** (createAuth0, useAuth0): Use [auth0-vue](/auth0-vue)
-- **Next.js** (server-side sessions, App Router): Use [auth0-nextjs](/auth0-nextjs)
-- **Nuxt** (server-side SSR): Use [auth0-nuxt](/auth0-nuxt)
-- **Express server-side web apps**: Use [auth0-express](/auth0-express)
-- **React Native / Expo mobile apps**: Use [auth0-react-native](/auth0-react-native)
+- **React SPAs** (hooks, Auth0Provider): use the Auth0 integration workflow for React
+- **Angular SPAs** (AuthModule, AuthGuard): use the Auth0 integration workflow for Angular
+- **Vue 3 SPAs** (createAuth0, useAuth0): use the Auth0 integration workflow for Vue
+- **Next.js** (server-side sessions, App Router): use the Auth0 integration workflow for Next.js
+- **Nuxt** (server-side SSR): use the Auth0 integration workflow for Nuxt
+- **Express server-side web apps**: use the Auth0 integration workflow for Express
+- **React Native / Expo mobile apps**: use the Auth0 integration workflow for React Native
 
 ## Quick Start Workflow
 
@@ -147,14 +147,14 @@ const response = await fetch('https://your-api.example.com/data', {
 | `loginWithPopup()` called from async init code | Popups must be triggered directly from a user gesture (click handler). Never call from init or page load code |
 | Using `Auth0Provider` from `@auth0/auth0-react` in Vanilla JS | For Vanilla JS, use `createAuth0Client()` directly — no provider component needed |
 
-## Related Skills
+## Related Capabilities
 
-- [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
-- [auth0-react](/auth0-react) — Auth0 for React SPAs with hooks
-- [auth0-angular](/auth0-angular) — Auth0 for Angular SPAs
-- [auth0-vue](/auth0-vue) — Auth0 for Vue 3 SPAs
-- [auth0-mfa](/auth0-mfa) — Add Multi-Factor Authentication
-- [auth0-cli](/auth0-cli) — Manage Auth0 resources from the terminal
+- Auth0 setup — run the CLI: `auth0 login`, then `auth0 apps create`
+- React SPAs with hooks — use the Auth0 integration workflow for React
+- Angular SPAs — use the Auth0 integration workflow for Angular
+- Vue 3 SPAs — use the Auth0 integration workflow for Vue
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Manage Auth0 resources from the terminal — the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 

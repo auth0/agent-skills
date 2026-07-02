@@ -24,12 +24,12 @@
 
 ## When NOT to Use
 
-- **Flutter web**: Use [auth0-flutter-web](/auth0-flutter-web) — web uses a different platform interface (`Auth0Web`) wrapping Auth0 SPA JS
-- **Native iOS (Swift, no Flutter)**: Use [auth0-swift](/auth0-swift)
-- **Native Android (Kotlin/Java, no Flutter)**: Use [auth0-android](/auth0-android)
-- **React Native**: Use [auth0-react-native](/auth0-react-native)
-- **React SPA**: Use [auth0-react](/auth0-react)
-- **Node.js/Express servers**: Use [auth0-express](/auth0-express)
+- **Flutter web**: Use the Auth0 Flutter web integration — web uses a different platform interface (`Auth0Web`) wrapping Auth0 SPA JS
+- **Native iOS (Swift, no Flutter)**: Use the Auth0 Swift integration
+- **Native Android (Kotlin/Java, no Flutter)**: Use the Auth0 Android integration
+- **React Native**: Use the Auth0 React Native integration
+- **React SPA**: Use the Auth0 React integration
+- **Node.js/Express servers**: Use the Auth0 Express integration
 
 ## Prerequisites
 
@@ -405,12 +405,12 @@ For complete patterns with Riverpod, Bloc, biometrics, and advanced scenarios, s
 | Missing `offline_access` scope | Add `'offline_access'` to scopes so the CredentialsManager can silently renew expired access tokens with a refresh token |
 | Catching generic `Exception` | Catch `WebAuthenticationException` (login/logout) and `CredentialsManagerException` (credential errors) and inspect `isUserCancelledException`, `isNoCredentialsFound`, `isTokenRenewFailed`, etc. |
 
-## Related Skills
+## Related capabilities
 
-- **[auth0-quickstart](/auth0-quickstart)** — Initial Auth0 setup and account creation
-- **[auth0-flutter-web](/auth0-flutter-web)** — Same SDK, web platform
-- **[auth0-swift](/auth0-swift)** — Native iOS (Swift)
-- **[auth0-android](/auth0-android)** — Native Android (Kotlin/Java)
+- Initial Auth0 setup and account creation — if Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Same SDK on the web platform — ask for the Auth0 Flutter web integration
+- Native iOS (Swift) — ask for the Auth0 Swift integration
+- Native Android (Kotlin/Java) — ask for the Auth0 Android integration
 
 ## Quick Reference
 

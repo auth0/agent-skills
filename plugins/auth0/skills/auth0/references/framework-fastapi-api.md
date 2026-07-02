@@ -9,13 +9,13 @@ Protect FastAPI API endpoints with JWT access token validation using `auth0-fast
 
 - FastAPI application (Python 3.9+)
 - Auth0 API resource configured (not an Application — must be an API)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
 - **Server-rendered web applications** — Use a session-based login/logout flow instead
-- **Single Page Applications** — Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
-- **Mobile applications** — Use `auth0-react-native` or `auth0-android`
+- **Single Page Applications** — Use the Auth0 integration workflow for React, Vue, or Angular for client-side auth
+- **Mobile applications** — Use the Auth0 integration workflow for React Native or Android
 - **Issuing tokens** — This skill is for *validating* access tokens, not issuing them
 
 ## Quick Start Workflow
@@ -191,9 +191,9 @@ Built-in proof-of-possession token binding per RFC 9449. DPoP is enabled by defa
 
 ## Related Skills
 
-- `auth0-quickstart` - Basic Auth0 setup and framework detection
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Auth0 setup and framework detection → set up Auth0 first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Managing Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 

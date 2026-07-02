@@ -26,14 +26,14 @@ Add Auth0 authentication to .NET iOS applications. This skill integrates the `Au
 
 ## When NOT to Use
 
-| Use Case | Recommended Skill |
+| Use Case | Use instead |
 |----------|------------------|
-| .NET MAUI cross-platform app (iOS + Android + Windows) | `auth0-maui` |
-| .NET Android-only app | `auth0-net-android` |
-| iOS-only Swift app | `auth0-swift` |
-| ASP.NET Core server-side web app | `auth0-aspnetcore-authentication` |
-| ASP.NET Core Web API (JWT validation) | `auth0-aspnetcore-api` |
-| React Native mobile app | `auth0-react-native` |
+| .NET MAUI cross-platform app (iOS + Android + Windows) | the Auth0 integration workflow for .NET MAUI |
+| .NET Android-only app | the Auth0 integration workflow for .NET Android |
+| iOS-only Swift app | the Auth0 integration workflow for Swift |
+| ASP.NET Core server-side web app | the Auth0 integration workflow for ASP.NET Core |
+| ASP.NET Core Web API (JWT validation) | the Auth0 integration workflow for ASP.NET Core Web API |
+| React Native mobile app | the Auth0 integration workflow for React Native |
 
 ## Quick Start Workflow
 
@@ -137,11 +137,7 @@ This URL must be:
 
 ## Related Skills
 
-- **auth0-maui** — .NET MAUI cross-platform apps (iOS + Android + Windows)
-- **auth0-net-android** — .NET Android-only apps
-- **auth0-swift** — iOS-only Swift apps
-- **auth0-aspnetcore-authentication** — ASP.NET Core server-side web apps
-- **auth0-aspnetcore-api** — ASP.NET Core Web API with JWT validation
+All of this lives in the one `auth0` skill — just describe what you need (e.g. "add MFA", "protect my API").
 
 ## Quick Reference
 

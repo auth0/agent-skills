@@ -17,18 +17,18 @@ Protect Laravel API endpoints with JWT access token validation using `auth0/logi
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
 - Composer installed
 - Auth0 API resource configured (not an Application - must be an API)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
 | Scenario | Use Instead |
 |----------|-------------|
-| Laravel web app with login/logout UI | `auth0-laravel` (session-based `AuthenticationGuard`) |
-| Plain PHP API (no framework) | `auth0-php-api` |
-| Plain PHP web app | `auth0-php` |
-| Single Page Applications | `auth0-react`, `auth0-vue`, or `auth0-angular` |
-| FastAPI / Python APIs | `auth0-fastapi-api` |
-| Express / Node.js APIs | `express-oauth2-jwt-bearer` |
+| Laravel web app with login/logout UI | the Auth0 integration workflow for Laravel web apps (session-based `AuthenticationGuard`) |
+| Plain PHP API (no framework) | the Auth0 integration workflow for plain PHP APIs |
+| Plain PHP web app | the Auth0 integration workflow for plain PHP web apps |
+| Single Page Applications | the Auth0 integration workflow for React, Vue, or Angular |
+| FastAPI / Python APIs | the Auth0 integration workflow for FastAPI |
+| Express / Node.js APIs | the Auth0 integration workflow for Express/Node.js APIs |
 | Issuing tokens | This skill is for *validating* access tokens, not issuing them |
 
 ---
@@ -394,11 +394,11 @@ Get a test token via Auth0 Dashboard -> APIs -> Test tab, or via the M2M flow de
 
 ## Related Skills
 
-- `auth0-laravel` - For Laravel web apps with login/logout using session-based auth
-- `auth0-php-api` - For plain PHP APIs without Laravel
-- `auth0-quickstart` - Initial Auth0 setup
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Laravel web apps with login/logout (session-based auth) → the Auth0 integration workflow for Laravel web apps
+- Plain PHP APIs without Laravel → the Auth0 integration workflow for plain PHP APIs
+- Initial Auth0 setup → run the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ---
 

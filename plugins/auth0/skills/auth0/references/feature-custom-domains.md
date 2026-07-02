@@ -141,10 +141,10 @@ Quick index; each entry references the canonical treatment in the relevant secti
 | Not updating SDK `domain` / `issuerBaseURL` after verification | Set Up section: report next steps |
 | Calling Management API via tenant domain under MCD | Advanced Topics section: the auth0-custom-domain header |
 
-## Related Skills
+## Related capabilities
 
-- **auth0-branding**: Customize Universal Login appearance (page templates require a verified custom domain)
-- **auth0-organizations**: Organization-specific branding for B2B multi-tenancy
+- Customizing Universal Login appearance → branding (feature:branding); page templates require a verified custom domain
+- Organization-specific branding for B2B multi-tenancy → Organizations (feature:organizations)
 
 ## References
 

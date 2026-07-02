@@ -114,7 +114,7 @@ Themes and templates only apply to flows actually running in Universal Login. Te
 
 ### Custom Domain (only if working with page templates)
 
-Page templates require a custom domain on the tenant. Branding settings, theme, and text customization do not. If the task involves page templates and no custom domain is configured, use the `auth0-custom-domains` skill to set one up.
+Page templates require a custom domain on the tenant. Branding settings, theme, and text customization do not. If the task involves page templates and no custom domain is configured, set up a custom domain first (custom domains, feature:custom-domains).
 
 ## Capability 1: Brand my tenant
 
@@ -162,12 +162,12 @@ For the extended list (theme field requirements, Brandfetch ToS, homepage-only e
 
 This file contains all branding guidance inline. Sections: Brand My Tenant · Change Specific Settings · Match Brand Voice · Rollback · Check Setup · API Reference · Examples.
 
-Related skills:
+Related capabilities:
 
-- **auth0-custom-domains**: Configure custom domains (required for page templates)
-- **auth0-organizations**: Organization-specific branding for B2B multi-tenancy
-- **auth0-actions**: Custom logic in login flows via Auth0 Actions
-- **feature:acul**: Advanced Customizations for Universal Login (ACUL) — build fully custom screens beyond what theme + template can do
+- Custom domains, required for page templates (custom domains, feature:custom-domains)
+- Organization-specific branding for B2B multi-tenancy (Organizations, feature:organizations)
+- Custom login-flow logic via Auth0 Actions
+- Advanced Customizations for Universal Login (ACUL) — build fully custom screens beyond what theme + template can do (ACUL, feature:acul)
 
 External:
 

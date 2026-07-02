@@ -7,7 +7,7 @@ Add authentication to Vue.js 3 single-page applications using @auth0/auth0-vue.
 
 - Vue 3+ application (Vite or Vue CLI)
 - Auth0 account and application configured
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
@@ -110,12 +110,12 @@ npm run dev
 | Missing createAuth0 plugin registration | Must call `app.use(createAuth0({...}))` before mounting app |
 | Accessing auth before plugin loads | Wrap auth-dependent code in `v-if="!isLoading"` |
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Initial Auth0 setup → set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Migrating from another auth provider → ask for migration (feature:migration)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Managing Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 
@@ -396,13 +396,13 @@ app.use(
 
 ---
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Initial Auth0 account setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-organizations` - B2B multi-tenancy support
-- `auth0-passkeys` - Add passkey authentication
+- Initial Auth0 account setup → set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Migrating from another auth provider → ask for migration (feature:migration)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- B2B multi-tenancy support → ask for Organizations (feature:organizations)
+- Passkey authentication → ask for MFA/passkeys (feature:mfa)
 
 ---
 

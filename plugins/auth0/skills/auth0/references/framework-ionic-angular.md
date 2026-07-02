@@ -13,15 +13,15 @@ Add authentication to an Ionic Angular application using the `@auth0/auth0-angul
 
 ## When NOT to Use
 
-| Use Case | Recommended Skill |
+| Use Case | Use Instead |
 |----------|------------------|
-| Ionic **React** app with Capacitor | `auth0-ionic-react` |
-| Ionic **Vue** app with Capacitor | `auth0-ionic-vue` |
-| Angular SPA (browser-only, no Capacitor) | `auth0-angular` or `auth0-react` |
-| React Native (no Ionic) | `auth0-react-native` |
-| Expo (React Native) | `auth0-expo` |
-| Native iOS (Swift) | `auth0-swift` |
-| Native Android (Kotlin) | `auth0-android` |
+| Ionic **React** app with Capacitor | the Auth0 integration workflow for Ionic React |
+| Ionic **Vue** app with Capacitor | the Auth0 integration workflow for Ionic Vue |
+| Angular SPA (browser-only, no Capacitor) | the Auth0 integration workflow for Angular (or React) |
+| React Native (no Ionic) | the Auth0 integration workflow for React Native |
+| Expo (React Native) | the Auth0 integration workflow for Expo |
+| Native iOS (Swift) | the Auth0 integration workflow for Swift (iOS) |
+| Native Android (Kotlin) | the Auth0 integration workflow for Android (Kotlin) |
 
 ## Quick Start Workflow
 
@@ -279,11 +279,11 @@ Ionic with Capacitor uses the **Web Auth** method for authentication:
 
 ## Related Skills
 
-- **auth0-ionic-react** — Ionic React with Capacitor
-- **auth0-ionic-vue** — Ionic Vue with Capacitor
-- **auth0-angular** — Angular SPA (browser-only)
-- **auth0-swift** — Native iOS (Swift)
-- **auth0-android** — Native Android (Kotlin)
+- Ionic React with Capacitor → the Auth0 integration workflow for Ionic React
+- Ionic Vue with Capacitor → the Auth0 integration workflow for Ionic Vue
+- Angular SPA (browser-only) → the Auth0 integration workflow for Angular
+- Native iOS (Swift) → the Auth0 integration workflow for Swift
+- Native Android (Kotlin) → the Auth0 integration workflow for Android
 
 ## Quick Reference
 

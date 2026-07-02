@@ -7,13 +7,13 @@ Add authentication to Express.js web applications using express-openid-connect.
 
 - Express.js application
 - Auth0 account and application configured
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
-- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
-- **Next.js applications** - Use `auth0-nextjs` skill which handles both client and server
-- **Mobile applications** - Use `auth0-react-native` for React Native/Expo
+- **Single Page Applications** - Use the Auth0 integration workflow for React, Vue, or Angular for client-side auth
+- **Next.js applications** - Use the Auth0 integration workflow for Next.js, which handles both client and server
+- **Mobile applications** - Use the Auth0 integration workflow for React Native/Expo
 - **Stateless APIs** - Use JWT validation middleware instead of session-based auth
 - **Microservices** - Use JWT validation for service-to-service auth
 
@@ -132,10 +132,10 @@ Visit `http://localhost:3000` and test the login flow.
 
 ## Related Skills
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Auth0 setup — set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Migrate from another auth provider → migration (feature:migration)
+- Multi-factor authentication → MFA (feature:mfa)
+- Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 
@@ -485,10 +485,10 @@ app.use(helmet());
 
 ## Related Skills
 
-- `auth0-quickstart` - Initial Auth0 account setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-organizations` - B2B multi-tenancy support
+- Auth0 setup — set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Migrate from another auth provider → migration (feature:migration)
+- Multi-factor authentication → MFA (feature:mfa)
+- B2B multi-tenancy → Organizations (feature:organizations)
 
 ---
 

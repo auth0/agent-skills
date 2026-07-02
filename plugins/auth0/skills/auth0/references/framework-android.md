@@ -14,15 +14,15 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 - Android API 21 or higher
 - Kotlin or Java project
 - Auth0 account with a Native application configured
-- If you don't have Auth0 set up, see [auth0-quickstart](/auth0-quickstart)
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
-- **React Native apps**: Use [auth0-react-native](/auth0-react-native)
+- **React Native apps**: Use the Auth0 React Native integration
 - **Flutter apps**: Use the native Flutter Auth0 SDK
-- **Web SPAs** (React, Angular, Vue): Use [auth0-react](/auth0-react), [auth0-angular](/auth0-angular), or [auth0-vue](/auth0-vue)
-- **Node.js/Express servers**: Use [auth0-express](/auth0-express)
-- **iOS/macOS apps**: Use [auth0-swift](/auth0-swift)
+- **Web SPAs** (React, Angular, Vue): Use the Auth0 React, Angular, or Vue integration
+- **Node.js/Express servers**: Use the Auth0 Express integration
+- **iOS/macOS apps**: Use the Auth0 Swift integration
 
 ## Quick Start Workflow
 
@@ -137,12 +137,12 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 | Storing tokens in SharedPreferences without encryption | Use `SecureCredentialsManager` to store credentials. Never store tokens manually in plain text. The manager encrypts tokens at rest. |
 | Missing manifest placeholders | Add `manifestPlaceholders = [auth0Domain: "@string/com_auth0_domain", auth0Scheme: "@string/com_auth0_scheme"]` to your `build.gradle` `defaultConfig` block. |
 
-## Related Skills
+## Related Capabilities
 
-- [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
-- [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
-- [auth0-swift](/auth0-swift) — iOS/macOS authentication
-- [auth0-cli](/auth0-cli) — Manage Auth0 resources from the terminal
+- Auth0 setup — set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- iOS/macOS authentication → use the Auth0 Swift integration
+- Manage Auth0 resources from the terminal → use the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 
@@ -431,12 +431,12 @@ error.code: String  // "NO_CREDENTIALS", "CREDENTIALS_EXPIRED", "REFRESH_FAILED"
 error.message: String?
 ```
 
-## Related Skills
+## Related Capabilities
 
-- [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
-- [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
-- [auth0-swift](/auth0-swift) — iOS/macOS authentication
-- [auth0-react-native](/auth0-react-native) — React Native authentication
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Auth0 setup — set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- iOS/macOS authentication → use the Auth0 Swift integration
+- React Native authentication → use the Auth0 React Native integration
 
 ## References
 
@@ -1364,10 +1364,10 @@ This skill accepts an optional target version argument:
 
 ## When NOT to Use
 
-- **New Auth0 integration** (no existing Auth0.Android SDK): Use [auth0-android](/auth0-android)
+- **New Auth0 integration** (no existing Auth0.Android SDK): Use the Auth0 Android integration workflow (above)
 - **Minor/patch update** (e.g., 3.18 → 3.19): Bump the `com.auth0.android:auth0` version in Gradle — no migration needed
-- **iOS / macOS apps**: Use [auth0-swift-major-migration](/auth0-swift-major-migration)
-- **React Native / Expo**: Use [auth0-react-native](/auth0-react-native) or [auth0-expo](/auth0-expo)
+- **iOS / macOS apps**: Use the Auth0 Swift major-version migration
+- **React Native / Expo**: Use the Auth0 React Native or Expo integration
 - **Flutter**: Use the native Flutter Auth0 SDK
 
 ## Prerequisites
@@ -1871,11 +1871,11 @@ Present a concise summary covering:
 | Continuing past 10 failed build cycles | Stop and show the user the remaining errors |
 | Skipping the migration summary | Always produce the full summary — the user needs it |
 
-## Related Skills
+## Related Capabilities
 
-- [auth0-android](/auth0-android) — New Auth0.Android integration from scratch
-- [auth0-swift-major-migration](/auth0-swift-major-migration) — Auth0.swift major version upgrades
-- [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
+- New Auth0.Android integration from scratch → use the Auth0 Android integration workflow (above)
+- Auth0.swift major version upgrades → use the Auth0 Swift major-version migration
+- Multi-factor authentication → ask for MFA (feature:mfa)
 
 ---
 

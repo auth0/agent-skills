@@ -217,10 +217,10 @@ export default defineEventHandler(async (event) => {
 
 **Guides (sections below):** Route Protection Patterns • Custom Session Stores • Common Examples
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Auth0 setup — if Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Managing Auth0 resources from the terminal — the Auth0 CLI (`tooling-cli`)
 
 
 **Links:** [Auth0-Nuxt GitHub](https://github.com/auth0/auth0-nuxt) • [Auth0 Docs](https://auth0.com/docs) • [Nuxt Modules](https://nuxt.com/modules)

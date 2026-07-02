@@ -7,12 +7,12 @@ Add authentication to Next.js applications using @auth0/nextjs-auth0. Supports b
 
 - Next.js 13+ application (App Router or Pages Router)
 - Auth0 account and application configured
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
-- **Client-side only React apps** - Use `auth0-react` for Vite/CRA SPAs
-- **React Native mobile apps** - Use `auth0-react-native` for iOS/Android
+- **Client-side only React apps** - Use the Auth0 integration workflow for React (Vite/CRA SPAs)
+- **React Native mobile apps** - Use the Auth0 integration workflow for React Native (iOS/Android)
 - **Non-Next.js frameworks** - Use framework-specific SDKs (Express, Vue, Angular, etc.)
 - **Stateless APIs only** - Use JWT validation middleware if you don't need session management
 
@@ -216,12 +216,12 @@ Visit `http://localhost:3000` and test the login flow.
 | Using useUser in Server Component | useUser is client-only, use `auth0.getSession()` for Server Components |
 | AUTH0_DOMAIN includes https:// | v4 `AUTH0_DOMAIN` should be just the domain (e.g., `example.auth0.com`), no scheme |
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Auth0 setup — run the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Migrating from another auth provider → ask for migration (feature:migration)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Managing Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 
@@ -388,13 +388,13 @@ export const auth0 = new Auth0Client({
 
 ---
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Initial Auth0 account setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-organizations` - B2B multi-tenancy support
-- `auth0-passkeys` - Add passkey authentication
+- Auth0 account setup — run the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Migrating from another auth provider → ask for migration (feature:migration)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- B2B multi-tenancy support → ask for Organizations (feature:organizations)
+- Passkey authentication → ask for MFA (feature:mfa)
 
 ---
 

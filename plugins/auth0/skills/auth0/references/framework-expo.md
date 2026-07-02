@@ -8,21 +8,21 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 - Expo SDK 53 or higher (react-native-auth0 v5.x requires Expo 53+)
 - React 19 and React Native 0.78.0 or higher
 - Auth0 account with a **Native** application configured
-- If Auth0 is not set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 - **Not compatible with Expo Go** — requires custom development client or EAS Build
 
 ## When NOT to Use
 
-| Use Case | Recommended Skill |
+| Use Case | Use Instead |
 |----------|------------------|
-| Bare React Native CLI project (no Expo) | `auth0-react-native` |
-| React web SPA (Vite/CRA) | `auth0-react` |
-| Next.js application | `auth0-nextjs` |
-| Vue.js SPA | `auth0-vue` |
-| Angular SPA | `auth0-angular` |
-| Express.js backend | `auth0-express` |
-| Native Android (Kotlin/Java) | `auth0-android` |
-| Backend API (JWT validation) | `auth0-fastify-api` or `auth0-express` |
+| Bare React Native CLI project (no Expo) | the Auth0 integration workflow for React Native |
+| React web SPA (Vite/CRA) | the Auth0 integration workflow for React |
+| Next.js application | the Auth0 integration workflow for Next.js |
+| Vue.js SPA | the Auth0 integration workflow for Vue.js |
+| Angular SPA | the Auth0 integration workflow for Angular |
+| Express.js backend | the Auth0 integration workflow for Express.js |
+| Native Android (Kotlin/Java) | the Auth0 integration workflow for Android |
+| Backend API (JWT validation) | the Auth0 integration workflow for Fastify or Express.js |
 
 ## Quick Start Workflow
 
@@ -196,12 +196,12 @@ export default function App() {
 | Using react-native-auth0 v5.x with Expo < 53 | Version 5.x requires Expo 53+. Use v4.x for older Expo versions. |
 | Not testing on physical device | Biometric authentication (Face ID, fingerprint) only works on a physical device, not simulators. Always test the full auth flow on a real device before release. |
 
-## Related Skills
+## Related Capabilities
 
-- [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
-- [auth0-react-native](/auth0-react-native) — Bare React Native CLI projects
-- [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
-- [auth0-cli](/auth0-cli) — Manage Auth0 resources from the terminal
+- Auth0 setup — set up an account and application with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Bare React Native CLI projects → the Auth0 integration workflow for React Native
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Managing Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## References
 
@@ -397,11 +397,11 @@ Custom URL schemes can be subject to [client impersonation attacks](https://data
 - The SDK validates ID token signatures, issuer, audience, and nonce
 - Enable certificate pinning for additional security in high-security environments
 
-## Related Skills
+## Related Capabilities
 
-- [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
-- [auth0-react-native](/auth0-react-native) — Bare React Native CLI projects
-- [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
+- Auth0 setup — set up an account and application with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Bare React Native CLI projects → the Auth0 integration workflow for React Native
+- Multi-factor authentication → ask for MFA (feature:mfa)
 
 ## References
 

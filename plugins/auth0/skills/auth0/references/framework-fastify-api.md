@@ -9,14 +9,14 @@ Protect Fastify API endpoints with JWT access token validation using @auth0/auth
 - Fastify API application (v5.x or newer)
 - Node.js 20 LTS or newer
 - Auth0 API configured (not Application - must be API resource)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
 - **Server-rendered web applications** - Use `@auth0/auth0-fastify` for session-based auth
-- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
-- **Next.js applications** - Use `auth0-nextjs` skill
-- **Mobile applications** - Use `auth0-react-native` for React Native/Expo
+- **Single Page Applications** - Use the Auth0 integration workflow for React, Vue, or Angular for client-side auth
+- **Next.js applications** - Use the Auth0 integration workflow for Next.js
+- **Mobile applications** - Use the Auth0 integration workflow for React Native/Expo
 
 
 ## Quick Start Workflow
@@ -128,12 +128,12 @@ curl http://localhost:3001/api/private \
 | Not handling 401/403 errors | Implement proper error handling for unauthorized/forbidden responses |
 
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-fastify` - For server-rendered Fastify web apps with sessions
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Basic Auth0 setup → set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Server-rendered Fastify web apps with sessions → use the Auth0 integration workflow for Fastify (session-based)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 
 ## Quick Reference

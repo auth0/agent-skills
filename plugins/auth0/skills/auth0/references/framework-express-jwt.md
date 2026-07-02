@@ -105,12 +105,12 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 ## Related Skills
 
-- **[auth0-express](../auth0-express)** — For Express web apps with login UI (sessions, cookies)
-- **[auth0-nextjs](../auth0-nextjs)** — For Next.js server-side web apps
-- **[auth0-aspnetcore-api](../auth0-aspnetcore-api)** — BACKEND_API reference implementation for .NET
-- **[go-jwt-middleware](../go-jwt-middleware)** — JWT middleware for Go APIs
-- **[auth0-api-python](../auth0-api-python)** — JWT validation for Python APIs (Flask/FastAPI)
-- **[auth0-cli](../auth0-cli)** — Manage Auth0 resources from the terminal
+- Express web apps with login UI (sessions, cookies) → the Auth0 integration workflow for Express
+- Next.js server-side web apps → the Auth0 integration workflow for Next.js
+- .NET Web API (BACKEND_API reference implementation) → the Auth0 integration workflow for ASP.NET Core
+- JWT middleware for Go APIs → the Auth0 integration workflow for Go
+- JWT validation for Python APIs (Flask/FastAPI) → the Auth0 integration workflow for FastAPI or Flask
+- Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 

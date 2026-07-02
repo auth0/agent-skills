@@ -5,11 +5,11 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 
 ## When NOT to Use
 
-- **Android apps**: Use [auth0-android](/auth0-android)
-- **React Native apps**: Use [auth0-react-native](/auth0-react-native)
+- **Android apps**: Use the Auth0 integration workflow for Android
+- **React Native apps**: Use the Auth0 integration workflow for React Native
 - **Flutter apps**: Use the native Flutter Auth0 SDK
-- **Web SPAs** (React, Angular, Vue): Use [auth0-react](/auth0-react), [auth0-angular](/auth0-angular), or [auth0-vue](/auth0-vue)
-- **Node.js/Express servers**: Use [auth0-express](/auth0-express)
+- **Web SPAs** (React, Angular, Vue): Use the Auth0 integration workflow for React, Angular, or Vue
+- **Node.js/Express servers**: Use the Auth0 integration workflow for Express
 
 ## Prerequisites
 
@@ -264,10 +264,10 @@ private let auth = AuthenticationService()
 | Not calling `clearSession()` on logout | Always call `clearSession()` to remove the Auth0 session cookie from the browser |
 | Build error "No such module 'Auth0'" | Verify the package is added to the correct target; for CocoaPods, open `.xcworkspace` |
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Auth0 setup — if Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Manage Auth0 resources from the terminal with the Auth0 CLI (`tooling-cli`)
 
 
 ## References
@@ -465,13 +465,13 @@ if let claims = try? IDTokenClaimsValidation().validate(credentials.idToken) {
 
 ---
 
-## Related Skills
+## Related Capabilities
 
-- [auth0-android](/auth0-android) — Auth0 authentication for Android/Kotlin apps
-- [auth0-flutter](/auth0-flutter) — Cross-platform iOS + Android authentication with Flutter
-- [auth0-react-native](/auth0-react-native) — Cross-platform iOS + Android authentication with React Native
-- [auth0-quickstart](/auth0-quickstart) — Set up an Auth0 account and application
-- [auth0-mfa](/auth0-mfa) — Configure multi-factor authentication
+- Auth0 authentication for Android/Kotlin apps — the Auth0 integration workflow for Android
+- Cross-platform iOS + Android authentication with Flutter — the Auth0 integration workflow for Flutter
+- Cross-platform iOS + Android authentication with React Native — the Auth0 integration workflow for React Native
+- Auth0 setup — if Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Multi-factor authentication — ask for MFA (feature:mfa)
 
 ---
 
@@ -1254,10 +1254,10 @@ Migrates an existing Auth0.swift v2 integration to v3. Every code change is gate
 
 ## When NOT to Use
 
-- **New Auth0 integration** (no existing Auth0.swift): Use [auth0-swift](/auth0-swift)
+- **New Auth0 integration** (no existing Auth0.swift): Use the Auth0 integration workflow for Swift
 - **Minor/patch update** (e.g., 2.17 → 2.18): Run `pod update Auth0` or update SPM — no migration needed
-- **Android apps**: Use [auth0-android](/auth0-android)
-- **React Native / Expo**: Use [auth0-react-native](/auth0-react-native) or [auth0-expo](/auth0-expo)
+- **Android apps**: Use the Auth0 integration workflow for Android
+- **React Native / Expo**: Use the Auth0 integration workflow for React Native or Expo
 
 ## Prerequisites
 
@@ -2547,10 +2547,10 @@ Present a concise summary covering:
 | Continuing past 10 failed build cycles | Stop and show the user the remaining errors |
 | Skipping the migration summary | Always produce the full summary — the user needs it |
 
-## Related Skills
+## Related Capabilities
 
-- [auth0-swift](/auth0-swift) — New Auth0.swift integration from scratch
-- [auth0-android](/auth0-android) — Android native authentication
+- New Auth0.swift integration from scratch — the Auth0 integration workflow for Swift
+- Android native authentication — the Auth0 integration workflow for Android
 
 ---
 

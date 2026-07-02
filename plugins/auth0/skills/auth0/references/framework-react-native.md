@@ -7,13 +7,13 @@ Add authentication to React Native and Expo mobile applications using react-nati
 
 - React Native or Expo application
 - Auth0 account and application configured as Native type
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
-- **Expo managed workflow** - Use `auth0-expo` skill for Expo apps with config plugin
-- **React web applications** - Use `auth0-react` skill for SPAs (Vite/CRA)
-- **React Server Components** - Use `auth0-nextjs` for Next.js applications
+- **Expo managed workflow** - Use the Auth0 integration workflow for Expo (config plugin)
+- **React web applications** - Use the Auth0 integration workflow for React SPAs (Vite/CRA)
+- **React Server Components** - Use the Auth0 integration workflow for Next.js applications
 - **Non-React native apps** - Use platform-specific SDKs (Swift for iOS, Kotlin for Android)
 - **Backend APIs** - Use JWT validation libraries for your server language
 
@@ -194,12 +194,12 @@ npx react-native run-android
 | Not handling auth errors | Wrap authorize/clearSession calls in try-catch blocks |
 | Deep link not working on Android | Verify `android:exported="true"` is set on RedirectActivity |
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Basic Auth0 setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-cli` - Manage Auth0 resources from the terminal
+- Auth0 setup — run the CLI: `auth0 login`, then `auth0 apps create`
+- Migrate from another auth provider → ask for migration (feature:migration)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
 
@@ -272,13 +272,13 @@ npx react-native run-android
 
 ---
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-quickstart` - Initial Auth0 account setup
-- `auth0-migration` - Migrate from another auth provider
-- `auth0-mfa` - Add Multi-Factor Authentication
-- `auth0-passkeys` - Add passkey authentication
-- `auth0-organizations` - B2B multi-tenancy support
+- Auth0 setup — run the CLI: `auth0 login`, then `auth0 apps create`
+- Migrate from another auth provider → ask for migration (feature:migration)
+- Multi-factor authentication → ask for MFA (feature:mfa)
+- Passkey authentication → ask for MFA/passkeys (feature:mfa)
+- B2B multi-tenancy support → ask for Organizations (feature:organizations)
 
 ---
 

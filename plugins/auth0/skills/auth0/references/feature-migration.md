@@ -15,7 +15,7 @@ Migrate users and authentication flows from existing auth providers to Auth0.
 
 ## When NOT to Use
 
-- **Starting fresh with Auth0** - Use `auth0-quickstart` for new projects without existing users
+- **Starting fresh with Auth0** - For new projects without existing users, set up Auth0 first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 - **Already using Auth0** - This is for migrating TO Auth0, not between Auth0 tenants
 - **Only adding MFA or features** - Use feature-specific skills if just adding capabilities
 
@@ -109,13 +109,7 @@ Update your application code to use Auth0 SDKs.
 - Supabase to Auth0
 - Clerk to Auth0
 
-**After migrating code, use framework-specific skills:**
-- `auth0-react` for React applications
-- `auth0-nextjs` for Next.js applications
-- `auth0-vue` for Vue.js applications
-- `auth0-angular` for Angular applications
-- `auth0-express` for Express.js applications
-- `auth0-react-native` for React Native/Expo applications
+**After migrating code, follow the Auth0 integration workflow for your framework** (React, Next.js, Vue.js, Angular, Express.js, or React Native/Expo).
 
 
 ### Step 4: Update API JWT Validation
@@ -205,18 +199,7 @@ Before/after examples for all major frameworks:
 - API JWT Validation
 
 
-## Related Skills
-
-### Core Integration
-- `auth0-quickstart` - Initial Auth0 setup after migration
-
-### SDK Skills
-- `auth0-react` - React SPA integration
-- `auth0-nextjs` - Next.js integration
-- `auth0-vue` - Vue.js integration
-- `auth0-angular` - Angular integration
-- `auth0-express` - Express.js integration
-- `auth0-react-native` - React Native/Expo integration
+All of this lives in the one `auth0` skill — just describe what you need (e.g. "add MFA", "protect my API").
 
 
 ## References

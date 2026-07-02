@@ -8,16 +8,16 @@ Add login, logout, and user profile to a PHP web application using `auth0/auth0-
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
 - Composer installed
 - Auth0 Regular Web Application configured (not an API - must be an Application)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
-- **PHP APIs with JWT Bearer validation** - Use `auth0-php-api` for stateless API token validation
+- **PHP APIs with JWT Bearer validation** - Use the Auth0 PHP API integration workflow for stateless API token validation
 - **Laravel applications** - Use a dedicated Laravel integration with `auth0/laravel-auth0`
 - **Symfony applications** - Use a dedicated Symfony integration with `auth0/symfony`
-- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
-- **Next.js applications** - Use `auth0-nextjs` which handles both client and server
-- **Node.js web apps** - Use `auth0-express` or `auth0-fastify` for session-based auth
+- **Single Page Applications** - Use the Auth0 integration workflow for React, Vue, or Angular for client-side auth
+- **Next.js applications** - Use the Auth0 integration workflow for Next.js, which handles both client and server
+- **Node.js web apps** - Use the Auth0 integration workflow for Express or Fastify for session-based auth
 
 ## Quick Start Workflow
 
@@ -549,12 +549,12 @@ $credentials->accessTokenScope;        // array - granted scopes
 - `given_name`, `family_name`
 - `updated_at`, `locale`
 
-## Related Skills
+## Related Capabilities
 
-- `auth0-php-api` - For protecting PHP APIs with JWT Bearer token validation
-- `auth0-quickstart` - Basic Auth0 setup and framework detection
-- `auth0-cli` - Manage Auth0 resources from the terminal
-- `auth0-mfa` - Add Multi-Factor Authentication
+- Protecting PHP APIs with JWT Bearer token validation → ask for the Auth0 PHP API integration workflow
+- Auth0 setup and framework detection → set up Auth0 with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- Managing Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
+- Multi-factor authentication → ask for MFA (feature:mfa)
 
 ## Quick Reference
 

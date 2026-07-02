@@ -8,14 +8,14 @@ Protect PHP API endpoints with JWT access token validation using `auth0/auth0-ph
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
 - Composer installed
 - Auth0 API resource configured (not an Application - must be an API)
-- If you don't have Auth0 set up yet, use the `auth0-quickstart` skill first
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
 ## When NOT to Use
 
-- **PHP web applications with login/logout flows** - Use `auth0-php` for session-based authentication
+- **PHP web applications with login/logout flows** - use the Auth0 PHP web app integration workflow for session-based authentication
 - **Laravel applications** - Use `auth0/laravel-auth0` which has built-in API guard support
 - **Symfony applications** - Use `auth0/symfony` with its security bundle
-- **Single Page Applications** - Use `auth0-react`, `auth0-vue`, or `auth0-angular` for client-side auth
+- **Single Page Applications** - use the Auth0 integration workflow for React, Vue, or Angular for client-side auth
 - **Issuing tokens** - This skill is for *validating* access tokens, not issuing them
 
 ## Quick Start Workflow
@@ -439,10 +439,10 @@ Get a test token via Auth0 Dashboard -> APIs -> Test tab, or via the M2M flow de
 
 ## Related Skills
 
-- `auth0-php` - For PHP web apps with login/logout using session-based auth
-- `auth0-quickstart` - Basic Auth0 setup and framework detection
-- `auth0-cli` - Manage Auth0 resources from the terminal
-- `auth0-mfa` - Add Multi-Factor Authentication
+- PHP web apps with login/logout using session-based auth → ask for the Auth0 PHP web app integration workflow
+- Basic Auth0 setup and framework detection → set up Auth0 with the CLI (`auth0 login`, then `auth0 apps create`)
+- Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
+- Add Multi-Factor Authentication → ask for MFA (feature:mfa)
 
 ## Quick Reference
 
