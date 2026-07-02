@@ -16,7 +16,12 @@ from pathlib import Path
 SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`(?=\s*[|/])")
 READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
 BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
-LINK_RE = re.compile(r"\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)")
+# A markdown link whose target is a .md file — ANY path form (bare `x.md`,
+# `./references/x.md`, `../SKILL.md`), with an optional #anchor. External URLs
+# (http/https) are excluded so real doc links are not flagged; non-.md targets
+# (asset templates like `x.tsx`) never match. This catches every intra-skill
+# .md link, which the one-hop rule forbids in a reference file.
+LINK_RE = re.compile(r"\]\((?!https?://)([^)]*\.md)(?:#[^)]*)?\)")
 
 
 def _router_slugs(skill_md: str) -> set:

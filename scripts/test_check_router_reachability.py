@@ -68,10 +68,30 @@ class ReachabilityTest(unittest.TestCase):
                 "Read: references/framework-react.md\n",
                 {"framework-react.md":
                     "[docs](https://auth0.com/docs/x.md) "
+                    "[docs2](https://auth0.com/docs/y.md#anchor) "
                     "[tpl](../assets/acul/react-templates/login-id.tsx)"},
             )
             unreachable, bad_links = check_router(skill)
             self.assertEqual(bad_links, [])
+
+    def test_path_prefixed_md_links_are_flagged(self):
+        # Links with ./ ../ or references/ prefixes (and links to ../SKILL.md)
+        # must ALL be flagged — the one-hop rule forbids any .md link.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-react.md\n",
+                {"framework-react.md":
+                    "[a](./references/setup.md) "
+                    "[b](../SKILL.md) "
+                    "[c](react-integration.md#protected-routes)"},
+            )
+            unreachable, bad_links = check_router(skill)
+            targets = [t for _, t in bad_links]
+            self.assertIn("./references/setup.md", targets)
+            self.assertIn("../SKILL.md", targets)
+            self.assertIn("react-integration.md", targets)
 
     def test_template_slug_universe_comes_from_router_not_hardcode(self):
         # A framework file whose slug the router NEVER mentions must be flagged
