@@ -6,20 +6,24 @@ links are defects — including stale links left by earlier consolidation."""
 import re, sys
 from pathlib import Path
 
-# Every bare `slug` token in a router table's value column is a routable
-# framework/target slug. The router is the single source of truth — no
-# hardcoded mirror list (which could mask an orphaned file, e.g. php-api).
-SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
+# A routable framework/target slug is a backticked token in a table's VALUE
+# position — i.e. followed by a `|` (next cell / row end) or `/` (slash-list
+# like `php` / `php-api`). The lookahead deliberately EXCLUDES left-column
+# dependency names (e.g. `authlib`, `python-jose`, `express-openid-connect`),
+# which are followed by prose/other backticks, not `|`/`/`. This keeps the
+# router the single source of truth without a hardcoded mirror list AND without
+# admitting phantom dependency slugs that could mask a future orphan.
+SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`(?=\s*[|/])")
 READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
 BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
 LINK_RE = re.compile(r"\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)")
 
 
 def _router_slugs(skill_md: str) -> set:
-    """All backticked slugs the router mentions — the routable value universe.
-    A superset of framework/tooling slugs; safe because we only intersect it
-    with `{...}`-template expansions, and any real reference file must have a
-    slug the router actually names to be reachable."""
+    """The routable value-slug universe: backticked tokens in table value
+    positions (followed by `|` or `/`). Derived from the router itself — no
+    hardcoded list — and scoped to value columns so left-column dependency
+    names are not mistaken for routable framework slugs."""
     return set(SLUG_RE.findall(skill_md))
 
 

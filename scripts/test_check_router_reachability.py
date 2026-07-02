@@ -29,7 +29,7 @@ class ReachabilityTest(unittest.TestCase):
             skill = _make_skill(
                 root,
                 "Read: references/framework-{framework}.md\n"
-                "`react` `php-api`\n",
+                "| a | `react` |\n| b | `php-api` |\n",
                 {"framework-react.md": "ok", "framework-php-api.md": "ok"},
             )
             unreachable, bad_links = check_router(skill)
@@ -100,6 +100,34 @@ class ReachabilityTest(unittest.TestCase):
             unreachable, bad_links = check_router(skill)
             self.assertNotIn("tooling-terraform.md", unreachable)
             self.assertIn("tooling-orphan.md", unreachable)
+
+    def test_left_column_dependency_name_is_not_a_routable_slug(self):
+        # A dependency name in the left (detection) column must NOT make a
+        # same-named framework file reachable — only value-column slugs route.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-{framework}.md\n"
+                "| `authlib` or `python-jose` + `flask` | `flask` |\n",
+                {"framework-flask.md": "ok", "framework-authlib.md": "orphan"},
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertNotIn("framework-flask.md", unreachable)  # value-col slug
+            self.assertIn("framework-authlib.md", unreachable)   # left-col dep
+
+    def test_slash_list_slugs_both_route(self):
+        # A slash-list value cell like `php` / `php-api` routes BOTH files.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-{framework}.md\n"
+                "| PHP web app / PHP API | `php` / `php-api` |\n",
+                {"framework-php.md": "ok", "framework-php-api.md": "ok"},
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertEqual(unreachable, [])
 
 if __name__ == "__main__":
     unittest.main()
