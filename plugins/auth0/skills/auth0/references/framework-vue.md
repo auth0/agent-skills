@@ -139,6 +139,12 @@ npm run dev
 - `logout()` - Log out user
 - `getAccessTokenSilently()` - Get access token for API calls
 
+**DPoP composables** (require `useDpop: true` in `createAuth0` config):
+- `createFetcher(config)` — returns a DPoP-aware `fetch`-compatible function
+- `generateDpopProof(params)` — manually generate a DPoP proof JWT
+- `getDpopNonce(id?)` / `setDpopNonce(nonce, id?)` — read/store the server DPoP nonce
+For full DPoP setup, ask for DPoP token binding (feature:dpop).
+
 **Common Use Cases:**
 - Login/Logout buttons → See Step 4 above
 - Protected routes with navigation guards → [Integration Guide](vue-integration.md#protected-routes)

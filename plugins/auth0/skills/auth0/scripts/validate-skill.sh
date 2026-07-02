@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Resolve repo root from script location (safe to run from any directory)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../../../.." && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/../../../../.." && pwd)"
 
 SKILL_MD="$REPO_ROOT/plugins/auth0/skills/auth0/SKILL.md"
 REFS_DIR="$REPO_ROOT/plugins/auth0/skills/auth0/references"
@@ -73,7 +73,7 @@ if [ "$OLD_PATTERNS" -gt 0 ]; then
 fi
 
 # Feature file checks
-EXPECTED_FEATURES="mfa branding custom-domains migration acul"
+EXPECTED_FEATURES="mfa branding custom-domains migration acul dpop"
 for feat in $EXPECTED_FEATURES; do
   if [ ! -f "$REFS_DIR/feature-$feat.md" ]; then
     echo "FAIL: missing references/feature-$feat.md"

@@ -26,6 +26,7 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 | Custom domain (login.example.com, auth.company.com) | **feature:custom-domains** |
 | ACUL, advanced custom universal login screens | **feature:acul** |
 | Branding, login page appearance, logo, colors, theme | **feature:branding** |
+| DPoP, sender-constrained tokens, "bind tokens to the client", prevent token theft/replay | **feature:dpop** |
 | "best practice", "secure", token security, "how should I" | **guidance** |
 | Error: 401, 403, CORS, callback URL mismatch, redirect loop | **debug** |
 | Rate limit, 429, quota exceeded | **debug:rate-limit** |
@@ -164,6 +165,14 @@ Read: references/tooling-{tooling}.md
 ```
 Read: references/feature-branding.md
 Read: references/tooling-{tooling}.md
+```
+
+### feature:dpop
+```
+Read: references/feature-dpop.md
+Read: references/tooling-{tooling}.md
+If a SPA framework is detected (vue/react/angular/spa-js): Read references/framework-{framework}.md
+DPoP is SPA-only (no SSR: Next.js/Nuxt) — feature-dpop.md states the exclusion.
 ```
 
 ### guidance
