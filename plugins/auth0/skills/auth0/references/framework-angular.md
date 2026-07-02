@@ -151,7 +151,7 @@ ng serve
 ## Related Capabilities
 
 - Auth0 setup — run the CLI (`auth0 login`, then `auth0 apps create`)
-- Migrating from another auth provider → ask for migration (feature:migration)
+- Migrating from another auth provider → ask for migration (migrate)
 - Multi-factor authentication → ask for MFA (feature:mfa)
 - Managing Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
@@ -487,7 +487,7 @@ After the redirect callback, `handleRedirectCallback` will be called with the de
 ## Related Capabilities
 
 - Auth0 setup — run the CLI (`auth0 login`, then `auth0 apps create`)
-- Migrating from another auth provider → ask for migration (feature:migration)
+- Migrating from another auth provider → ask for migration (migrate)
 - Multi-factor authentication → ask for MFA (feature:mfa)
 - B2B multi-tenancy → ask for Organizations (feature:organizations)
 - Passkey authentication → ask for MFA (feature:mfa)

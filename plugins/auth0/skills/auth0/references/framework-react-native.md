@@ -197,7 +197,7 @@ npx react-native run-android
 ## Related Capabilities
 
 - Auth0 setup — run the CLI: `auth0 login`, then `auth0 apps create`
-- Migrate from another auth provider → ask for migration (feature:migration)
+- Migrate from another auth provider → ask for migration (migrate)
 - Multi-factor authentication → ask for MFA (feature:mfa)
 - Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
@@ -275,7 +275,7 @@ npx react-native run-android
 ## Related Capabilities
 
 - Auth0 setup — run the CLI: `auth0 login`, then `auth0 apps create`
-- Migrate from another auth provider → ask for migration (feature:migration)
+- Migrate from another auth provider → ask for migration (migrate)
 - Multi-factor authentication → ask for MFA (feature:mfa)
 - Passkey authentication → ask for MFA/passkeys (feature:mfa)
 - B2B multi-tenancy support → ask for Organizations (feature:organizations)

@@ -129,7 +129,7 @@ Visit `http://localhost:3000` and test the login flow.
 ## Related Skills
 
 - Auth0 setup → set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
-- Migrate from another auth provider → migration (feature:migration)
+- Migrate from another auth provider → migration (migrate)
 - Multi-factor authentication → ask for MFA (feature:mfa)
 - Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 

@@ -219,7 +219,7 @@ Visit `http://localhost:3000` and test the login flow.
 ## Related Capabilities
 
 - Auth0 setup — run the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
-- Migrating from another auth provider → ask for migration (feature:migration)
+- Migrating from another auth provider → ask for migration (migrate)
 - Multi-factor authentication → ask for MFA (feature:mfa)
 - Managing Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
@@ -391,7 +391,7 @@ export const auth0 = new Auth0Client({
 ## Related Capabilities
 
 - Auth0 account setup — run the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
-- Migrating from another auth provider → ask for migration (feature:migration)
+- Migrating from another auth provider → ask for migration (migrate)
 - Multi-factor authentication → ask for MFA (feature:mfa)
 - B2B multi-tenancy support → ask for Organizations (feature:organizations)
 - Passkey authentication → ask for MFA (feature:mfa)

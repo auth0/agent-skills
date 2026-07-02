@@ -124,7 +124,7 @@ npm start    # CRA
 ## Related Skills
 
 - Basic Auth0 setup → set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
-- Migrate from another auth provider → ask for migration (feature:migration)
+- Migrate from another auth provider → ask for migration (migrate)
 - Add Multi-Factor Authentication → ask for MFA (feature:mfa)
 - Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
@@ -775,7 +775,7 @@ console.log(user?.app_metadata?.roles);
 ## Related Skills
 
 - Initial Auth0 account setup → set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
-- Migrate from another auth provider → ask for migration (feature:migration)
+- Migrate from another auth provider → ask for migration (migrate)
 - Add Multi-Factor Authentication → ask for MFA (feature:mfa)
 - B2B multi-tenancy support → ask for Organizations (feature:organizations)
 - Add passkey authentication → ask for passkeys (feature:mfa)

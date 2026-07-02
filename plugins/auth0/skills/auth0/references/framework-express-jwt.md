@@ -19,16 +19,15 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 ## When NOT to Use
 
-| Use Case | Recommended Skill |
-|----------|------------------|
-| Building a server-side web app with login UI (Express sessions) | `auth0-express` |
-| Building a Next.js app with server-side auth | `auth0-nextjs` |
-| Building a React/Angular/Vue SPA | `auth0-react`, `auth0-angular`, `auth0-vue` |
-| Building a React Native or mobile app | `auth0-react-native`, `auth0-android`, `auth0-swift` |
-| ASP.NET Core Web API | `auth0-aspnetcore-api` |
-| Go API with JWT middleware | `go-jwt-middleware` |
-| Python API (Flask/FastAPI) | `auth0-api-python` |
-| Node.js API using the older `express-jwt` package | `express-jwt` |
+| Use Case | Use Instead |
+|----------|-------------|
+| Building a server-side web app with login UI (Express sessions) | the Auth0 integration workflow for Express (web app) |
+| Building a Next.js app with server-side auth | the Auth0 integration workflow for Next.js |
+| Building a React/Angular/Vue SPA | the Auth0 integration workflow for React, Angular, or Vue |
+| Building a React Native or mobile app | the Auth0 integration workflow for React Native, Android, or Swift |
+| ASP.NET Core Web API | the Auth0 integration workflow for ASP.NET Core (API) |
+| Go API with JWT middleware | the Auth0 integration workflow for Go |
+| Python API (Flask/FastAPI) | the Auth0 integration workflow for Flask or FastAPI |
 
 ## Quick Start Workflow
 

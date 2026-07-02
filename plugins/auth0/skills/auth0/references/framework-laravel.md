@@ -23,13 +23,13 @@ Add login, logout, and user profile to a Laravel web application using `auth0/lo
 
 | Scenario | Use Instead |
 |----------|-------------|
-| Laravel API with JWT Bearer validation | `auth0-laravel-api` (stateless token guard) |
-| Plain PHP (no framework) web app | `auth0-php` |
-| Plain PHP API | `auth0-php-api` |
-| Single Page Applications | `auth0-react`, `auth0-vue`, or `auth0-angular` |
-| Next.js applications | `auth0-nextjs` |
-| Node.js web apps | `auth0-express` or `auth0-fastify` |
-| Flask web apps | `auth0-flask` |
+| Laravel API with JWT Bearer validation | the Auth0 integration workflow for Laravel (API) — stateless token guard |
+| Plain PHP (no framework) web app | the Auth0 integration workflow for plain PHP |
+| Plain PHP API | the Auth0 integration workflow for plain PHP (API) |
+| Single Page Applications | the Auth0 integration workflow for React, Vue, or Angular |
+| Next.js applications | the Auth0 integration workflow for Next.js |
+| Node.js web apps | the Auth0 integration workflow for Express or Fastify |
+| Flask web apps | the Auth0 integration workflow for Flask |
 
 ---
 
