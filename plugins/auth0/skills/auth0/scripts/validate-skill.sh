@@ -110,4 +110,13 @@ for p in security token-handling multi-tenant rate-limiting common-errors; do
   fi
 done
 
+# Router reachability + no intra-references .md links
+REACH="$REPO_ROOT/scripts/check_router_reachability.py"
+if [ -f "$REACH" ]; then
+  echo "Running router reachability check..."
+  python3 "$REACH" "$REPO_ROOT/plugins/auth0/skills/auth0" || {
+    echo "FAIL: router reachability check failed"; exit 1;
+  }
+fi
+
 echo "PASS"
