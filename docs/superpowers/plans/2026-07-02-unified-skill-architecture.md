@@ -556,9 +556,23 @@ Append to `scripts/test_check_router_reachability.py`:
             unreachable, bad_links = check_router(skill)
             self.assertIn("framework-php-api.md", unreachable)
             self.assertNotIn("framework-react.md", unreachable)
+
+    def test_backticked_bare_md_target_is_reachable(self):
+        # A decision table naming `tooling-terraform.md` in backticks (no
+        # `references/` prefix, no {template}) routes that file.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "| `terraform/` dir | `tooling-terraform.md` |\n",
+                {"tooling-terraform.md": "ok", "tooling-orphan.md": "orphan"},
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertNotIn("tooling-terraform.md", unreachable)
+            self.assertIn("tooling-orphan.md", unreachable)
 ```
 
-Run it — it FAILS today because `php-api` is hardcoded into `FRAMEWORKS`:
+Run it — the first new test FAILS today because `php-api` is hardcoded into `FRAMEWORKS`:
 ```bash
 cd scripts && python3 -m unittest test_check_router_reachability -v; cd ..
 ```
@@ -576,6 +590,8 @@ constants and `_expand`/`check_router` with:
 # hardcoded mirror list (which could mask an orphaned file, e.g. php-api).
 SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
 READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
+# A bare `<name>.md` named in backticks (a decision-table load target).
+BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
 LINK_RE = re.compile(r"\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)")
 
 
@@ -601,9 +617,17 @@ def check_router(skill_dir: Path):
 
     slugs = _router_slugs(skill_md)
     routed = set()
+    # (a) `Read: references/<name>.md` / `references/<name>.md` — literals and
+    #     {framework}/{tooling} templates expanded over the router's slugs.
     for m in READ_RE.finditer(skill_md):
         for name in _expand(m.group(1), slugs):
             routed.add(name)
+    # (b) A bare `<name>.md` named in backticks in a decision table (e.g. the
+    #     Step-3 tooling table lists `tooling-terraform.md` / `tooling-mcp.md`
+    #     as load targets without a `references/` prefix). These are explicit
+    #     routes too — still derived from the router, not a hardcoded list.
+    for name in BACKTICK_MD_RE.findall(skill_md):
+        routed.add(name)
 
     present = {p.name for p in refs_dir.glob("*.md")}
     unreachable = sorted(present - routed)
@@ -633,14 +657,17 @@ update its fixture to put the slugs in backticks (e.g. add
 universe — the test's intent (template expansion reaches both files) is
 preserved.
 
-- [ ] **Step 4: Confirm behavior against the real skill (php-api now flagged)**
+- [ ] **Step 4: Confirm behavior against the real skill (php-api flagged; tooling NOT)**
 
 ```bash
 python3 scripts/check_router_reachability.py plugins/auth0/skills/auth0 || true
 ```
-Expected: NOW reports `framework-php-api.md` under UNREACHABLE (B2 orphan
-correctly caught), plus the dead links until Task 5a runs. This is the proof the
-checker works — the orphan is fixed in Task 6 by adding `php-api` to the router.
+Expected UNREACHABLE list: exactly `framework-php-api.md` (B2 orphan correctly
+caught, fixed in Task 6). It must NOT list `tooling-mcp.md` or
+`tooling-terraform.md` — those are named as backticked load targets in the
+Step-3 tooling table and are reachable via `BACKTICK_MD_RE`. If they appear,
+`BACKTICK_MD_RE` is not matching the router's Step-3 table — fix before
+committing. The dead links also still appear until Task 5a runs.
 
 - [ ] **Step 5: Commit**
 
