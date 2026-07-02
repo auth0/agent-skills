@@ -6,40 +6,38 @@ links are defects — including stale links left by earlier consolidation."""
 import re, sys
 from pathlib import Path
 
-# Enumerated router value sets. Keep in sync with SKILL.md Step 2/3 tables.
-FRAMEWORKS = [
-    "react", "nextjs", "vue", "angular", "spa-js", "nuxt", "express",
-    "express-jwt", "fastify", "fastify-api", "flask", "fastapi-api",
-    "java-mvc", "springboot-api", "aspnetcore-auth", "aspnetcore-api",
-    "maui", "net-android", "net-ios", "winforms", "wpf", "php", "php-api",
-    "laravel", "laravel-api", "go", "swift", "android", "flutter-native",
-    "flutter-web", "react-native", "expo", "ionic-angular", "ionic-react",
-    "ionic-vue",
-]
-TOOLINGS = ["cli", "mcp", "terraform"]
-
-READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md|[a-z0-9-]+\.md)")
-# A bare .md link target: only [a-z0-9-] then .md, so "https://…/x.md" (has "/")
-# and asset paths like "../assets/…/x.tsx" (not .md) do NOT match — only
-# intra-references links such as "](setup.md)" or "](react-api.md)".
+# Every bare `slug` token in a router table's value column is a routable
+# framework/target slug. The router is the single source of truth — no
+# hardcoded mirror list (which could mask an orphaned file, e.g. php-api).
+SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
+READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
 LINK_RE = re.compile(r"\]\(([a-z0-9-]+\.md)(?:#[^)]*)?\)")
 
 
-def _expand(token: str) -> list:
-    if "{framework}" in token:
-        return [token.replace("{framework}", f) for f in FRAMEWORKS]
-    if "{tooling}" in token:
-        return [token.replace("{tooling}", t) for t in TOOLINGS]
-    return [token]
+def _router_slugs(skill_md: str) -> set:
+    """All backticked slugs the router mentions — the routable value universe.
+    A superset of framework/tooling slugs; safe because we only intersect it
+    with `{...}`-template expansions, and any real reference file must have a
+    slug the router actually names to be reachable."""
+    return set(SLUG_RE.findall(skill_md))
+
+
+def _expand(token: str, slugs: set) -> list:
+    # Replace any {placeholder} with each known router slug.
+    ph = re.search(r"\{([a-z]+)\}", token)
+    if not ph:
+        return [token]
+    return [token.replace(ph.group(0), s) for s in slugs]
 
 
 def check_router(skill_dir: Path):
     skill_md = (skill_dir / "SKILL.md").read_text()
     refs_dir = skill_dir / "references"
 
+    slugs = _router_slugs(skill_md)
     routed = set()
     for m in READ_RE.finditer(skill_md):
-        for name in _expand(m.group(1)):
+        for name in _expand(m.group(1), slugs):
             routed.add(name)
 
     present = {p.name for p in refs_dir.glob("*.md")}
@@ -48,7 +46,6 @@ def check_router(skill_dir: Path):
     bad_links = []
     for ref in sorted(present):
         for lm in LINK_RE.finditer((refs_dir / ref).read_text()):
-            # Flag EVERY intra-references .md link — existing target or dead.
             bad_links.append((ref, lm.group(1)))
 
     return unreachable, bad_links

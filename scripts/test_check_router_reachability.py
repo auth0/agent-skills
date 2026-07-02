@@ -29,7 +29,7 @@ class ReachabilityTest(unittest.TestCase):
             skill = _make_skill(
                 root,
                 "Read: references/framework-{framework}.md\n"
-                "<!-- frameworks: react php-api -->\n",
+                "`react` `php-api`\n",
                 {"framework-react.md": "ok", "framework-php-api.md": "ok"},
             )
             unreachable, bad_links = check_router(skill)
@@ -72,6 +72,22 @@ class ReachabilityTest(unittest.TestCase):
             )
             unreachable, bad_links = check_router(skill)
             self.assertEqual(bad_links, [])
+
+    def test_template_slug_universe_comes_from_router_not_hardcode(self):
+        # A framework file whose slug the router NEVER mentions must be flagged
+        # unreachable — even though it matches the framework-*.md shape.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                # Router mentions only `react`; template read for {framework}.
+                "Read: references/framework-{framework}.md\n"
+                "| `@auth0/auth0-react` | `react` |\n",
+                {"framework-react.md": "ok", "framework-php-api.md": "orphan"},
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertIn("framework-php-api.md", unreachable)
+            self.assertNotIn("framework-react.md", unreachable)
 
 if __name__ == "__main__":
     unittest.main()
