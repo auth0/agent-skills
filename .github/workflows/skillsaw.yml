@@ -96,8 +96,10 @@ jobs:
 
     - name: Router reachability check
       run: |
-        python -m pytest scripts/test_check_router_reachability.py -q
-        python scripts/check_router_reachability.py plugins/auth0/skills/auth0
+        # This job only sets up uv/uvx (for skillsaw), so pytest is not on the
+        # runner's python. Run both via `uv run` with pytest provided ephemerally.
+        uv run --with pytest python -m pytest scripts/test_check_router_reachability.py -q
+        uv run python scripts/check_router_reachability.py plugins/auth0/skills/auth0
 
     - name: Upload linter output
       if: always()
