@@ -11,7 +11,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 ## Prerequisites
 
-- **Node.js** 18+ (20+ recommended; required for bootstrap script automation)
+- **Node.js** 18+ (20+ recommended)
 - **Express** 4.x or 5.x
 - **npm** or **yarn**
 - An **Auth0 account** with a configured API (Resource Server)
@@ -40,7 +40,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 >    npm install express-oauth2-jwt-bearer
 >    ```
 >
-> 3. **Configure Auth0** — follow the Setup Guide section below. If the user already provided their Auth0 Domain and API Audience in the prompt, use them directly — skip the bootstrap script and do NOT call `AskUserQuestion` to re-confirm. Otherwise, offer automatic setup via bootstrap script or manual setup.
+> 3. **Configure Auth0** — follow the Setup Guide section below. If the user already provided their Auth0 Domain and API Audience in the prompt, use them directly — skip automatic setup and do NOT call `AskUserQuestion` to re-confirm. Otherwise, offer automatic setup via the Auth0 CLI or manual setup.
 >
 > 4. **Set up middleware** — add to `app.js` or `server.js`:
 >    ```javascript
@@ -86,7 +86,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 ## Detailed Documentation
 
-- **Setup Guide** (see the Setup Guide section below) — Auth0 API registration, .env configuration, bootstrap script for automated setup, and secret management
+- **Setup Guide** (see the Setup Guide section below) — Auth0 API registration, .env configuration, Auth0 CLI for automated setup, and secret management
 - **Integration Patterns** (see the Integration Patterns section below) — Protected endpoints, RBAC with scopes and claims, DPoP, CORS setup, error handling, and testing with curl
 - **API Reference & Testing** (see the API Reference & Testing section below) — Full configuration options, claims reference, complete code example, testing checklist, and common issues
 
@@ -755,34 +755,34 @@ export function mockAuth(payload = { sub: 'test-user' }) {
 
 > **Agent instruction:**
 >
-> **Check if credentials are already provided in the user's prompt:** If the user's prompt already includes Auth0 Domain and API Audience (e.g. `your-tenant.us.auth0.com` and `https://api.example.com`), use them directly — skip to "Write the .env file" below. Do NOT call `AskUserQuestion` to re-confirm provided credentials, and do NOT run the bootstrap script.
+> **Check if credentials are already provided in the user's prompt:** If the user's prompt already includes Auth0 Domain and API Audience (e.g. `your-tenant.us.auth0.com` and `https://api.example.com`), use them directly — skip to "Write the .env file" below. Do NOT call `AskUserQuestion` to re-confirm provided credentials, and do NOT run automatic setup.
 >
 > If credentials are NOT provided, offer setup choices:
 >
 > Use `AskUserQuestion` to ask the user:
 > "How would you like to configure Auth0 for this project?"
-> - Option A: **Automatic setup (recommended)** — runs the bootstrap script to create the Auth0 API automatically
+> - Option A: **Automatic setup (recommended)** — use the Auth0 CLI to create the Auth0 API automatically
 > - Option B: **Manual setup** — provide Auth0 credentials manually
 >
 > **If Automatic Setup (Option A):**
 >
 > 1. **Pre-flight checks:**
->    - Verify Node.js 20+: `node --version`
 >    - Verify Auth0 CLI installed: `auth0 --version`
 >    - Verify logged in: `auth0 tenants list --csv --no-input`
 >    - If any check fails, guide user to install/login, or fall back to Option B
 >
-> 2. **Run bootstrap script:**
+> 2. **Create the Auth0 API (Resource Server)** with the Auth0 CLI, then read back the identifier as `AUTH0_AUDIENCE`:
 >    ```bash
->    cd <skill-dir>/scripts && npm install && node bootstrap.mjs <project-path>
+>    auth0 apis create \
+>      --name "My Node API" \
+>      --identifier "https://my-api.example.com" \
+>      --json --no-input
 >    ```
->    The script will:
->    - Validate the project structure (detect `package.json` with Node.js API patterns)
->    - Discover existing Auth0 APIs
->    - Show a change plan (CREATE or SKIP)
->    - Create the Auth0 API (Resource Server) with the specified identifier
->    - Write the `.env` configuration file with Domain + Audience
->    - Print a summary
+>    - The `--identifier` you choose becomes the `AUTH0_AUDIENCE` value your middleware validates against.
+>    - Get the tenant domain for `AUTH0_DOMAIN` with `auth0 tenants list --csv --no-input`.
+>    - If an API with that identifier already exists, skip creation and reuse it (`auth0 apis list --json --no-input`).
+>
+> 3. **Write the `.env` configuration file** with the Domain + Audience (see below).
 >
 > **If Manual Setup (Option B):**
 >
@@ -801,9 +801,9 @@ export function mockAuth(payload = { sub: 'test-user' }) {
 
 ### Auth0 API Registration (Resource Server)
 
-The bootstrap script automatically runs `auth0 apis create` to register your API as a Resource Server. This produces the `AUTH0_AUDIENCE` value (the API Identifier) that your middleware uses for token validation.
+The Automatic setup path runs `auth0 apis create` to register your API as a Resource Server. This produces the `AUTH0_AUDIENCE` value (the API Identifier) that your middleware uses for token validation.
 
-**Auth0 CLI command (for reference):**
+**Auth0 CLI command:**
 ```bash
 auth0 apis create \
   --name "My Node API" \
@@ -811,7 +811,7 @@ auth0 apis create \
   --json --no-input
 ```
 
-### Creating the Auth0 API manually (if not using bootstrap script)
+### Creating the Auth0 API manually (Dashboard)
 
 1. Go to [Auth0 Dashboard → APIs](https://manage.auth0.com/#/apis)
 2. Click **Create API**
@@ -834,7 +834,7 @@ To use `claimIncludes('permissions', 'read:data')` with Auth0 RBAC:
 
 ## Post-Setup Steps
 
-After running the bootstrap script or manual setup:
+After completing automatic (Auth0 CLI) or manual setup:
 
 1. **Verify domain and audience** are correct in `.env`
 2. **Test the API is reachable**: `auth0 apis list --json --no-input | grep your-api`

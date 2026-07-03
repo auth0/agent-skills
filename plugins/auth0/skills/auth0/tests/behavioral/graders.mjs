@@ -43,6 +43,16 @@ function isLockfile(name) {
   return LOCKFILES.has(name) || name.endsWith(".lock")
 }
 
+// `.env`, `.env.local`, `.env.production`, … are dotfiles: path.extname(".env")
+// is "" and path.extname(".env.local") is ".local", so they never match
+// SOURCE_EXTENSIONS. Match them by name so secret-related not_contains graders
+// (e.g. client_secret) actually see the file secrets land in.
+function isSourceFile(name) {
+  if (isLockfile(name)) return false
+  if (name === ".env" || name.startsWith(".env.")) return true
+  return SOURCE_EXTENSIONS.has(path.extname(name))
+}
+
 function collectSourceFiles(dir, files = []) {
   if (!fs.existsSync(dir)) return files
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -50,7 +60,7 @@ function collectSourceFiles(dir, files = []) {
     if (entry.isDirectory()) {
       if (["node_modules", ".git", "build", "dist", ".gradle"].includes(entry.name)) continue
       collectSourceFiles(full, files)
-    } else if (SOURCE_EXTENSIONS.has(path.extname(entry.name)) && !isLockfile(entry.name)) {
+    } else if (isSourceFile(entry.name)) {
       files.push(full)
     }
   }

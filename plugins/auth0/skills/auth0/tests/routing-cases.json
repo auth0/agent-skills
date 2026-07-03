@@ -115,6 +115,13 @@
       "framework": "react",
       "tooling": "cli",
       "expect_refs": ["feature-migration.md", "tooling-cli.md", "framework-react.md"]
+    },
+    {
+      "id": "migrate-terraform-tenant",
+      "intent": "migrate",
+      "framework": "nextjs",
+      "tooling": "terraform",
+      "expect_refs": ["feature-migration.md", "tooling-terraform.md", "framework-nextjs.md"]
     }
   ]
 }

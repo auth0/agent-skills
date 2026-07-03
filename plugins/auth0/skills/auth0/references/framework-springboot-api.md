@@ -27,7 +27,7 @@ Protect Spring Boot API endpoints with JWT access token validation using `com.au
 
 ## Quick Start Workflow
 
-> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, audience), use them directly — skip the bootstrap script and credential questions. Only offer setup options when credentials are missing.
+> **Agent instruction:** If the user's prompt already provides Auth0 credentials (domain, audience), use them directly — skip automatic setup and credential questions. Only offer setup options when credentials are missing.
 
 ### 1. Install SDK
 

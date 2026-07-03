@@ -51,7 +51,14 @@ const slugArgs = argv.filter((a, i) => !a.startsWith("--") && argv[i - 1] !== "-
 function loadCases() {
   return fs.readdirSync(CASES_DIR)
     .filter((f) => f.endsWith(".json"))
-    .map((f) => ({ file: f, ...JSON.parse(fs.readFileSync(path.join(CASES_DIR, f), "utf-8")) }))
+    .map((f) => {
+      const raw = fs.readFileSync(path.join(CASES_DIR, f), "utf-8")
+      try {
+        return { file: f, ...JSON.parse(raw) }
+      } catch (e) {
+        throw new Error(`Invalid JSON in cases/${f}: ${e.message}`)
+      }
+    })
     .sort((a, b) => a.slug.localeCompare(b.slug))
 }
 
@@ -179,11 +186,18 @@ async function main() {
   for (const c of cases) summary.push(await runCase(c, opts))
 
   console.log(`\n${"=".repeat(72)}\n  SUMMARY\n`)
+  let failed = 0
   for (const s of summary) {
     if (!s.graded) { console.log(`  ${s.slug.padEnd(20)} (manual review — no machine graders)`); continue }
     const d = s.withoutPass == null ? "" : `  delta ${s.withPass - s.withoutPass >= 0 ? "+" : ""}${s.withPass - s.withoutPass}`
-    console.log(`  ${s.slug.padEnd(20)} with-skill ${s.withPass}/${s.total}${d}`)
+    // A graded case fails if any grader did not pass with the skill loaded.
+    const isFail = s.withPass < s.total
+    if (isFail) failed++
+    console.log(`  ${isFail ? "FAIL" : "PASS"}  ${s.slug.padEnd(20)} with-skill ${s.withPass}/${s.total}${d}`)
   }
+  const graded = summary.filter((s) => s.graded).length
+  console.log(`\n  ${graded - failed}/${graded} graded cases passed, ${failed} failed.`)
+  process.exit(failed ? 1 : 0)
 }
 
 main().catch((e) => { console.error(e); process.exit(1) })

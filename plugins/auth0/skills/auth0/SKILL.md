@@ -53,23 +53,27 @@ Read the project files. **Stop at the first match.**
 
 ### Node.js / JavaScript / TypeScript — check `package.json` → `dependencies`
 
+Rows are ordered most-specific first — an Ionic/Capacitor project also carries
+`@auth0/auth0-angular` (etc.), so the `@capacitor/browser` rows must be checked
+before the plain framework rows.
+
 | Package | Framework |
 |---|---|
-| `@auth0/auth0-react` | `react` |
+| `@capacitor/browser` + `@auth0/auth0-angular` | `ionic-angular` |
+| `@capacitor/browser` + `@auth0/auth0-react` | `ionic-react` |
+| `@capacitor/browser` + `@auth0/auth0-vue` | `ionic-vue` |
 | `@auth0/nextjs-auth0` | `nextjs` |
+| `@auth0/auth0-nuxt` | `nuxt` |
+| `@auth0/auth0-react` | `react` |
 | `@auth0/auth0-vue` | `vue` |
 | `@auth0/auth0-angular` | `angular` |
 | `@auth0/auth0-spa-js` | `spa-js` |
-| `@auth0/auth0-nuxt` | `nuxt` |
 | `express-openid-connect` or `@auth0/express-openid-connect` | `express` |
 | `@auth0/auth0-fastify` | `fastify` |
 | `@auth0/auth0-fastify-api` | `fastify-api` |
 | `express-oauth2-jwt-bearer` | `express-jwt` |
 | `react-native-auth0` + `app.json` or `app.config.js` present | `expo` |
 | `react-native-auth0` (no Expo files) | `react-native` |
-| `@capacitor/browser` + `@auth0/auth0-angular` | `ionic-angular` |
-| `@capacitor/browser` + `@auth0/auth0-react` | `ionic-react` |
-| `@capacitor/browser` + `@auth0/auth0-vue` | `ionic-vue` |
 
 ### Python — check `requirements.txt` or `pyproject.toml`
 
@@ -153,7 +157,7 @@ split, the base framework is chosen here; the variant is resolved in
 | `*.csproj` referencing MAUI | `maui` |
 | `*.csproj` (WinForms) | `winforms` |
 | `*.csproj` (WPF) | `wpf` |
-| `*.csproj` ASP.NET (web app) | `aspnetcore-auth` (variant below) |
+| `*.csproj` ASP.NET (web app or API) | `aspnetcore` (variant below) |
 
 > **`react` note:** a plain React project maps to `react` for an SPA using the
 > React SDK, or `spa-js` if the app is framework-agnostic vanilla JS. If unclear,
@@ -307,6 +311,6 @@ Read: references/pattern-rate-limiting.md
 ### migrate
 ```
 Read: references/feature-migration.md
-Read: references/tooling-cli.md
+Read: references/tooling-{tooling}.md
 If framework detected: Read references/framework-{framework}.md
 ```

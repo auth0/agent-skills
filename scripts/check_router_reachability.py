@@ -22,12 +22,22 @@ SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
 TABLE_ROW_RE = re.compile(r"^\s*\|")
 READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
 BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
-# A markdown link whose target is a .md file — ANY path form (bare `x.md`,
+# Markdown links whose target is a .md file — ANY path form (bare `x.md`,
 # `./references/x.md`, `../SKILL.md`), with an optional #anchor. External URLs
 # (http/https) are excluded so real doc links are not flagged; non-.md targets
-# (asset templates like `x.tsx`) never match. This catches every intra-skill
-# .md link, which the one-hop rule forbids in a reference file.
-LINK_RE = re.compile(r"\]\((?!https?://)([^)]*\.md)(?:#[^)]*)?\)")
+# (asset templates like `x.tsx`) never match. Together these catch every
+# intra-skill .md link form the one-hop rule forbids in a reference file:
+#   - inline:            [text](target.md)  /  [text](target.md "title")  /  [text](<target.md>)
+#   - reference-style:   [label]: target.md
+#   - autolink:          <target.md>
+LINK_RES = [
+    # Inline: allow an optional <>, an optional #anchor, and an optional title.
+    re.compile(r"\]\(\s*<?(?!https?://)([^)\s<>#]*\.md)(?:#[^)\s]*)?(?:\s+[^)]*)?>?\s*\)"),
+    # Reference-style link definition at the start of a line.
+    re.compile(r"^\s*\[[^\]]+\]:\s*<?(?!https?://)([^\s>#]*\.md)", re.M),
+    # Autolink.
+    re.compile(r"<(?!https?://)([^>\s]*\.md)>"),
+]
 
 
 def _router_slugs(skill_md: str) -> set:
@@ -75,8 +85,14 @@ def check_router(skill_dir: Path):
 
     bad_links = []
     for ref in sorted(present):
-        for lm in LINK_RE.finditer((refs_dir / ref).read_text()):
-            bad_links.append((ref, lm.group(1)))
+        text = (refs_dir / ref).read_text()
+        seen = set()
+        for link_re in LINK_RES:
+            for lm in link_re.finditer(text):
+                target = lm.group(1)
+                if (lm.start(), target) not in seen:
+                    seen.add((lm.start(), target))
+                    bad_links.append((ref, target))
 
     return unreachable, bad_links
 

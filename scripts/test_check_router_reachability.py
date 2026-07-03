@@ -93,6 +93,31 @@ class ReachabilityTest(unittest.TestCase):
             self.assertIn("../SKILL.md", targets)
             self.assertIn("react-integration.md", targets)
 
+    def test_non_inline_md_link_forms_are_flagged(self):
+        # The one-hop rule forbids EVERY intra-references .md link, not just the
+        # inline [text](x.md) form. Reference-style definitions, titled inline
+        # links, and autolinks must all be caught.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-react.md\n",
+                {"framework-react.md":
+                    "[ref]: feature-mfa.md\n"
+                    "[titled](feature-branding.md \"Branding\")\n"
+                    "[angle](<feature-dpop.md>)\n"
+                    "see <feature-organizations.md> too\n"
+                    "external autolink <https://auth0.com/x.md> is fine"},
+            )
+            unreachable, bad_links = check_router(skill)
+            targets = {t for _, t in bad_links}
+            self.assertIn("feature-mfa.md", targets)        # reference-style
+            self.assertIn("feature-branding.md", targets)   # titled inline
+            self.assertIn("feature-dpop.md", targets)       # inline <>
+            self.assertIn("feature-organizations.md", targets)  # autolink
+            # The external https autolink must NOT be flagged.
+            self.assertNotIn("https://auth0.com/x.md", targets)
+
     def test_template_slug_universe_comes_from_router_not_hardcode(self):
         # A framework file whose slug the router NEVER mentions must be flagged
         # unreachable — even though it matches the framework-*.md shape.

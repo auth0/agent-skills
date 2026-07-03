@@ -727,14 +727,19 @@ function TransferFunds() {
 
 ```typescript
 // app/api/sensitive/route.ts
-import { getSession, withApiAuthRequired } from '@auth0/nextjs-auth0';
+// v4 removed withApiAuthRequired — guard the route by reading the session directly.
+import { auth0 } from '@/lib/auth0';
 import { NextResponse } from 'next/server';
 
-export const POST = withApiAuthRequired(async function handler(req) {
-  const session = await getSession();
+export async function POST(req: Request) {
+  const session = await auth0.getSession();
+
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   // Check if MFA was completed
-  const amr = session?.user?.amr || [];
+  const amr = session.user?.amr || [];
 
   if (!amr.includes('mfa')) {
     return NextResponse.json(
@@ -745,7 +750,7 @@ export const POST = withApiAuthRequired(async function handler(req) {
 
   // Proceed with sensitive operation
   return NextResponse.json({ success: true });
-});
+}
 ```
 
 ### Client Component
@@ -767,8 +772,8 @@ export default function TransferPage() {
     if (response.status === 403) {
       const { code } = await response.json();
       if (code === 'mfa_required') {
-        // Redirect to login with MFA required
-        router.push('/api/auth/login?acr_values=http://schemas.openid.net/pape/policies/2007/06/multi-factor');
+        // Redirect to login with MFA required (v4 mounts auth routes at /auth/*, not /api/auth/*)
+        router.push('/auth/login?acr_values=http://schemas.openid.net/pape/policies/2007/06/multi-factor');
         return;
       }
     }

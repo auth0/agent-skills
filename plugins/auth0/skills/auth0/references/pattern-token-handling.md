@@ -23,8 +23,8 @@ const token = await getAccessTokenSilently({
 });
 
 // Next.js (nextjs-auth0 v4)
-import { getAccessToken } from '@auth0/nextjs-auth0';
-const { accessToken } = await getAccessToken();
+import { auth0 } from '@/lib/auth0';
+const { token } = await auth0.getAccessToken();
 
 // Express (server-side, from the session)
 const token = req.oidc.accessToken.access_token;
