@@ -136,6 +136,43 @@ class ReachabilityTest(unittest.TestCase):
             self.assertNotIn("framework-flask.md", unreachable)  # value-col slug
             self.assertIn("framework-authlib.md", unreachable)   # left-col dep
 
+    def test_lone_backtick_left_column_dependency_is_not_routable(self):
+        # A left-column dependency name that is a LONE backticked token followed
+        # by the `|` cell separator (the exact shape the old lookahead-based
+        # SLUG_RE leaked) must NOT make a same-named framework file reachable.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-{framework}.md\n"
+                "| `express-oauth2-jwt-bearer` | `express-jwt` |\n",
+                {
+                    "framework-express-jwt.md": "ok",
+                    "framework-express-oauth2-jwt-bearer.md": "orphan",
+                },
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertNotIn("framework-express-jwt.md", unreachable)  # value slug
+            self.assertIn(
+                "framework-express-oauth2-jwt-bearer.md", unreachable
+            )  # lone left-col dep — must be an orphan
+
+    def test_left_column_slug_in_prose_cell_is_not_routable(self):
+        # `next` appears in the left detection cell ("Next.js / `next`"); the
+        # value column slug is `nextjs`. framework-nextjs.md is reachable but a
+        # framework-next.md typo must be reported as an orphan.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-{framework}.md\n"
+                "| Next.js / `next` | `nextjs` |\n",
+                {"framework-nextjs.md": "ok", "framework-next.md": "orphan"},
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertNotIn("framework-nextjs.md", unreachable)  # value slug
+            self.assertIn("framework-next.md", unreachable)  # left-col typo orphan
+
     def test_slash_list_slugs_both_route(self):
         # A slash-list value cell like `php` / `php-api` routes BOTH files.
         with tempfile.TemporaryDirectory() as d:

@@ -6,14 +6,20 @@ links are defects — including stale links left by earlier consolidation."""
 import re, sys
 from pathlib import Path
 
-# A routable framework/target slug is a backticked token in a table's VALUE
-# position — i.e. followed by a `|` (next cell / row end) or `/` (slash-list
-# like `php` / `php-api`). The lookahead deliberately EXCLUDES left-column
-# dependency names (e.g. `authlib`, `python-jose`, `express-openid-connect`),
-# which are followed by prose/other backticks, not `|`/`/`. This keeps the
-# router the single source of truth without a hardcoded mirror list AND without
-# admitting phantom dependency slugs that could mask a future orphan.
-SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`(?=\s*[|/])")
+# A routable framework/target slug is a backticked token that appears in a
+# markdown table's VALUE column — i.e. any data cell EXCEPT the first (the
+# detection / left column). `_router_slugs` parses SKILL.md row by row, drops
+# the first data cell, and harvests backticked tokens from the remaining cells,
+# so left-column dependency names (`express-oauth2-jwt-bearer`,
+# `auth0-java-mvc-common`, `spring-security-oauth2-resource-server`, `next`,
+# `authlib`, …) are structurally excluded whether they are a lone backticked
+# token, prose-suffixed, or in a slash-list. Slash-lists in a value cell
+# (`php` / `php-api`) still yield every slug. This keeps the router the single
+# source of truth without a hardcoded mirror list AND without admitting phantom
+# dependency slugs that could mask a future orphan.
+SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
+# A markdown table row: optional leading whitespace, then a `|` cell delimiter.
+TABLE_ROW_RE = re.compile(r"^\s*\|")
 READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
 BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
 # A markdown link whose target is a .md file — ANY path form (bare `x.md`,
@@ -25,11 +31,23 @@ LINK_RE = re.compile(r"\]\((?!https?://)([^)]*\.md)(?:#[^)]*)?\)")
 
 
 def _router_slugs(skill_md: str) -> set:
-    """The routable value-slug universe: backticked tokens in table value
-    positions (followed by `|` or `/`). Derived from the router itself — no
-    hardcoded list — and scoped to value columns so left-column dependency
-    names are not mistaken for routable framework slugs."""
-    return set(SLUG_RE.findall(skill_md))
+    """The routable value-slug universe: backticked tokens found in the VALUE
+    columns of the router's markdown tables. For each table row we drop the
+    first data cell (the detection / left column) and harvest backticked tokens
+    from the remaining cells, so left-column dependency names are never mistaken
+    for routable framework slugs — regardless of whether they are a lone
+    backticked token, prose-suffixed, or part of a slash-list. Derived from the
+    router itself, with no hardcoded mirror list."""
+    slugs: set = set()
+    for line in skill_md.splitlines():
+        if not TABLE_ROW_RE.match(line):
+            continue
+        # Strip the outer table pipes, split into data cells, then drop the
+        # first (detection/left) cell so only value columns are considered.
+        cells = line.strip().strip("|").split("|")
+        for cell in cells[1:]:
+            slugs.update(SLUG_RE.findall(cell))
+    return slugs
 
 
 def _expand(token: str, slugs: set) -> list:

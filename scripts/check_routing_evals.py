@@ -9,13 +9,22 @@ features (MFA, branding, Organizations, ...) and SDK+feature combinations
 (e.g. "MFA in a Next.js app").
 
 Each case in tests/routing-cases.json names an intent + detected framework/
-tooling and the reference files Step 4 must load. We assert:
+tooling and the reference files Step 4 must load. We assert, per case:
 
   1. the intent has a matching `### <intent>` section in SKILL.md Step 4
-     (so the lookup key the router picks actually resolves), and
+     (so the lookup key the router picks actually resolves),
   2. every expected reference file exists in references/ (so a route never
      points at a missing file — the failure mode reachability can't catch,
-     since it only flags orphans, not broken routes).
+     since it only flags orphans, not broken routes), and
+  3. `expect_refs` actually matches the route the intent's Step 4 section
+     computes for this case's framework/tooling/flags. This is the assertion
+     that stops `expect_refs` from being decorative: we parse the section body,
+     expand the `{framework}`/`{tooling}` placeholders, model the `If ...`
+     conditionals against the case fields, and require that
+       - every UNCONDITIONAL reference is present in expect_refs, and
+       - every entry in expect_refs is a reference the section could actually
+         route to for this case (unconditional, an enabled conditional, or an
+         unmodeled/optional conditional).
 
 This is a deterministic, offline check — no model in the loop — so it runs in
 CI next to the reachability check. It does not replace live activation evals;
@@ -27,6 +36,10 @@ import sys
 from pathlib import Path
 
 SECTION_RE = re.compile(r"^###\s+(\S+)\s*$", re.M)
+# A reference token as it appears in Step 4, e.g. references/framework-{framework}.md
+REF_RE = re.compile(r"references/([A-Za-z0-9_{}-]+\.md)")
+# Frameworks that count as a SPA for the DPoP "If a SPA framework is detected" gate.
+SPA_FRAMEWORKS = {"vue", "react", "angular", "spa-js"}
 
 
 def load_cases(skill_dir: Path) -> list:
@@ -34,26 +47,137 @@ def load_cases(skill_dir: Path) -> list:
     return data["cases"]
 
 
+def step4_sections(skill_md: str) -> dict:
+    """Map each Step 4 intent heading to its section body.
+
+    Returns {intent: body} where body is everything between the `### <intent>`
+    heading and the next heading (### or ##).
+    """
+    body = skill_md.split("## Step 4", 1)[-1]
+    # Don't bleed past Step 4 into any later `## ` section.
+    body = re.split(r"\n##\s", body, 1)[0]
+    parts = SECTION_RE.split(body)
+    # parts == [preamble, name1, body1, name2, body2, ...]
+    sections = {}
+    it = iter(parts[1:])
+    for name, section_body in zip(it, it):
+        sections[name] = section_body
+    return sections
+
+
 def step4_intents(skill_md: str) -> set:
     """Intent headings under Step 4 (### integrate, ### feature:mfa, ...)."""
-    body = skill_md.split("## Step 4", 1)[-1]
-    return set(SECTION_RE.findall(body))
+    return set(step4_sections(skill_md).keys())
+
+
+def _expand(token: str, case: dict):
+    """Expand {framework}/{tooling} placeholders. None if a needed field is null."""
+    if "{framework}" in token:
+        framework = case.get("framework")
+        if framework is None:
+            return None
+        token = token.replace("{framework}", framework)
+    if "{tooling}" in token:
+        tooling = case.get("tooling")
+        if tooling is None:
+            return None
+        token = token.replace("{tooling}", tooling)
+    return token
+
+
+def _conditional_enabled(line_low: str, case: dict):
+    """Whether an `If ...` line's references route for this case.
+
+    Returns True (enabled), False (disabled), or None (unmodeled -> optional:
+    allowed but not required, so the check doesn't over-constrain).
+    """
+    if "framework detected" in line_low:
+        return case.get("framework") is not None
+    if "spa framework is detected" in line_low:
+        return case.get("framework") in SPA_FRAMEWORKS
+    if "multi-tenant" in line_low:
+        return bool(case.get("multi_tenant"))
+    if "token handling" in line_low:
+        return bool(case.get("token_handling"))
+    return None  # unmodeled conditional -> optional
+
+
+def compute_route(section_body: str, case: dict):
+    """Return (required, allowed) reference-file sets for a case.
+
+    - required: unconditional references that MUST appear in expect_refs.
+    - allowed: every reference expect_refs is permitted to name — the
+      unconditional set plus enabled conditionals plus optional (unmodeled)
+      conditionals.
+    """
+    required = set()
+    allowed = set()
+    for line in section_body.splitlines():
+        tokens = REF_RE.findall(line)
+        if not tokens:
+            continue
+        line_low = line.strip().lower()
+        is_conditional = line_low.startswith("if ")
+        enabled = _conditional_enabled(line_low, case) if is_conditional else True
+        for token in tokens:
+            fname = _expand(token, case)
+            if fname is None:
+                continue
+            if not is_conditional:
+                required.add(fname)
+                allowed.add(fname)
+            elif enabled is True or enabled is None:
+                # enabled conditional, or optional/unmodeled: allowed, not required
+                allowed.add(fname)
+            # enabled is False: not allowed, not required
+    return required, allowed
 
 
 def check_routing(skill_dir: Path):
     skill_md = (skill_dir / "SKILL.md").read_text()
-    intents = step4_intents(skill_md)
+    sections = step4_sections(skill_md)
     present = {p.name for p in (skill_dir / "references").glob("*.md")}
 
     failures = []
     for case in load_cases(skill_dir):
         cid = case["id"]
         intent = case["intent"]
-        if intent not in intents:
-            failures.append(f"{cid}: intent '{intent}' has no '### {intent}' section in Step 4")
-        for ref in case["expect_refs"]:
+        expect_refs = case["expect_refs"]
+
+        # (a) the intent resolves to a Step 4 section.
+        if intent not in sections:
+            failures.append(
+                f"{cid}: intent '{intent}' has no '### {intent}' section in Step 4"
+            )
+            # No section body to route against; still check file existence.
+            for ref in expect_refs:
+                if ref not in present:
+                    failures.append(
+                        f"{cid}: expected reference '{ref}' does not exist in references/"
+                    )
+            continue
+
+        # (b) every expected reference file exists on disk.
+        for ref in expect_refs:
             if ref not in present:
-                failures.append(f"{cid}: expected reference '{ref}' does not exist in references/")
+                failures.append(
+                    f"{cid}: expected reference '{ref}' does not exist in references/"
+                )
+
+        # (c) expect_refs matches the route the section computes for this case.
+        required, allowed = compute_route(sections[intent], case)
+        expect_set = set(expect_refs)
+        for ref in sorted(required - expect_set):
+            failures.append(
+                f"{cid}: missing mandatory ref '{ref}' — intent '{intent}' "
+                f"unconditionally routes to it but it is absent from expect_refs"
+            )
+        for ref in sorted(expect_set - allowed):
+            failures.append(
+                f"{cid}: expected ref '{ref}' is not routed by intent '{intent}' "
+                f"for framework={case.get('framework')!r} tooling={case.get('tooling')!r} "
+                f"(not an unconditional read and no enabled conditional loads it)"
+            )
     return failures
 
 
@@ -68,7 +192,10 @@ def main() -> int:
             print(f"  - {f}")
         return 1
     n = len(load_cases(skill_dir))
-    print(f"PASS: {n} routing cases resolve to an existing Step 4 section and reference files")
+    print(
+        f"PASS: {n} routing cases resolve to an existing Step 4 section, "
+        f"reference files exist, and expect_refs matches the computed route"
+    )
     return 0
 
 
