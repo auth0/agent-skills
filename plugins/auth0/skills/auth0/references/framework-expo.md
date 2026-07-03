@@ -1245,6 +1245,3 @@ After setup, verify the integration:
    - Tap Login — browser opens with Auth0 Universal Login
    - Complete login — app receives credentials and shows user info
    - Tap Logout — session is cleared
-
----
-

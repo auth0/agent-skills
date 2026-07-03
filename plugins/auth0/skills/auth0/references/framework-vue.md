@@ -1071,6 +1071,3 @@ auth0 login --force
 
 After setup is complete:
 1. Return to the main skill guide for integration steps
-
----
-

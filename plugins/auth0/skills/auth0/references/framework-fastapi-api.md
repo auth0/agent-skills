@@ -1123,6 +1123,3 @@ curl -X POST https://your-tenant.us.auth0.com/oauth/token \
 **`ValueError: audience is required.`:** The `audience` parameter cannot be empty. Ensure your `.env` file is loaded and the value is set.
 
 ---
-
----
-

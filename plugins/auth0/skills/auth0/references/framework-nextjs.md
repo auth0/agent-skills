@@ -831,6 +831,3 @@ Via Dashboard:
 - Check `APP_BASE_URL` matches your domain
 
 ---
-
----
-

@@ -625,6 +625,3 @@ Update `app.json`:
 - Check scheme matches package name
 
 ---
-
----
-

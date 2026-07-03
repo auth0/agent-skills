@@ -916,6 +916,3 @@ Or via [Auth0 Dashboard](https://manage.auth0.com):
 - Rebuild app after changing environment files
 
 ---
-
----
-

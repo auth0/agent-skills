@@ -1511,6 +1511,3 @@ If you prefer a different HTTP client:
 **Cookie not persisting:** Ensure `cookieSecure` is `false` for local development (HTTP). Set to `true` only in production with HTTPS.
 
 ---
-
----
-

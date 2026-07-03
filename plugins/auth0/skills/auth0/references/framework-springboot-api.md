@@ -1171,6 +1171,3 @@ curl -X POST https://your-tenant.auth0.com/oauth/token \
 **Token expired:** Test tokens from the Dashboard are short-lived. Request a fresh token.
 
 ---
-
----
-

@@ -136,6 +136,7 @@ Visit `http://localhost:3000` and test the login flow.
 - Migrate from another auth provider → migration (migrate)
 - Multi-factor authentication → MFA (feature:mfa)
 - Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
+- B2B multi-tenancy → Organizations (feature:organizations)
 
 ## Quick Reference
 
@@ -165,6 +166,7 @@ Visit `http://localhost:3000` and test the login flow.
 - [Express OpenID Connect Documentation](https://auth0.com/docs/libraries/express-openid-connect)
 - [Auth0 Express Quickstart](https://auth0.com/docs/quickstart/webapp/express)
 - [SDK GitHub Repository](https://github.com/auth0/express-openid-connect)
+- [Express.js Documentation](https://expressjs.com/)
 
 ---
 
@@ -483,24 +485,6 @@ app.use(helmet());
 
 ---
 
-## Related Skills
-
-- Auth0 setup — set it up with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
-- Migrate from another auth provider → migration (migrate)
-- Multi-factor authentication → MFA (feature:mfa)
-- B2B multi-tenancy → Organizations (feature:organizations)
-
----
-
-## References
-
-- [express-openid-connect Documentation](https://auth0.com/docs/libraries/express-openid-connect)
-- [express-openid-connect GitHub](https://github.com/auth0/express-openid-connect)
-- [Auth0 Express Quickstart](https://auth0.com/docs/quickstart/webapp/express)
-- [Express.js Documentation](https://expressjs.com/)
-
----
-
 # Auth0 Express Integration Patterns
 
 Server-side authentication patterns for Express.js.
@@ -692,18 +676,6 @@ app.use((err, req, res, next) => {
 
 ---
 
-## Common Issues
-
-| Issue | Solution |
-|-------|----------|
-| "Invalid state" | Regenerate SECRET |
-| Session not persisting | Check cookie settings, use HTTPS in production |
-| Redirect loop | Verify callback URL matches Auth0 config |
-
----
-
----
-
 # Auth0 Express Setup Guide
 
 Setup instructions for Express.js applications.
@@ -843,6 +815,3 @@ Dashboard: Create Regular Web Application, copy credentials
 **Callback URL mismatch:** Add `/callback` to Allowed Callback URLs
 
 ---
-
----
-

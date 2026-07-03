@@ -783,7 +783,7 @@ Management API examples for configuring branding, themes, page templates, and te
 
 ## Prerequisites
 
-- Management API access token with appropriate scopes (see `api.md` for per-endpoint scopes)
+- Management API access token with appropriate scopes (see the Management API Endpoints section above for per-endpoint scopes)
 - For page templates: a custom domain configured on your tenant
 
 ## cURL examples
@@ -1697,6 +1697,3 @@ Infer the default category from the prompt name where possible:
 If the user accepts, append a new row to the matching category's table in the screens catalog below with the `(prompt, screen)` pair. Only persist after a successful PUT so a failed or canceled rewrite doesn't pollute the catalog. If multiple new screens came up in the same run, batch the confirmations into one question listing all of them.
 
 The reference map grows with real usage this way; users only name a new screen once.
-
----
-

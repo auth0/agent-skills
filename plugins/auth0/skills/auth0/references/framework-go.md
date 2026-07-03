@@ -782,15 +782,7 @@ func main() {
 - **Keep packages updated** - Run `go get -u github.com/auth0/go-jwt-middleware/v3` for security patches
 - **Set appropriate clock skew** - Use `validator.WithAllowedClockSkew()` in distributed environments
 - **Validate custom claims** - Implement non-trivial `Validate()` logic when business rules require it
-
----
-
-## References
-
-- [Auth0 Go API Quickstart](https://auth0.com/docs/quickstart/backend/golang/interactive)
-- [SDK GitHub Repository](https://github.com/auth0/go-jwt-middleware)
-- [Go Package Documentation](https://pkg.go.dev/github.com/auth0/go-jwt-middleware/v3)
-- [Migration Guide (v2 to v3)](https://github.com/auth0/go-jwt-middleware/blob/master/MIGRATION_GUIDE.md)
+- **Use DPoP for high-security APIs** - Prevents token theft and replay attacks
 
 ---
 
@@ -1261,18 +1253,6 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/private
 
 ---
 
-## Security Considerations
-
-- **Never hardcode Domain or Audience** - Always use `.env` or environment variables
-- **Use HTTPS in production** - Auth0 requires HTTPS for token validation
-- **Use minimal scopes** - Only request and enforce scopes your API actually needs
-- **Set appropriate clock skew** - Use `validator.WithAllowedClockSkew()` for distributed systems
-- **Validate custom claims** - Implement the `Validate()` method on your custom claims struct
-- **Use DPoP for high-security APIs** - Prevents token theft and replay attacks
-- **Keep packages updated** - Run `go get -u github.com/auth0/go-jwt-middleware/v3` regularly
-
----
-
 ---
 
 # Go JWT Middleware Setup Guide
@@ -1622,6 +1602,3 @@ curl -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
 **panic: nil pointer:** Always check the `err` return value from `jwtmiddleware.New()`, `validator.New()`, and `jwks.NewCachingProvider()`.
 
 ---
-
----
-

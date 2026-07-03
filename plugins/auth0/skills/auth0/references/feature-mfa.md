@@ -889,6 +889,3 @@ export class SensitiveActionComponent {
   }
 }
 ```
-
----
-

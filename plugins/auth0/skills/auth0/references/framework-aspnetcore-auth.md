@@ -1243,6 +1243,3 @@ Application type must be **Regular Web Application** (not SPA or Native).
 **SignOut not clearing session:** Ensure both `SignOutAsync(Auth0Constants.AuthenticationScheme)` and `SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme)` are called in the `Logout` action.
 
 ---
-
----
-

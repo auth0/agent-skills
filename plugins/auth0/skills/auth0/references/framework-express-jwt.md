@@ -40,7 +40,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 >    npm install express-oauth2-jwt-bearer
 >    ```
 >
-> 3. **Configure Auth0** — follow `references/setup.md`. If the user already provided their Auth0 Domain and API Audience in the prompt, use them directly — skip the bootstrap script and do NOT call `AskUserQuestion` to re-confirm. Otherwise, offer automatic setup via bootstrap script or manual setup.
+> 3. **Configure Auth0** — follow the Setup Guide section below. If the user already provided their Auth0 Domain and API Audience in the prompt, use them directly — skip the bootstrap script and do NOT call `AskUserQuestion` to re-confirm. Otherwise, offer automatic setup via bootstrap script or manual setup.
 >
 > 4. **Set up middleware** — add to `app.js` or `server.js`:
 >    ```javascript
@@ -82,7 +82,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 >    curl -H "Authorization: Bearer <token>" http://localhost:3000/api/private  # should return 200
 >    ```
 >
-> 8. **Failcheck:** If the server fails to start or tokens are rejected unexpectedly, check `references/api.md` for common issues. After 5-6 failed iterations, use `AskUserQuestion` to ask the user for more details about their environment.
+> 8. **Failcheck:** If the server fails to start or tokens are rejected unexpectedly, check the Common Issues section below for common issues. After 5-6 failed iterations, use `AskUserQuestion` to ask the user for more details about their environment.
 
 ## Detailed Documentation
 
@@ -133,7 +133,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 | `tokenSigningAlg` | `string` | Signing algorithm (default: `RS256`; use `HS256` for symmetric) |
 | `authRequired` | `boolean` | Set `false` to make authentication optional (default: `true`) |
 | `clockTolerance` | `number` | Clock skew tolerance in seconds (no default; undefined unless set) |
-| `dpop` | `DPoPOptions` | DPoP configuration (see integration.md) |
+| `dpop` | `DPoPOptions` | DPoP configuration (see the DPoP Support section below) |
 
 ### Environment Variables
 
@@ -838,7 +838,7 @@ After running the bootstrap script or manual setup:
 
 1. **Verify domain and audience** are correct in `.env`
 2. **Test the API is reachable**: `auth0 apis list --json --no-input | grep your-api`
-3. **Confirm CORS is configured** before auth middleware in your server file (see integration.md)
+3. **Confirm CORS is configured** before auth middleware in your server file (see the CORS Configuration section below)
 4. **Request a test token** using M2M credentials or the Auth0 Dashboard test feature:
    - Go to Auth0 Dashboard → APIs → your API → Test tab
    - Click **Copy Token** to get a test access token
@@ -932,6 +932,3 @@ After setup, verify everything is working:
    curl -H "Authorization: Bearer <your-test-token>" http://localhost:3000/api/private
    # Expected: 200 OK with payload data
    ```
-
----
-

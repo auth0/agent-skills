@@ -1490,6 +1490,3 @@ If you prefer a different HTTP client:
 **"audience is required":** Ensure `audience` is passed as a non-empty array in `SdkConfiguration`.
 
 ---
-
----
-

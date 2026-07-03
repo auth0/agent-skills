@@ -1274,6 +1274,3 @@ String redirectUrl = scheme + "://" + request.getServerName()
 | `NullPointerException` reading env vars | Environment variables not set | Verify `.env` is loaded or vars are exported |
 
 ---
-
----
-

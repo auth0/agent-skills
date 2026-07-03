@@ -1011,6 +1011,3 @@ After setup, verify the configuration:
 3. Open in Xcode/Android Studio and build — no missing plugin errors
 4. Tap login — system browser should open Auth0 Universal Login
 5. After login — app should receive the deep link callback and show the user profile
-
----
-

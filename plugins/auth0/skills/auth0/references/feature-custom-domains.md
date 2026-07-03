@@ -2054,6 +2054,3 @@ Next steps (outside this skill's scope):
   • Update application callback URLs that reference the old custom domain
   • [if was default] set a new default custom domain via the Manage existing domains flow
 ```
-
----
-

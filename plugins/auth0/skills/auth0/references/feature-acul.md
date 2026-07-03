@@ -1776,6 +1776,3 @@ Apply tokens directly in the component's style file. No shared theme file.
 | CSS Modules | `styles/tokens.css` | `@import '../styles/tokens.css'` |
 | styled-components | `theme/index.ts` | `import { theme } from '../theme'` |
 | Plain CSS | `styles/globals.css` | Import once in entry point |
-
----
-

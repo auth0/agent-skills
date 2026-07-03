@@ -339,8 +339,10 @@ if user is None:
 ## References
 
 - [auth0-server-python on PyPI](https://pypi.org/project/auth0-server-python/)
+- [auth0-server-python GitHub](https://github.com/auth0/auth0-server-python)
 - [Auth0 Flask Quickstart](https://auth0.com/docs/quickstart/webapp/python)
 - [Flask Documentation](https://flask.palletsprojects.com/)
+- [Flask-Session Documentation](https://flask-session.readthedocs.io/)
 
 ---
 
@@ -648,17 +650,6 @@ Stateless cookie sessions are limited to ~4KB by browsers. The SDK encrypts toke
 4. Verify redirect to callback and session established
 5. Visit protected route (e.g., `/profile`)
 6. Click logout and verify session cleared
-
----
-
-## References
-
-- [auth0-server-python on PyPI](https://pypi.org/project/auth0-server-python/)
-- [auth0-server-python GitHub](https://github.com/auth0/auth0-server-python)
-- [Flask Documentation](https://flask.palletsprojects.com/)
-- [Flask-Session Documentation](https://flask-session.readthedocs.io/)
-
----
 
 ---
 
@@ -1057,6 +1048,3 @@ In your Auth0 Application settings:
 **Async routes not working:** Ensure you installed `flask[async]` (not just `flask`). Without the `[async]` extra, async route handlers silently fail.
 
 ---
-
----
-

@@ -1355,6 +1355,3 @@ After setup, verify:
    - Android: `npx cap open android` → Run in Android Studio
 4. **Login opens system browser** (not in-app WebView)
 5. **Callback returns to app** with user profile
-
----
-

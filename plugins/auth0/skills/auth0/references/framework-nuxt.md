@@ -1703,6 +1703,3 @@ describe('Session Store', () => {
 3. Old cookie-based sessions continue working
 4. Gradually phase out cookie sessions as they expire
 5. Monitor cookie size metrics
-
----
-

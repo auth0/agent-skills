@@ -126,6 +126,8 @@ npm start    # CRA
 - Basic Auth0 setup → set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 - Migrate from another auth provider → ask for migration (migrate)
 - Add Multi-Factor Authentication → ask for MFA (feature:mfa)
+- Add passkey authentication → ask for passkeys (feature:mfa)
+- B2B multi-tenancy support → ask for Organizations (feature:organizations)
 - Manage Auth0 resources from the terminal → the Auth0 CLI (`tooling-cli`)
 
 ## Quick Reference
@@ -158,8 +160,12 @@ npm start    # CRA
 ## References
 
 - [Auth0 React SDK Documentation](https://auth0.com/docs/libraries/auth0-react)
+- [Auth0 React SDK GitHub](https://github.com/auth0/auth0-react)
 - [Auth0 React Quickstart](https://auth0.com/docs/quickstart/spa/react)
-- [SDK GitHub Repository](https://github.com/auth0/auth0-react)
+- [useAuth0 Hook API](https://auth0.github.io/auth0-react/interfaces/Auth0ContextInterface.html)
+- [Auth0 React API Reference](https://auth0.github.io/auth0-react/)
+- [Auth0 Universal Login](https://auth0.com/docs/universal-login)
+- [PKCE Flow](https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-proof-key-for-code-exchange-pkce)
 
 ---
 
@@ -769,28 +775,6 @@ interface CustomUser extends User {
 const { user } = useAuth0<CustomUser>();
 console.log(user?.app_metadata?.roles);
 ```
-
----
-
-## Related Skills
-
-- Initial Auth0 account setup → set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
-- Migrate from another auth provider → ask for migration (migrate)
-- Add Multi-Factor Authentication → ask for MFA (feature:mfa)
-- B2B multi-tenancy support → ask for Organizations (feature:organizations)
-- Add passkey authentication → ask for passkeys (feature:mfa)
-
----
-
-## References
-
-- [Auth0 React SDK Documentation](https://auth0.com/docs/libraries/auth0-react)
-- [Auth0 React SDK GitHub](https://github.com/auth0/auth0-react)
-- [Auth0 React Quickstart](https://auth0.com/docs/quickstart/spa/react)
-- [useAuth0 Hook API](https://auth0.github.io/auth0-react/interfaces/Auth0ContextInterface.html)
-- [Auth0 React API Reference](https://auth0.github.io/auth0-react/)
-- [Auth0 Universal Login](https://auth0.com/docs/universal-login)
-- [PKCE Flow](https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow-with-proof-key-for-code-exchange-pkce)
 
 ---
 
@@ -1718,6 +1702,3 @@ auth0 login --force
 
 After setup is complete:
 1. Return to the main skill guide for integration steps
-
----
-

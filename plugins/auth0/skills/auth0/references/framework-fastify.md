@@ -161,6 +161,3 @@ Visit `http://localhost:3000` and test the login flow.
 
 - [Auth0 Fastify Documentation](https://auth0.com/docs/quickstart/webapp/fastify)
 - [SDK GitHub Repository](https://github.com/auth0/auth0-fastify)
-
----
-
