@@ -56,8 +56,11 @@ if ! grep -q "pattern-common-errors" "$SKILL_MD"; then
   exit 1
 fi
 
-# Framework file checks
-EXPECTED_FRAMEWORKS="react nextjs vue angular spa-js nuxt express flask fastify fastify-api java-mvc aspnetcore-auth aspnetcore-api php express-jwt fastapi-api springboot-api go react-native expo ionic-angular ionic-react ionic-vue android swift"
+# Framework file checks. This list is a smoke check only; the authoritative
+# "every routed framework has a file and every file is routed" guarantee is
+# enforced by scripts/check_router_reachability.py (run below), which derives
+# slugs from the router itself. Keep this list in sync when adding frameworks.
+EXPECTED_FRAMEWORKS="react nextjs vue angular spa-js nuxt express flask fastify fastify-api java-mvc aspnetcore-auth aspnetcore-api php php-api express-jwt fastapi-api springboot-api go react-native expo ionic-angular ionic-react ionic-vue android swift flutter-native flutter-web laravel laravel-api maui net-android net-ios winforms wpf"
 for fw in $EXPECTED_FRAMEWORKS; do
   if [ ! -f "$REFS_DIR/framework-$fw.md" ]; then
     echo "FAIL: missing references/framework-$fw.md"

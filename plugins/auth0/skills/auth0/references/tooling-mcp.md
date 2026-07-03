@@ -9,7 +9,7 @@ The hosted Auth0 MCP server exposes Management API operations as agent tools. No
 ## Check if MCP is active
 
 Auth0 MCP tools start with `auth0_` or `auth0-mcp_`. Check the available tools list.
-If no Auth0 tools are present, fall back to `tooling-cli.md`.
+If no Auth0 tools are present, this session has no active MCP server — use the Auth0 CLI for tenant configuration instead.
 
 ---
 
@@ -79,5 +79,5 @@ Parameters:
 ## Notes
 
 - MCP operations call the Auth0 Management API directly — changes take effect immediately.
-- For bulk operations or infrastructure-as-code, use `tooling-terraform.md` instead.
-- For scripting or CI/CD without a live MCP session, use `tooling-cli.md`.
+- For bulk operations or infrastructure-as-code, prefer the Auth0 Terraform provider.
+- For scripting or CI/CD without a live MCP session, prefer the Auth0 CLI.

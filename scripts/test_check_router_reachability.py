@@ -19,7 +19,7 @@ class ReachabilityTest(unittest.TestCase):
                 "Read: references/framework-react.md\n",
                 {"framework-react.md": "ok", "framework-php-api.md": "orphan"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertIn("framework-php-api.md", unreachable)
             self.assertEqual(bad_links, [])
 
@@ -32,7 +32,7 @@ class ReachabilityTest(unittest.TestCase):
                 "| a | `react` |\n| b | `php-api` |\n",
                 {"framework-react.md": "ok", "framework-php-api.md": "ok"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertEqual(unreachable, [])
 
     def test_reference_linking_existing_reference_is_flagged(self):
@@ -43,7 +43,7 @@ class ReachabilityTest(unittest.TestCase):
                 "Read: references/framework-react.md\n",
                 {"framework-react.md": "see [x](feature-mfa.md)", "feature-mfa.md": "ok"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertIn(("framework-react.md", "feature-mfa.md"), bad_links)
 
     def test_reference_linking_nonexistent_md_is_flagged(self):
@@ -55,7 +55,7 @@ class ReachabilityTest(unittest.TestCase):
                 "Read: references/framework-react.md\n",
                 {"framework-react.md": "see [setup](setup.md) and [api](react-api.md)"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertIn(("framework-react.md", "setup.md"), bad_links)
             self.assertIn(("framework-react.md", "react-api.md"), bad_links)
 
@@ -71,7 +71,7 @@ class ReachabilityTest(unittest.TestCase):
                     "[docs2](https://auth0.com/docs/y.md#anchor) "
                     "[tpl](../assets/acul/react-templates/login-id.tsx)"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertEqual(bad_links, [])
 
     def test_path_prefixed_md_links_are_flagged(self):
@@ -87,7 +87,7 @@ class ReachabilityTest(unittest.TestCase):
                     "[b](../SKILL.md) "
                     "[c](react-integration.md#protected-routes)"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             targets = [t for _, t in bad_links]
             self.assertIn("./references/setup.md", targets)
             self.assertIn("../SKILL.md", targets)
@@ -109,7 +109,7 @@ class ReachabilityTest(unittest.TestCase):
                     "see <feature-organizations.md> too\n"
                     "external autolink <https://auth0.com/x.md> is fine"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             targets = {t for _, t in bad_links}
             self.assertIn("feature-mfa.md", targets)        # reference-style
             self.assertIn("feature-branding.md", targets)   # titled inline
@@ -130,7 +130,7 @@ class ReachabilityTest(unittest.TestCase):
                 "| `@auth0/auth0-react` | `react` |\n",
                 {"framework-react.md": "ok", "framework-php-api.md": "orphan"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertIn("framework-php-api.md", unreachable)
             self.assertNotIn("framework-react.md", unreachable)
 
@@ -142,7 +142,7 @@ class ReachabilityTest(unittest.TestCase):
                 "| `terraform/` dir | `tooling-terraform.md` |\n",
                 {"tooling-terraform.md": "ok", "tooling-orphan.md": "orphan"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertNotIn("tooling-terraform.md", unreachable)
             self.assertIn("tooling-orphan.md", unreachable)
 
@@ -157,7 +157,7 @@ class ReachabilityTest(unittest.TestCase):
                 "| `authlib` or `python-jose` + `flask` | `flask` |\n",
                 {"framework-flask.md": "ok", "framework-authlib.md": "orphan"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertNotIn("framework-flask.md", unreachable)  # value-col slug
             self.assertIn("framework-authlib.md", unreachable)   # left-col dep
 
@@ -176,7 +176,7 @@ class ReachabilityTest(unittest.TestCase):
                     "framework-express-oauth2-jwt-bearer.md": "orphan",
                 },
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertNotIn("framework-express-jwt.md", unreachable)  # value slug
             self.assertIn(
                 "framework-express-oauth2-jwt-bearer.md", unreachable
@@ -194,7 +194,7 @@ class ReachabilityTest(unittest.TestCase):
                 "| Next.js / `next` | `nextjs` |\n",
                 {"framework-nextjs.md": "ok", "framework-next.md": "orphan"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertNotIn("framework-nextjs.md", unreachable)  # value slug
             self.assertIn("framework-next.md", unreachable)  # left-col typo orphan
 
@@ -211,7 +211,7 @@ class ReachabilityTest(unittest.TestCase):
                     "<a href='./feature-branding.md#logo'>brand</a> "
                     '<a href="https://auth0.com/x.md">external ok</a>'},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             targets = {t for _, t in bad_links}
             self.assertIn("feature-mfa.md", targets)
             self.assertIn("./feature-branding.md", targets)
@@ -228,7 +228,7 @@ class ReachabilityTest(unittest.TestCase):
                 {"framework-react.md":
                     "[q](feature-mfa.md?v=2) and [s](feature-branding.md/)"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             targets = {t for _, t in bad_links}
             self.assertIn("feature-mfa.md", targets)
             self.assertIn("feature-branding.md", targets)
@@ -247,7 +247,7 @@ class ReachabilityTest(unittest.TestCase):
                 {"framework-react.md": "ok", "tooling-cli.md": "ok",
                  "tooling-react.md": "orphan named after a framework slug"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertIn("tooling-react.md", unreachable)
             self.assertNotIn("framework-react.md", unreachable)
             self.assertNotIn("tooling-cli.md", unreachable)
@@ -262,8 +262,126 @@ class ReachabilityTest(unittest.TestCase):
                 "| PHP web app / PHP API | `php` / `php-api` |\n",
                 {"framework-php.md": "ok", "framework-php-api.md": "ok"},
             )
-            unreachable, bad_links = check_router(skill)
+            unreachable, bad_links, broken_routes = check_router(skill)
             self.assertEqual(unreachable, [])
+
+    def test_broken_route_points_at_missing_file(self):
+        # SKILL.md routes to a framework whose file is absent — `present-routed`
+        # can't catch this; the reverse `routed-present` check must.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-{framework}.md\n"
+                "| `@auth0/auth0-react` | `react` |\n"
+                "| Swift / iOS | `swift` |\n",
+                {"framework-react.md": "ok"},  # framework-swift.md deliberately absent
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn("framework-swift.md", broken_routes)
+            self.assertEqual(unreachable, [])
+
+    def test_variant_base_slug_is_not_a_broken_route(self):
+        # A `(variant below)` base like `aspnetcore` has no framework-aspnetcore.md
+        # by design (it resolves to -auth/-api). It must NOT be a broken route,
+        # while its terminal variants still are checked.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-{framework}.md\n"
+                "| `*.csproj` ASP.NET | `aspnetcore` (variant below) |\n"
+                "| ASP.NET web app / API | `aspnetcore-auth` / `aspnetcore-api` |\n",
+                {"framework-aspnetcore-auth.md": "ok",
+                 "framework-aspnetcore-api.md": "ok"},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertEqual(broken_routes, [])  # aspnetcore base is exempt
+
+    def test_variant_terminal_missing_file_is_still_a_broken_route(self):
+        # The exemption is ONLY for the annotated base — a missing terminal
+        # variant file must still be reported.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-{framework}.md\n"
+                "| `*.csproj` ASP.NET | `aspnetcore` (variant below) |\n"
+                "| ASP.NET web app / API | `aspnetcore-auth` / `aspnetcore-api` |\n",
+                {"framework-aspnetcore-auth.md": "ok"},  # -api deliberately absent
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn("framework-aspnetcore-api.md", broken_routes)
+
+    def test_no_broken_route_when_all_routed_files_exist(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-{framework}.md\n"
+                "| `@auth0/auth0-react` | `react` |\n",
+                {"framework-react.md": "ok"},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertEqual(broken_routes, [])
+
+    def test_prose_references_path_is_flagged_as_second_hop(self):
+        # A reference naming another reference by prose/backtick path (not a
+        # markdown link) still invites a second hop and must be flagged.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-react.md\n",
+                {"framework-react.md":
+                    "For B2B, see `references/pattern-multi-tenant.md` — router loads both.",
+                 "pattern-multi-tenant.md": "ok"},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn(("framework-react.md", "pattern-multi-tenant.md"), bad_links)
+
+    def test_backticked_bare_filename_is_flagged_as_second_hop(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-react.md\n",
+                {"framework-react.md": "delegate to `capability-voice.md` after apply",
+                 "feature-branding.md": "ok"},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn(("framework-react.md", "capability-voice.md"), bad_links)
+
+    def test_read_verb_second_hop_is_flagged(self):
+        # The router's OWN dispatch verb, appearing in a reference body, is the
+        # most dangerous second-hop form — an agent would plausibly follow it.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-react.md\n",
+                {"framework-react.md": "Read: references/feature-mfa.md for MFA setup.",
+                 "feature-mfa.md": "ok"},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn(("framework-react.md", "feature-mfa.md"), bad_links)
+
+    def test_second_hop_forms_inside_code_fence_are_not_flagged(self):
+        # Non-link second-hop forms inside a ``` fence are illustrative, not live
+        # instructions, so they must NOT be flagged.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-react.md\n",
+                {"framework-react.md":
+                    "Example of what the router does:\n"
+                    "```\nRead: references/feature-mfa.md\n"
+                    "see `pattern-security.md`\n```\n",
+                 "feature-mfa.md": "ok", "pattern-security.md": "ok"},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertEqual(bad_links, [])
 
 if __name__ == "__main__":
     unittest.main()

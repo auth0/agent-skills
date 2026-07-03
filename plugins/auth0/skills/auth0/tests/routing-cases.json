@@ -23,6 +23,13 @@
       "expect_refs": ["framework-express-jwt.md", "tooling-cli.md"]
     },
     {
+      "id": "integrate-php-api",
+      "intent": "integrate",
+      "framework": "php-api",
+      "tooling": "cli",
+      "expect_refs": ["framework-php-api.md", "tooling-cli.md"]
+    },
+    {
       "id": "integrate-flask-terraform",
       "intent": "integrate",
       "framework": "flask",

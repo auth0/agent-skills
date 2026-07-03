@@ -1202,7 +1202,7 @@ Editable knobs and what each reply means:
 | `background <hex>` | `colors.page_background` (tenant branding) and `page_background.background_color` (theme) |
 | Uploaded screenshot + "match this layout" | Layout override: run vision pass, map to theme knobs (widget position, page background, border style) |
 | Pasted HTML/Liquid block | Page template override: verify `auth0:head` and `auth0:widget` are present, stage for apply. Requires a custom domain — warn if none is configured. |
-| `enable voice rewriting`, `rewrite the copy too`, `also match the voice` | Set voice flag on. After apply, delegate to `capability-voice.md`. If the tenant has more than one enabled locale, that capability asks whether to rewrite all locales or English only. |
+| `enable voice rewriting`, `rewrite the copy too`, `also match the voice` | Set voice flag on. After apply, chain into the "Match my brand voice" section below. If the tenant has more than one enabled locale, that flow asks whether to rewrite all locales or English only. |
 
 ## Confirm target tenant
 

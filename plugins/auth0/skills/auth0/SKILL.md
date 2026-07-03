@@ -103,11 +103,20 @@ before the plain framework rows.
 
 ### PHP — check `composer.json`
 
+The `auth0/auth0-php` SDK powers both PHP web apps and PHP APIs; the mode is
+set in code via `SdkConfiguration`'s `strategy`. Check for that signal — the
+`STRATEGY_API` row is more specific, so check it first.
+
 | Package | Framework |
 |---|---|
-| `auth0/auth0-php` | `php` |
+| `auth0/auth0-php` + `SdkConfiguration::STRATEGY_API` (or `strategy: 'api'`) | `php-api` |
+| `auth0/auth0-php` (no `STRATEGY_API` / `STRATEGY_REGULAR` or `strategy: 'webapp'`) | `php` |
 | `auth0/login` (laravel, no `AuthorizationGuard`) | `laravel` |
 | `auth0/login` + `AuthorizationGuard` | `laravel-api` |
+
+> If `auth0/auth0-php` is installed but no `SdkConfiguration` strategy is set
+> yet (fresh project), fall through to variant disambiguation below (intent:
+> building/protecting an API → `php-api`, else `php`).
 
 ### Go — check `go.mod`
 
