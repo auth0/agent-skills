@@ -65,22 +65,56 @@ SIDEWAYS_RES = [
 ]
 
 
+def _disambiguation_variant_slugs(skill_md: str) -> set:
+    """Backticked slugs in the value columns of the "Variant disambiguation"
+    table — the concrete web-app / API variants each base splits into
+    (`express`, `express-jwt`, `aspnetcore-auth`, `aspnetcore-api`, …). This is
+    the router's own statement of which slugs are real route targets, so it lets
+    us tell a base that DOES resolve to its own file (its web-app variant slug
+    equals the base, e.g. `express` → `framework-express.md`) from one that does
+    NOT (`aspnetcore` → `aspnetcore-auth`/`aspnetcore-api`, no bare file)."""
+    slugs: set = set()
+    in_table = False
+    for line in skill_md.splitlines():
+        low = line.lower()
+        if "choose api when" in low:   # the disambiguation table's header row
+            in_table = True
+            continue
+        if in_table:
+            if not TABLE_ROW_RE.match(line):
+                break                  # table ended
+            if set(line.strip()) <= set("|-: "):
+                continue               # header/body separator row
+            cells = line.strip().strip("|").split("|")
+            # Drop the first cell (the bare "Base" name); harvest backticked
+            # variant slugs from the remaining value columns.
+            for cell in cells[1:]:
+                slugs.update(SLUG_RE.findall(cell))
+    return slugs
+
+
 def _variant_base_slugs(skill_md: str) -> set:
     """Slugs the router marks as an abstract variant base — a value cell whose
-    text carries the `(variant below)` annotation (e.g. `aspnetcore`). These
-    never resolve to their own `framework-<slug>.md`; they always split into a
-    web-app/API variant in the disambiguation table, so they must NOT be
-    flagged as broken routes. Derived from the router's own annotation, not a
-    hardcoded exception list."""
-    bases: set = set()
+    text carries the `(variant below)` annotation (e.g. `aspnetcore`) — that
+    truly resolve to NO `framework-<slug>.md`. A base is only such an abstract
+    stand-in when it does NOT itself appear as a concrete variant slug in the
+    disambiguation table: `aspnetcore` splits into `aspnetcore-auth`/`-api` (so
+    `framework-aspnetcore.md` never exists and must be exempt), whereas
+    `express`/`fastify`/`php`/`laravel` ARE their own web-app variant slug and
+    DO ship `framework-<base>.md` — those must stay in broken-route scope so a
+    later delete/rename of the real file is caught. Derived from the router's
+    own tables, not a hardcoded exception list, and not from file presence
+    (which would circularly re-exempt a file the moment it goes missing)."""
+    annotated: set = set()
     for line in skill_md.splitlines():
         if not TABLE_ROW_RE.match(line):
             continue
         cells = line.strip().strip("|").split("|")
         for cell in cells[1:]:
             if "variant below" in cell.lower():
-                bases.update(SLUG_RE.findall(cell))
-    return bases
+                annotated.update(SLUG_RE.findall(cell))
+    concrete_variants = _disambiguation_variant_slugs(skill_md)
+    return {b for b in annotated if b not in concrete_variants}
 
 
 def _router_slugs(skill_md: str) -> set:
@@ -166,9 +200,11 @@ def check_router(skill_dir: Path):
     # can. Restrict to real reference filenames (an unexpanded `{placeholder}`
     # template survives expansion only when its universe is empty, which is
     # itself a router bug worth surfacing, but a literal `{` is not a file).
-    # Exempt abstract variant bases (`framework-aspnetcore.md`) the router marks
-    # `(variant below)` — they intentionally have no file, resolving to a
-    # web-app/API variant instead.
+    # Exempt only the abstract variant bases that resolve to NO file
+    # (`framework-aspnetcore.md`): `_variant_base_slugs` already excludes bases
+    # like `express`/`fastify`/`php`/`laravel` that are their own web-app variant
+    # slug and DO ship `framework-<base>.md`, so those stay in broken-route scope
+    # and a later delete/rename of the real file is still caught.
     variant_bases = _variant_base_slugs(skill_md)
     exempt = {f"framework-{b}.md" for b in variant_bases}
     broken_routes = sorted(

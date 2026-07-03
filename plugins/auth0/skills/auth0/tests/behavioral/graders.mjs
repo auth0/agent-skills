@@ -1,10 +1,20 @@
 // Shared grader engine for the consolidated Auth0 behavioral evals.
 //
-// Extracted verbatim (semantics-preserving) from the per-skill run-evals.mjs
-// harnesses that used to live under each individual skill's tests/ folder.
-// Those 5 runners were near-identical copies; this is the single de-duplicated
-// home for the grading logic. Case files under cases/ supply the graders; the
-// runner (run-evals.mjs) drives the agent and calls runGraders() here.
+// Consolidated from the per-skill run-evals.mjs harnesses that used to live
+// under each individual skill's tests/ folder. Those 5 runners were
+// near-identical copies; this is the single de-duplicated home for the grading
+// logic. Case files under cases/ supply the graders; the runner (run-evals.mjs)
+// drives the agent and calls runGraders() here.
+//
+// Two grading behaviors were changed on purpose during consolidation (i.e. this
+// is NOT byte-for-byte identical to the old graders — re-validate any case that
+// leaned on the old behavior):
+//   • Lockfiles are no longer graded. `.lock` was dropped from SOURCE_EXTENSIONS
+//     and a LOCKFILES set / isLockfile() now excludes generated lock/manifest
+//     files, so a substring in a pinned transitive dependency can't
+//     false-positive a not_contains* grader (see the LOCKFILES note below).
+//   • A new `not_matches` grader type was added (negative regex) for cases where
+//     a bare substring would false-positive (see gradeNotMatches).
 //
 // Grader types (from the original graders.json schema):
 //   contains / contains_any        — substring present (case-insensitive)
