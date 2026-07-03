@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Auth0 agent skills for authentication, SDK integration, migration, branding, custom domains, and MFA.",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "pluginRoot": "plugins"
   },
   "plugins": [
@@ -42,7 +42,6 @@
         "fastapi",
         "flask",
         "go",
-        "go-jwt-middleware",
         "springboot",
         "java",
         "java-mvc",
@@ -60,7 +59,6 @@
         "spa-js",
         "node",
         "jwt",
-        "express-oauth2-jwt-bearer",
         "cli"
       ],
       "category": "authentication"

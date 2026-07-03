@@ -44,7 +44,6 @@
         "fastapi",
         "flask",
         "go",
-        "go-jwt-middleware",
         "springboot",
         "java",
         "servlet",
@@ -63,7 +62,6 @@
         "spa-js",
         "node",
         "jwt",
-        "express-oauth2-jwt-bearer",
         "cli"
       ],
       "category": "authentication"

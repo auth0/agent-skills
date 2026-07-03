@@ -119,4 +119,13 @@ if [ -f "$REACH" ]; then
   }
 fi
 
+# Routing evals — curated requests resolve to a Step 4 section + reference files
+EVALS="$REPO_ROOT/scripts/check_routing_evals.py"
+if [ -f "$EVALS" ]; then
+  echo "Running routing evals check..."
+  python3 "$EVALS" "$REPO_ROOT/plugins/auth0/skills/auth0" || {
+    echo "FAIL: routing evals check failed"; exit 1;
+  }
+fi
+
 echo "PASS"
