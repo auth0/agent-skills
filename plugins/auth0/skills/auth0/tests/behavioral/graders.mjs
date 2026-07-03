@@ -86,12 +86,33 @@ function gradeFileContains(grader, workspaceDir) {
 
   function walkAndMatch(dir, globPattern) {
     const filename = globPattern.replace(/^\*\*\//, "")
-    const isWildcard = filename.includes("*")
+    const isGlob = /[*{]/.test(filename)
 
     function matchesPattern(name) {
-      if (!isWildcard) return name === filename
-      const escaped = filename.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^/]*")
-      return new RegExp("^" + escaped + "$").test(name)
+      if (!isGlob) return name === filename
+      // Translate a filename glob to a regex, supporting `*` (any run of
+      // non-separator chars) and `{a,b,c}` brace alternation. Everything else
+      // is escaped literally. Done in one pass so `*` and `,` inside braces are
+      // not clobbered by a blanket escape (the bug this replaces escaped `{}`,`,`
+      // and `*`, so brace-globs like `*.{tsx,ts}` never matched anything).
+      let re = ""
+      for (let i = 0; i < filename.length; i++) {
+        const ch = filename[i]
+        if (ch === "*") {
+          re += "[^/]*"
+        } else if (ch === "{") {
+          const end = filename.indexOf("}", i)
+          if (end === -1) { re += "\\{"; continue }
+          const alts = filename.slice(i + 1, end).split(",")
+          re += "(?:" + alts.map((a) =>
+            a.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^/]*")
+          ).join("|") + ")"
+          i = end
+        } else {
+          re += ch.replace(/[.+?^${}()|[\]\\]/g, "\\$&")
+        }
+      }
+      return new RegExp("^" + re + "$").test(name)
     }
 
     if (!fs.existsSync(dir)) return

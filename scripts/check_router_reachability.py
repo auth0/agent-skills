@@ -31,12 +31,18 @@ BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
 #   - reference-style:   [label]: target.md
 #   - autolink:          <target.md>
 LINK_RES = [
-    # Inline: allow an optional <>, an optional #anchor, and an optional title.
-    re.compile(r"\]\(\s*<?(?!https?://)([^)\s<>#]*\.md)(?:#[^)\s]*)?(?:\s+[^)]*)?>?\s*\)"),
+    # Inline: allow an optional <>, a trailing ?query or /, an optional #anchor,
+    # and an optional title. The `[?/#]` segment catches `x.md?v=2` and `x.md/`,
+    # which otherwise slipped past the closing `)`.
+    re.compile(r"\]\(\s*<?(?!https?://)([^)\s<>#?]*\.md)(?:[?/#][^)\s]*)?(?:\s+[^)]*)?>?\s*\)"),
     # Reference-style link definition at the start of a line.
-    re.compile(r"^\s*\[[^\]]+\]:\s*<?(?!https?://)([^\s>#]*\.md)", re.M),
-    # Autolink.
-    re.compile(r"<(?!https?://)([^>\s]*\.md)>"),
+    re.compile(r"^\s*\[[^\]]+\]:\s*<?(?!https?://)([^\s>#?]*\.md)", re.M),
+    # Autolink (optionally with a trailing ?query / #anchor before `>`).
+    re.compile(r"<(?!https?://)([^>\s#?]*\.md)(?:[?#][^>\s]*)?>"),
+    # HTML anchor: <a href="x.md"> / <a href='./x.md#a'>. The autolink pattern
+    # cannot match this (the space after `<a` stops it), so an HTML .md link
+    # would otherwise bypass the one-hop check entirely.
+    re.compile(r"""<a\s[^>]*?href\s*=\s*["']?(?!https?://)([^"'>\s#?]*\.md)""", re.I),
 ]
 
 
@@ -60,11 +66,16 @@ def _router_slugs(skill_md: str) -> set:
     return slugs
 
 
-def _expand(token: str, slugs: set) -> list:
-    # Replace any {placeholder} with each known router slug.
+def _expand(token: str, universes: dict) -> list:
+    # Replace a {placeholder} with each slug from the universe for THAT
+    # placeholder name. Using one flat slug set for every placeholder let
+    # framework slugs expand onto `tooling-{tooling}.md`, so an orphaned
+    # `tooling-<frameworkslug>.md` was falsely "reachable"; keying by
+    # placeholder name closes that hole.
     ph = re.search(r"\{([a-z]+)\}", token)
     if not ph:
         return [token]
+    slugs = universes.get(ph.group(1), set())
     return [token.replace(ph.group(0), s) for s in slugs]
 
 
@@ -73,12 +84,23 @@ def check_router(skill_dir: Path):
     refs_dir = skill_dir / "references"
 
     slugs = _router_slugs(skill_md)
+    backticked_md = set(BACKTICK_MD_RE.findall(skill_md))
+    # Placeholder-keyed slug universes. `{framework}` expands over value-column
+    # slugs; `{tooling}` expands ONLY over the tooling slugs the router actually
+    # names as `tooling-<slug>.md` (Step 3), so a framework slug can never
+    # manufacture a phantom `tooling-<framework>.md` route.
+    tooling_slugs = {
+        n[len("tooling-"):-len(".md")]
+        for n in backticked_md
+        if n.startswith("tooling-")
+    }
+    universes = {"framework": slugs, "tooling": tooling_slugs}
+
     routed = set()
     for m in READ_RE.finditer(skill_md):
-        for name in _expand(m.group(1), slugs):
+        for name in _expand(m.group(1), universes):
             routed.add(name)
-    for name in BACKTICK_MD_RE.findall(skill_md):
-        routed.add(name)
+    routed |= backticked_md
 
     present = {p.name for p in refs_dir.glob("*.md")}
     unreachable = sorted(present - routed)

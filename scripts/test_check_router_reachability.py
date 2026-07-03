@@ -198,6 +198,60 @@ class ReachabilityTest(unittest.TestCase):
             self.assertNotIn("framework-nextjs.md", unreachable)  # value slug
             self.assertIn("framework-next.md", unreachable)  # left-col typo orphan
 
+    def test_html_anchor_md_link_is_flagged(self):
+        # An <a href="x.md"> HTML link is an intra-references .md link too and
+        # must be caught — the autolink regex can't match it (space after <a).
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-react.md\n",
+                {"framework-react.md":
+                    '<a href="feature-mfa.md">mfa</a> '
+                    "<a href='./feature-branding.md#logo'>brand</a> "
+                    '<a href="https://auth0.com/x.md">external ok</a>'},
+            )
+            unreachable, bad_links = check_router(skill)
+            targets = {t for _, t in bad_links}
+            self.assertIn("feature-mfa.md", targets)
+            self.assertIn("./feature-branding.md", targets)
+            self.assertNotIn("https://auth0.com/x.md", targets)
+
+    def test_query_and_trailing_slash_md_links_are_flagged(self):
+        # `x.md?query` and `x.md/` targets previously slipped past the inline
+        # regex (the char after .md wasn't # / space / ) ) and went unflagged.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "Read: references/framework-react.md\n",
+                {"framework-react.md":
+                    "[q](feature-mfa.md?v=2) and [s](feature-branding.md/)"},
+            )
+            unreachable, bad_links = check_router(skill)
+            targets = {t for _, t in bad_links}
+            self.assertIn("feature-mfa.md", targets)
+            self.assertIn("feature-branding.md", targets)
+
+    def test_framework_slug_does_not_manufacture_phantom_tooling_route(self):
+        # A framework slug must NOT expand onto the tooling-{tooling} template.
+        # An orphaned tooling-<frameworkslug>.md must be reported unreachable.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = _make_skill(
+                root,
+                "| Package | Framework |\n| `@auth0/auth0-react` | `react` |\n"
+                "Read: references/framework-{framework}.md\n"
+                "Read: references/tooling-{tooling}.md\n"
+                "| Project | Load |\n| `default` | `tooling-cli.md` |\n",
+                {"framework-react.md": "ok", "tooling-cli.md": "ok",
+                 "tooling-react.md": "orphan named after a framework slug"},
+            )
+            unreachable, bad_links = check_router(skill)
+            self.assertIn("tooling-react.md", unreachable)
+            self.assertNotIn("framework-react.md", unreachable)
+            self.assertNotIn("tooling-cli.md", unreachable)
+
     def test_slash_list_slugs_both_route(self):
         # A slash-list value cell like `php` / `php-api` routes BOTH files.
         with tempfile.TemporaryDirectory() as d:

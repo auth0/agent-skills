@@ -68,7 +68,7 @@ before the plain framework rows.
 | `@auth0/auth0-vue` | `vue` |
 | `@auth0/auth0-angular` | `angular` |
 | `@auth0/auth0-spa-js` | `spa-js` |
-| `express-openid-connect` or `@auth0/express-openid-connect` | `express` |
+| `express-openid-connect` | `express` |
 | `@auth0/auth0-fastify` | `fastify` |
 | `@auth0/auth0-fastify-api` | `fastify-api` |
 | `express-oauth2-jwt-bearer` | `express-jwt` |
@@ -86,7 +86,7 @@ before the plain framework rows.
 
 | Dependency | Framework |
 |---|---|
-| `auth0-java-mvc-common` | `java-mvc` |
+| `mvc-auth-commons` (`com.auth0:mvc-auth-commons`) | `java-mvc` |
 | `spring-security-oauth2-resource-server` | `springboot-api` |
 
 ### .NET — check `*.csproj` or `NuGet.Config`
@@ -131,15 +131,19 @@ dependencies. **Stop at the first match.** For frameworks with a web-vs-API
 split, the base framework is chosen here; the variant is resolved in
 "Variant disambiguation" below.
 
+Rows are ordered most-specific first — an Ionic project also carries
+`@angular/core` / `vue` / `react`, so the `@ionic/*` rows must be checked before
+the plain framework rows (same reasoning as Tier 1).
+
 | Signal | Base framework |
 |---|---|
 | `next` in `package.json` | `nextjs` |
 | `nuxt` in `package.json` | `nuxt` |
-| `@angular/core` in `package.json` | `angular` |
-| `vue` in `package.json` (no `nuxt`) | `vue` |
 | `@ionic/*` + `@angular/core` | `ionic-angular` |
 | `@ionic/*` + `react` | `ionic-react` |
 | `@ionic/*` + `vue` | `ionic-vue` |
+| `@angular/core` in `package.json` | `angular` |
+| `vue` in `package.json` (no `nuxt`) | `vue` |
 | `expo` in `package.json` | `expo` |
 | `react-native` (no `expo`) | `react-native` |
 | `react` (no meta-framework above) | `react` (SPA) — see note |

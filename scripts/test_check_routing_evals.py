@@ -157,6 +157,29 @@ class RoutingEvalTest(unittest.TestCase):
                 f"expected a 'not routed' failure, got: {failures}",
             )
 
+    def test_enabled_conditional_ref_is_required(self):
+        """A modeled conditional whose gate is ON must appear in expect_refs.
+
+        feature:mfa + framework=nextjs enables `If framework detected: Read
+        framework-{framework}.md`. Omitting framework-nextjs.md must FAIL —
+        this is the combo path ("MFA in a Next.js app") that was previously
+        under-specifiable because enabled conditionals were only 'allowed'.
+        """
+        with tempfile.TemporaryDirectory() as d:
+            skill = _make_skill(
+                Path(d), STEP4_FULL, FULL_REFS,
+                [{"id": "c1", "intent": "feature:mfa", "framework": "nextjs",
+                  "tooling": "cli",
+                  # framework-nextjs.md deliberately omitted.
+                  "expect_refs": ["feature-mfa.md", "tooling-cli.md"]}],
+            )
+            failures = check_routing(skill)
+            self.assertTrue(
+                any("framework-nextjs.md" in f and "missing mandatory" in f
+                    for f in failures),
+                f"expected a 'missing mandatory' failure, got: {failures}",
+            )
+
     def test_multi_tenant_pulls_both_refs(self):
         """guidance + multi_tenant routes to both multi-tenant + organizations."""
         with tempfile.TemporaryDirectory() as d:

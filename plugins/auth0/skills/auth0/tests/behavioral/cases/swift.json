@@ -20,7 +20,7 @@
         "Does not use a SPA SDK instead of the native Auth0.swift SDK",
         "No client_secret in native iOS/macOS app (PKCE does not require one)",
         "Solution correctly integrates Auth0 into iOS Swift app with login, logout, secure credential storage, and Auth0.plist configuration",
-        "Uses current SDK version (2.18.0) in dependency declaration",
+        "Pins the Auth0 SDK to an explicit version in the dependency declaration",
         "Requests offline_access scope to enable refresh token issuance and silent token renewal",
         "Configures biometric protection (Face ID / Touch ID) for credential retrieval",
         "Handles Auth0-specific error types instead of generic catch-all",
@@ -46,8 +46,8 @@
     },
     {
       "type": "matches",
-      "pattern": "\\.clearSession\\(\\)|clearSession\\(|webAuth.*clearSession",
-      "description": "Implements logout via clearSession (clears Auth0 session cookie)"
+      "pattern": "\\.clearSession\\(|clearSession\\(|webAuth.*clearSession|\\.logout\\(|webAuth.*logout",
+      "description": "Implements logout — clearSession (Auth0.swift v2) or logout (v3 rename)"
     },
     {
       "type": "matches",
@@ -116,8 +116,8 @@
     {
       "type": "judge",
       "description": "Contains skill-specific advanced patterns beyond basic SDK usage (offline_access, error types, biometrics, version)",
-      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like webAuth, clearSession, CredentialsManager, start, credentials, import Auth0). Look for at least 2 of: (1) SDK version 2.18.0 in a dependency declaration, (2) offline_access scope in a login call, (3) Auth0-specific error types (WebAuthError, CredentialsManagerError, AuthenticationError \u2014 not just generic catch), (4) biometric protection setup (enableBiometrics, LAPolicy). These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
-      "examples": "PASS: Login call includes offline_access scope AND code catches WebAuthError.userCancelled specifically.\nPASS: Package declares version 2.18.0 AND credentialsManager.enableBiometrics(withTitle:) is called.\nFAIL: Code only uses basic webAuth().start() with no offline_access, no SDK-specific error types, no biometrics.\nFAIL: Code has correct basic structure but only catches generic Error, never the SDK-specific WebAuthError or CredentialsManagerError.",
+      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like webAuth, clearSession, CredentialsManager, start, credentials, import Auth0). Look for at least 2 of: (1) an explicit pinned Auth0.swift version in a dependency declaration (Package.swift / CocoaPods / Carthage — any explicit version, not an open-ended range), (2) offline_access scope in a login call, (3) Auth0-specific error types (WebAuthError, CredentialsManagerError, AuthenticationError \u2014 not just generic catch), (4) biometric protection setup (enableBiometrics, LAPolicy). These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
+      "examples": "PASS: Login call includes offline_access scope AND code catches WebAuthError.userCancelled specifically.\nPASS: Package declares an explicit Auth0.swift version AND credentialsManager.enableBiometrics(withTitle:) is called.\nFAIL: Code only uses basic webAuth().start() with no offline_access, no SDK-specific error types, no biometrics.\nFAIL: Code has correct basic structure but only catches generic Error, never the SDK-specific WebAuthError or CredentialsManagerError.",
       "framework": "swift"
     }
   ]

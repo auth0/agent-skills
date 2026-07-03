@@ -21,7 +21,10 @@ tooling and the reference files Step 4 must load. We assert, per case:
      that stops `expect_refs` from being decorative: we parse the section body,
      expand the `{framework}`/`{tooling}` placeholders, model the `If ...`
      conditionals against the case fields, and require that
-       - every UNCONDITIONAL reference is present in expect_refs, and
+       - every UNCONDITIONAL reference is present in expect_refs,
+       - every reference behind a MODELED conditional whose gate is ON for
+         this case is present in expect_refs (so a combo case like "MFA in a
+         Next.js app" can't silently omit framework-nextjs.md), and
        - every entry in expect_refs is a reference the section could actually
          route to for this case (unconditional, an enabled conditional, or an
          unmodeled/optional conditional).
@@ -126,8 +129,16 @@ def compute_route(section_body: str, case: dict):
             if not is_conditional:
                 required.add(fname)
                 allowed.add(fname)
-            elif enabled is True or enabled is None:
-                # enabled conditional, or optional/unmodeled: allowed, not required
+            elif enabled is True:
+                # Modeled conditional whose gate is ON for this case: the route
+                # WILL load it, so expect_refs must name it (required). This is
+                # the combo path (e.g. "MFA in a Next.js app" -> framework-nextjs)
+                # that would otherwise be silently under-specifiable.
+                required.add(fname)
+                allowed.add(fname)
+            elif enabled is None:
+                # Unmodeled conditional: we can't decide the gate, so it's
+                # optional — allowed but not required (don't over-constrain).
                 allowed.add(fname)
             # enabled is False: not allowed, not required
     return required, allowed
@@ -170,7 +181,8 @@ def check_routing(skill_dir: Path):
         for ref in sorted(required - expect_set):
             failures.append(
                 f"{cid}: missing mandatory ref '{ref}' — intent '{intent}' "
-                f"unconditionally routes to it but it is absent from expect_refs"
+                f"routes to it for this case (unconditional read or an enabled "
+                f"conditional) but it is absent from expect_refs"
             )
         for ref in sorted(expect_set - allowed):
             failures.append(

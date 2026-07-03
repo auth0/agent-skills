@@ -23,7 +23,7 @@
         "Does not use web-specific APIs (Auth0Web, auth0_flutter_web.dart, auth0-spa-js)",
         "No client_secret in native code (PKCE does not require one)",
         "Solution correctly integrates Auth0 into a Flutter mobile app with login, logout, and credential handling",
-        "Uses current SDK version (2.1.0) in pubspec.yaml dependency",
+        "Pins the Auth0 SDK to an explicit version in the pubspec.yaml dependency",
         "Requests offline_access scope to enable refresh token renewal",
         "Handles Auth0-specific mobile error types (WebAuthenticationException / CredentialsManagerException) instead of generic catch-all",
         "Solution contains at least 2 skill-specific advanced patterns (version, offline_access, error types, manifestPlaceholders, or session restore)"
@@ -125,8 +125,8 @@
     {
       "type": "judge",
       "description": "Contains skill-specific advanced patterns beyond basic SDK usage (offline_access, error types, session restore, manifestPlaceholders, version)",
-      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like Auth0, webAuthentication, login, logout, credentials). Look for at least 2 of: (1) SDK version 2.1.0 in pubspec.yaml, (2) offline_access scope in the login call, (3) Auth0-specific mobile error handling (WebAuthenticationException or CredentialsManagerException with flags like isUserCancelledException / isNoCredentialsFound / isTokenRenewFailed \u2014 not just generic catch), (4) Android manifestPlaceholders (auth0Domain + auth0Scheme) in build.gradle, (5) session restoration on startup via hasValidCredentials() + credentials() with branching logic. These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
-      "examples": "PASS: Login call includes offline_access scope AND build.gradle declares manifestPlaceholders with auth0Domain/auth0Scheme.\nPASS: pubspec.yaml declares ^2.1.0 AND code catches CredentialsManagerException checking isNoCredentialsFound.\nFAIL: Code only uses basic Auth0().webAuthentication().login() with no offline_access, no error handling, no manifestPlaceholders.\nFAIL: Correct basic structure but only catches generic Exception, never the Auth0 exception types.",
+      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like Auth0, webAuthentication, login, logout, credentials). Look for at least 2 of: (1) an explicit pinned auth0_flutter version in pubspec.yaml (any explicit version constraint, not 'any' or absent), (2) offline_access scope in the login call, (3) Auth0-specific mobile error handling (WebAuthenticationException or CredentialsManagerException with flags like isUserCancelledException / isNoCredentialsFound / isTokenRenewFailed \u2014 not just generic catch), (4) Android manifestPlaceholders (auth0Domain + auth0Scheme) in build.gradle, (5) session restoration on startup via hasValidCredentials() + credentials() with branching logic. These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
+      "examples": "PASS: Login call includes offline_access scope AND build.gradle declares manifestPlaceholders with auth0Domain/auth0Scheme.\nPASS: pubspec.yaml pins an explicit auth0_flutter version AND code catches CredentialsManagerException checking isNoCredentialsFound.\nFAIL: Code only uses basic Auth0().webAuthentication().login() with no offline_access, no error handling, no manifestPlaceholders.\nFAIL: Correct basic structure but only catches generic Exception, never the Auth0 exception types.",
       "framework": "dart"
     }
   ]
