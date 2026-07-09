@@ -108,6 +108,8 @@ auth0 tenants use <name> # switch active tenant; prompts for browser login if no
 
 For non-interactive or multi-tenant automation, skip the CLI and call the **Management API** directly with an explicit domain + bearer token per call. (see the cURL examples section below)
 
+**Tooling note.** The `auth0 ul` commands below are one way to write branding settings. The loaded tooling reference has the equivalent for infrastructure-as-code projects: the Terraform `auth0_branding` resource (`logo_url`, `favicon_url`, `colors` block). The Auth0 MCP server exposes **no** branding/Universal Login tool — for an MCP-only session, fall back to the CLI, Terraform, or the Management API directly. This interactive branding workflow (extract → propose → apply) stays CLI/API-driven regardless, because it is a guided flow rather than a static config write.
+
 ### Universal Login Active for the Flows You Want to Brand
 
 Themes and templates only apply to flows actually running in Universal Login. Tenants can run in hybrid mode where some flows are Classic. Run Capability 5 ("Check my setup") to diagnose which flows will and won't be affected. (see the Check Setup section below for the Classic-toggle mechanics)

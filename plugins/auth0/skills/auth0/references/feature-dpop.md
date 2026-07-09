@@ -69,6 +69,16 @@ auth0 api patch "resource-servers/{API_ID}" \
 
 > Replace `{API_ID}` with the ID returned from the GET call above.
 
+### Same configuration in Terraform / MCP
+
+Sender-constraining is set on the resource server (via a `proof_of_possession`
+setting with `mechanism: "dpop"`) and, for a mandatory client, on the client.
+There is no tenant-wide DPoP toggle. The loaded tooling reference has the exact
+syntax:
+- CLI: `auth0 api patch resource-servers/{API_ID}` with the `proof_of_possession` payload
+- Terraform: `auth0_resource_server` `proof_of_possession` block + `auth0_client` `require_proof_of_possession`
+- MCP: `auth0_update_resource_server` accepts `proof_of_possession`; the client-side toggle is **not** exposed by MCP — set it via CLI or Terraform.
+
 ---
 
 ## Step 2: Configure Your Application

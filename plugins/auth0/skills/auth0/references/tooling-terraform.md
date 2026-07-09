@@ -125,6 +125,51 @@ resource "auth0_custom_domain_verification" "main" {
 }
 ```
 
+### DPoP (sender-constrained tokens)
+DPoP is configured per resource server (the API that must reject bearer replay)
+and per client (whether proof-of-possession is mandatory). There is no
+tenant-wide DPoP toggle.
+
+```hcl
+resource "auth0_resource_server" "my_api" {
+  name       = "My API"
+  identifier = "https://api.example.com"
+
+  proof_of_possession {
+    mechanism    = "dpop"          # "dpop" or "mtls"
+    required     = true            # reject non-DPoP tokens
+    required_for = "all_clients"   # or "public_clients"
+  }
+}
+
+resource "auth0_client" "my_app" {
+  name = "My App"
+
+  require_proof_of_possession = true
+}
+```
+
+### ACUL (Advanced Customization for Universal Login)
+The Terraform provider sets a screen's **rendering mode** to `advanced` (this is
+what turns ACUL on for that screen) and configures head tags. Building the screen
+components themselves is a code task done in the app — Terraform does not scaffold
+or deploy component code.
+
+```hcl
+resource "auth0_prompt_screen_renderer" "login_id" {
+  prompt_type    = "login-id"
+  screen_name    = "login-id"
+  rendering_mode = "advanced"      # "standard" or "advanced" (ACUL)
+
+  head_tags = jsonencode([
+    {
+      tag        = "script"
+      attributes = { src = "https://cdn.example.com/login-id.js", defer = true }
+    }
+  ])
+}
+```
+
 ---
 
 ## Workflow

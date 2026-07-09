@@ -82,6 +82,15 @@ auth0 api put "guardian/factors/email" --data '{"enabled": true}'
 auth0 api patch "guardian/policies" --data '["all-applications"]'
 ```
 
+### Same configuration in Terraform
+
+The CLI commands above are one way to enable factors and set the policy. If the
+project is infrastructure-as-code, the loaded tooling reference gives the
+equivalent:
+- CLI: `auth0 api put guardian/factors/...` + `auth0 api patch guardian/policies`
+- Terraform: `auth0_guardian` resource (`policy` + per-factor blocks)
+- MCP: not available — the Auth0 MCP server exposes no Guardian/MFA tool; use the CLI or Terraform.
+
 
 ## Step 2: Implement Step-Up Authentication
 

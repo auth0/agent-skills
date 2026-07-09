@@ -251,7 +251,6 @@ present and consistent.
 ## Step 3: Detect tooling
 
 Read the project file tree. This is a project-context decision, not a product preference.
-The feature configuration is identical across all three tools.
 
 | Project has... | Load |
 |---|---|
@@ -318,6 +317,7 @@ DPoP is SPA-only (no SSR: Next.js/Nuxt) — feature-dpop.md states the exclusion
 ### guidance
 ```
 Read: references/pattern-security.md
+If framework detected: Read references/framework-{framework}.md (for SDK-specific guidance — token storage, session handling, route protection)
 If token handling / JWT vs opaque / storage: Read references/pattern-token-handling.md
 If multi-tenant / B2B architecture: Read references/pattern-multi-tenant.md + references/feature-organizations.md
 ```

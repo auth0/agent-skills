@@ -87,21 +87,20 @@ app.get('/api/data', checkJwt, (req, res) => {
 
 ## Tenant Configuration (via chosen tooling)
 
-See your tooling reference file for the full command syntax. The operations are:
+See your tooling reference file for the full command syntax. The Auth0 MCP server
+exposes **no** organizations tool, so for an MCP-only session fall back to the CLI
+or Terraform. The operations are:
 
 **Create an organization:**
 - CLI: `auth0 orgs create`
-- MCP: `create_organization`
 - Terraform: `auth0_organization` resource
 
 **Add a member:**
 - CLI: `auth0 orgs members add`
-- MCP: `add_organization_member`
 - Terraform: `auth0_organization_member` resource
 
 **Enable a connection for an org:**
 - CLI: `auth0 orgs connections add`
-- MCP: `enable_organization_connection`
 - Terraform: `auth0_organization_connections` resource
 
 **Assign a role within an org:**

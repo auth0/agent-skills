@@ -146,6 +146,14 @@ If `auth0 acul config list` returns an error about custom domain: stop and infor
 
 For full CLI flag reference → see the CLI Commands section in this file.
 
+> **Tooling note.** ACUL is CLI-driven by design: the CLI scaffolds and previews
+> the screen *code*, which neither Terraform nor the MCP server can do — so this
+> workflow uses the Auth0 CLI regardless of the project's other tooling. The one
+> piece that *is* declarative is the tenant-side toggle that turns a screen's
+> rendering mode to `advanced`: an infrastructure-as-code project can manage that
+> with the Terraform `auth0_prompt_screen_renderer` resource (`rendering_mode`)
+> instead of the CLI. The Auth0 MCP server exposes **no** ACUL/prompt-screen tool.
+
 
 ## Phase 1: Intent Detection
 
