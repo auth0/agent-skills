@@ -43,6 +43,11 @@ SECTION_RE = re.compile(r"^###\s+(\S+)\s*$", re.M)
 REF_RE = re.compile(r"references/([A-Za-z0-9_{}-]+\.md)")
 # Frameworks that count as a SPA for the DPoP "If a SPA framework is detected" gate.
 SPA_FRAMEWORKS = {"vue", "react", "angular", "spa-js"}
+# A markdown table row: optional leading whitespace, then a `|` cell delimiter.
+TABLE_ROW_RE = re.compile(r"^\s*\|")
+# The bolded intent token in the Step 1 table's value (Intent) column, e.g.
+# **feature:mfa**. Intents are lowercase and may carry a `:` sub-key.
+INTENT_TOKEN_RE = re.compile(r"\*\*([a-z][a-z0-9:_-]*)\*\*")
 
 
 def load_cases(skill_dir: Path) -> list:
@@ -71,6 +76,33 @@ def step4_sections(skill_md: str) -> dict:
 def step4_intents(skill_md: str) -> set:
     """Intent headings under Step 4 (### integrate, ### feature:mfa, ...)."""
     return set(step4_sections(skill_md).keys())
+
+
+def step1_intents(skill_md: str) -> set:
+    """Intent keys declared in the Step 1 "Detect intent" table's value column.
+
+    Step 1 is where the router maps a developer request to an Intent lookup key;
+    Step 4 is where that key resolves to reference files. The two lists MUST be
+    symmetric — a Step 1 intent with no Step 4 section is a dead route, and a
+    Step 4 section no Step 1 row points at is unreachable. We read the bolded
+    token from the LAST cell of each Step 1 table row (the Intent column) so a
+    bolded phrase in the description column (e.g. **intent-first**) is ignored.
+    """
+    body = skill_md.split("## Step 1", 1)[-1]
+    body = re.split(r"\n##\s", body, 1)[0]
+    intents: set = set()
+    for line in body.splitlines():
+        if not TABLE_ROW_RE.match(line):
+            continue
+        cells = line.strip().strip("|").split("|")
+        if len(cells) < 2:
+            continue
+        # The Intent value lives in the final column; the earlier column is the
+        # plain-language description (which may itself bold an Auth0 term).
+        m = INTENT_TOKEN_RE.search(cells[-1])
+        if m:
+            intents.add(m.group(1))
+    return intents
 
 
 def _expand(token: str, case: dict):
@@ -144,13 +176,61 @@ def compute_route(section_body: str, case: dict):
     return required, allowed
 
 
-def check_routing(skill_dir: Path):
+def check_intent_symmetry(skill_md: str) -> list:
+    """Every Step 1 intent has a Step 4 section and vice versa.
+
+    Catches the failure mode that neither reachability nor the per-case route
+    check can see: an intent the router can PICK in Step 1 but that has no Step 4
+    section to resolve it (dead route), or a Step 4 section no Step 1 row can
+    ever select (unreachable section, e.g. left behind after a rename).
+    """
+    s1 = step1_intents(skill_md)
+    s4 = step4_intents(skill_md)
+    failures = []
+    for intent in sorted(s1 - s4):
+        failures.append(
+            f"intent '{intent}' is selectable in Step 1 but has no "
+            f"'### {intent}' section in Step 4 (dead route)"
+        )
+    for intent in sorted(s4 - s1):
+        failures.append(
+            f"Step 4 has a '### {intent}' section but no Step 1 table row "
+            f"routes to it (unreachable section)"
+        )
+    return failures
+
+
+def check_case_coverage(skill_md: str, cases: list) -> list:
+    """Every Step 4 section is exercised by at least one routing case.
+
+    Without this, a section can silently go untested (as `upgrade-sdk` and
+    `tooling` did): the per-case route check only validates intents that HAPPEN
+    to appear in routing-cases.json, so a new intent ships with zero coverage
+    and CI stays green.
+    """
+    covered = {c["intent"] for c in cases}
+    failures = []
+    for intent in sorted(step4_intents(skill_md) - covered):
+        failures.append(
+            f"Step 4 section '### {intent}' has no routing case in "
+            f"routing-cases.json (add one so the route is exercised)"
+        )
+    return failures
+
+
+def check_case_routes(skill_dir: Path) -> list:
+    """Per-case route assertions: each case's intent resolves to a Step 4
+    section, every expected reference exists, and expect_refs matches the route
+    the section computes for the case. This is the assertion layer the
+    symmetry/coverage checks sit on top of; kept separate so it can be tested in
+    isolation of a full Step 1 table."""
     skill_md = (skill_dir / "SKILL.md").read_text()
     sections = step4_sections(skill_md)
     present = {p.name for p in (skill_dir / "references").glob("*.md")}
+    cases = load_cases(skill_dir)
 
     failures = []
-    for case in load_cases(skill_dir):
+    for case in cases:
         cid = case["id"]
         intent = case["intent"]
         expect_refs = case["expect_refs"]
@@ -190,6 +270,18 @@ def check_routing(skill_dir: Path):
                 f"for framework={case.get('framework')!r} tooling={case.get('tooling')!r} "
                 f"(not an unconditional read and no enabled conditional loads it)"
             )
+    return failures
+
+
+def check_routing(skill_dir: Path) -> list:
+    """Full routing check: Step 1<->Step 4 symmetry, per-section case coverage,
+    and the per-case route assertions. This is what CI runs."""
+    skill_md = (skill_dir / "SKILL.md").read_text()
+    cases = load_cases(skill_dir)
+    failures = []
+    failures.extend(check_intent_symmetry(skill_md))
+    failures.extend(check_case_coverage(skill_md, cases))
+    failures.extend(check_case_routes(skill_dir))
     return failures
 
 

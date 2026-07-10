@@ -1,0 +1,229 @@
+{
+  "_comment": "Framework-detection evals for Step 2 of the auth0 router. Each case lists the backticked project signals present (verbatim from SKILL.md's detection tables) plus an optional api_intent, and asserts the framework the 'stop at first match' cascade must resolve to. These lock down the ordering traps: Ionic/Capacitor rows must beat plain framework rows, @auth0/nextjs-auth0 must beat @auth0/auth0-react, expo must beat react-native, and the php/laravel/express/aspnetcore web-vs-API variant split. Run with scripts/check_framework_detection.py. OUT OF SCOPE (see the checker's module docstring): Tier 3 prompt-only detection and prose-only Tier 2 distinctions (*.csproj MAUI/WinForms/WPF/ASP.NET flavor, 'HTTP server/router'), which carry no backticked signal to model mechanically.",
+  "cases": [
+    {
+      "id": "tier1-nextjs-beats-react",
+      "_why": "@auth0/nextjs-auth0 row precedes @auth0/auth0-react; a Next.js app also has react in deps, but the SDK row must win.",
+      "signals": ["@auth0/nextjs-auth0", "@auth0/auth0-react", "react"],
+      "expect_framework": "nextjs"
+    },
+    {
+      "id": "tier1-ionic-angular-beats-angular",
+      "_why": "Ionic project also carries @auth0/auth0-angular; the @capacitor/browser row must be checked first.",
+      "signals": ["@capacitor/browser", "@auth0/auth0-angular"],
+      "expect_framework": "ionic-angular"
+    },
+    {
+      "id": "tier1-ionic-react-beats-react",
+      "signals": ["@capacitor/browser", "@auth0/auth0-react"],
+      "expect_framework": "ionic-react"
+    },
+    {
+      "id": "tier1-ionic-vue-beats-vue",
+      "signals": ["@capacitor/browser", "@auth0/auth0-vue"],
+      "expect_framework": "ionic-vue"
+    },
+    {
+      "id": "tier1-plain-react",
+      "_why": "No Next.js / Ionic markers -> the plain @auth0/auth0-react row.",
+      "signals": ["@auth0/auth0-react", "react"],
+      "expect_framework": "react"
+    },
+    {
+      "id": "tier1-expo-beats-react-native",
+      "_why": "react-native-auth0 + app.json present -> expo, not react-native.",
+      "signals": ["react-native-auth0", "app.json"],
+      "expect_framework": "expo"
+    },
+    {
+      "id": "tier1-react-native-no-expo",
+      "_why": "react-native-auth0 with NO Expo files -> react-native (negated app.json/app.config.js).",
+      "signals": ["react-native-auth0"],
+      "expect_framework": "react-native"
+    },
+    {
+      "id": "tier1-spa-js",
+      "signals": ["@auth0/auth0-spa-js"],
+      "expect_framework": "spa-js"
+    },
+    {
+      "id": "tier1-fastify-api-beats-fastify",
+      "_why": "Distinct SDK packages; the -api SDK must resolve to fastify-api.",
+      "signals": ["@auth0/auth0-fastify-api"],
+      "expect_framework": "fastify-api"
+    },
+    {
+      "id": "tier1-express-openid-connect",
+      "signals": ["express-openid-connect"],
+      "expect_framework": "express"
+    },
+    {
+      "id": "tier1-express-jwt-sdk",
+      "signals": ["express-oauth2-jwt-bearer"],
+      "expect_framework": "express-jwt"
+    },
+    {
+      "id": "tier1-php-api-strategy",
+      "_why": "auth0/auth0-php + STRATEGY_API -> php-api; the STRATEGY_API row precedes the plain php row.",
+      "signals": ["auth0/auth0-php", "SdkConfiguration::STRATEGY_API"],
+      "expect_framework": "php-api"
+    },
+    {
+      "id": "tier1-laravel-api-guard",
+      "_why": "auth0/login + AuthorizationGuard -> laravel-api; must beat the plain auth0/login laravel row above it (which negates AuthorizationGuard).",
+      "signals": ["auth0/login", "AuthorizationGuard"],
+      "expect_framework": "laravel-api"
+    },
+    {
+      "id": "tier1-laravel-web",
+      "_why": "auth0/login with NO AuthorizationGuard -> laravel.",
+      "signals": ["auth0/login"],
+      "expect_framework": "laravel"
+    },
+    {
+      "id": "tier1-aspnetcore-api-suffix",
+      "_why": "Auth0.AspNetCore.Authentication.Api is a superstring of the auth row token; exact-token matching + row order must land on aspnetcore-api.",
+      "signals": ["Auth0.AspNetCore.Authentication.Api"],
+      "expect_framework": "aspnetcore-api"
+    },
+    {
+      "id": "tier1-flutter-native",
+      "signals": ["pubspec.yaml", "auth0_flutter", "flutter.web: false"],
+      "expect_framework": "flutter-native"
+    },
+    {
+      "id": "tier1-go-jwt-middleware",
+      "signals": ["github.com/auth0/go-jwt-middleware"],
+      "expect_framework": "go"
+    },
+    {
+      "id": "tier1-android",
+      "signals": ["build.gradle", "com.auth0.android:auth0"],
+      "expect_framework": "android"
+    },
+    {
+      "id": "tier2-next-workspace",
+      "_why": "No Auth0 SDK; Tier 2 detects nextjs from `next` in package.json.",
+      "signals": ["next"],
+      "expect_framework": "nextjs"
+    },
+    {
+      "id": "tier2-ionic-vue-beats-vue",
+      "_why": "Tier 2 Ionic ordering: @ionic/* + vue must beat the plain vue row.",
+      "signals": ["@ionic/*", "vue"],
+      "expect_framework": "ionic-vue"
+    },
+    {
+      "id": "tier2-vue-not-nuxt",
+      "signals": ["vue"],
+      "expect_framework": "vue"
+    },
+    {
+      "id": "tier2-express-base-web",
+      "_why": "Tier 2 express base, no API intent -> express web variant.",
+      "signals": ["express"],
+      "api_intent": false,
+      "expect_framework": "express"
+    },
+    {
+      "id": "tier2-express-base-api-variant",
+      "_why": "Tier 2 express base WITH api_intent -> express-jwt via variant disambiguation.",
+      "signals": ["express"],
+      "api_intent": true,
+      "expect_framework": "express-jwt"
+    },
+    {
+      "id": "tier2-flask",
+      "signals": ["flask"],
+      "expect_framework": "flask"
+    },
+    {
+      "id": "tier2-laravel-base-api-variant",
+      "_why": "laravel/framework base + api_intent -> laravel-api.",
+      "signals": ["laravel/framework"],
+      "api_intent": true,
+      "expect_framework": "laravel-api"
+    },
+    {
+      "id": "tier1-angular",
+      "signals": ["@auth0/auth0-angular"],
+      "expect_framework": "angular"
+    },
+    {
+      "id": "tier1-nuxt",
+      "_why": "@auth0/auth0-nuxt is distinct from @auth0/nextjs-auth0; must resolve to nuxt, not nextjs.",
+      "signals": ["@auth0/auth0-nuxt"],
+      "expect_framework": "nuxt"
+    },
+    {
+      "id": "tier1-fastify-web",
+      "_why": "@auth0/auth0-fastify (no -api suffix) -> fastify web, distinct from the fastify-api row.",
+      "signals": ["@auth0/auth0-fastify"],
+      "expect_framework": "fastify"
+    },
+    {
+      "id": "tier1-fastapi-api",
+      "signals": ["auth0-fastapi-api"],
+      "expect_framework": "fastapi-api"
+    },
+    {
+      "id": "tier1-java-mvc",
+      "signals": ["mvc-auth-commons"],
+      "expect_framework": "java-mvc"
+    },
+    {
+      "id": "tier1-springboot-api",
+      "signals": ["spring-security-oauth2-resource-server"],
+      "expect_framework": "springboot-api"
+    },
+    {
+      "id": "tier1-aspnetcore-auth-no-api-suffix",
+      "_why": "Auth0.AspNetCore.Authentication (no .Api suffix) -> aspnetcore-auth; the negated `.Api` token must NOT be present. Guards the pair with tier1-aspnetcore-api-suffix.",
+      "signals": ["Auth0.AspNetCore.Authentication"],
+      "expect_framework": "aspnetcore-auth"
+    },
+    {
+      "id": "tier1-maui",
+      "signals": ["Auth0.OidcClient.MAUI"],
+      "expect_framework": "maui"
+    },
+    {
+      "id": "tier1-net-android",
+      "signals": ["Auth0.OidcClient.AndroidX"],
+      "expect_framework": "net-android"
+    },
+    {
+      "id": "tier1-net-ios",
+      "signals": ["Auth0.OidcClient.iOS"],
+      "expect_framework": "net-ios"
+    },
+    {
+      "id": "tier1-winforms",
+      "signals": ["Auth0.OidcClient.WinForms"],
+      "expect_framework": "winforms"
+    },
+    {
+      "id": "tier1-wpf",
+      "signals": ["Auth0.OidcClient.WPF"],
+      "expect_framework": "wpf"
+    },
+    {
+      "id": "tier1-php-web-no-strategy",
+      "_why": "auth0/auth0-php with NO STRATEGY_API signal -> php web; the php-api row above requires STRATEGY_API, so the negated php row must fire.",
+      "signals": ["auth0/auth0-php"],
+      "expect_framework": "php"
+    },
+    {
+      "id": "tier1-swift",
+      "_why": "Package.swift satisfies the swift OR-group (`Package.swift` or `.xcodeproj`).",
+      "signals": ["Package.swift"],
+      "expect_framework": "swift"
+    },
+    {
+      "id": "tier1-flutter-web",
+      "_why": "pubspec.yaml + auth0_flutter WITHOUT `flutter.web: false` -> flutter-web; the flutter-native row above requires that token, so this falls through to flutter-web.",
+      "signals": ["pubspec.yaml", "auth0_flutter"],
+      "expect_framework": "flutter-web"
+    }
+  ]
+}

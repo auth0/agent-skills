@@ -104,9 +104,29 @@ jobs:
     - name: Router routing evals
       run: |
         # Assert curated developer requests (features + SDK+feature combos)
-        # resolve to an existing Step 4 section and reference files.
+        # resolve to an existing Step 4 section and reference files, that every
+        # Step 1 intent <-> Step 4 section pair is symmetric, and that every
+        # Step 4 section is exercised by at least one routing case.
         uv run --with pytest python -m pytest scripts/test_check_routing_evals.py -q
         uv run python scripts/check_routing_evals.py plugins/auth0/skills/auth0
+
+    - name: Router framework-detection evals
+      run: |
+        # Assert project signals walk the Step 2 detection cascade to the right
+        # framework — locks down the "stop at first match" row ordering (Ionic
+        # before plain framework, nextjs before react, expo vs react-native) and
+        # the web-vs-API variant disambiguation.
+        uv run --with pytest python -m pytest scripts/test_check_framework_detection.py -q
+        uv run python scripts/check_framework_detection.py plugins/auth0/skills/auth0
+
+    - name: Router tooling-detection evals
+      run: |
+        # Assert project signals walk the Step 3 tooling cascade to the right
+        # tooling reference — locks down the row ordering (the `*.tf`/`terraform/`
+        # row must beat the catch-all default) and the fall-through to the CLI.
+        # The MCP row is a session-runtime signal, out of mechanical scope.
+        uv run --with pytest python -m pytest scripts/test_check_tooling_detection.py -q
+        uv run python scripts/check_tooling_detection.py plugins/auth0/skills/auth0
 
     - name: Structural gate (validate-skill.sh)
       run: |

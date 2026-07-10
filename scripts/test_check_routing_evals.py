@@ -1,6 +1,11 @@
 import json, tempfile, unittest
 from pathlib import Path
-from check_routing_evals import check_routing
+from check_routing_evals import (
+    check_case_routes,
+    check_intent_symmetry,
+    check_case_coverage,
+    step1_intents,
+)
 
 
 def _make_skill(root: Path, skill_md: str, refs: list, cases: list) -> Path:
@@ -49,6 +54,19 @@ FULL_REFS = [
     "pattern-multi-tenant.md", "feature-organizations.md",
 ]
 
+# A Step 1 intent table whose value (last) column carries the bolded Intent
+# key. Note the description column also bolds an Auth0 term (**MFA**) to prove
+# the parser reads the Intent from the LAST cell, not any bolded token.
+STEP1 = (
+    "## Step 1: Detect intent\n"
+    "| What the developer wants | Intent |\n"
+    "|---|---|\n"
+    "| Add login/signup | **integrate** |\n"
+    "| Second step after password. *Auth0: **MFA**.* | **feature:mfa** |\n"
+    "| Best practices, is this secure | **guidance** |\n"
+    "## Step 2: next\n"
+)
+
 
 class RoutingEvalTest(unittest.TestCase):
     def test_valid_case_passes(self):
@@ -59,7 +77,7 @@ class RoutingEvalTest(unittest.TestCase):
                 [{"id": "c1", "intent": "feature:mfa", "framework": None,
                   "tooling": "cli", "expect_refs": ["feature-mfa.md"]}],
             )
-            self.assertEqual(check_routing(skill), [])
+            self.assertEqual(check_case_routes(skill), [])
 
     def test_unknown_intent_fails(self):
         with tempfile.TemporaryDirectory() as d:
@@ -68,7 +86,7 @@ class RoutingEvalTest(unittest.TestCase):
                 [{"id": "c1", "intent": "feature:nope", "framework": None,
                   "tooling": "cli", "expect_refs": ["feature-mfa.md"]}],
             )
-            failures = check_routing(skill)
+            failures = check_case_routes(skill)
             self.assertTrue(any("no '### feature:nope'" in f for f in failures))
 
     def test_missing_reference_file_fails(self):
@@ -78,7 +96,7 @@ class RoutingEvalTest(unittest.TestCase):
                 [{"id": "c1", "intent": "integrate", "framework": "react",
                   "tooling": "cli", "expect_refs": ["framework-react.md"]}],
             )
-            failures = check_routing(skill)
+            failures = check_case_routes(skill)
             self.assertTrue(any("framework-react.md" in f and "does not exist" in f
                                  for f in failures))
 
@@ -92,7 +110,7 @@ class RoutingEvalTest(unittest.TestCase):
                 [{"id": "c1", "intent": "integrate", "framework": "react",
                   "tooling": "cli", "expect_refs": ["feature-mfa.md"]}],
             )
-            failures = check_routing(skill)
+            failures = check_case_routes(skill)
             self.assertTrue(
                 any("feature-mfa.md" in f and "not routed" in f for f in failures),
                 f"expected a 'not routed' failure, got: {failures}",
@@ -108,7 +126,7 @@ class RoutingEvalTest(unittest.TestCase):
                 [{"id": "c1", "intent": "integrate", "framework": "react",
                   "tooling": "cli", "expect_refs": ["framework-react.md"]}],
             )
-            failures = check_routing(skill)
+            failures = check_case_routes(skill)
             self.assertTrue(
                 any("tooling-cli.md" in f and "missing mandatory" in f
                     for f in failures),
@@ -125,7 +143,7 @@ class RoutingEvalTest(unittest.TestCase):
                   "expect_refs": ["feature-mfa.md", "tooling-cli.md",
                                   "framework-nextjs.md"]}],
             )
-            self.assertEqual(check_routing(skill), [])
+            self.assertEqual(check_case_routes(skill), [])
 
     def test_conditional_framework_omitted_when_null(self):
         """`If framework detected` ref is optional when no framework -> passes."""
@@ -136,7 +154,7 @@ class RoutingEvalTest(unittest.TestCase):
                   "tooling": "cli",
                   "expect_refs": ["feature-mfa.md", "tooling-cli.md"]}],
             )
-            self.assertEqual(check_routing(skill), [])
+            self.assertEqual(check_case_routes(skill), [])
 
     def test_conditional_when_flag_false_is_not_routed(self):
         """Naming a conditional ref whose flag is false -> 'not routed'."""
@@ -150,7 +168,7 @@ class RoutingEvalTest(unittest.TestCase):
                   "expect_refs": ["pattern-security.md",
                                   "pattern-token-handling.md"]}],
             )
-            failures = check_routing(skill)
+            failures = check_case_routes(skill)
             self.assertTrue(
                 any("pattern-token-handling.md" in f and "not routed" in f
                     for f in failures),
@@ -173,7 +191,7 @@ class RoutingEvalTest(unittest.TestCase):
                   # framework-nextjs.md deliberately omitted.
                   "expect_refs": ["feature-mfa.md", "tooling-cli.md"]}],
             )
-            failures = check_routing(skill)
+            failures = check_case_routes(skill)
             self.assertTrue(
                 any("framework-nextjs.md" in f and "missing mandatory" in f
                     for f in failures),
@@ -191,7 +209,60 @@ class RoutingEvalTest(unittest.TestCase):
                                   "pattern-multi-tenant.md",
                                   "feature-organizations.md"]}],
             )
-            self.assertEqual(check_routing(skill), [])
+            self.assertEqual(check_case_routes(skill), [])
+
+    # --- Step 1 intent parsing ----------------------------------------------
+
+    def test_step1_intents_read_from_value_column(self):
+        """Intent keys come from the LAST cell, not a bolded description term."""
+        intents = step1_intents(STEP1)
+        self.assertEqual(intents, {"integrate", "feature:mfa", "guidance"})
+        # **MFA** in the description column must NOT be mistaken for an intent.
+        self.assertNotIn("mfa", intents)
+
+    # --- Step 1 <-> Step 4 symmetry -----------------------------------------
+
+    def test_symmetry_holds_when_intents_match(self):
+        skill_md = STEP1 + STEP4_FULL
+        self.assertEqual(check_intent_symmetry(skill_md), [])
+
+    def test_step1_intent_without_step4_section_is_dead_route(self):
+        # Step 1 declares guidance, but STEP4 (small) has only integrate+mfa.
+        skill_md = STEP1 + STEP4
+        failures = check_intent_symmetry(skill_md)
+        self.assertTrue(
+            any("guidance" in f and "dead route" in f for f in failures),
+            f"expected a 'dead route' failure, got: {failures}",
+        )
+
+    def test_step4_section_without_step1_row_is_unreachable(self):
+        # STEP1_MISSING drops the guidance row; STEP4_FULL still has it.
+        step1_missing = STEP1.replace(
+            "| Best practices, is this secure | **guidance** |\n", ""
+        )
+        failures = check_intent_symmetry(step1_missing + STEP4_FULL)
+        self.assertTrue(
+            any("guidance" in f and "unreachable section" in f for f in failures),
+            f"expected an 'unreachable section' failure, got: {failures}",
+        )
+
+    # --- every Step 4 section is exercised by a case ------------------------
+
+    def test_uncovered_section_fails_coverage(self):
+        # STEP4_FULL has integrate, feature:mfa, guidance; case covers only mfa.
+        cases = [{"id": "c1", "intent": "feature:mfa", "framework": None,
+                  "tooling": "cli", "expect_refs": ["feature-mfa.md"]}]
+        failures = check_case_coverage(STEP4_FULL, cases)
+        self.assertTrue(any("integrate" in f for f in failures))
+        self.assertTrue(any("guidance" in f for f in failures))
+
+    def test_full_coverage_passes(self):
+        cases = [
+            {"id": "a", "intent": "integrate", "expect_refs": []},
+            {"id": "b", "intent": "feature:mfa", "expect_refs": []},
+            {"id": "c", "intent": "guidance", "expect_refs": []},
+        ]
+        self.assertEqual(check_case_coverage(STEP4_FULL, cases), [])
 
 
 if __name__ == "__main__":

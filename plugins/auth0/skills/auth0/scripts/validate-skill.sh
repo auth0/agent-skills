@@ -131,4 +131,24 @@ if [ -f "$EVALS" ]; then
   }
 fi
 
+# Framework-detection evals — project signals walk the Step 2 cascade to the
+# expected framework (ordering traps + variant disambiguation).
+DETECT="$REPO_ROOT/scripts/check_framework_detection.py"
+if [ -f "$DETECT" ]; then
+  echo "Running framework-detection evals check..."
+  python3 "$DETECT" "$REPO_ROOT/plugins/auth0/skills/auth0" || {
+    echo "FAIL: framework-detection evals check failed"; exit 1;
+  }
+fi
+
+# Tooling-detection evals — project signals walk the Step 3 cascade to the
+# expected tooling reference (Terraform row vs the CLI default).
+TOOLING="$REPO_ROOT/scripts/check_tooling_detection.py"
+if [ -f "$TOOLING" ]; then
+  echo "Running tooling-detection evals check..."
+  python3 "$TOOLING" "$REPO_ROOT/plugins/auth0/skills/auth0" || {
+    echo "FAIL: tooling-detection evals check failed"; exit 1;
+  }
+fi
+
 echo "PASS"
