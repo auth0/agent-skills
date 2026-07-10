@@ -51,11 +51,18 @@ which reference files to load.
 | Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
 | Hit an error: 401 Unauthorized, 403 Forbidden, CORS, callback URL mismatch, redirect loop. *Auth0: debugging.* | **debug** |
 | Hit rate limiting: 429 Too Many Requests, quota exceeded. *Auth0: rate limits.* | **debug:rate-limit** |
-| Move an existing app off Clerk, NextAuth.js, Firebase, Cognito, Okta, Supabase, Passport.js, or another auth provider. *Auth0: migration.* | **migrate** |
+| Move an existing app off Clerk, NextAuth.js, Firebase, Cognito, Okta, Supabase, Passport.js, or another auth provider. *Auth0: provider migration.* | **migrate** |
+| Upgrade the Auth0 SDK itself to a new major version (e.g. Auth0.swift v2→v3, Auth0.Android v3→v4) — breaking changes, deprecated APIs, "update to the latest SDK". *Auth0: SDK major-version upgrade.* | **upgrade-sdk** |
+| Use the Auth0 CLI directly — "create an app/API with the `auth0` CLI", script tenant setup, or automate Auth0 config in CI — with no application framework in play. *Auth0: CLI / tooling-only.* | **tooling** |
 
 ---
 
 ## Step 2: Detect framework
+
+> **Skip this step for the `tooling` intent.** A CLI-first / tooling-only request
+> has no application framework — go straight to Step 3, then load the tooling
+> reference. Only ask about a framework if the developer later pivots to
+> integrating auth into an app.
 
 Work top-down. **Stop at the first tier that yields a framework.**
 
@@ -338,4 +345,20 @@ Read: references/pattern-rate-limiting.md
 Read: references/feature-migration.md
 Read: references/tooling-{tooling}.md
 If framework detected: Read references/framework-{framework}.md
+```
+
+### upgrade-sdk
+```
+Read: references/framework-{framework}.md
+Follow its "Major Version Migration" section (e.g. Auth0.swift v3, Auth0.Android v4).
+This is an Auth0 SDK version bump — NOT a provider migration. Do not load feature-migration.md.
+If no framework is detected: ask which Auth0 SDK the developer is upgrading.
+```
+
+### tooling
+```
+Read: references/tooling-{tooling}.md
+No framework file — this is a CLI/tooling-only task (create apps/APIs, script
+tenant setup, automate config in CI). If the developer then wants to integrate
+auth into an app, return to Step 1 with the integrate intent.
 ```
