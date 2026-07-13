@@ -20,12 +20,12 @@ metadata:
     install:
       - id: brew
         kind: brew
-        package: auth0/auth0-cli/auth0
+        formula: auth0/auth0-cli/auth0
         bins: [auth0]
         label: 'Install Auth0 CLI (brew)'
       - id: brew
         kind: brew
-        package: gh
+        formula: gh
         bins: [gh]
         label: 'Install GitHub CLI (brew)'
 ---
