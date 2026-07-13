@@ -56,7 +56,7 @@ Your `SKILL.md` must include:
          - linux
        install:                            # optional: how to install required bins
          - id: brew
-           kind: brew                       # one of: brew, node, go, uv, download
+           kind: brew
            formula: auth0/auth0-cli/auth0
            bins: [auth0]
            label: 'Install Auth0 CLI (brew)'
