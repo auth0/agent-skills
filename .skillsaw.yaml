@@ -77,8 +77,19 @@ rules:
     enabled: true
     severity: error
 
-  # Custom: Enforce openclaw metadata (emoji, homepage) in SKILL.md frontmatter
+  # Custom: presence check only — require the openclaw block plus emoji and
+  # homepage in SKILL.md frontmatter. Field *shape* validation (os, requires,
+  # install, ...) is delegated to the built-in openclaw-metadata rule below, so
+  # this rule intentionally does not re-validate those fields.
   skill-openclaw-metadata:
+    enabled: true
+    severity: error
+
+  # Built-in: validate the shape of every metadata.openclaw field (os values,
+  # requires/install structure, install kinds, archive types, ...). Ships with
+  # skillsaw and defaults to warning; promote to error so a malformed field
+  # fails CI the same way the presence check above does.
+  openclaw-metadata:
     enabled: true
     severity: error
 
