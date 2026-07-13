@@ -5,8 +5,6 @@ This is the default tooling. Install with: `brew install auth0/auth0-cli/auth0`
 
 Authenticate: `auth0 login`
 
----
-
 # Auth0 CLI — Command Reference
 
 The Auth0 CLI (`auth0`) lets you manage your tenant from the terminal. Install it via Homebrew (`brew install auth0/auth0-cli/auth0`). For complete flag definitions and examples, see the Full CLI Reference section below.

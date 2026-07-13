@@ -665,13 +665,13 @@ class SkillOpenclawMetadataRule(Rule):
                         violations.append(
                             self.violation(
                                 f"metadata.openclaw.install[{i}] must be a mapping with "
-                                "'id', 'kind', 'package', 'bins', and 'label' fields.",
+                                "'id', 'kind', 'formula', 'bins', and 'label' fields.",
                                 file_path=skill_md
                             )
                         )
                         continue
                     missing = [
-                        k for k in ('id', 'kind', 'package', 'bins', 'label')
+                        k for k in ('id', 'kind', 'formula', 'bins', 'label')
                         if not entry.get(k)
                     ]
                     if missing:
