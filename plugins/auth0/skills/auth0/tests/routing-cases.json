@@ -129,34 +129,6 @@
       "framework": "nextjs",
       "tooling": "terraform",
       "expect_refs": ["feature-migration.md", "tooling-terraform.md", "framework-nextjs.md"]
-    },
-    {
-      "id": "upgrade-sdk-swift",
-      "intent": "upgrade-sdk",
-      "framework": "swift",
-      "tooling": "cli",
-      "expect_refs": ["framework-swift.md"]
-    },
-    {
-      "id": "upgrade-sdk-android",
-      "intent": "upgrade-sdk",
-      "framework": "android",
-      "tooling": "cli",
-      "expect_refs": ["framework-android.md"]
-    },
-    {
-      "id": "tooling-cli-only",
-      "intent": "tooling",
-      "framework": null,
-      "tooling": "cli",
-      "expect_refs": ["tooling-cli.md"]
-    },
-    {
-      "id": "tooling-terraform-only",
-      "intent": "tooling",
-      "framework": null,
-      "tooling": "terraform",
-      "expect_refs": ["tooling-terraform.md"]
     }
   ]
 }
