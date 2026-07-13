@@ -972,7 +972,7 @@ Ensure `applicationId` in `android/app/build.gradle` matches `appId` in `capacit
 
 ## Secret Management
 
-**Ionic React + Capacitor apps are Native applications** — they do not use a client secret.
+**Ionic React + Capacitor apps are Native applications** — they do not use a client secret. Instead, use PKCE (Proof Key for Code Exchange) with a custom URL scheme callback (e.g. `YOUR_PACKAGE_ID://your-tenant.auth0.com/capacitor/YOUR_PACKAGE_ID/callback`) to complete the login flow securely.
 
 - Configuration contains only: **Domain**, **Client ID**, and **Callback URL**
 - These values are not secrets and can be included in source code

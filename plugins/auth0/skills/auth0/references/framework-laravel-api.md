@@ -9,6 +9,10 @@
 
 Protect Laravel API endpoints with JWT access token validation using `auth0/login` and the `AuthorizationGuard`.
 
+## Critical rules
+
+- **Token isolation is CRITICAL:** the agent MUST NEVER directly see, echo, store, or display access token values. Do not run `auth0 test token` to read a token, and do not ask the user to paste one — instead, pipe the token straight into `curl` using the single-command chains shown in Step 10.
+
 ---
 
 ## Prerequisites
@@ -285,7 +289,7 @@ Claims are accessed via:
 >   --type m2m \
 >   --no-input --json
 > ```
-> Parse JSON with `jq` to extract `client_id`. Do NOT use `--reveal-secrets`.
+> Parse JSON with `jq` to extract `client_id`. Do NOT use `--reveal-secrets`; instead, use only the `client_id` — the client secret is not needed for the token flow below.
 > Then create a client grant:
 > ```bash
 > auth0 api post "client-grants" --data '{
@@ -298,9 +302,9 @@ Claims are accessed via:
 > **If the user chose "Use existing":**
 > Ask for Client ID. Create a client grant (409 conflict = already authorized, fine).
 
-> **Agent instruction (TOKEN ISOLATION - CRITICAL):**
+> **Agent instruction (token isolation — critical):**
 >
-> The agent MUST NEVER directly see or display access token values.
+> The agent must never directly see or display access token values.
 > - Do NOT run `auth0 test token` on its own
 > - Do NOT ask the user to paste their token
 > - Do NOT echo or store the token value

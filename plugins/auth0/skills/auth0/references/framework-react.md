@@ -3,6 +3,11 @@
 
 Add authentication to React single-page applications using @auth0/auth0-react.
 
+## Critical rules
+
+- Always ask the user for explicit confirmation before running any setup step that writes to `.env`; wait for their answer before proceeding.
+- Keep the contents of `.env` out of the agent context. If reading it seems necessary, ask the user for explicit permission first.
+
 ## Prerequisites
 
 - React 16.11+ application (Vite or Create React App) - supports React 16, 17, 18, and 19
@@ -1352,7 +1357,7 @@ Complete setup instructions with automated scripts and manual configuration opti
 
 **Never read the contents of `.env` at any point during setup.** The file may contain sensitive secrets that should not be exposed in the LLM context. If you determine you need to read the file for any reason, ask the user for explicit permission before doing so — do not proceed until the user confirms.
 
-**Before running any part of this setup that writes to `.env`, you MUST ask the user for explicit confirmation.** Follow the steps below precisely.
+**Before running any part of this setup that writes to `.env`, you must ask the user for explicit confirmation.** Follow the steps below precisely.
 
 ### Step 1: Check for existing .env and confirm with user
 

@@ -9,7 +9,7 @@
 | **Access token** | Authorization for an API | Calling your backend API |
 | **ID token** | User identity assertion | Reading user profile in your frontend |
 
-**Never send the ID token to your API.** Never use the access token to read user profile in your frontend.
+**Never send the ID token to your API** — instead, send the access token and validate it there. Never use the access token to read user profile in your frontend; instead, read profile info from the ID token (or the `/userinfo` endpoint).
 
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use when adding, fixing, or improving authentication in any app — login, logout, signup, route protection, JWT and access token validation, refresh token rotation, MFA, 2FA, passkeys, step-up auth, SSO, RBAC and permissions, Organizations for B2B multi-tenant SaaS, custom login domains, ACUL, or Universal Login branding. Use even if Auth0 isn't mentioned — applies any time a developer asks how to authenticate users, secure an API, debug a 401 Unauthorized or CORS error, fix a callback URL mismatch or redirect loop, handle 429 rate limits, or migrate from Clerk, NextAuth.js, Firebase Auth, Supabase, Cognito, or Passport.js. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android, Flutter, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and all Auth0 SDKs.
+description: Use when adding, fixing, or improving authentication in any app — login, logout, signup, route protection, JWT/access token validation, refresh token rotation, MFA, passkeys, step-up auth, SSO, RBAC, Organizations for B2B multi-tenant SaaS, custom login domains, ACUL, or Universal Login branding. Use even if Auth0 isn't mentioned — any time a developer asks how to authenticate users, secure an API, debug a 401, CORS error, callback URL mismatch, redirect loop, or 429 rate limit, or migrate from Clerk, NextAuth.js, Firebase Auth, Supabase, Cognito, or Passport.js. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android, Flutter, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and all Auth0 SDKs.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -30,14 +30,11 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 
 ## Step 1: Detect intent
 
-Match the developer's request against the **What the developer wants** column —
-it describes the goal in plain language, not just the Auth0 term. A developer
-who has never heard "MFA" but says *"make users confirm with a code from their
-phone"* still lands on `feature:mfa`.
-
-The **Intent** value you pick here is a lookup key: in **Step 4: Load reference
-files** it appears verbatim as a section heading (`### feature:mfa`) that lists
-which reference files to load.
+Match the request against the **What the developer wants** column — it describes
+the goal in plain language, not just the Auth0 term (someone who says *"make
+users confirm with a code from their phone"* lands on `feature:mfa`). The
+**Intent** you pick is a lookup key: in **Step 4** it appears verbatim as a
+section heading (`### feature:mfa`) listing which reference files to load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
@@ -59,10 +56,9 @@ which reference files to load.
 
 ## Step 2: Detect framework
 
-> **Skip this step for the `tooling` intent.** A CLI-first / tooling-only request
-> has no application framework — go straight to Step 3, then load the tooling
-> reference. Only ask about a framework if the developer later pivots to
-> integrating auth into an app.
+> **Skip this step for the `tooling` intent** — a CLI-first request has no
+> framework. Go to Step 3, load the tooling reference; only ask about a
+> framework if the developer later pivots to integrating auth into an app.
 
 Work top-down. **Stop at the first tier that yields a framework.**
 
@@ -72,9 +68,8 @@ Read the project files. **Stop at the first match.**
 
 ### Node.js / JavaScript / TypeScript — check `package.json` → `dependencies`
 
-Rows are ordered most-specific first — an Ionic/Capacitor project also carries
-`@auth0/auth0-angular` (etc.), so the `@capacitor/browser` rows must be checked
-before the plain framework rows.
+Rows are most-specific first — an Ionic/Capacitor project also carries
+`@auth0/auth0-angular` (etc.), so check the `@capacitor/browser` rows first.
 
 | Package | Framework |
 |---|---|
@@ -122,9 +117,9 @@ before the plain framework rows.
 
 ### PHP — check `composer.json`
 
-The `auth0/auth0-php` SDK powers both PHP web apps and PHP APIs; the mode is
-set in code via `SdkConfiguration`'s `strategy`. Check for that signal — the
-`STRATEGY_API` row is more specific, so check it first.
+`auth0/auth0-php` powers both PHP web apps and APIs; the mode is set via
+`SdkConfiguration`'s `strategy`. The `STRATEGY_API` row is more specific — check
+it first.
 
 | Package | Framework |
 |---|---|
@@ -155,13 +150,10 @@ set in code via `SdkConfiguration`'s `strategy`. Check for that signal — the
 ### Tier 2 — Framework from non-Auth0 workspace dependencies
 
 If no Auth0 SDK matched, detect the framework from ordinary (non-Auth0)
-dependencies. **Stop at the first match.** For frameworks with a web-vs-API
-split, the base framework is chosen here; the variant is resolved in
-"Variant disambiguation" below.
-
-Rows are ordered most-specific first — an Ionic project also carries
-`@angular/core` / `vue` / `react`, so the `@ionic/*` rows must be checked before
-the plain framework rows (same reasoning as Tier 1).
+dependencies. **Stop at the first match.** For a web-vs-API split, the base is
+chosen here; the variant is resolved in "Variant disambiguation" below. Rows are
+most-specific first — an Ionic project also carries `@angular/core` / `vue` /
+`react`, so check the `@ionic/*` rows first (as in Tier 1).
 
 | Signal | Base framework |
 |---|---|

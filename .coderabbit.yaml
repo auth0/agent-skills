@@ -49,7 +49,7 @@ reviews:
         Scripts are executable code that AI agents can run.
         - Must be self-contained or clearly document dependencies.
         - Should include helpful error messages.
-        - Should handle edge cases gracefully.
+        - Should handle edge cases by exiting non-zero with an actionable message rather than crashing with a stack trace.
         - Check for security issues (command injection, credential leaks).
 
     - path: "plugins/auth0/.claude-plugin/**"

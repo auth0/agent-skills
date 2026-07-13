@@ -3,6 +3,13 @@
 
 Protect PHP API endpoints with JWT access token validation using `auth0/auth0-php` in API mode (`STRATEGY_API`).
 
+## Critical rules
+
+- TOKEN ISOLATION: the agent must NEVER directly see, display, echo, log, or store access token values. Do not run `auth0 test token` on its own, and do not ask the user to paste a token into the conversation.
+- When testing protected endpoints, ALWAYS chain token acquisition and the `curl` call in a single `&&` command that captures the token into a shell variable and uses it immediately.
+- A Client ID is REQUIRED for the M2M token flow — if M2M setup was not completed, ask the user first.
+- ALWAYS read `domain` and `audience` from environment variables; never embed credentials in source.
+
 ## Prerequisites
 
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
@@ -314,7 +321,7 @@ CORS must be handled before auth so that preflight `OPTIONS` requests short-circ
 >   --type m2m \
 >   --no-input --json
 > ```
-> Parse the JSON with `jq` to extract `client_id`. Do NOT use `--reveal-secrets` - never expose client secrets in agent context.
+> Parse the JSON with `jq` to extract `client_id`. Do NOT use `--reveal-secrets` - never expose client secrets in agent context. Instead, use only the `client_id`; the client-credentials/client-grant flow below does not require the secret in agent context.
 > Then create a client grant:
 > ```bash
 > auth0 api post "client-grants" --data '{
@@ -335,9 +342,9 @@ CORS must be handled before auth so that preflight `OPTIONS` requests short-circ
 > ```
 > If the grant already exists (409 conflict), that's fine - the app is already authorized.
 
-> **Agent instruction (TOKEN ISOLATION - CRITICAL):**
+> **Agent instruction (token isolation — critical):**
 >
-> The agent MUST NEVER directly see or display access token values. Token security rules:
+> The agent must never directly see or display access token values. Token security rules:
 > - Do NOT run `auth0 test token` on its own - it outputs the token to stdout
 > - Do NOT ask the user to paste their token into the conversation
 > - Do NOT echo, print, or log the token value
@@ -362,9 +369,9 @@ CORS must be handled before auth so that preflight `OPTIONS` requests short-circ
 > **Rules:**
 > 1. ONLY use when the user explicitly asks to test
 > 2. Always chain token acquisition + curl in a SINGLE `&&` command
-> 3. NEVER add `echo $TEST_TOKEN` or any command that would print the raw token value
+> 3. Do not add `echo $TEST_TOKEN` or any command that would print the raw token value
 > 4. If the token acquisition fails (empty variable), report that the M2M app may not be authorized
-> 5. **Client ID is REQUIRED** - if M2M setup was not completed, ask the user first
+> 5. **Client ID is required** - if M2M setup was not completed, ask the user first
 >
 > **If the user does NOT ask to test**, just provide the commands for them to run manually:
 > ```

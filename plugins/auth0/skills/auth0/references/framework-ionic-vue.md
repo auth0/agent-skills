@@ -3,6 +3,10 @@
 
 Add Auth0 authentication to Ionic Vue applications using Capacitor. This skill covers native mobile authentication using the `@auth0/auth0-vue` SDK combined with `@capacitor/browser` and `@capacitor/app` plugins for deep link handling on iOS and Android.
 
+## Critical rules
+
+- **IMPORTANT — never display credentials.** After obtaining the domain, client ID, or any credential value from the CLI or user input, write them directly into config files. Do not echo, print, or display them in conversation output.
+
 ## Prerequisites
 
 - Node.js 18+
@@ -966,7 +970,7 @@ npx cap open android  # Build and run on device from Android Studio
 
 > **Agent instruction:**
 >
-> **IMPORTANT — Never display credentials:** After obtaining credentials from the CLI or user input, write them directly into config files. Do NOT echo, print, or display the domain, client ID, or any credential values in conversation output.
+> **Important — do not display credentials:** After obtaining credentials from the CLI or user input, write them directly into config files. Do not echo, print, or display the domain, client ID, or any credential values in conversation output.
 >
 > Always ask the user to choose between automatic and manual setup using `AskUserQuestion`:
 > _"How would you like to configure Auth0 for this Ionic Vue project?"_
@@ -1216,7 +1220,7 @@ Ensure `applicationId` in `android/app/build.gradle` matches `appId` in `capacit
 
 ## Secret Management
 
-**Ionic Vue + Capacitor apps are Native applications** — they do not use a client secret.
+**Ionic Vue + Capacitor apps are Native applications** — they do not use a client secret. Instead, use PKCE (Proof Key for Code Exchange) with a custom URL scheme callback (e.g. `YOUR_PACKAGE_ID://your-tenant.auth0.com/capacitor/YOUR_PACKAGE_ID/callback`) to complete the login flow securely.
 
 - Configuration contains only: **Domain**, **Client ID**, and **Callback URL**
 - These values are not secrets and can be included in source code

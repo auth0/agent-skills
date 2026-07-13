@@ -15,6 +15,12 @@ Add Auth0 authentication to .NET MAUI applications targeting iOS, Android, macOS
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below.
 
+## Critical rules
+
+- **ALWAYS** set `Scope = "openid profile email offline_access"` on `Auth0ClientOptions` — the `offline_access` scope is REQUIRED to receive a refresh token for silent token renewal; without it the user must re-authenticate every time the access token expires.
+- **ALWAYS** persist the refresh token with `SecureStorage.Default.SetAsync("refresh_token", ...)` after login, restore it with `SecureStorage.Default.GetAsync("refresh_token")` on app startup, and clear it with `SecureStorage.Default.Remove("refresh_token")` on logout.
+- On Windows you MUST do both: register the custom URL scheme in `Platforms/Windows/Package.appxmanifest` (`<uap:Extension Category="windows.protocol"><uap:Protocol Name="myapp"/></uap:Extension>` inside `<Extensions>`), AND call `Activator.Default.CheckRedirectionActivation()` as the first line of the `App()` constructor in `Platforms/Windows/App.xaml.cs`, before `InitializeComponent()`. Without both, Windows will not intercept the callback URL.
+
 ## Prerequisites
 
 - .NET 8.0 SDK or later
@@ -47,7 +53,7 @@ Add Auth0 authentication to .NET MAUI applications targeting iOS, Android, macOS
 1. **Install SDK**: `dotnet add package Auth0.OidcClient.MAUI`
 2. **Configure Auth0**: See the Setup Guide section (below) for automatic or manual configuration.
 3. **Integrate authentication**: Add `Auth0Client` instantiation and wire login/logout to UI actions.
-   - **IMPORTANT:** Always set `Scope = "openid profile email offline_access"` — the `offline_access` scope is required to receive a refresh token for silent token renewal.
+   - **Important:** Always set `Scope = "openid profile email offline_access"` — the `offline_access` scope is required to receive a refresh token for silent token renewal.
 4. **Persist tokens with SecureStorage**: After login, store the refresh token using `await SecureStorage.Default.SetAsync("refresh_token", loginResult.RefreshToken)`. On app startup, restore the session with `RefreshTokenAsync`. Clear on logout with `SecureStorage.Default.Remove("refresh_token")`.
 5. **Register URL scheme**: Configure platform-specific callback handling:
    - Android: Create `WebAuthenticatorActivity` with IntentFilter for your custom scheme (e.g., `myapp`)
@@ -56,11 +62,11 @@ Add Auth0 authentication to .NET MAUI applications targeting iOS, Android, macOS
 6. **Build and verify**: `dotnet build`
 
 > **Agent instruction:** When writing the Auth0Client configuration:
-> - **ALWAYS** include `offline_access` in the Scope string — without it, no refresh token is returned and the user must re-authenticate every time the access token expires.
-> - **ALWAYS** implement token persistence using `SecureStorage.Default.SetAsync("refresh_token", ...)` after login and `SecureStorage.Default.GetAsync("refresh_token")` on app startup to restore sessions silently.
+> - **Always** include `offline_access` in the Scope string — without it, no refresh token is returned and the user must re-authenticate every time the access token expires.
+> - **Always** implement token persistence using `SecureStorage.Default.SetAsync("refresh_token", ...)` after login and `SecureStorage.Default.GetAsync("refresh_token")` on app startup to restore sessions silently.
 > - Clear stored tokens on logout with `SecureStorage.Default.Remove("refresh_token")`.
-> - **ALWAYS** create/update `Platforms/Windows/Package.appxmanifest` to register the custom URL scheme protocol. Without this, Windows will not intercept the callback URL after authentication. Add a `<uap:Extension Category="windows.protocol"><uap:Protocol Name="myapp"/></uap:Extension>` inside the `<Extensions>` element of the `<Application>` node.
-> - **ALWAYS** add `CheckRedirectionActivation()` in `Platforms/Windows/App.xaml.cs` as the first line in the constructor, before `InitializeComponent()`.
+> - **Always** create/update `Platforms/Windows/Package.appxmanifest` to register the custom URL scheme protocol. Without this, Windows will not intercept the callback URL after authentication. Add a `<uap:Extension Category="windows.protocol"><uap:Protocol Name="myapp"/></uap:Extension>` inside the `<Extensions>` element of the `<Application>` node.
+> - **Always** add `CheckRedirectionActivation()` in `Platforms/Windows/App.xaml.cs` as the first line in the constructor, before `InitializeComponent()`.
 >
 > After writing configuration and code, verify the build succeeds:
 > ```bash

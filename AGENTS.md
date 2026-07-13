@@ -5,7 +5,8 @@ Guidance for AI coding agents working in this repository.
 ## What this repo is
 
 An **Agent Skill** that teaches coding assistants how to implement Auth0
-authentication correctly. It ships as a single Claude Code / Cursor / Copilot
+authentication that follows Auth0's documented SDK usage and passes this
+repo's routing and behavioral evals. It ships as a single Claude Code / Cursor / Copilot
 plugin (`auth0`) containing **one** consolidated skill at
 `plugins/auth0/skills/auth0/`: a router `SKILL.md` over a flat pool of on-demand
 reference files. The deliverable is the skill itself.

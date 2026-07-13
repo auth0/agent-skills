@@ -9,6 +9,10 @@ Add authentication to any browser-based single-page application using `@auth0/au
 > ```
 > Use the returned version in all dependency lines instead of any hardcoded version below. If the command fails, fall back to checking https://github.com/auth0/auth0-spa-js/releases.
 
+## Critical rules
+
+- **You MUST ask the user for explicit confirmation before running any setup step that writes to `.env`.** Never read the contents of `.env` during setup; if you believe you need to, ask the user for explicit permission first and wait for confirmation.
+
 ## Prerequisites
 
 - Modern browser with ES2017+ support
@@ -385,7 +389,7 @@ Content-Security-Policy: frame-src https://your-tenant.auth0.com;
 
 ### XSS Protection
 
-Never use `cacheLocation: 'localstorage'` in production unless you have fully mitigated all XSS risks. XSS can steal tokens from `localStorage`. The default in-memory cache is immune to XSS-based token theft.
+Never use `cacheLocation: 'localstorage'` in production unless you have fully mitigated all XSS risks. XSS can steal tokens from `localStorage`. Instead, use the default in-memory cache, which is immune to XSS-based token theft.
 
 ---
 
@@ -866,7 +870,7 @@ Complete setup instructions with automated scripts and manual configuration opti
 
 **Never read the contents of `.env` at any point during setup.** The file may contain sensitive secrets that should not be exposed in the LLM context. If you determine you need to read the file for any reason, ask the user for explicit permission before doing so — do not proceed until the user confirms.
 
-**Before running any part of this setup that writes to `.env`, you MUST ask the user for explicit confirmation.** Follow the steps below precisely.
+**Before running any part of this setup that writes to `.env`, you must ask the user for explicit confirmation.** Follow the steps below precisely.
 
 ### Step 1: Check for existing .env and confirm with user
 

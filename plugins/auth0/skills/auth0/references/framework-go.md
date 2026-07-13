@@ -3,6 +3,12 @@
 
 Protect Go HTTP API endpoints with JWT access token validation using github.com/auth0/go-jwt-middleware/v3.
 
+## Critical rules
+
+- Access token values must stay out of the agent's view. Capture a token into a shell variable inside a single command chain and use it there; print only its length, and let it expire when the command ends.
+- To obtain a client secret, always have the user run `auth0 apps show <CLIENT_ID> --reveal-secrets` in their own terminal, rather than running `--reveal-secrets` from the agent.
+- A Client ID is required to run `auth0 test token`; complete the M2M application setup first to obtain it.
+
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
 > gh api repos/auth0/go-jwt-middleware/releases/latest --jq '.tag_name'
@@ -295,7 +301,7 @@ mux.Handle("/api/private-scoped", middleware.CheckJWT(http.HandlerFunc(privateSc
 >   --type m2m \
 >   --no-input --json
 > ```
-> Parse the JSON to extract `client_id`. Do NOT use `--reveal-secrets` — never expose client secrets in agent context.
+> Parse the JSON to extract `client_id`. Do NOT use `--reveal-secrets` — instead, if the client secret is needed, have the user run `auth0 apps show <CLIENT_ID> --reveal-secrets` in their own terminal so secrets stay out of the agent context.
 > Then create a client grant:
 > ```bash
 > auth0 api post "client-grants" --data '{
@@ -316,9 +322,9 @@ mux.Handle("/api/private-scoped", middleware.CheckJWT(http.HandlerFunc(privateSc
 > ```
 > If the grant already exists (409 conflict), that's fine — the app is already authorized.
 
-> **Agent instruction (TOKEN ISOLATION — CRITICAL):**
+> **Agent instruction (token isolation — critical):**
 >
-> The agent MUST NEVER directly see or display access token values. Token security rules:
+> The agent must never directly see or display access token values. Token security rules:
 > - Do NOT run `auth0 test token` on its own — it outputs the token to stdout
 > - Do NOT run `curl` commands to the `/oauth/token` endpoint on their own
 > - Do NOT ask the user to paste their token into the conversation
@@ -357,9 +363,9 @@ mux.Handle("/api/private-scoped", middleware.CheckJWT(http.HandlerFunc(privateSc
 >    echo "" && echo "=== GET /products ===" && \
 >    curl -s http://localhost:8080/products -H "Authorization: Bearer $TEST_TOKEN"
 >    ```
-> 4. NEVER add `echo $TEST_TOKEN`, `printf $TEST_TOKEN`, or any command that would print the raw token value
+> 4. Do not add `echo $TEST_TOKEN`, `printf $TEST_TOKEN`, or any command that would print the raw token value — keep the value inside the variable only
 > 5. If the token acquisition fails (empty variable), the `[ -n "$TEST_TOKEN" ]` check will halt the chain — report to the user that the M2M app may not be authorized
-> 6. **Client ID is REQUIRED** — the `auth0 test token` command requires a Client ID to be passed as the first argument. This MUST be the `client_id` obtained from the M2M app setup step (create new or use existing). If the M2M step has not been completed yet (no Client ID available), do NOT attempt to run the test token command. Instead, ask the user: _"I need an M2M application Client ID to get a test token. Would you like me to create one or do you have an existing one?"_ — then complete the M2M setup first.
+> 6. **Client ID is required** — the `auth0 test token` command requires a Client ID to be passed as the first argument. This must be the `client_id` obtained from the M2M app setup step (create new or use existing). If the M2M step has not been completed yet (no Client ID available), do NOT attempt to run the test token command. Instead, ask the user: _"I need an M2M application Client ID to get a test token. Would you like me to create one or do you have an existing one?"_ — then complete the M2M setup first.
 >
 > **If the user does NOT ask to test**, just provide the commands for them to run manually:
 >
@@ -1325,7 +1331,7 @@ Setup instructions for Go API applications.
 >        --type m2m \
 >        --no-input --json
 >      ```
->      Parse the JSON output to extract the `client_id`. **Do NOT use `--reveal-secrets`** — the agent must never handle client secrets. Tell the user: _"Your M2M app has been created. To get the client secret, run `auth0 apps show <CLIENT_ID> --reveal-secrets` in your terminal."_
+>      Parse the JSON output to extract the `client_id`. **Do NOT use `--reveal-secrets`** — instead, rather than handling client secrets in agent context, tell the user: _"Your M2M app has been created. To get the client secret, run `auth0 apps show <CLIENT_ID> --reveal-secrets` in your terminal."_
 >      Then create a client grant to authorize the app for the API:
 >      ```bash
 >      auth0 api post "client-grants" --data '{
