@@ -1,0 +1,134 @@
+{
+  "_comment": "Declarative routing evals for the unified auth0 router. Each case describes a developer request plus the framework/tooling the router would detect, and asserts the reference files Step 4 must load. Covers the RAPID validation action item: features (MFA, branding, ...) and SDK+feature combinations, not just quickstart integration. Run with scripts/check_routing_evals.py.",
+  "cases": [
+    {
+      "id": "integrate-react",
+      "intent": "integrate",
+      "framework": "react",
+      "tooling": "cli",
+      "expect_refs": ["framework-react.md", "tooling-cli.md"]
+    },
+    {
+      "id": "integrate-nextjs",
+      "intent": "integrate",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["framework-nextjs.md", "tooling-cli.md"]
+    },
+    {
+      "id": "integrate-express-api",
+      "intent": "integrate",
+      "framework": "express-jwt",
+      "tooling": "cli",
+      "expect_refs": ["framework-express-jwt.md", "tooling-cli.md"]
+    },
+    {
+      "id": "integrate-php-api",
+      "intent": "integrate",
+      "framework": "php-api",
+      "tooling": "cli",
+      "expect_refs": ["framework-php-api.md", "tooling-cli.md"]
+    },
+    {
+      "id": "integrate-flask-terraform",
+      "intent": "integrate",
+      "framework": "flask",
+      "tooling": "terraform",
+      "expect_refs": ["framework-flask.md", "tooling-terraform.md"]
+    },
+    {
+      "id": "feature-mfa-standalone",
+      "intent": "feature:mfa",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-mfa.md", "tooling-cli.md"]
+    },
+    {
+      "id": "feature-mfa-nextjs-combo",
+      "intent": "feature:mfa",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["feature-mfa.md", "tooling-cli.md", "framework-nextjs.md"]
+    },
+    {
+      "id": "feature-organizations-b2b-combo",
+      "intent": "feature:organizations",
+      "framework": "react",
+      "tooling": "cli",
+      "multi_tenant": true,
+      "expect_refs": ["feature-organizations.md", "tooling-cli.md", "framework-react.md", "pattern-multi-tenant.md"]
+    },
+    {
+      "id": "feature-branding",
+      "intent": "feature:branding",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-branding.md", "tooling-cli.md"]
+    },
+    {
+      "id": "feature-custom-domains",
+      "intent": "feature:custom-domains",
+      "framework": null,
+      "tooling": "mcp",
+      "expect_refs": ["feature-custom-domains.md", "tooling-mcp.md"]
+    },
+    {
+      "id": "feature-acul",
+      "intent": "feature:acul",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-acul.md", "tooling-cli.md"]
+    },
+    {
+      "id": "feature-dpop-spa-combo",
+      "intent": "feature:dpop",
+      "framework": "vue",
+      "tooling": "cli",
+      "expect_refs": ["feature-dpop.md", "tooling-cli.md", "framework-vue.md"]
+    },
+    {
+      "id": "guidance-token-handling",
+      "intent": "guidance",
+      "framework": null,
+      "tooling": "cli",
+      "token_handling": true,
+      "expect_refs": ["pattern-security.md", "pattern-token-handling.md"]
+    },
+    {
+      "id": "guidance-b2b-architecture",
+      "intent": "guidance",
+      "framework": null,
+      "tooling": "cli",
+      "multi_tenant": true,
+      "expect_refs": ["pattern-security.md", "pattern-multi-tenant.md", "feature-organizations.md"]
+    },
+    {
+      "id": "debug-401-nextjs",
+      "intent": "debug",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["pattern-common-errors.md", "framework-nextjs.md"]
+    },
+    {
+      "id": "debug-rate-limit",
+      "intent": "debug:rate-limit",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["pattern-rate-limiting.md"]
+    },
+    {
+      "id": "migrate-firebase-react",
+      "intent": "migrate",
+      "framework": "react",
+      "tooling": "cli",
+      "expect_refs": ["feature-migration.md", "tooling-cli.md", "framework-react.md"]
+    },
+    {
+      "id": "migrate-terraform-tenant",
+      "intent": "migrate",
+      "framework": "nextjs",
+      "tooling": "terraform",
+      "expect_refs": ["feature-migration.md", "tooling-terraform.md", "framework-nextjs.md"]
+    }
+  ]
+}

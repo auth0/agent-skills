@@ -486,23 +486,21 @@ class SkillRequiredMetadataRule(Rule):
 
 class SkillOpenclawMetadataRule(Rule):
     """
-    Enforce that SKILL.md frontmatter includes metadata.openclaw with required fields.
+    Enforce that SKILL.md frontmatter declares the required metadata.openclaw block.
 
-    All skills must declare openclaw metadata for marketplace compatibility:
-    - metadata.openclaw.emoji (string, non-empty)
-    - metadata.openclaw.homepage (string, valid URL)
+    This rule is a *presence* check only: it guarantees every skill ships the
+    block plus the two fields we require for marketplace compatibility:
+    - metadata.openclaw.emoji (present, non-empty string)
+    - metadata.openclaw.homepage (present, valid URL)
 
-    Optional openclaw fields (not enforced but validated if present):
-    - metadata.openclaw.requires.bins (list of binary names)
-    - metadata.openclaw.os (list of OS identifiers, e.g., "darwin", "linux")
-    - metadata.openclaw.install (list of install definitions)
+    The *shape* of every other openclaw field (os, requires, install, ...) is
+    validated by skillsaw's built-in ``openclaw-metadata`` rule, enabled at
+    error severity in ``.skillsaw.yaml``. Keep this rule limited to presence so
+    the two do not duplicate (or contradict) each other.
     """
 
     # Simple URL pattern: must start with https://
     URL_RE = re.compile(r'^https?://\S+$')
-
-    # Valid OS identifiers
-    VALID_OS = {'darwin', 'linux', 'windows'}
 
     @property
     def rule_id(self) -> str:
@@ -554,134 +552,35 @@ class SkillOpenclawMetadataRule(Rule):
                     )
                     continue
 
-                # Validate required fields
-                violations.extend(self._check_required_fields(openclaw, skill_md))
-
-                # Validate optional fields if present
-                violations.extend(self._check_optional_fields(openclaw, skill_md))
-
-        return violations
-
-    def _check_required_fields(self, openclaw: Dict[str, Any], skill_md: Path) -> List[RuleViolation]:
-        """Check that required openclaw fields are present and valid."""
-        violations = []
-
-        # emoji: must be a non-empty string
-        emoji = openclaw.get('emoji')
-        if not emoji or not isinstance(emoji, str) or not emoji.strip():
-            violations.append(
-                self.violation(
-                    "metadata.openclaw.emoji is missing or empty. "
-                    "Add an emoji identifier, e.g., 'emoji: \"\\U0001F510\"'.",
-                    file_path=skill_md
-                )
-            )
-
-        # homepage: must be a valid URL
-        homepage = openclaw.get('homepage')
-        if not homepage or not isinstance(homepage, str):
-            violations.append(
-                self.violation(
-                    "metadata.openclaw.homepage is missing. "
-                    "Add a homepage URL, e.g., 'homepage: https://github.com/auth0/agent-skills'.",
-                    file_path=skill_md
-                )
-            )
-        elif not self.URL_RE.match(homepage):
-            violations.append(
-                self.violation(
-                    f"metadata.openclaw.homepage '{homepage}' is not a valid URL. "
-                    "Must start with http:// or https://.",
-                    file_path=skill_md
-                )
-            )
-
-        return violations
-
-    def _check_optional_fields(self, openclaw: Dict[str, Any], skill_md: Path) -> List[RuleViolation]:
-        """Validate optional openclaw fields if they are present."""
-        violations = []
-
-        # requires.bins: if present, must be a list of non-empty strings
-        requires = openclaw.get('requires')
-        if requires is not None:
-            if not isinstance(requires, dict):
-                violations.append(
-                    self.violation(
-                        "metadata.openclaw.requires must be a mapping. "
-                        "Example: 'requires:\\n  bins:\\n    - auth0'.",
-                        file_path=skill_md
-                    )
-                )
-            else:
-                bins = requires.get('bins')
-                if bins is not None:
-                    if not isinstance(bins, list) or not all(
-                        isinstance(b, str) and b.strip() for b in bins
-                    ):
-                        violations.append(
-                            self.violation(
-                                "metadata.openclaw.requires.bins must be a list of non-empty strings. "
-                                "Example: 'bins:\\n  - auth0'.",
-                                file_path=skill_md
-                            )
-                        )
-
-        # os: if present, must be a list of valid OS identifiers
-        os_list = openclaw.get('os')
-        if os_list is not None:
-            if not isinstance(os_list, list) or not os_list:
-                violations.append(
-                    self.violation(
-                        "metadata.openclaw.os must be a non-empty list. "
-                        f"Valid values: {', '.join(sorted(self.VALID_OS))}.",
-                        file_path=skill_md
-                    )
-                )
-            else:
-                invalid = [o for o in os_list if o not in self.VALID_OS]
-                if invalid:
+                # emoji: must be a non-empty string
+                emoji = openclaw.get('emoji')
+                if not emoji or not isinstance(emoji, str) or not emoji.strip():
                     violations.append(
                         self.violation(
-                            f"metadata.openclaw.os contains invalid entries: {invalid}. "
-                            f"Valid values: {', '.join(sorted(self.VALID_OS))}.",
+                            "metadata.openclaw.emoji is missing or empty. "
+                            "Add an emoji identifier, e.g., 'emoji: \"\\U0001F510\"'.",
                             file_path=skill_md
                         )
                     )
 
-        # install: if present, must be a list of dicts with required keys
-        install = openclaw.get('install')
-        if install is not None:
-            if not isinstance(install, list):
-                violations.append(
-                    self.violation(
-                        "metadata.openclaw.install must be a list of install definitions.",
-                        file_path=skill_md
+                # homepage: must be present and a valid URL
+                homepage = openclaw.get('homepage')
+                if not homepage or not isinstance(homepage, str):
+                    violations.append(
+                        self.violation(
+                            "metadata.openclaw.homepage is missing. "
+                            "Add a homepage URL, e.g., 'homepage: https://github.com/auth0/agent-skills'.",
+                            file_path=skill_md
+                        )
                     )
-                )
-            else:
-                for i, entry in enumerate(install):
-                    if not isinstance(entry, dict):
-                        violations.append(
-                            self.violation(
-                                f"metadata.openclaw.install[{i}] must be a mapping with "
-                                "'id', 'kind', 'package', 'bins', and 'label' fields.",
-                                file_path=skill_md
-                            )
+                elif not self.URL_RE.match(homepage):
+                    violations.append(
+                        self.violation(
+                            f"metadata.openclaw.homepage '{homepage}' is not a valid URL. "
+                            "Must start with http:// or https://.",
+                            file_path=skill_md
                         )
-                        continue
-                    missing = [
-                        k for k in ('id', 'kind', 'package', 'bins', 'label')
-                        if not entry.get(k)
-                    ]
-                    if missing:
-                        violations.append(
-                            self.violation(
-                                f"metadata.openclaw.install[{i}] is missing required fields: "
-                                f"{', '.join(missing)}.",
-                                file_path=skill_md
-                            )
-                        )
+                    )
 
         return violations
 

@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 10
     env:
       UV_PYTHON: "3.12"
-      SKILLSAW_VERSION: "0.4.3"
+      SKILLSAW_VERSION: "0.16.0"
     steps:
     - name: Checkout
       uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
@@ -93,6 +93,27 @@ jobs:
     - name: Fail if skillsaw failed
       if: steps.skillsaw.outputs.exit_code != '0'
       run: exit 1
+
+    - name: Router reachability check
+      run: |
+        # This job only sets up uv/uvx (for skillsaw), so pytest is not on the
+        # runner's python. Run both via `uv run` with pytest provided ephemerally.
+        uv run --with pytest python -m pytest scripts/test_check_router_reachability.py -q
+        uv run python scripts/check_router_reachability.py plugins/auth0/skills/auth0
+
+    - name: Router routing evals
+      run: |
+        # Assert curated developer requests (features + SDK+feature combos)
+        # resolve to an existing Step 4 section and reference files.
+        uv run --with pytest python -m pytest scripts/test_check_routing_evals.py -q
+        uv run python scripts/check_routing_evals.py plugins/auth0/skills/auth0
+
+    - name: Structural gate (validate-skill.sh)
+      run: |
+        # Local structural gate: enforces EXPECTED_FRAMEWORKS presence,
+        # description length, and old-file-removal guards in CI (not just
+        # locally). Invoked via `bash` so no chmod dependency is needed.
+        bash plugins/auth0/skills/auth0/scripts/validate-skill.sh
 
     - name: Upload linter output
       if: always()
