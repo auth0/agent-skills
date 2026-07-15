@@ -129,6 +129,13 @@
       "framework": "nextjs",
       "tooling": "terraform",
       "expect_refs": ["feature-migration.md", "tooling-terraform.md", "framework-nextjs.md"]
+    },
+    {
+      "id": "audit-tenant",
+      "intent": "audit",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-audit.md", "feature-audit-pricing.md", "feature-audit-remediation.md", "tooling-cli.md"]
     }
   ]
 }
