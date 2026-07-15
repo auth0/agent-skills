@@ -3,6 +3,11 @@
 
 Add authentication to Vue.js 3 single-page applications using @auth0/auth0-vue.
 
+## Critical rules
+
+- Before running any setup step that writes to `.env`, you MUST ask the user for explicit confirmation and wait for their answer.
+- Never read the contents of `.env`; if you must, ask the user for explicit permission first.
+
 ## Prerequisites
 
 - Vue 3+ application (Vite or Vue CLI)
@@ -797,7 +802,7 @@ Complete setup instructions with automated scripts and manual configuration opti
 
 **Never read the contents of `.env` at any point during setup.** The file may contain sensitive secrets that should not be exposed in the LLM context. If you determine you need to read the file for any reason, ask the user for explicit permission before doing so — do not proceed until the user confirms.
 
-**Before running any part of this setup that writes to `.env`, you MUST ask the user for explicit confirmation.** Follow the steps below precisely.
+**Before running any part of this setup that writes to `.env`, you must ask the user for explicit confirmation.** Follow the steps below precisely.
 
 ### Step 1: Check for existing .env and confirm with user
 

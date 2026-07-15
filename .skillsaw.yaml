@@ -1,6 +1,10 @@
 # skillsaw configuration
 # See https://github.com/stbenjam/skillsaw for more information
 
+# Pin to the skillsaw version this config targets so rules added in later
+# versions are enabled (see CI: .github/workflows/skillsaw.yml).
+version: "0.16.0"
+
 # Enable/disable rules with configurable severity levels
 rules:
   # Plugin Structure
@@ -73,10 +77,41 @@ rules:
     enabled: true
     severity: error
 
-  # Custom: Enforce openclaw metadata (emoji, homepage) in SKILL.md frontmatter
+  # Custom: presence check only — require the openclaw block plus emoji and
+  # homepage in SKILL.md frontmatter. Field *shape* validation (os, requires,
+  # install, ...) is delegated to the built-in openclaw-metadata rule below, so
+  # this rule intentionally does not re-validate those fields.
   skill-openclaw-metadata:
     enabled: true
     severity: error
+
+  # Built-in: validate the shape of every metadata.openclaw field (os values,
+  # requires/install structure, install kinds, archive types, ...). Ships with
+  # skillsaw and defaults to warning; promote to error so a malformed field
+  # fails CI the same way the presence check above does.
+  openclaw-metadata:
+    enabled: true
+    severity: error
+
+  # This repo's single skill is a router: SKILL.md is a detection/dispatch table
+  # (frameworks, intents, tooling) locked down by scripts/check_routing_evals.py
+  # and check_router_reachability.py, so its token budget is intentionally large
+  # and can't be trimmed without dropping routes. Raise the skill body warn limit
+  # to 4000 (still catches real bloat) while keeping the 6000 error ceiling. The
+  # skill-description budget (200) is unchanged and enforced separately.
+  context-budget:
+    limits:
+      skill:
+        warn: 4000
+        error: 6000
+
+  # validate-skill.sh is a CI-only structural gate (invoked from
+  # .github/workflows/skillsaw.yml), not agent-facing behavior the router should
+  # point at — same class as the rule's built-in tests/ exemption. Exempt it so
+  # it isn't flagged as an unreferenced/shadow file.
+  agentskill-unreferenced-files:
+    exclude:
+      - "scripts/validate-skill.sh"
 
 # Custom rules for marketplace-specific validation
 custom-rules:

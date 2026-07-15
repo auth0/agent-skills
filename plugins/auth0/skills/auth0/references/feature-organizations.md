@@ -12,7 +12,7 @@ Use Organizations when you need:
 - Different login connections per customer (e.g., Okta SSO for CustomerA, Google Workspace for CustomerB)
 - Organization-scoped invitations and member management
 
-Do NOT use Organizations for consumer apps (B2C). Organizations is a B2B construct.
+Do NOT use Organizations for consumer apps (B2C). Organizations is a B2B construct — instead, use plain Auth0 connections within a single tenant for B2C, and reserve Organizations for B2B multi-tenant scenarios.
 
 ---
 

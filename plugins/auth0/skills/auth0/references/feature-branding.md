@@ -589,7 +589,7 @@ Add `class="_widget-auto-layout"` on `<body>` to center the widget. Omit it to p
 
 ### Supported Prompts
 
-Common prompts you can customize (not an exhaustive list; Auth0 supports additional prompts for MFA methods, passkeys, and other flows):
+Common prompts you can customize (not a complete list; Auth0 supports additional prompts for MFA methods, passkeys, and other flows):
 
 | Prompt | Screens |
 |--------|---------|
@@ -631,7 +631,7 @@ auth0 api put "prompts/login/custom-text/en" --data '{}'
 
 Canonical category map used by "Match my brand voice" to expand user-selected categories into concrete (prompt, screen) pairs for custom-text rewrites. Source: Auth0 internal data.
 
-**This list is a starting point, not exhaustive.** Auth0 adds new screens over time. When the skill encounters a screen name it doesn't recognize (the user mentions one, or a new flow lights up), it should fall back to probing `GET /api/v2/prompts/{prompt}/custom-text/{lang}` for the candidate prompt/locale: the response indicates whether the prompt accepts that screen's keys. If the user knows the new screen name but the skill doesn't, accept what they give and proceed. The skill should treat this map as current-as-of-last-update, not as the authoritative registry.
+**This list is a starting point, not complete.** Auth0 adds new screens over time. When the skill encounters a screen name it doesn't recognize (the user mentions one, or a new flow lights up), it should fall back to probing `GET /api/v2/prompts/{prompt}/custom-text/{lang}` for the candidate prompt/locale: the response indicates whether the prompt accepts that screen's keys. If the user knows the new screen name but the skill doesn't, accept what they give and proceed. The skill should treat this map as current-as-of-last-update, not as the authoritative registry.
 
 The custom-text API is **per-prompt, not per-screen**. Multiple screens under the same prompt share one PUT call with a single merged body keyed by screen name. When applying rewrites, batch screens by prompt.
 
@@ -1617,7 +1617,7 @@ Before generating rewrites for any login or signup screen, check which identifie
 - **Identifier type** (what the user types to identify themselves): read `options.attributes`. The three possible keys are `email`, `phone_number`, and `username` — check which have `identifier.active: true`. If `options.attributes` is absent or null, the connection is a **legacy connection**: its default identifier is email, and `options.requires_username: true` adds username as a second identifier on top of email (it does not replace email).
 - **Passkey enablement** (used during detection, not placeholder selection): read `options.authentication_methods.passkey.enabled`.
 
-Do not use `authentication_methods` to determine identifier type — it only describes authentication methods (password, passkey), not what the user enters as their identifier.
+Do not use `authentication_methods` to determine identifier type — instead, use `options.attributes` (or, for legacy connections, the email default plus `options.requires_username`) to determine what the user enters. `authentication_methods` only describes authentication methods (password, passkey), not what the user enters as their identifier.
 
 **Key selection rules — modern connections** (`options.attributes` is present):
 

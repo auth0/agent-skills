@@ -3,6 +3,10 @@
 
 Add authentication to an Ionic Angular application using the `@auth0/auth0-angular` SDK with Capacitor plugins for native iOS and Android. This skill covers login, logout, user profile display, and secure token management using the system browser (SFSafariViewController on iOS, Chrome Custom Tabs on Android) via Capacitor's Browser plugin.
 
+## Critical rules
+
+- **SECURITY — NEVER display credentials.** After obtaining Auth0 credentials (domain, client ID) from the CLI or a user-provided env file, write them directly to the config file silently. Do not print, echo, or display them in text output; instead, confirm the config file was written and tell the user where to find it.
+
 ## Prerequisites
 
 - Node.js 20+ and npm 10+
@@ -991,7 +995,7 @@ TestBed.configureTestingModule({
 > **Agent instruction:**
 >
 > **SECURITY — Never display credentials:**
-> After obtaining Auth0 credentials (domain, client ID) — whether from the Auth0 CLI or a user-provided env file — NEVER print, echo, or display them in your text output. Write them directly to the config file (`src/environments/environment.ts`) silently. Do NOT produce output like "Domain: xxx" or "Client ID: yyy". Instead, confirm that the config file has been written and tell the user where to find it.
+> After obtaining Auth0 credentials (domain, client ID) — whether from the Auth0 CLI or a user-provided env file — never print, echo, or display them in your text output. Write them directly to the config file (`src/environments/environment.ts`) silently. Do not produce output like "Domain: xxx" or "Client ID: yyy". Instead, confirm that the config file has been written and tell the user where to find it.
 >
 > **Always present the setup choice:**
 > Regardless of whether the user has already provided credentials in their prompt, **always** use `AskUserQuestion` to let the developer choose between Automatic and Manual setup:

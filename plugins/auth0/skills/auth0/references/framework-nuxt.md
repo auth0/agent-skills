@@ -87,7 +87,7 @@ The SDK automatically mounts these routes:
 | Composable | Context | Usage |
 |------------|---------|-------|
 | `useAuth0(event)` | Server-side | Access `getUser()`, `getSession()`, `getAccessToken()`, `logout()` |
-| `useUser()` | Client-side | Display user data only. **Never use for security checks** |
+| `useUser()` | Client-side | Display user data only. **Never use for security checks** — instead, enforce them server-side with `useAuth0(event).getSession()` |
 
 ```typescript
 // Server example

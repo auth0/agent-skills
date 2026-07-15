@@ -51,13 +51,13 @@ Your `SKILL.md` must include:
        requires:                           # optional: declare external dependencies
          bins:
            - auth0                         # declare `auth0` if the skill runs CLI commands
-       os:                                 # optional: darwin, linux, windows
+       os:                                 # optional: darwin, linux, win32
          - darwin
          - linux
        install:                            # optional: how to install required bins
          - id: brew
            kind: brew
-           package: auth0/auth0-cli/auth0
+           formula: auth0/auth0-cli/auth0
            bins: [auth0]
            label: 'Install Auth0 CLI (brew)'
    ---

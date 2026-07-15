@@ -9,6 +9,11 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 > ```
 > Use the returned version in all `implementation` dependency lines instead of any hardcoded version below. If the command fails, fall back to checking https://github.com/auth0/Auth0.Android/releases.
 
+## Critical rules
+
+- Before running any part of the automatic setup that writes to `strings.xml`, you MUST ask the user for explicit confirmation before proceeding.
+- After either automatic or manual Auth0 configuration, you MUST apply the required Post-Setup changes to the project (manifest placeholders in `app/build.gradle` for `auth0Domain` and `auth0Scheme`, etc.) before treating the integration as complete.
+
 ## Prerequisites
 
 - Android API 21 or higher
@@ -1049,7 +1054,7 @@ WebAuthProvider.login(account)
 
 Below automates the setup. Inform the user that Auth0 credentials will be written to `strings.xml`.
 
-**Before running any part of this setup that writes to `strings.xml`, you MUST ask the user for explicit confirmation.** Follow the steps below precisely.
+**Before running any part of this setup that writes to `strings.xml`, you must ask the user for explicit confirmation.** Follow the steps below precisely.
 
 #### Step 1: Check for existing strings.xml and confirm with user
 
@@ -1221,7 +1226,7 @@ After the script runs, proceed to **Post-Setup Steps** below.
 
 ### Post-Setup Steps (Required for Both Paths)
 
-> **Agent instruction:** After either automatic or manual Auth0 configuration, the agent MUST apply the following changes to the project:
+> **Agent instruction:** After either automatic or manual Auth0 configuration, the agent must apply the following changes to the project:
 >
 > 1. **Add manifest placeholders** to `app/build.gradle` (or `app/build.gradle.kts`) inside the `defaultConfig` block, if not already present:
 >    - Groovy (`build.gradle`):

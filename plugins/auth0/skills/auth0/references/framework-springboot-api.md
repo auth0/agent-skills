@@ -3,6 +3,10 @@
 
 Protect Spring Boot API endpoints with JWT access token validation using `com.auth0:auth0-springboot-api`. Features auto-configuration, scope-based authorization, and built-in DPoP (RFC 9449) support.
 
+## Critical rules
+
+- **DPoP `dpop-mode`:** `ALLOWED` accepts both Bearer and DPoP tokens; `REQUIRED` accepts only DPoP tokens and rejects standard Bearer; `DISABLED` accepts standard Bearer only. Pick the mode deliberately — `REQUIRED` will 401 any plain Bearer request. See the DPoP Authentication section for full config.
+
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
 > gh api repos/auth0/auth0-auth-java/releases/latest --jq '.tag_name'
@@ -490,7 +494,7 @@ spring:
    # Expected: 403
    ```
 
-5. **DPoP token accepted (if dpop-mode is ALLOWED or REQUIRED):**
+5. **DPoP token accepted (if dpop-mode is `ALLOWED` or `REQUIRED`):**
    ```bash
    curl http://localhost:8080/api/protected \
      -H "Authorization: DPoP YOUR_DPOP_TOKEN" \
@@ -672,7 +676,7 @@ auth0:
   dpop-mode: ALLOWED
 ```
 
-#### REQUIRED Mode
+#### `REQUIRED` Mode
 
 Only accepts DPoP tokens — rejects standard Bearer:
 

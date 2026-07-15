@@ -3,6 +3,10 @@
 
 Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS). This skill adds complete native authentication to Swift apps using Web Auth (system browser redirect), secure Keychain credential storage via `CredentialsManager`, and optional biometric protection.
 
+## Critical rules
+
+- **Credential privacy is IMPORTANT:** never echo Auth0 credentials (domain, client ID, client secret) in response text or terminal output. Instead, redirect Auth0 CLI output to a temp file and use the Read tool to extract values, then write them directly into config files (e.g. `Auth0.plist`) with the Write or Edit tool. When confirming the active tenant, mask the domain (e.g. `your-te****.us.auth0.com`).
+
 ## When NOT to Use
 
 - **Android apps**: Use the Auth0 integration workflow for Android
@@ -959,11 +963,16 @@ func fetchData() async throws -> [Item] {
 
 > **Agent instruction:** Run these pre-flight checks. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
-> **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands, redirect output to a temporary file:
+> **Credential privacy (see Critical rules at the top):** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands, redirect output to a private temporary file (created with `mktemp` under a restrictive umask) rather than a predictable path:
+>
 > ```bash
-> auth0 <command> --json --no-input > /tmp/auth0-output.json 2>&1
+> umask 077
+> OUT=$(mktemp -t auth0-output)
+> auth0 <command> --json --no-input > "$OUT" 2>&1
+> echo "$OUT"   # note the path; do NOT print the file contents
 > ```
-> Then use the Read tool to extract values and write them directly into `Auth0.plist` or other config files — never echo them in response text or terminal. When confirming the active tenant with the user, mask the domain (e.g., `your-te****.us.auth0.com`).
+>
+> Then use the Read tool to extract values from that path and write them directly into `Auth0.plist` or other config files — never echo them in response text or terminal. Delete the file with `rm -f "$OUT"` once you have finished reading it. When confirming the active tenant with the user, mask the domain (e.g., `your-te****.us.auth0.com`).
 >
 > **Pre-flight checks:**
 >

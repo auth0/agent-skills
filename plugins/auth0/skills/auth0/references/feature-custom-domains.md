@@ -11,7 +11,7 @@ The capability design matches how users actually come to Auth0 custom domain wor
 
 ## Interaction style
 
-Ask questions as plain conversational text. Never use structured UI widgets (e.g., AskUserQuestion) except for a single yes/no confirmation immediately before a destructive or irreversible action (create, PATCH, delete). For everything else:
+Ask questions as plain conversational text. Never use structured UI widgets (e.g., AskUserQuestion) — instead, ask as plain conversational text — except for a single yes/no confirmation immediately before a destructive or irreversible action (create, PATCH, delete). For everything else:
 
 - **Capability routing**: present a numbered list and wait for the user to reply
 - **Input gathering**: ask one focused question at a time; wait for a response before asking the next
