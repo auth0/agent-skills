@@ -366,7 +366,7 @@ Claims on the **access token** (from `getTokenSilently({ detailedResponse: true 
 
 | Strategy | Security | Session Persistence |
 |----------|----------|-------------------|
-| In-memory (default) | Highest — immune to XSS | Lost on page refresh |
+| In-memory (default) | Highest — no persistent token theft | Lost on page refresh |
 | Refresh tokens (`useRefreshTokens: true`) | High — refresh token in memory | Persists across page refreshes |
 | `localStorage` | Lowest — vulnerable to XSS | Persists across page refreshes |
 
@@ -389,7 +389,7 @@ Content-Security-Policy: frame-src https://your-tenant.auth0.com;
 
 ### XSS Protection
 
-Never use `cacheLocation: 'localstorage'` in production unless you have fully mitigated all XSS risks. XSS can steal tokens from `localStorage`. Instead, use the default in-memory cache, which is immune to XSS-based token theft.
+Never use `cacheLocation: 'localstorage'` in production unless you have fully mitigated all XSS risks. XSS can steal tokens from `localStorage`. Instead, use the default in-memory cache: it is the safer default because it avoids persistent token theft (tokens are gone once the tab closes), though XSS running in the authenticated app context can still act on tokens held in memory during the session.
 
 ---
 

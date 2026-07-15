@@ -963,9 +963,12 @@ func fetchData() async throws -> [Item] {
 
 > **Agent instruction:** Run these pre-flight checks. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
-> **Credential privacy (see Critical rules at the top):** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands, redirect output to a temporary file:
+> **Credential privacy (see Critical rules at the top):** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands, redirect output to a private temporary file (created with `mktemp` under a restrictive umask, removed on exit) rather than a predictable path:
 > ```bash
-> auth0 <command> --json --no-input > /tmp/auth0-output.json 2>&1
+> umask 077
+> OUT=$(mktemp -t auth0-output)
+> trap 'rm -f "$OUT"' EXIT
+> auth0 <command> --json --no-input > "$OUT" 2>&1
 > ```
 > Then use the Read tool to extract values and write them directly into `Auth0.plist` or other config files — never echo them in response text or terminal. When confirming the active tenant with the user, mask the domain (e.g., `your-te****.us.auth0.com`).
 >

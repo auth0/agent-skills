@@ -5,7 +5,7 @@ Protect Go HTTP API endpoints with JWT access token validation using github.com/
 
 ## Critical rules
 
-- Access token values must stay out of the agent's view. Capture a token into a shell variable inside a single command chain and use it there; print only its length, and let it expire when the command ends.
+- Access token values must stay out of the agent's view. Capture a token into a shell variable inside a single command chain and use it there; print only its length, and discard the shell variable when the command ends. The token itself remains valid until normal expiry or revocation.
 - To obtain a client secret, always have the user run `auth0 apps show <CLIENT_ID> --reveal-secrets` in their own terminal, rather than running `--reveal-secrets` from the agent.
 - A Client ID is required to run `auth0 test token`; complete the M2M application setup first to obtain it.
 
