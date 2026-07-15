@@ -1,0 +1,129 @@
+{
+  "slug": "expo",
+  "origin_skill": "auth0-expo",
+  "skill_name": "auth0-expo",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Auth0 authentication to an Expo (React Native) application using the react-native-auth0 SDK.\n\n**Auth0 Credentials:**\n- Domain: `dev-example.auth0.com`\n- Client ID: `abc123def456ghi789jkl012`",
+      "expected_output": "Working Expo (React Native) app with Auth0 Web Auth login, secure credential storage, and user profile display",
+      "expectations": [
+        "Auth0 SDK installed via any valid method (npx expo install react-native-auth0)",
+        "Has correct import statement (from 'react-native-auth0')",
+        "Auth0 SDK initialized (Auth0Provider or useAuth0 hook)",
+        "Implements login via authorize()",
+        "Implements logout via clearSession()",
+        "Uses secure credential storage (getCredentials or credentialsManager)",
+        "Auth0 domain dev-example.auth0.com written to app.json config file",
+        "Client ID abc123def456ghi789jkl012 present in application code",
+        "Does not use SPA SDK (@auth0/auth0-react, @auth0/auth0-spa-js) in native app",
+        "Does not use localhost callback in native app",
+        "No client secret in native app",
+        "Solution correctly integrates Auth0 into Expo app with login, logout, credential storage, and customScheme configuration",
+        "Pins the Auth0 SDK to an explicit version in the dependency declaration",
+        "Configures customScheme for Expo callback URL redirection",
+        "Uses typed Auth0 error handling (WebAuthErrorCodes or CredentialsManagerErrorCodes)",
+        "Does not use deprecated expo-auth-session (uses react-native-auth0 instead)",
+        "Uses at least 2 skill-specific advanced patterns beyond basic SDK usage"
+      ]
+    }
+  ],
+  "graders": [
+    {
+      "type": "matches",
+      "pattern": "react-native-auth0|expo install.*react-native-auth0|npx expo install.*react-native-auth0",
+      "description": "Auth0 SDK installed via any valid method"
+    },
+    {
+      "type": "matches",
+      "pattern": "from ['\"]react-native-auth0['\"]",
+      "description": "Has correct import statement"
+    },
+    {
+      "type": "contains_any",
+      "values": [
+        "Auth0Provider",
+        "useAuth0("
+      ],
+      "description": "Auth0 SDK initialized (provider configured or hook used)"
+    },
+    {
+      "type": "matches",
+      "pattern": "authorize\\s*\\(|webAuth[\\s\\S]*?\\.authorize",
+      "description": "Implements login functionality"
+    },
+    {
+      "type": "matches",
+      "pattern": "clearSession\\s*\\(|webAuth[\\s\\S]*?\\.clearSession",
+      "description": "Implements logout functionality"
+    },
+    {
+      "type": "contains_any",
+      "values": [
+        "getCredentials",
+        "credentialsManager"
+      ],
+      "description": "Uses secure credential storage"
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/app.json",
+      "value": "dev-example.auth0.com",
+      "description": "Auth0 domain written to correct config file (app.json)"
+    },
+    {
+      "type": "contains",
+      "value": "abc123def456ghi789jkl012",
+      "description": "Client ID present in application code (Auth0Provider props)"
+    },
+    {
+      "type": "not_contains_any",
+      "values": [
+        "@auth0/auth0-react",
+        "@auth0/auth0-spa-js",
+        "@auth0/auth0-angular"
+      ],
+      "description": "Does not use SPA SDK in native app"
+    },
+    {
+      "type": "not_contains",
+      "value": "localhost",
+      "description": "Does not use localhost callback in native app"
+    },
+    {
+      "type": "not_contains",
+      "value": "client_secret",
+      "description": "No client secret in native app (not needed)"
+    },
+    {
+      "type": "judge",
+      "question": "Does the solution correctly integrate Auth0 into an Expo (React Native) app with working login via authorize(), logout via clearSession(), secure credential storage, and proper customScheme configuration in both app.json plugin and authorize/clearSession calls?",
+      "examples": "PASS: Uses Auth0Provider wrapping the app, authorize() with customScheme for login, clearSession() with customScheme for logout, and configures react-native-auth0 plugin in app.json with domain and customScheme.\nPASS: Uses Auth0 class directly with webAuth.authorize() and webAuth.clearSession(), passing customScheme option.\nFAIL: Only implements login without logout or credential storage.\nFAIL: Uses a web SDK (@auth0/auth0-react) instead of react-native-auth0.\nFAIL: Uses expo-auth-session or AuthSession instead of react-native-auth0.",
+      "framework": "expo"
+    },
+    {
+      "type": "contains",
+      "value": "customScheme",
+      "description": "Configures customScheme for Expo callback URL redirection"
+    },
+    {
+      "type": "matches",
+      "pattern": "WebAuthError|WebAuthErrorCodes|CredentialsManagerError|CredentialsManagerErrorCodes",
+      "description": "Uses typed Auth0 error handling (not generic catch-all)"
+    },
+    {
+      "type": "not_contains_any",
+      "values": [
+        "expo-auth-session",
+        "AuthSession"
+      ],
+      "description": "Does not use deprecated expo-auth-session (uses react-native-auth0 instead)"
+    },
+    {
+      "type": "judge",
+      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like Auth0Provider, authorize, clearSession, useAuth0, import react-native-auth0, getCredentials). Look for at least 2 of: (1) an explicit pinned react-native-auth0 version in a dependency declaration (any explicit semver, not 'latest' or absent), (2) customScheme configuration in both app.json plugin config AND authorize/clearSession calls, (3) typed error handling using WebAuthErrorCodes or CredentialsManagerErrorCodes (not generic try/catch), (4) BiometricPolicy or localAuthenticationOptions configuration. These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
+      "examples": "PASS: Code configures customScheme in app.json plugin AND passes customScheme to authorize/clearSession calls, AND catches WebAuthError with specific error codes.\nPASS: Code pins an explicit react-native-auth0 version AND configures BiometricPolicy.session in Auth0Provider localAuthenticationOptions.\nFAIL: Code only uses basic Auth0Provider with authorize() and generic try/catch \u2014 no customScheme config, no typed errors, no version pinning.\nFAIL: Code has correct basic structure but only catches generic Error, never WebAuthError or CredentialsManagerError.",
+      "framework": "expo"
+    }
+  ]
+}
