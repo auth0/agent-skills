@@ -129,6 +129,20 @@
       "framework": "nextjs",
       "tooling": "terraform",
       "expect_refs": ["feature-migration.md", "tooling-terraform.md", "framework-nextjs.md"]
+    },
+    {
+      "id": "integrate-swift",
+      "intent": "integrate",
+      "framework": "swift",
+      "tooling": "cli",
+      "expect_refs": ["framework-swift/index.md", "framework-swift/integrate.md", "tooling-cli.md"]
+    },
+    {
+      "id": "upgrade-sdk-swift",
+      "intent": "upgrade-sdk",
+      "framework": "swift",
+      "tooling": "cli",
+      "expect_refs": ["framework-swift/index.md", "framework-swift/migration.md"]
     }
   ]
 }

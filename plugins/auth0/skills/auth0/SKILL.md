@@ -264,6 +264,11 @@ Read the project file tree. This is a project-context decision, not a product pr
 Find the section below whose heading matches the **Intent** you picked in
 Step 1, then read the reference files it lists.
 
+> **Grouped references:** if `references/framework-{framework}/` is a directory
+> (not a single `.md` file), read the index.md hub inside that directory
+> instead, then follow the dispatch table there to the one leaf for your
+> intent. Read only that leaf.
+
 ### integrate
 ```
 Read: references/framework-{framework}.md

@@ -60,10 +60,18 @@ fi
 # "every routed framework has a file and every file is routed" guarantee is
 # enforced by scripts/check_router_reachability.py (run below), which derives
 # slugs from the router itself. Keep this list in sync when adding frameworks.
-EXPECTED_FRAMEWORKS="react nextjs vue angular spa-js nuxt express flask fastify fastify-api java-mvc aspnetcore-auth aspnetcore-api php php-api express-jwt fastapi-api springboot-api go react-native expo ionic-angular ionic-react ionic-vue android swift flutter-native flutter-web laravel laravel-api maui net-android net-ios winforms wpf"
+EXPECTED_FRAMEWORKS="react nextjs vue angular spa-js nuxt express flask fastify fastify-api java-mvc aspnetcore-auth aspnetcore-api php php-api express-jwt fastapi-api springboot-api go react-native expo ionic-angular ionic-react ionic-vue android flutter-native flutter-web laravel laravel-api maui net-android net-ios winforms wpf"
 for fw in $EXPECTED_FRAMEWORKS; do
   if [ ! -f "$REFS_DIR/framework-$fw.md" ]; then
     echo "FAIL: missing references/framework-$fw.md"
+    exit 1
+  fi
+done
+
+# Grouped frameworks: directory with an index.md hub and at least one leaf.
+for grp in swift; do
+  if [ ! -f "$REFS_DIR/framework-$grp/index.md" ]; then
+    echo "FAIL: missing references/framework-$grp/index.md (grouped framework)"
     exit 1
   fi
 done
