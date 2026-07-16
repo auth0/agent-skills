@@ -164,6 +164,13 @@
       "framework": "go",
       "tooling": "cli",
       "expect_refs": ["framework-go/index.md", "framework-go/integrate.md", "tooling-cli.md"]
+    },
+    {
+      "id": "integrate-java-mvc",
+      "intent": "integrate",
+      "framework": "java-mvc",
+      "tooling": "cli",
+      "expect_refs": ["framework-java-mvc/index.md", "framework-java-mvc/integrate.md", "tooling-cli.md"]
     }
   ]
 }
