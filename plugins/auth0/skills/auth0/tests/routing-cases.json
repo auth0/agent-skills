@@ -173,6 +173,13 @@
       "expect_refs": ["framework-go/index.md", "framework-go/integrate.md", "tooling-cli.md"]
     },
     {
+      "id": "integrate-php",
+      "intent": "integrate",
+      "framework": "php",
+      "tooling": "cli",
+      "expect_refs": ["framework-php/index.md", "framework-php/integrate.md", "tooling-cli.md"]
+    },
+    {
       "id": "integrate-java-mvc",
       "intent": "integrate",
       "framework": "java-mvc",
