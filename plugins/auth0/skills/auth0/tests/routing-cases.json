@@ -180,6 +180,13 @@
       "expect_refs": ["framework-go/index.md", "framework-go/integrate.md", "tooling-cli.md"]
     },
     {
+      "id": "integrate-aspnetcore-auth",
+      "intent": "integrate",
+      "framework": "aspnetcore-auth",
+      "tooling": "cli",
+      "expect_refs": ["framework-aspnetcore-auth/index.md", "framework-aspnetcore-auth/integrate.md", "tooling-cli.md"]
+    },
+    {
       "id": "integrate-php",
       "intent": "integrate",
       "framework": "php",
