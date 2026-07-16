@@ -70,7 +70,7 @@
       "intent": "feature:custom-domains",
       "framework": null,
       "tooling": "mcp",
-      "expect_refs": ["feature-custom-domains.md", "tooling-mcp.md"]
+      "expect_refs": ["feature-custom-domains/index.md", "feature-custom-domains/guide.md", "tooling-mcp.md"]
     },
     {
       "id": "feature-acul",
