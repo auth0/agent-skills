@@ -159,6 +159,13 @@
       "expect_refs": ["framework-android/index.md", "framework-android/migration.md"]
     },
     {
+      "id": "integrate-ionic-angular",
+      "intent": "integrate",
+      "framework": "ionic-angular",
+      "tooling": "cli",
+      "expect_refs": ["framework-ionic-angular/index.md", "framework-ionic-angular/integrate.md", "tooling-cli.md"]
+    },
+    {
       "id": "integrate-go",
       "intent": "integrate",
       "framework": "go",
