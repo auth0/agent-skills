@@ -383,5 +383,164 @@ class ReachabilityTest(unittest.TestCase):
             unreachable, bad_links, broken_routes = check_router(skill)
             self.assertEqual(bad_links, [])
 
+    # ---- group (two-level) support -------------------------------------
+
+    def _make_group_skill(self, root, skill_md, flat_refs, groups):
+        # groups: {group_name: {"index": str, "leaves": {leaf_name: body}}}
+        skill = root / "plugins/auth0/skills/auth0"
+        (skill / "references").mkdir(parents=True)
+        (skill / "SKILL.md").write_text(skill_md)
+        for name, body in flat_refs.items():
+            (skill / "references" / name).write_text(body)
+        for gname, spec in groups.items():
+            gdir = skill / "references" / gname
+            gdir.mkdir()
+            if spec.get("index") is not None:
+                (gdir / "index.md").write_text(spec["index"])
+            for leaf, body in spec.get("leaves", {}).items():
+                (gdir / leaf).write_text(body)
+        return skill
+
+    def test_group_valid_dispatch_all_reachable(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = self._make_group_skill(
+                root,
+                "Read: references/framework-{framework}.md\n| Swift | `swift` |\n",
+                {},
+                {"framework-swift": {
+                    "index": ("# Swift hub\n"
+                              "| integrate | `Read: references/framework-swift/integrate.md` |\n"
+                              "| upgrade-sdk | `Read: references/framework-swift/migration.md` |\n"),
+                    "leaves": {"integrate.md": "ok", "migration.md": "ok"}}},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertEqual(unreachable, [])
+            self.assertEqual(bad_links, [])
+            self.assertEqual(broken_routes, [])
+
+    def test_group_orphan_leaf_is_unreachable(self):
+        # A leaf the hub never dispatches to is an orphan.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = self._make_group_skill(
+                root,
+                "Read: references/framework-{framework}.md\n| Swift | `swift` |\n",
+                {},
+                {"framework-swift": {
+                    "index": "# hub\n| integrate | `Read: references/framework-swift/integrate.md` |\n",
+                    "leaves": {"integrate.md": "ok", "mfa.md": "orphan"}}},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn("framework-swift/mfa.md", unreachable)
+
+    def test_group_hub_dispatch_to_missing_leaf_is_broken_route(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = self._make_group_skill(
+                root,
+                "Read: references/framework-{framework}.md\n| Swift | `swift` |\n",
+                {},
+                {"framework-swift": {
+                    "index": ("# hub\n"
+                              "| integrate | `Read: references/framework-swift/integrate.md` |\n"
+                              "| upgrade-sdk | `Read: references/framework-swift/migration.md` |\n"),
+                    "leaves": {"integrate.md": "ok"}}},  # migration.md absent
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn("framework-swift/migration.md", broken_routes)
+
+    def test_group_not_routed_from_skill_is_unreachable(self):
+        # SKILL.md never routes to the base slug -> whole group unreachable.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = self._make_group_skill(
+                root,
+                "Read: references/framework-{framework}.md\n| React | `react` |\n",
+                {"framework-react.md": "ok"},
+                {"framework-swift": {
+                    "index": "# hub\n| integrate | `Read: references/framework-swift/integrate.md` |\n",
+                    "leaves": {"integrate.md": "ok"}}},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn("framework-swift/index.md", unreachable)
+
+    def test_group_missing_index_is_broken_route(self):
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = self._make_group_skill(
+                root,
+                "Read: references/framework-{framework}.md\n| Swift | `swift` |\n",
+                {},
+                {"framework-swift": {"index": None, "leaves": {"integrate.md": "ok"}}},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn("framework-swift/index.md", broken_routes)
+
+    def test_hub_own_group_dispatch_not_flagged_as_sideways(self):
+        # The hub Read:-dispatching to its OWN leaf is the allowed relaxation.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = self._make_group_skill(
+                root,
+                "Read: references/framework-{framework}.md\n| Swift | `swift` |\n",
+                {},
+                {"framework-swift": {
+                    "index": "# hub\n| integrate | `Read: references/framework-swift/integrate.md` |\n",
+                    "leaves": {"integrate.md": "ok"}}},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertEqual(bad_links, [])
+
+    def test_hub_cross_group_link_is_flagged(self):
+        # A hub linking to ANOTHER group's leaf is forbidden.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = self._make_group_skill(
+                root,
+                "Read: references/framework-{framework}.md\n| Swift | `swift` |\n| Android | `android` |\n",
+                {},
+                {"framework-swift": {
+                    "index": ("# hub\n"
+                              "| integrate | `Read: references/framework-swift/integrate.md` |\n"
+                              "cross: `Read: references/framework-android/integrate.md`\n"),
+                    "leaves": {"integrate.md": "ok"}},
+                 "framework-android": {
+                    "index": "# hub\n| integrate | `Read: references/framework-android/integrate.md` |\n",
+                    "leaves": {"integrate.md": "ok"}}},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn(("framework-swift/index.md", "framework-android/integrate.md"),
+                          bad_links)
+
+    def test_leaf_linking_to_its_own_index_is_flagged(self):
+        # Leaves are sinks — even a back-link to their own hub is forbidden.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = self._make_group_skill(
+                root,
+                "Read: references/framework-{framework}.md\n| Swift | `swift` |\n",
+                {},
+                {"framework-swift": {
+                    "index": "# hub\n| integrate | `Read: references/framework-swift/integrate.md` |\n",
+                    "leaves": {"integrate.md": "back to `references/framework-swift/index.md`"}}},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertIn(("framework-swift/integrate.md", "framework-swift/index.md"),
+                          bad_links)
+
+    def test_flat_files_still_pass_backward_compatible(self):
+        # The all-flat shape (no groups) must behave exactly as before.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = self._make_group_skill(
+                root,
+                "Read: references/framework-{framework}.md\n| React | `react` |\n",
+                {"framework-react.md": "ok"},
+                {},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertEqual((unreachable, bad_links, broken_routes), ([], [], []))
+
 if __name__ == "__main__":
     unittest.main()

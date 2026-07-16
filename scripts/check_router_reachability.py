@@ -63,6 +63,14 @@ SIDEWAYS_RES = [
     re.compile(r"`([a-z0-9-]+\.md)`"),                   # backticked bare filename
     re.compile(r"(?im)^\s*Read:\s*(?:references/)?([a-z0-9-]+\.md)"),  # dispatch verb
 ]
+# Two-level (group) sideways form: `references/<group>/<leaf>.md`, e.g. a hub
+# dispatching (or a leaf back-linking) to `framework-swift/integrate.md`. The
+# SIDEWAYS_RES character classes above deliberately exclude `/`, so none of
+# them can ever capture a two-level path; this dedicated pattern is the only
+# thing that sees a group-shaped target at all — whether it's the hub's own
+# (allowed) leaf or another group's (forbidden) leaf/index is decided by the
+# caller's `allowed_targets` set, not by this regex.
+SIDEWAYS_TWO_LEVEL_RE = re.compile(r"references/([a-z0-9-]+/[a-z0-9-]+\.md)")
 
 
 def _disambiguation_variant_slugs(skill_md: str) -> set:
@@ -169,16 +177,39 @@ def _strip_fences(text: str) -> str:
     return "\n".join(out)
 
 
+# A hub's own-group dispatch: `Read: references/<group>/<leaf>.md`. Only these
+# (leaf targets inside the hub's OWN directory) are the allowed second hop.
+def _hub_dispatch_targets(index_text: str, group: str) -> set:
+    pat = re.compile(
+        r"references/" + re.escape(group) + r"/([a-z0-9-]+\.md)"
+    )
+    return set(pat.findall(index_text))
+
+
+def _discover(refs_dir):
+    """Split references/ into top-level flat files and groups.
+
+    A group is any immediate subdirectory of references/. Its leaves are the
+    non-index *.md files inside it. Returns (flat_files, groups) where
+    groups maps name -> {"has_index": bool, "leaves": set()}.
+    """
+    flat_files = {p.name for p in refs_dir.glob("*.md")}
+    groups = {}
+    for sub in sorted(p for p in refs_dir.iterdir() if p.is_dir()):
+        leaves = {p.name for p in sub.glob("*.md") if p.name != "index.md"}
+        groups[sub.name] = {
+            "has_index": (sub / "index.md").exists(),
+            "leaves": leaves,
+        }
+    return flat_files, groups
+
+
 def check_router(skill_dir: Path):
     skill_md = (skill_dir / "SKILL.md").read_text()
     refs_dir = skill_dir / "references"
 
     slugs = _router_slugs(skill_md)
     backticked_md = set(BACKTICK_MD_RE.findall(skill_md))
-    # Placeholder-keyed slug universes. `{framework}` expands over value-column
-    # slugs; `{tooling}` expands ONLY over the tooling slugs the router actually
-    # names as `tooling-<slug>.md` (Step 3), so a framework slug can never
-    # manufacture a phantom `tooling-<framework>.md` route.
     tooling_slugs = {
         n[len("tooling-"):-len(".md")]
         for n in backticked_md
@@ -192,46 +223,88 @@ def check_router(skill_dir: Path):
             routed.add(name)
     routed |= backticked_md
 
-    present = {p.name for p in refs_dir.glob("*.md")}
-    unreachable = sorted(present - routed)
+    flat_files, groups = _discover(refs_dir)
+    group_names = set(groups)
 
-    # Broken routes: the router names a reference file that does not exist.
-    # `present - routed` (unreachable) can't see this; only `routed - present`
-    # can. Restrict to real reference filenames (an unexpanded `{placeholder}`
-    # template survives expansion only when its universe is empty, which is
-    # itself a router bug worth surfacing, but a literal `{` is not a file).
-    # Exempt only the abstract variant bases that resolve to NO file
-    # (`framework-aspnetcore.md`): `_variant_base_slugs` already excludes bases
-    # like `express`/`fastify`/`php`/`laravel` that are their own web-app variant
-    # slug and DO ship `framework-<base>.md`, so those stay in broken-route scope
-    # and a later delete/rename of the real file is still caught.
+    # A routed `framework-<slug>.md` is satisfied by EITHER a flat file of that
+    # name OR a group directory `framework-<slug>/` (read via its index.md).
+    def _satisfied(routed_name):
+        return routed_name in flat_files or routed_name[:-3] in group_names
+
     variant_bases = _variant_base_slugs(skill_md)
     exempt = {f"framework-{b}.md" for b in variant_bases}
+
+    unreachable = sorted(f for f in flat_files if f not in routed)
     broken_routes = sorted(
-        r for r in routed - present
-        if "{" not in r and "}" not in r and r not in exempt
+        r for r in routed
+        if "{" not in r and "}" not in r and r not in exempt and not _satisfied(r)
     )
 
+    # Two-level checks for each group.
+    for gname, info in groups.items():
+        routed_base = f"{gname}.md"
+        idx_path = f"{gname}/index.md"
+        if routed_base not in routed:
+            # SKILL.md never routes to this group at all.
+            unreachable.append(idx_path)
+            continue
+        if not info["has_index"]:
+            broken_routes.append(idx_path)
+            dispatched = set()
+        else:
+            index_text = (refs_dir / gname / "index.md").read_text()
+            dispatched = _hub_dispatch_targets(index_text, gname)
+        # Leaves the hub never dispatches to -> orphans.
+        for leaf in sorted(info["leaves"] - dispatched):
+            unreachable.append(f"{gname}/{leaf}")
+        # Hub dispatch entries with no matching leaf file -> broken routes.
+        for leaf in sorted(dispatched - info["leaves"]):
+            broken_routes.append(f"{gname}/{leaf}")
+    unreachable = sorted(unreachable)
+    broken_routes = sorted(broken_routes)
+
+    # Link checks. Flat files and leaves are strict sinks (any .md ref is a
+    # defect). A hub index.md may Read:-dispatch to its OWN leaves only.
     bad_links = []
-    for ref in sorted(present):
-        text = (refs_dir / ref).read_text()
+
+    def _scan(rel_name, text, allowed_targets):
         seen = set()
         for link_re in LINK_RES:
             for lm in link_re.finditer(text):
                 target = lm.group(1)
                 if (lm.start(), target) not in seen:
                     seen.add((lm.start(), target))
-                    bad_links.append((ref, target))
-        # Non-link second-hop forms (prose/backtick path, backticked filename,
-        # `Read:` verb) — checked outside fenced code so illustrative examples
-        # don't trip the guard.
+                    if target not in allowed_targets:
+                        bad_links.append((rel_name, target))
         prose = _strip_fences(text)
         for sideways_re in SIDEWAYS_RES:
             for sm in sideways_re.finditer(prose):
                 target = sm.group(1)
                 if (sm.start(), target) not in seen:
                     seen.add((sm.start(), target))
-                    bad_links.append((ref, target))
+                    if target not in allowed_targets:
+                        bad_links.append((rel_name, target))
+        for tm in SIDEWAYS_TWO_LEVEL_RE.finditer(prose):
+            target = tm.group(1)
+            if (tm.start(), target) not in seen:
+                seen.add((tm.start(), target))
+                if target not in allowed_targets:
+                    bad_links.append((rel_name, target))
+
+    for ref in sorted(flat_files):
+        _scan(ref, (refs_dir / ref).read_text(), allowed_targets=set())
+    for gname, info in groups.items():
+        if info["has_index"]:
+            # A hub may reference its own leaves via bare `leaf.md` (SIDEWAYS_RES
+            # backtick/Read forms) and via the full `references/<group>/leaf.md`
+            # path (SIDEWAYS_TWO_LEVEL_RE) — allow both spellings.
+            allowed = set(info["leaves"]) | {f"{gname}/{leaf}" for leaf in info["leaves"]}
+            _scan(f"{gname}/index.md",
+                  (refs_dir / gname / "index.md").read_text(),
+                  allowed_targets=allowed)
+        for leaf in sorted(info["leaves"]):
+            _scan(f"{gname}/{leaf}", (refs_dir / gname / leaf).read_text(),
+                  allowed_targets=set())
 
     return unreachable, bad_links, broken_routes
 
