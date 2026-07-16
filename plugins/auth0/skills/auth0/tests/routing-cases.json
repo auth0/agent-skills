@@ -27,7 +27,7 @@
       "intent": "integrate",
       "framework": "php-api",
       "tooling": "cli",
-      "expect_refs": ["framework-php-api.md", "tooling-cli.md"]
+      "expect_refs": ["framework-php-api/index.md", "framework-php-api/integrate.md", "tooling-cli.md"]
     },
     {
       "id": "integrate-flask-terraform",
