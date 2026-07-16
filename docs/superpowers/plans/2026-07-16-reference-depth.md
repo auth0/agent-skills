@@ -321,10 +321,12 @@ Replace the body of `check_router` (from `slugs = _router_slugs(...)` to the `re
         _scan(ref, (refs_dir / ref).read_text(), allowed_targets=set())
     for gname, info in groups.items():
         if info["has_index"]:
-            # A hub may reference its own leaves via bare `leaf.md` (SIDEWAYS_RES
-            # backtick/Read forms) and via the full `references/<group>/leaf.md`
-            # path (LINK_RES / SIDEWAYS path form) — allow both spellings.
-            allowed = set(info["leaves"])
+            # A hub may reference its own leaves in either spelling: the bare
+            # `leaf.md` (single-level SIDEWAYS_RES) OR the full two-level path
+            # `<group>/leaf.md` (SIDEWAYS_TWO_LEVEL_RE). Permit both.
+            allowed = set(info["leaves"]) | {
+                f"{gname}/{leaf}" for leaf in info["leaves"]
+            }
             _scan(f"{gname}/index.md",
                   (refs_dir / gname / "index.md").read_text(),
                   allowed_targets=allowed)
@@ -335,7 +337,17 @@ Replace the body of `check_router` (from `slugs = _router_slugs(...)` to the `re
     return unreachable, bad_links, broken_routes
 ```
 
-Note on the `allowed` set: `SIDEWAYS_RES[0]` (`references/(<leaf>.md)`) and `SIDEWAYS_RES[1]` (backticked bare `<leaf>.md`) both yield the bare filename, so `allowed = set(info["leaves"])` (bare names) matches them. The `LINK_RES` inline form captures the path as written; a hub should dispatch with the bare `references/<group>/<leaf>.md` inside backticks (a `Read:` line), which `SIDEWAYS_RES` catches as the bare leaf name and `LINK_RES` (markdown-link only) does not fire on — so the cross-group test's captured target `framework-android/integrate.md` (bare-name mismatch) is correctly flagged while `framework-swift/integrate.md` yields bare `integrate.md` ∈ allowed.
+Note on two-level detection (corrected during implementation): the shared
+`SIDEWAYS_RES`/`LINK_RES` regexes all exclude `/` in their character classes,
+so they can **never** capture a two-level `<group>/<leaf>.md` path. A dedicated
+`SIDEWAYS_TWO_LEVEL_RE = re.compile(r"references/([a-z0-9-]+/[a-z0-9-]+\.md)")`
+is added and run inside `_scan` (over fence-stripped prose) alongside the
+existing loops. It captures `framework-android/integrate.md` (cross-group →
+flagged, not in `allowed`), `framework-swift/index.md` (leaf back-link →
+flagged), and own-group `framework-swift/integrate.md` (in `allowed` via the
+two-level spelling → permitted). The shared `SIDEWAYS_RES`/`LINK_RES` are left
+untouched. This is why `allowed` above includes both the bare and two-level
+spellings of each own-group leaf.
 
 - [ ] **Step 5: Run the tests to verify they pass**
 
