@@ -157,6 +157,13 @@
       "framework": "android",
       "tooling": "cli",
       "expect_refs": ["framework-android/index.md", "framework-android/migration.md"]
+    },
+    {
+      "id": "integrate-go",
+      "intent": "integrate",
+      "framework": "go",
+      "tooling": "cli",
+      "expect_refs": ["framework-go/index.md", "framework-go/integrate.md", "tooling-cli.md"]
     }
   ]
 }
