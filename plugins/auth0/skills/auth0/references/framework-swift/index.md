@@ -335,7 +335,7 @@ xcodebuild build -scheme YOUR_SCHEME -destination "platform=iOS Simulator,name=i
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared setup above,
-read ONLY the one leaf for your intent:
+read the leaf for your task:
 
 | Intent | Read |
 |---|---|
@@ -343,4 +343,8 @@ read ONLY the one leaf for your intent:
 | feature:mfa | `Read: references/framework-swift/mfa.md` |
 | upgrade-sdk | `Read: references/framework-swift/migration.md` |
 
-Do not read the other leaves.
+**Then, as needed for your task:**
+- Any other task (guidance, debugging, Organizations, provider migration):
+  start with `Read: references/framework-swift/integrate.md`
+
+Read only the leaf (or leaves) your task needs — not all of them.
