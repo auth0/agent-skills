@@ -193,6 +193,79 @@ class RoutingEvalTest(unittest.TestCase):
             )
             self.assertEqual(check_routing(skill), [])
 
+    def _make_group_skill(self, root, skill_md, flat_refs, groups, cases):
+        skill = root / "plugins/auth0/skills/auth0"
+        (skill / "references").mkdir(parents=True)
+        (skill / "tests").mkdir(parents=True)
+        (skill / "SKILL.md").write_text(skill_md)
+        for name in flat_refs:
+            (skill / "references" / name).write_text("ok")
+        for gname, spec in groups.items():
+            gdir = skill / "references" / gname
+            gdir.mkdir()
+            (gdir / "index.md").write_text(spec["index"])
+            for leaf in spec["leaves"]:
+                (gdir / leaf).write_text("ok")
+        (skill / "tests" / "routing-cases.json").write_text(json.dumps({"cases": cases}))
+        return skill
+
+    GROUP_STEP4 = (
+        "## Step 4: Load reference files\n"
+        "### integrate\n```\n"
+        "Read: references/framework-{framework}.md\n"
+        "Read: references/tooling-{tooling}.md\n```\n"
+        "### upgrade-sdk\n```\n"
+        "Read: references/framework-{framework}.md\n```\n"
+        "## Step 5\n"
+    )
+    GROUP_INDEX = (
+        "# Swift hub\n"
+        "| integrate | `Read: references/framework-swift/integrate.md` |\n"
+        "| upgrade-sdk | `Read: references/framework-swift/migration.md` |\n"
+    )
+
+    def test_grouped_integrate_resolves_to_index_and_leaf(self):
+        with tempfile.TemporaryDirectory() as d:
+            skill = self._make_group_skill(
+                Path(d), self.GROUP_STEP4, ["tooling-cli.md"],
+                {"framework-swift": {"index": self.GROUP_INDEX,
+                                     "leaves": ["integrate.md", "migration.md"]}},
+                [{"id": "c1", "intent": "integrate", "framework": "swift",
+                  "tooling": "cli",
+                  "expect_refs": ["framework-swift/index.md",
+                                  "framework-swift/integrate.md", "tooling-cli.md"]}],
+            )
+            self.assertEqual(check_routing(skill), [])
+
+    def test_grouped_upgrade_resolves_to_migration_leaf(self):
+        with tempfile.TemporaryDirectory() as d:
+            skill = self._make_group_skill(
+                Path(d), self.GROUP_STEP4, ["tooling-cli.md"],
+                {"framework-swift": {"index": self.GROUP_INDEX,
+                                     "leaves": ["integrate.md", "migration.md"]}},
+                [{"id": "c1", "intent": "upgrade-sdk", "framework": "swift",
+                  "tooling": "cli",
+                  "expect_refs": ["framework-swift/index.md",
+                                  "framework-swift/migration.md"]}],
+            )
+            self.assertEqual(check_routing(skill), [])
+
+    def test_grouped_wrong_leaf_fails(self):
+        with tempfile.TemporaryDirectory() as d:
+            skill = self._make_group_skill(
+                Path(d), self.GROUP_STEP4, ["tooling-cli.md"],
+                {"framework-swift": {"index": self.GROUP_INDEX,
+                                     "leaves": ["integrate.md", "migration.md"]}},
+                # integrate must resolve to integrate.md, not migration.md
+                [{"id": "c1", "intent": "integrate", "framework": "swift",
+                  "tooling": "cli",
+                  "expect_refs": ["framework-swift/index.md",
+                                  "framework-swift/migration.md", "tooling-cli.md"]}],
+            )
+            failures = check_routing(skill)
+            self.assertTrue(any("framework-swift/migration.md" in f for f in failures),
+                            f"expected a failure naming the wrong leaf, got: {failures}")
+
 
 if __name__ == "__main__":
     unittest.main()
