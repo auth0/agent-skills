@@ -180,6 +180,13 @@
       "expect_refs": ["framework-go/index.md", "framework-go/integrate.md", "tooling-cli.md"]
     },
     {
+      "id": "integrate-nuxt",
+      "intent": "integrate",
+      "framework": "nuxt",
+      "tooling": "cli",
+      "expect_refs": ["framework-nuxt/index.md", "framework-nuxt/integrate.md", "tooling-cli.md"]
+    },
+    {
       "id": "integrate-expo",
       "intent": "integrate",
       "framework": "expo",
