@@ -166,6 +166,13 @@
       "expect_refs": ["framework-ionic-angular/index.md", "framework-ionic-angular/integrate.md", "tooling-cli.md"]
     },
     {
+      "id": "integrate-ionic-vue",
+      "intent": "integrate",
+      "framework": "ionic-vue",
+      "tooling": "cli",
+      "expect_refs": ["framework-ionic-vue/index.md", "framework-ionic-vue/integrate.md", "tooling-cli.md"]
+    },
+    {
       "id": "integrate-go",
       "intent": "integrate",
       "framework": "go",
