@@ -143,6 +143,20 @@
       "framework": "swift",
       "tooling": "cli",
       "expect_refs": ["framework-swift/index.md", "framework-swift/migration.md"]
+    },
+    {
+      "id": "integrate-android",
+      "intent": "integrate",
+      "framework": "android",
+      "tooling": "cli",
+      "expect_refs": ["framework-android/index.md", "framework-android/integrate.md", "tooling-cli.md"]
+    },
+    {
+      "id": "upgrade-sdk-android",
+      "intent": "upgrade-sdk",
+      "framework": "android",
+      "tooling": "cli",
+      "expect_refs": ["framework-android/index.md", "framework-android/migration.md"]
     }
   ]
 }
