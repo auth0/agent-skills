@@ -483,7 +483,6 @@ spring:
 
 3. **Protected endpoint returns 200 with valid token:**
    ```bash
-   TOKEN=$(auth0 test token --audience <API_IDENTIFIER> --json | jq -r '.access_token')
    curl http://localhost:8080/api/protected \
      -H "Authorization: Bearer $TOKEN"
    ```

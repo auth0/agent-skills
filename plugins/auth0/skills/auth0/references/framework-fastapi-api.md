@@ -164,7 +164,6 @@ async def protected():
 curl http://localhost:8000/api/private
 
 # With a valid access token
-TOKEN=$(auth0 test token --audience <API_IDENTIFIER> | jq -r '.access_token')
 curl http://localhost:8000/api/private \
   -H "Authorization: Bearer $TOKEN"
 ```

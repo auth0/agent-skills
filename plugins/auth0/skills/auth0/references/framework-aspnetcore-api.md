@@ -142,7 +142,6 @@ curl http://localhost:5000/api/public
 Test protected endpoint (requires access token):
 
 ```bash
-TOKEN=$(auth0 test token --audience <API_IDENTIFIER> | jq -r '.access_token')
 curl http://localhost:5000/api/private \
   -H "Authorization: Bearer $TOKEN"
 ```
