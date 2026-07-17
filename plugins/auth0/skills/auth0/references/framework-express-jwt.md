@@ -173,17 +173,18 @@ In practice, you only install and import `express-oauth2-jwt-bearer`.
 ## Testing Quick Reference
 
 ```bash
-# Get test token from Auth0 Dashboard → APIs → your API → Test tab
-# Copy the token, then:
+# Capture a token into a shell variable — see "Testing Patterns" below for the
+# full command. Reference $ACCESS_TOKEN rather than pasting the raw token
+# inline; inline token values leak into shell history and terminal scrollback.
 
 # 1. Verify 401 on protected route (no token)
 curl -v http://localhost:3000/api/private
 
 # 2. Verify 200 with valid token
-curl -H "Authorization: Bearer <paste-token-here>" http://localhost:3000/api/private
+curl -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:3000/api/private
 
 # 3. Verify 403 with valid token but missing scope
-curl -H "Authorization: Bearer <paste-token-here>" http://localhost:3000/api/admin
+curl -H "Authorization: Bearer $ACCESS_TOKEN" http://localhost:3000/api/admin
 
 # 4. Verify CORS preflight
 curl -v -X OPTIONS http://localhost:3000/api/private \

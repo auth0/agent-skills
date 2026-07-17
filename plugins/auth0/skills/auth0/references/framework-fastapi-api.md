@@ -164,11 +164,15 @@ async def protected():
 curl http://localhost:8000/api/private
 
 # With a valid access token
+TOKEN=$(auth0 test token --audience <API_IDENTIFIER> | jq -r '.access_token')
 curl http://localhost:8000/api/private \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+  -H "Authorization: Bearer $TOKEN"
 ```
 
 Get a test token via Client Credentials flow or Auth0 Dashboard → APIs → Test tab.
+Capture the token into a shell variable (`TOKEN=$(...)`) and reference `$TOKEN`
+rather than pasting the raw token inline — inline token values leak into shell
+history and terminal scrollback.
 
 ## Common Mistakes
 
@@ -649,10 +653,14 @@ To use DPoP authentication, clients must:
 
 ```bash
 # DPoP request example
-curl -H "Authorization: DPoP YOUR_ACCESS_TOKEN" \
-     -H "DPoP: YOUR_DPOP_PROOF_JWT" \
+curl -H "Authorization: DPoP $TOKEN" \
+     -H "DPoP: $DPOP_PROOF_JWT" \
      http://localhost:8000/api/protected
 ```
+
+Capture the token into a shell variable (`TOKEN=$(...)`) and reference `$TOKEN`
+rather than pasting the raw token inline — inline token values leak into shell
+history and terminal scrollback.
 
 ### Enable DPoP on Auth0 API
 

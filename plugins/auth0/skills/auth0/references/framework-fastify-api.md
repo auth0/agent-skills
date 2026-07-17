@@ -96,7 +96,10 @@ fastify.get('/api/profile', {
   preHandler: fastify.requireAuth()
 }, async (request, reply) => {
   return {
-    profile: request.user,  // JWT claims
+    // Return only the fields the client needs. Returning the whole decoded
+    // token (request.user) exposes every claim — permissions, custom
+    // namespaces, and token metadata — to the client.
+    profile: { sub: request.user.sub, scope: request.user.scope },
   };
 });
 ```
@@ -112,9 +115,14 @@ curl http://localhost:3001/api/public
 Test protected endpoint (requires access token):
 
 ```bash
+TOKEN=$(auth0 test token --audience <API_IDENTIFIER> | jq -r '.access_token')
 curl http://localhost:3001/api/private \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+  -H "Authorization: Bearer $TOKEN"
 ```
+
+> Capture the token into a shell variable (`TOKEN=$(...)`) and reference
+> `$TOKEN` rather than pasting the raw token inline — inline token values leak
+> into shell history and terminal scrollback.
 
 
 ## Common Mistakes
