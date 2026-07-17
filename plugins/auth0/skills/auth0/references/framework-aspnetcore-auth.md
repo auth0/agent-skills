@@ -34,7 +34,7 @@ Add Auth0 settings to `appsettings.json`:
   "Auth0": {
     "Domain": "your-tenant.us.auth0.com",
     "ClientId": "your_client_id",
-    "ClientSecret": "your_client_secret"
+    "ClientSecret": "<YOUR_CLIENT_SECRET>"
   }
 }
 ```
@@ -44,7 +44,7 @@ Add Auth0 settings to `appsettings.json`:
 ```bash
 dotnet user-secrets set "Auth0:Domain" "your-tenant.us.auth0.com"
 dotnet user-secrets set "Auth0:ClientId" "your_client_id"
-dotnet user-secrets set "Auth0:ClientSecret" "your_client_secret"
+dotnet user-secrets set "Auth0:ClientSecret" "<YOUR_CLIENT_SECRET>"
 ```
 
 `Auth0:Domain` is your tenant domain (without `https://`). `Auth0:ClientId` and `Auth0:ClientSecret` come from your Auth0 Application settings.
@@ -790,6 +790,8 @@ public class ApiController : Controller
 }
 ```
 
+**Trust boundary:** Only send the access token to the API it was issued for (matching `audience`). Don't forward the token to third-party services that aren't the intended resource server, and never log the token.
+
 ### Configure Audience for API Calls
 
 Update `Program.cs` to request an access token for a specific audience:
@@ -820,7 +822,7 @@ Add the audience to `appsettings.json`:
 }
 ```
 
-> Store `ClientSecret` in user-secrets (`dotnet user-secrets set "Auth0:ClientSecret" "your_client_secret"`) or environment variables — never commit secrets to source control.
+> Store `ClientSecret` in user-secrets (`dotnet user-secrets set "Auth0:ClientSecret" "<YOUR_CLIENT_SECRET>"`) or environment variables — never commit secrets to source control.
 
 ---
 
@@ -1185,7 +1187,7 @@ Add the `Auth0` section:
   "Auth0": {
     "Domain": "your-tenant.us.auth0.com",
     "ClientId": "your-client-id",
-    "ClientSecret": "your-client-secret"
+    "ClientSecret": "<YOUR_CLIENT_SECRET>"
   }
 }
 ```
@@ -1196,7 +1198,7 @@ Add the `Auth0` section:
 dotnet user-secrets init
 dotnet user-secrets set "Auth0:Domain" "your-tenant.us.auth0.com"
 dotnet user-secrets set "Auth0:ClientId" "your-client-id"
-dotnet user-secrets set "Auth0:ClientSecret" "your-client-secret"
+dotnet user-secrets set "Auth0:ClientSecret" "<YOUR_CLIENT_SECRET>"
 ```
 
 User secrets override `appsettings.json` in the Development environment. In production, use environment variables:
@@ -1204,7 +1206,7 @@ User secrets override `appsettings.json` in the Development environment. In prod
 ```bash
 export Auth0__Domain="your-tenant.us.auth0.com"
 export Auth0__ClientId="your-client-id"
-export Auth0__ClientSecret="your-client-secret"
+export Auth0__ClientSecret="<YOUR_CLIENT_SECRET>"
 ```
 
 Note: Environment variable names use double underscores (`__`) to represent the `:` separator in .NET configuration keys.

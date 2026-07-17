@@ -37,7 +37,7 @@ Create `.env`:
 SECRET=<openssl-rand-hex-32>
 BASE_URL=http://localhost:3000
 CLIENT_ID=your-client-id
-CLIENT_SECRET=your-client-secret
+CLIENT_SECRET=<YOUR_CLIENT_SECRET>
 ISSUER_BASE_URL=https://your-tenant.auth0.com
 ```
 
@@ -281,6 +281,8 @@ app.get('/call-api', requiresAuth(), async (req, res) => {
   }
 });
 ```
+
+**Trust boundary:** Only send the access token to the API it was issued for (matching `audience`). Don't forward the token to third-party services that aren't the intended resource server, and never log the token.
 
 **Note:** To call APIs, add `authorizationParams` to middleware config:
 
@@ -794,7 +796,7 @@ npm install express-openid-connect dotenv
 SECRET=<openssl-rand-hex-32>
 BASE_URL=http://localhost:3000
 CLIENT_ID=your-client-id
-CLIENT_SECRET=your-client-secret
+CLIENT_SECRET=<YOUR_CLIENT_SECRET>
 ISSUER_BASE_URL=https://your-tenant.auth0.com
 ```
 

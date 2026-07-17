@@ -3,6 +3,11 @@
 
 Add authentication to Next.js applications using @auth0/nextjs-auth0. Supports both App Router and Pages Router.
 
+## Critical rules
+
+- Always ask the user for explicit confirmation before running any setup step that writes to a `.env` file (including `.env.local`); wait for their answer before proceeding.
+- Keep the contents of `.env` / `.env.local` out of the agent context. If reading it seems necessary, ask the user for explicit permission first.
+
 ## Prerequisites
 
 - Next.js 13+ application (App Router or Pages Router)
@@ -298,6 +303,8 @@ export async function GET() {
   return NextResponse.json(await apiResponse.json());
 }
 ```
+
+**Trust boundary:** Only send an access token to the API it was issued for (matching `audience`). Don't forward tokens to third-party services that aren't the intended resource server, and never log the token.
 
 ---
 

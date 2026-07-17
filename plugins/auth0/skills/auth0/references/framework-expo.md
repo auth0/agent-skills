@@ -559,6 +559,8 @@ const fetchData = async () => {
 };
 ```
 
+**Trust boundary:** Only send the access token to the API it was issued for (matching `audience`). Don't forward the token to third-party services that aren't the intended resource server, and never log the token.
+
 ### Check for Valid Credentials
 
 ```typescript

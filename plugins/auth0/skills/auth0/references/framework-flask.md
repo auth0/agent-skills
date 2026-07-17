@@ -3,6 +3,11 @@
 
 Add login, logout, and user profile to a Flask web application using `auth0-server-python`.
 
+## Critical rules
+
+- Always ask the user for explicit confirmation before running any setup step that writes to a `.env` file; wait for their answer before proceeding.
+- Keep the contents of `.env` out of the agent context. If reading it seems necessary, ask the user for explicit permission first.
+
 ## Prerequisites
 
 - Flask application
@@ -748,6 +753,8 @@ async def api_call():
     return jsonify(response.json())
 ```
 
+**Trust boundary:** Only send the access token to the API it was issued for (matching `audience`). Don't forward the token to third-party services that aren't the intended resource server, and never log the token.
+
 ### Configure Audience
 
 Update the `ServerClient` initialization in `auth.py` to include `audience`:
@@ -948,8 +955,15 @@ Then ask the user for explicit confirmation before proceeding — do not continu
 
 # Install Auth0 CLI
 if ! command -v auth0 &> /dev/null; then
-  [[ "$OSTYPE" == "darwin"* ]] && brew install auth0/auth0-cli/auth0 || \
-  curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install auth0/auth0-cli/auth0
+  else
+    # Download and review the install script before executing
+    curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh
+    echo "⚠️  Review the install script at /tmp/auth0-install.sh before running"
+    sh /tmp/auth0-install.sh -b /usr/local/bin
+    rm /tmp/auth0-install.sh
+  fi
 fi
 
 # Login
