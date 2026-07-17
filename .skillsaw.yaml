@@ -109,9 +109,21 @@ rules:
   # .github/workflows/skillsaw.yml), not agent-facing behavior the router should
   # point at — same class as the rule's built-in tests/ exemption. Exempt it so
   # it isn't flagged as an unreferenced/shadow file.
+  #
+  # framework-*.md / tooling-*.md are routed from SKILL.md ONLY through the
+  # `references/framework-{framework}.md` and `references/tooling-{tooling}.md`
+  # placeholder templates in Step 4. This rule does literal substring matching
+  # and can't resolve `{framework}`/`{tooling}`, so it can't see these files as
+  # referenced. Their reachability IS enforced — deterministically and offline —
+  # by scripts/check_router_reachability.py, which expands the templates over the
+  # real slug universes and fails on any orphan or broken route. Exempt the two
+  # template-routed families here so the literal scan doesn't false-positive;
+  # feature-*.md and pattern-*.md are still subject to orphan detection.
   agentskill-unreferenced-files:
     exclude:
       - "scripts/validate-skill.sh"
+      - "references/framework-*.md"
+      - "references/tooling-*.md"
 
 # Custom rules for marketplace-specific validation
 custom-rules:

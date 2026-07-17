@@ -771,7 +771,7 @@ async def custom_claims(claims: dict = Depends(auth0.require_auth())):
     return {"permissions": permissions, "role": role}
 ```
 
-Custom claims added via Auth0 Actions use namespaced keys, e.g., `https://your-domain.com/role`.
+Custom claims added via Auth0 Actions use namespaced keys, e.g., `https://example.com/role`.
 
 ### Common JWT Claims
 
@@ -876,7 +876,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://your-spa-domain.com"],
+    allow_origins=["https://spa.example.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["Authorization", "Content-Type", "DPoP"],

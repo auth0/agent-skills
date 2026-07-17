@@ -577,7 +577,7 @@ public IActionResult GetProfile()
 | `exp` | Expiration timestamp |
 | `iat` | Issued-at timestamp |
 
-Custom claims added via Auth0 Actions use namespaced keys, e.g., `https://your-domain.com/role`.
+Custom claims added via Auth0 Actions use namespaced keys, e.g., `https://example.com/role`.
 
 ---
 

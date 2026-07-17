@@ -782,7 +782,7 @@ public class ApiController : Controller
         client.DefaultRequestHeaders.Authorization =
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
 
-        var response = await client.GetAsync("https://your-api.com/data");
+        var response = await client.GetAsync("https://api.example.com/data");
         var content = await response.Content.ReadAsStringAsync();
 
         return Ok(content);

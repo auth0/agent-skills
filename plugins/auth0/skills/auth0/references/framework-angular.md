@@ -299,7 +299,7 @@ export class ApiTestComponent {
       }
     }).pipe(
       switchMap(token =>
-        this.http.get('https://your-api.com/data', {
+        this.http.get('https://api.example.com/data', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -348,7 +348,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
 
   // Only add token to API calls
-  if (req.url.startsWith('https://your-api.com')) {
+  if (req.url.startsWith('https://api.example.com')) {
     return auth.getAccessTokenSilently().pipe(
       switchMap(token => {
         const clonedReq = req.clone({
@@ -402,7 +402,7 @@ AuthModule.forRoot({
   errorPath: '/error',  // Path to redirect on auth errors (default: '/')
   httpInterceptor: {
     allowedList: [
-      'https://your-api.com/*'  // Automatically add tokens to these URLs
+      'https://api.example.com/*'  // Automatically add tokens to these URLs
     ]
   }
 })
@@ -585,7 +585,7 @@ export const appConfig: ApplicationConfig = {
       httpInterceptor: {
         allowedList: [
           '/api/*',
-          'https://your-api.com/*'
+          'https://api.example.com/*'
         ]
       }
     }),
@@ -608,7 +608,7 @@ export class DataService {
   constructor(private http: HttpClient) {}
 
   getData() {
-    return this.http.get('https://your-api.com/data');
+    return this.http.get('https://api.example.com/data');
     // Access token automatically added by interceptor
   }
 }
@@ -632,7 +632,7 @@ callApi() {
     }
   }).pipe(
     switchMap(token =>
-      this.http.get('https://your-api.com/data', {
+      this.http.get('https://api.example.com/data', {
         headers: { Authorization: `Bearer ${token}` }
       })
     )
@@ -879,7 +879,7 @@ export const environment = {
     domain: 'your-tenant.auth0.com',
     clientId: 'your-client-id',
     authorizationParams: {
-      redirect_uri: 'https://your-production-domain.com'
+      redirect_uri: 'https://app.example.com'
     }
   }
 };

@@ -8,7 +8,7 @@ requests, including the cases the RAPID called out as unproven: cross-cutting
 features (MFA, branding, Organizations, ...) and SDK+feature combinations
 (e.g. "MFA in a Next.js app").
 
-Each case in tests/routing-cases.json names an intent + detected framework/
+Each case in evals/routing-cases.json names an intent + detected framework/
 tooling and the reference files Step 4 must load. We assert, per case:
 
   1. the intent has a matching `### <intent>` section in SKILL.md Step 4
@@ -46,7 +46,11 @@ SPA_FRAMEWORKS = {"vue", "react", "angular", "spa-js"}
 
 
 def load_cases(skill_dir: Path) -> list:
-    data = json.loads((skill_dir / "tests" / "routing-cases.json").read_text())
+    # routing-cases.json lives at repo-root evals/ (moved out of the skill dir so
+    # the behavioral harness isn't inside per-skill security-scan scope). Resolve
+    # it relative to this script's repo root, not the skill dir.
+    repo_root = Path(__file__).resolve().parent.parent
+    data = json.loads((repo_root / "evals" / "routing-cases.json").read_text())
     return data["cases"]
 
 
