@@ -146,10 +146,14 @@ for why. To add or change coverage:
 - `pattern-<name>.md` — cross-cutting guidance.
 
 ### Make it routable (required — CI enforces this)
-Every file in `references/` MUST be reachable from `SKILL.md`, and no reference
-file may contain a link to any `.md` file (reference files are self-contained —
-inline the content instead of linking, since Claude Code follows only one hop
-from the router).
+Every reference in `references/` MUST be reachable from `SKILL.md`. Navigation is
+a **depth-2 tree**: a reference is either a flat, self-contained `*.md` file (one
+hop from the router) or a **group** (see "Adding a grouped reference" below). A
+flat file and any leaf inside a group may contain **no** link to any `.md` file —
+they are sinks; inline the content instead of linking. The only second hop
+allowed is a group's hub `index.md` dispatching to leaves **in its own
+directory**; cross-group links are forbidden. Claude Code follows the router to a
+file (or to a hub, then one leaf) — nothing deeper is guaranteed.
 
 - **New feature:** add an intent row in Step 1 and a load block in Step 4 of
   `SKILL.md`.
@@ -161,9 +165,49 @@ from the router).
   `<slug>` in a table makes `framework-<slug>.md` reachable — there is no
   separate list to update.
 
+### Adding a grouped reference
+When a reference grows large (roughly >40K), split it into a **group** so the
+router pulls only the slice a task needs instead of the whole file. A group is a
+directory named after the reference stem:
+
+```
+references/framework-<name>/
+├── index.md          # hub: shared prerequisites + intent→leaf dispatch table
+├── integrate.md      # document-section leaves (one per section, not per intent)
+├── api-reference.md
+├── patterns.md
+├── setup.md
+└── migration.md      # only if the SDK has a major-version migration
+```
+
+Rules:
+- **Leaves are document sections**, not intents (`integrate`, `api-reference`,
+  `patterns`, `setup`, `migration`, …). Feature references split by sub-topic
+  (`guide`, `api-reference`, `advanced`, `examples`).
+- **`index.md` is a lean hub:** shared setup every leaf needs, then a dispatch
+  table with one row per router intent, each an imperative
+  `` `Read: references/<stem>/<leaf>.md` `` pointing at that intent's primary
+  leaf. Intent strings must match Step 1 **exactly** (`feature:mfa`, not `mfa`).
+  A "Then, as needed" list of `Read:` bullets makes the secondary leaves
+  reachable. Every leaf must appear in at least one `Read:` line or it's an
+  orphan.
+- **Lossless + self-contained:** every line of the original file lands in exactly
+  one destination; leaves repeat any shared context inline rather than linking to
+  the hub or each other. If two sections cross-reference too heavily to separate,
+  merge them into one leaf rather than add a link.
+- **Add a routing case** in `tests/routing-cases.json` with the two-hop
+  `expect_refs` (`<stem>/index.md` + the intent leaf [+ tooling]), and move the
+  slug from the flat presence list in `validate-skill.sh` to its grouped loop.
+
+The router's per-intent `Read: references/framework-{framework}.md` token is
+unchanged — a global note in Step 4 tells the agent to read `index.md` when the
+target is a directory. The reachability and routing-eval checkers resolve a
+grouped slug automatically; you don't edit `SKILL.md`'s routing tables.
+
 ### Validate
 ```bash
 bash plugins/auth0/skills/auth0/scripts/validate-skill.sh
 python3 scripts/check_router_reachability.py plugins/auth0/skills/auth0
+python3 scripts/check_routing_evals.py plugins/auth0/skills/auth0
 uvx skillsaw --strict
 ```
