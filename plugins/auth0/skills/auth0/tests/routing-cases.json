@@ -77,7 +77,7 @@
       "intent": "feature:acul",
       "framework": null,
       "tooling": "cli",
-      "expect_refs": ["feature-acul.md", "tooling-cli.md"]
+      "expect_refs": ["feature-acul/index.md", "feature-acul/guide.md", "tooling-cli.md"]
     },
     {
       "id": "feature-dpop-spa-combo",
