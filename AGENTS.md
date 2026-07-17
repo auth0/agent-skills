@@ -20,8 +20,13 @@ plugins/auth0/skills/auth0/
 │                       #   framework-<name>.md, feature-<name>.md,
 │                       #   tooling-<name>.md, pattern-<name>.md (kebab-case)
 ├── scripts/            # Optional: executable helpers
-├── assets/             # Optional: static resources (templates, data)
-└── tests/              # Optional: validation artifacts (routing + behavioral evals)
+└── assets/             # Optional: static resources (templates, data)
+
+evals/                  # Repo-root eval harness (NOT inside the skill dir):
+├── routing-cases.json  #   deterministic routing cases (scripts/check_routing_evals.py)
+└── behavioral/         #   behavioral evals — run-evals.mjs drives a live agent via the
+                        #   claude CLI + execa. Kept out of the skill dir on purpose so
+                        #   this dev-only harness isn't in per-skill security-scan scope.
 ```
 
 Key top-level docs:

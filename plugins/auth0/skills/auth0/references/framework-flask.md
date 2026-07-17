@@ -741,7 +741,7 @@ async def api_call():
 
     async with httpx.AsyncClient() as client:
         response = await client.get(
-            "https://your-api.com/data",
+            "https://api.example.com/data",
             headers={"Authorization": f"Bearer {access_token}"}
         )
 

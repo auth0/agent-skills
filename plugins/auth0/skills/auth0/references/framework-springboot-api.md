@@ -396,7 +396,7 @@ Extends `AbstractAuthenticationToken`. Created after successful JWT validation.
 |-------|-------------|
 | `permissions` | Array of RBAC permissions (if Enable RBAC is on) |
 | `email` | User email (if requested in scope) |
-| `https://your-domain.com/*` | Custom claims added via Auth0 Actions (namespaced) |
+| `https://example.com/*` | Custom claims added via Auth0 Actions (namespaced) |
 
 ---
 
@@ -783,7 +783,7 @@ public ResponseEntity<Map<String, Object>> getUserProfile(Authentication authent
 | `exp` | Expiration timestamp |
 | `iat` | Issued-at timestamp |
 
-Custom claims added via Auth0 Actions use namespaced keys, e.g., `https://your-domain.com/role`.
+Custom claims added via Auth0 Actions use namespaced keys, e.g., `https://example.com/role`.
 
 ---
 

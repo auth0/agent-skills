@@ -268,7 +268,7 @@ app.get('/call-api', requiresAuth(), async (req, res) => {
     // Extract the token string from the access token object
     const { access_token } = req.oidc.accessToken;
 
-    const response = await fetch('https://your-api.com/data', {
+    const response = await fetch('https://api.example.com/data', {
       headers: {
         Authorization: `Bearer ${access_token}`
       }
@@ -308,7 +308,7 @@ app.use(auth({
 ```javascript
 app.get('/custom-logout', (req, res) => {
   res.oidc.logout({
-    returnTo: 'https://your-app.com/goodbye'
+    returnTo: 'https://app.example.com/goodbye'
   });
 });
 ```
@@ -541,7 +541,7 @@ app.get('/public', (req, res) => {
 app.get('/api-call', requiresAuth(), async (req, res) => {
   const { access_token } = req.oidc.accessToken;
 
-  const response = await fetch('https://your-api.com/data', {
+  const response = await fetch('https://api.example.com/data', {
     headers: { Authorization: `Bearer ${access_token}` }
   });
 

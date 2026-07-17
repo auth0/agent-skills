@@ -38,7 +38,7 @@ behavioral/
 ## Running
 
 ```bash
-cd plugins/auth0/skills/auth0/tests/behavioral
+cd evals/behavioral
 npm install            # once, for execa
 
 node run-evals.mjs --list          # show cases

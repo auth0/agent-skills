@@ -251,7 +251,7 @@ const callApi = async () => {
       }
     });
 
-    const response = await fetch('https://your-api.com/data', {
+    const response = await fetch('https://api.example.com/data', {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -530,7 +530,7 @@ const callApi = async () => {
       }
     });
 
-    const response = await fetch('https://your-api.com/data', {
+    const response = await fetch('https://api.example.com/data', {
       headers: {
         Authorization: `Bearer ${token}`
       }

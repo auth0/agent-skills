@@ -38,9 +38,10 @@ import { runGraders } from "./graders.mjs"
 
 const EVAL_DIR = path.dirname(fileURLToPath(import.meta.url))
 const CASES_DIR = path.join(EVAL_DIR, "cases")
-// tests/behavioral -> tests -> auth0 (skill root) -> skills -> auth0 (plugin)
-const SKILL_DIR = path.resolve(EVAL_DIR, "..", "..")
-const PLUGIN_DIR = path.resolve(SKILL_DIR, "..", "..")
+// evals/behavioral -> evals -> repo root; the skill lives at plugins/auth0/skills/auth0
+const REPO_ROOT = path.resolve(EVAL_DIR, "..", "..")
+const PLUGIN_DIR = path.join(REPO_ROOT, "plugins", "auth0")
+const SKILL_DIR = path.join(PLUGIN_DIR, "skills", "auth0")
 
 const argv = process.argv.slice(2)
 const flag = (name) => argv.includes(name)
