@@ -63,7 +63,7 @@
       "intent": "feature:branding",
       "framework": null,
       "tooling": "cli",
-      "expect_refs": ["feature-branding.md", "tooling-cli.md"]
+      "expect_refs": ["feature-branding/index.md", "feature-branding/guide.md", "tooling-cli.md"]
     },
     {
       "id": "feature-custom-domains",

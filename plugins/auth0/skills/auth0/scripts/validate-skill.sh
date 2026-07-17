@@ -84,7 +84,7 @@ if [ "$OLD_PATTERNS" -gt 0 ]; then
 fi
 
 # Feature file checks
-EXPECTED_FEATURES="mfa branding migration acul dpop"
+EXPECTED_FEATURES="mfa migration acul dpop"
 for feat in $EXPECTED_FEATURES; do
   if [ ! -f "$REFS_DIR/feature-$feat.md" ]; then
     echo "FAIL: missing references/feature-$feat.md"
@@ -93,7 +93,7 @@ for feat in $EXPECTED_FEATURES; do
 done
 
 # Grouped features: directory with an index.md hub and at least one leaf.
-for grp in custom-domains; do
+for grp in custom-domains branding; do
   if [ ! -f "$REFS_DIR/feature-$grp/index.md" ]; then
     echo "FAIL: missing references/feature-$grp/index.md (grouped feature)"
     exit 1
