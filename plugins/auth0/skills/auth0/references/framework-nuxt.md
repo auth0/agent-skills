@@ -272,6 +272,8 @@ definePageMeta({
 
 ### Role-Based Middleware
 
+> **Client-side, UX only — bypassable.** This middleware reads `useUser()` to gate navigation and hide UI. It is not a security boundary and can be bypassed. Enforce the role server-side (see [Role-Based Server Protection](#role-based-server-protection)) for anything that must actually be protected.
+
 ```typescript
 // middleware/admin.ts
 export default defineNuxtRouteMiddleware((to, from) => {
@@ -299,6 +301,8 @@ definePageMeta({
 ```
 
 ### Permission-Based Middleware
+
+> **Client-side, UX only — bypassable.** This middleware reads `useUser()` to gate navigation and hide UI. It is not a security boundary and can be bypassed. Enforce the permission server-side (see the [`requirePermission` guard](#permission-based-api-protection)) for anything that must actually be protected.
 
 ```typescript
 // middleware/permissions.ts
@@ -558,6 +562,8 @@ export default defineNuxtRouteMiddleware((to, from) => {
 
 ### Subscription-Based Protection
 
+> **Client-side, UX only — bypassable.** This middleware reads `useUser()` to redirect non-subscribers and hide gated UI. It is not a security boundary and can be bypassed. Enforce the subscription server-side (see below) for any route or data that must actually be gated.
+
 ```typescript
 // middleware/subscription.ts
 export default defineNuxtRouteMiddleware((to, from) => {
@@ -574,6 +580,63 @@ export default defineNuxtRouteMiddleware((to, from) => {
   }
 });
 ```
+
+#### Subscription-Based Server Protection
+
+Enforce the subscription server-side so a tampered client can't reach gated routes. Note this reads the subscription from the session claim, which is only as fresh as the token — see the freshness caveat below. Use server middleware for SSR routes:
+
+```typescript
+// server/middleware/subscription.server.ts
+export default defineEventHandler(async (event) => {
+  const url = getRequestURL(event);
+
+  if (url.pathname.startsWith('/premium')) {
+    const auth0Client = useAuth0(event);
+    const session = await auth0Client.getSession();
+
+    if (!session) {
+      return sendRedirect(event, `/auth/login?returnTo=${encodeURIComponent(url.pathname)}`);
+    }
+
+    const user = await auth0Client.getUser();
+    const subscription = user?.['https://my-app.com/subscription'];
+
+    if (!subscription || subscription.status !== 'active') {
+      return sendRedirect(event, '/subscribe');
+    }
+  }
+});
+```
+
+Or a reusable guard for API routes:
+
+```typescript
+// server/utils/require-subscription.ts
+export async function requireSubscription(event: H3Event) {
+  const auth0Client = useAuth0(event);
+  const user = await auth0Client.getUser();
+
+  if (!user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized'
+    });
+  }
+
+  const subscription = user['https://my-app.com/subscription'];
+
+  if (!subscription || subscription.status !== 'active') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Forbidden: Active subscription required'
+    });
+  }
+
+  return user;
+}
+```
+
+> **Freshness caveat.** Unlike roles/permissions, subscription state changes on billing events (payment failure, cancellation, dunning) that Auth0 doesn't observe. The `subscription` claim reflects its value at token-issue time, so a lapsed subscription can still read `active` until the token refreshes. For billing-critical gating, verify against your billing system or database at request time, or keep token lifetimes short and force a refresh on subscription change (e.g. via an Auth0 Action that syncs the claim).
 
 ### Rate Limiting Protection
 
@@ -613,6 +676,8 @@ export default defineEventHandler(async (event) => {
 
 ### Email Verification Required
 
+> **Client-side, UX only — bypassable.** This middleware reads `useUser()` to redirect unverified users. It is not a security boundary and can be bypassed. Enforce `email_verified` server-side (see below) for any route or data that must require a verified email.
+
 ```typescript
 // middleware/verified.ts
 export default defineNuxtRouteMiddleware((to, from) => {
@@ -626,6 +691,58 @@ export default defineNuxtRouteMiddleware((to, from) => {
     return navigateTo('/verify-email');
   }
 });
+```
+
+#### Email Verification Server Protection
+
+Enforce `email_verified` server-side so it cannot be bypassed. Use server middleware for SSR routes:
+
+```typescript
+// server/middleware/verified.server.ts
+export default defineEventHandler(async (event) => {
+  const url = getRequestURL(event);
+
+  if (url.pathname.startsWith('/dashboard')) {
+    const auth0Client = useAuth0(event);
+    const session = await auth0Client.getSession();
+
+    if (!session) {
+      return sendRedirect(event, `/auth/login?returnTo=${encodeURIComponent(url.pathname)}`);
+    }
+
+    const user = await auth0Client.getUser();
+
+    if (!user?.email_verified) {
+      return sendRedirect(event, '/verify-email');
+    }
+  }
+});
+```
+
+Or a reusable guard for API routes:
+
+```typescript
+// server/utils/require-verified-email.ts
+export async function requireVerifiedEmail(event: H3Event) {
+  const auth0Client = useAuth0(event);
+  const user = await auth0Client.getUser();
+
+  if (!user) {
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Unauthorized'
+    });
+  }
+
+  if (!user.email_verified) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Forbidden: Verified email required'
+    });
+  }
+
+  return user;
+}
 ```
 
 ## Error Pages
