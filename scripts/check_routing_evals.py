@@ -46,11 +46,17 @@ SPA_FRAMEWORKS = {"vue", "react", "angular", "spa-js"}
 
 
 def load_cases(skill_dir: Path) -> list:
-    # routing-cases.json lives at repo-root evals/ (moved out of the skill dir so
-    # the behavioral harness isn't inside per-skill security-scan scope). Resolve
-    # it relative to this script's repo root, not the skill dir.
-    repo_root = Path(__file__).resolve().parent.parent
-    data = json.loads((repo_root / "evals" / "routing-cases.json").read_text())
+    # In production the cases live at repo-root evals/ (moved out of the skill
+    # dir so the eval harness isn't inside per-skill security-scan scope). The
+    # unit tests build a self-contained temp skill with its own
+    # tests/routing-cases.json, so prefer a skill-local file when one exists and
+    # fall back to repo-root evals/ otherwise.
+    local = skill_dir / "tests" / "routing-cases.json"
+    if local.exists():
+        cases_file = local
+    else:
+        cases_file = Path(__file__).resolve().parent.parent / "evals" / "routing-cases.json"
+    data = json.loads(cases_file.read_text())
     return data["cases"]
 
 
