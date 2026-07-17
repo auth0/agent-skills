@@ -1,15 +1,24 @@
 #!/usr/bin/env python3
-"""Enforce the router's one-hop invariants for the consolidated skill:
+"""Enforce the router's depth-2 tree invariants for the consolidated skill.
 
-  1. every references/*.md is routable from SKILL.md (no orphans);
-  2. no route in SKILL.md points at a reference file that doesn't exist
+A reference is either a flat, self-contained `references/*.md` file (one hop from
+the router) or a GROUP: a directory `<stem>/` with a hub `index.md` (shared
+prerequisites + an intent->leaf dispatch table) plus document-section leaves. The
+router routes to the stem either way; for a group it reads `index.md`, whose
+imperative `Read: references/<stem>/<leaf>.md` dispatch sends the agent to one
+leaf — a second hop. This module asserts:
+
+  1. every flat `references/*.md` and every group is routable from SKILL.md, and
+     every leaf is reachable from its hub's dispatch (no orphans);
+  2. no route (from SKILL.md or a hub) points at a file that doesn't exist
      (broken route — the failure `present - routed` can't see);
-  3. no reference file takes a second hop to another reference — neither via
-     a .md link (any markdown/HTML form) NOR via the router's non-link dispatch
-     forms (a `references/x.md` prose/backtick path, a backticked bare `x.md`,
-     or a `Read: references/x.md` verb). Claude Code follows only one hop from
-     the router, so all of these are defects — including stale links left by
-     earlier consolidation."""
+  3. the ONLY second hop allowed is a hub `index.md` dispatching to leaves in its
+     OWN directory. A flat file or a leaf takes NO second hop to another
+     reference — neither via a .md link (any markdown/HTML form) NOR via the
+     router's non-link dispatch forms (a `references/x.md` prose/backtick path, a
+     backticked bare `x.md`, or a `Read: references/x.md` verb). Cross-group links
+     are forbidden everywhere. Two-level `<group>/<leaf>.md` targets are caught by
+     SIDEWAYS_TWO_LEVEL_RE (the shared single-level regexes below exclude `/`)."""
 import re, sys
 from pathlib import Path
 
