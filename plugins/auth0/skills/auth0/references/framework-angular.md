@@ -786,7 +786,15 @@ Complete setup instructions for Angular applications.
 
 ## Quick Setup (Automated)
 
+> **Agent instruction:** Before running any of the automated steps below, you MUST ask the user how they want to configure Auth0 and wait for their answer:
+> - Question: "How would you like to configure Auth0 for this project?"
+> - Options: "Automatic setup (Recommended) — the Auth0 CLI logs you in, creates the app, and returns credentials to write into your environment files" / "Manual setup — I'll provide my Domain and Client ID (see Manual Setup below)"
+>
+> Do NOT proceed to the script below until the user chooses the automatic path.
+
 ### Bash Script
+
+> **Agent instruction:** The script below runs `auth0 login` (opens a browser session) and `auth0 apps create` (creates a new application in the user's Auth0 tenant). Before running it, you MUST ask the user for explicit confirmation and not proceed until they confirm.
 
 ```bash
 #!/bin/bash

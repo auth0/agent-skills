@@ -3,6 +3,10 @@
 
 Add login, logout, and user profile to a PHP web application using `auth0/auth0-php`.
 
+## Critical rules
+
+- Before any setup step that writes to a `.env` file, ask the user for explicit confirmation first.
+
 ## Prerequisites
 
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
