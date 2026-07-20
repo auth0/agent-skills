@@ -39,8 +39,12 @@ import sys
 from pathlib import Path
 
 SECTION_RE = re.compile(r"^###\s+(\S+)\s*$", re.M)
-# A reference token as it appears in Step 4, e.g. references/framework-{framework}.md
-REF_RE = re.compile(r"references/([A-Za-z0-9_{}-]+\.md)")
+# A reference token in Step 4. Two forms:
+#   references/<name>/index.md   (uniform route -> reference NAME)
+#   references/<name>.md         (legacy flat form, still parsed for safety)
+# Both normalize to "<name>.md" so _resolve_group handles them identically.
+REF_INDEX_RE = re.compile(r"references/([A-Za-z0-9_{}-]+)/index\.md")
+REF_FLAT_RE = re.compile(r"references/([A-Za-z0-9_{}-]+\.md)")
 # Frameworks that count as a SPA for the DPoP "If a SPA framework is detected" gate.
 SPA_FRAMEWORKS = {"vue", "react", "angular", "spa-js"}
 
@@ -116,12 +120,14 @@ def _hub_leaf_for_intent(refs_dir, group, intent):
 
 
 def _resolve_group(fname, intent, refs_dir):
-    """Expand a grouped reference into {index.md, intent-leaf}; else {fname}."""
+    """Every reference is a directory. Expand <name>.md into
+    {<name>/index.md, intent-leaf?}. Falls back to {fname} only if the
+    directory is genuinely absent (surfaced elsewhere as a broken route)."""
     if not fname.endswith(".md"):
         return {fname}
     stem = fname[:-3]
-    if (refs_dir / fname).exists() or not (refs_dir / stem).is_dir():
-        return {fname}  # flat file (or not a group) -> unchanged
+    if not (refs_dir / stem).is_dir():
+        return {fname}  # not a group on disk -> unchanged (missing-file check catches it)
     resolved = {f"{stem}/index.md"}
     leaf = _hub_leaf_for_intent(refs_dir, stem, intent)
     if leaf is not None:
@@ -163,7 +169,10 @@ def compute_route(section_body: str, case: dict, refs_dir: Path):
     allowed = set()
     intent = case["intent"]
     for line in section_body.splitlines():
-        tokens = REF_RE.findall(line)
+        index_names = REF_INDEX_RE.findall(line)          # <name> (no ext)
+        flat_names = [m for m in REF_FLAT_RE.findall(line)
+                      if not m.endswith("/index.md")]      # legacy <name>.md
+        tokens = [f"{n}.md" for n in index_names] + flat_names
         if not tokens:
             continue
         line_low = line.strip().lower()
@@ -195,12 +204,11 @@ def compute_route(section_body: str, case: dict, refs_dir: Path):
 def check_routing(skill_dir: Path):
     skill_md = (skill_dir / "SKILL.md").read_text()
     sections = step4_sections(skill_md)
-    present = {p.name for p in (skill_dir / "references").glob("*.md")}
-    present |= {
-        f"{sub.name}/{p.name}"
-        for sub in (skill_dir / "references").iterdir() if sub.is_dir()
-        for p in sub.glob("*.md")
-    }
+    refs_root = skill_dir / "references"
+    present = set()
+    for sub in refs_root.iterdir():
+        if sub.is_dir():
+            present |= {f"{sub.name}/{p.name}" for p in sub.glob("*.md")}
 
     failures = []
     for case in load_cases(skill_dir):
