@@ -76,7 +76,7 @@ Store credentials as environment variables (never hardcode in source):
 ```bash
 export AUTH0_DOMAIN="your-tenant.auth0.com"
 export AUTH0_CLIENT_ID="your-client-id"
-export AUTH0_CLIENT_SECRET="your-client-secret"
+export AUTH0_CLIENT_SECRET="<YOUR_CLIENT_SECRET>"
 ```
 
 Or use a `.env` file (add to `.gitignore`):
@@ -84,7 +84,7 @@ Or use a `.env` file (add to `.gitignore`):
 ```properties
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
+AUTH0_CLIENT_SECRET=<YOUR_CLIENT_SECRET>
 ```
 
 > **Agent instruction:** Never write actual credential values to files. Instead, instruct the user to create or update `.env` with their credentials. Provide the template with placeholders only. Always add `.env` to `.gitignore` if not already present. Warn the user: _"Check your `.env` for duplicate Auth0 entries if you've configured it previously."_

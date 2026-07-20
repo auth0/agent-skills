@@ -71,7 +71,7 @@ Create a `.env` file in your project root (add to `.gitignore`):
 ```properties
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
+AUTH0_CLIENT_SECRET=<YOUR_CLIENT_SECRET>
 ```
 
 > **Agent instruction:** Never write actual credential values to files. Instruct the user to populate `.env` with their credentials. If `.env` already exists, remind the user to append (not overwrite). Always add `.env` to `.gitignore` automatically.
@@ -89,7 +89,7 @@ Use a `.env` file in the project root:
 ```properties
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
-AUTH0_CLIENT_SECRET=your-client-secret
+AUTH0_CLIENT_SECRET=<YOUR_CLIENT_SECRET>
 ```
 
 > **Agent instruction:** Never write actual credential values to files. Instruct the user to populate `.env` with their own values. Never retrieve secrets from CLI output. Always ensure `.env` is in `.gitignore`.
@@ -109,7 +109,7 @@ Set on the system or in the container startup script:
 ```bash
 export AUTH0_DOMAIN="your-tenant.auth0.com"
 export AUTH0_CLIENT_ID="your-client-id"
-export AUTH0_CLIENT_SECRET="your-client-secret"
+export AUTH0_CLIENT_SECRET="<YOUR_CLIENT_SECRET>"
 ```
 
 **Option 2: Servlet context parameters (web.xml)**
