@@ -125,6 +125,18 @@ rules:
       - "references/framework-*.md"
       - "references/tooling-*.md"
 
+  # Supply-chain hardening (AST02): flag curl|sh, download-and-execute,
+  # base64/eval obfuscation, and dangerous settings keys / env vars in hooks,
+  # settings, and skill/agent frontmatter. Motivated by the 2026 Shai-Hulud
+  # hook-injection attack. Enabled at error — the tree is green today.
+  hooks-dangerous:
+    enabled: true
+    severity: error
+
+  settings-dangerous:
+    enabled: true
+    severity: error
+
 # Custom rules for marketplace-specific validation
 custom-rules:
   - ./.skillsaw/rules.py
