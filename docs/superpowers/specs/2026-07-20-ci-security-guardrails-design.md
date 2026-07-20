@@ -112,26 +112,45 @@ Unverifiable Dependencies (URLs) → AST05, AST01, AST02.
 `SNYK_TOKEN`) run where the secret is available — push to `main` and same-repo
 PRs. GitHub withholds secrets from fork-triggered runs; we accept that a fork
 PR's agent-scan step is skipped/no-op and the scan runs on `main` (or via a
-maintainer re-run) instead. No `pull_request_target` gymnastics. `gitleaks`
-(§3) needs no token and still runs on every PR, so secret leakage is caught
-regardless of origin.
+maintainer re-run) instead. No `pull_request_target` gymnastics.
 
-### 3. Secret scanning on the diff — `gitleaks`
+### 3. Secret scanning — already covered by skillsaw (no new tool)
 
-New CI gate + `make` target running `gitleaks` over the repo/diff. Blocks
-committed Auth0 client secrets, tokens, API keys. Ships a `.gitleaks.toml`
-allowlist for the **intentional** angle-bracket placeholders (`<client-secret>`,
-`<your-tenant>`, etc.) introduced by #145/#149/#150, so the hardening already
-done is not re-flagged. No token required → runs on fork PRs. Covers AST04 /
-Secret Detection.
+**Corrected during planning (verified by running skillsaw 0.16.0 locally):**
+skillsaw's `content-embedded-secrets` rule is **already active**
+(`enabled: auto` → on, `severity: error`) and scans instruction files for
+structured tokens (`ghp_…`, `sk-ant-…`, AWS `AKIA…`, private-key blocks, JWTs)
+plus generic credential assignments, with a placeholder allowlist
+(`<your-key>`, `${VAR}`) and entropy gating. This already covers the markdown
+surface (the repo is ~all markdown), so the #145/#149/#150 hardening is
+enforced going forward.
 
-### 4. `scripts/` safety — enable skillsaw supply-chain rules
+**Decision: drop `gitleaks`.** It would only add coverage for non-markdown
+files and git history — marginal for an almost-all-markdown repo, and not worth
+a new tool + config. Instead, the `make scan` target surfaces the existing
+secret rule explicitly (via `skillsaw explain content-embedded-secrets` in docs)
+so contributors know it's enforced. If a contributor needs to allow a new
+placeholder pattern, they extend `additional-placeholders` in `.skillsaw.yaml`.
+Covers AST04 / Secret Detection.
 
-Enable skillsaw's built-in `hooks-dangerous` and `settings-dangerous` rules
-(config-only in `.skillsaw.yaml`). Catches `curl | bash`, download-and-execute,
-base64 obfuscation, and dangerous env vars in any `scripts/` or settings the
-agent might execute. Covers AST02 / AST03 / Malicious Code. Pin the skillsaw
-version (already done: `0.16.0`) so rule sets are deterministic.
+### 4. Supply-chain safety — enable skillsaw hooks/settings rules
+
+**Corrected during planning:** `hooks-dangerous` / `settings-dangerous` scan
+**hooks, settings, and skill/agent frontmatter** — NOT standalone `scripts/*.sh`.
+They flag `curl | sh`, download-and-execute, `base64`/`eval` obfuscation, and
+dangerous settings keys (`apiKeyHelper`, `awsAuthRefresh`, …) / env vars
+(`LD_PRELOAD`, `NODE_OPTIONS`, `GIT_SSH_COMMAND`, proxy). Both are **currently
+off** (only 51 of ~272 rules run) — enabling them (config-only in
+`.skillsaw.yaml`, `severity: error`) is a real AST02 hardening win against the
+Shai-Hulud hook-injection class.
+
+**Standalone `scripts/` code** (e.g. `scripts/validate-skill.sh`) is NOT covered
+by these rules. Deterministic shell-injection scanning of arbitrary scripts is
+out of scope for this pass: that surface is covered by **Snyk agent-scan**
+(Malicious Code / Suspicious Downloads categories) and **CodeRabbit's**
+`scripts/**` path instruction (advisory). We do not add a custom `scripts/`
+linter — the repo has very few scripts and the maintenance cost isn't justified.
+Skillsaw version stays pinned (`0.16.0`) so rule sets are deterministic.
 
 ### 5. Docs layer — CONTRIBUTING
 
@@ -146,6 +165,10 @@ version (already done: `0.16.0`) so rule sets are deterministic.
 ## Out of scope (YAGNI)
 
 - **Custom URL/domain checker** — dropped; rely on Snyk agent-scan URL findings.
+- **`gitleaks`** — dropped; skillsaw `content-embedded-secrets` already covers
+  the markdown secret surface.
+- **Custom `scripts/` shell linter** — dropped; covered by agent-scan +
+  CodeRabbit; too few scripts to justify.
 - **pre-commit hooks** — CI is the main gate; `make check` covers local use.
 - **Skill sandboxing / permissions manifest** — research confirms even ClawHub
   has no enforced sandbox; we will not invent one.
@@ -155,8 +178,9 @@ version (already done: `0.16.0`) so rule sets are deterministic.
 - `make check` runs the full lint + scan suite locally and exits non-zero on any
   failure; CI invokes the same targets.
 - agent-scan findings are produced for `references/*.md`, not just `SKILL.md`.
-- A committed test secret is blocked by `gitleaks`; the existing angle-bracket
-  placeholders are **not** flagged.
-- A `scripts/` file containing `curl … | bash` is flagged by skillsaw.
+- `content-embedded-secrets` is enabled at `error` severity and the existing
+  angle-bracket placeholders are **not** flagged (tree stays green).
+- `hooks-dangerous` and `settings-dangerous` are enabled at `error` severity; a
+  fixture hook containing `curl … | sh` is flagged.
 - CONTRIBUTING documents every gate with a local reproduction command.
 - The existing green tree still passes (no regressions in current gates).
