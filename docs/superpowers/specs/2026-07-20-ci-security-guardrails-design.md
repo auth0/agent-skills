@@ -69,6 +69,9 @@ Design anchored to published standards, not invented categories:
 - **Scan surfaces (all in scope):** `references/*.md` content, secrets in the
   diff, `scripts/` safety, malicious/typo URLs.
 - **Rollout:** hard-fail immediately (tree is green today; no grandfathering).
+- **Fork PRs:** out of scope. Token-gated scans run where the secret exists
+  (push to `main` / same-repo PRs); fork PRs rely on `gitleaks` (tokenless) plus
+  the scan on `main`.
 - **URL checking:** rely on Snyk agent-scan's URL findings — **no custom URL
   checker** (avoids an allowlist maintenance surface).
 - **Deliverable:** spec **and** implementation this session.
@@ -105,13 +108,13 @@ not just `SKILL.md`. The existing `.snyk-agent-scan-ignore.json` allowlist and
 files. Covers: Prompt Injection, Malicious Code, Third-Party Content Exposure,
 Unverifiable Dependencies (URLs) → AST05, AST01, AST02.
 
-**Fork-PR token caveat:** `SNYK_TOKEN` is a repo secret; GitHub withholds secrets
-from `pull_request` runs triggered by forks. For untrusted external PRs the
-agent-scan job will lack a token. Resolution (decide in plan): either (a)
-maintainer-triggered re-run via a label + `workflow_dispatch`, or (b) a
-carefully scoped `pull_request_target` that checks out the PR head **without**
-granting it write scope or running its code. `gitleaks` (§3) needs no token and
-always runs, so secret leakage is caught on every PR regardless.
+**Fork PRs are out of scope.** Token-gated scans (agent-scan needs
+`SNYK_TOKEN`) run where the secret is available — push to `main` and same-repo
+PRs. GitHub withholds secrets from fork-triggered runs; we accept that a fork
+PR's agent-scan step is skipped/no-op and the scan runs on `main` (or via a
+maintainer re-run) instead. No `pull_request_target` gymnastics. `gitleaks`
+(§3) needs no token and still runs on every PR, so secret leakage is caught
+regardless of origin.
 
 ### 3. Secret scanning on the diff — `gitleaks`
 
