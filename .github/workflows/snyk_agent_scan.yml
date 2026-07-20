@@ -34,6 +34,11 @@ jobs:
         path: ~/.cache/uv
         key: uv-${{ runner.os }}-py${{ env.UV_PYTHON }}-snyk-agent-scan-${{ env.SNYK_AGENT_SCAN_VERSION }}
 
+    - name: Test finding-gate parsing
+      run: |
+        cd scripts
+        uv run --with pytest python -m pytest test_check_snyk_findings.py -q
+
     - name: Run snyk-agent-scan on skills
       if: ${{ !cancelled() }}
       env:
