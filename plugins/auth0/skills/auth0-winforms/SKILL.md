@@ -15,14 +15,18 @@ metadata:
   version: 1.1.0
 ---
 
-# Deprecated
+# ⚠️ Deprecated — install the replacement skill
 
-This skill has been consolidated into the single `auth0` skill, which routes to
-the same guidance by detecting your framework. Use that skill instead for all
-Auth0 authentication work.
+**Do not use this skill.** It has been consolidated into the single `auth0`
+skill, which auto-detects your framework and routes to the same guidance for all
+Auth0 authentication work (login, logout, route protection, token validation,
+MFA, and more).
 
-ClawHub does not install it automatically. Get the consolidated skill with:
+ClawHub does **not** install the replacement automatically. When you download
+this outdated skill, install the consolidated one by running:
 
 ```bash
 npx clawhub install auth0
 ```
+
+Then use the `auth0` skill instead — this one will not be maintained.
