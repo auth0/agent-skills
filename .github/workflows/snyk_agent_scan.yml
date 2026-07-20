@@ -70,14 +70,16 @@ jobs:
 
         EXIT_CODE=0
         while IFS= read -r skill_dir; do
-          skill_file="${skill_dir}/SKILL.md"
-          if [ -f "$skill_file" ]; then
-            skill_name=$(echo "$skill_dir" | tr '/' '-')
-            echo "Scanning ${skill_dir}..."
-            scan_skill "$skill_file" "$skill_name" || EXIT_CODE=1
-          else
-            echo "Skipping deleted or non-existent skill: ${skill_dir}"
-          fi
+          skill_name=$(echo "$skill_dir" | tr '/' '-')
+          # Scan SKILL.md + every references/*.md — the full on-demand surface.
+          while IFS= read -r md_file; do
+            [ -f "$md_file" ] || continue
+            # Per-file suffix (path under skill dir, slugified) keeps the
+            # "-skills-<name>" segment intact for check_snyk_findings.py's regex.
+            rel=$(echo "${md_file#"$skill_dir"/}" | tr '/.' '--')
+            echo "Scanning ${md_file}..."
+            scan_skill "$md_file" "${skill_name}--${rel}" || EXIT_CODE=1
+          done < <(find "$skill_dir" -type f -name '*.md' | sort)
         done <<< "$SKILL_DIRS"
 
         exit $EXIT_CODE
