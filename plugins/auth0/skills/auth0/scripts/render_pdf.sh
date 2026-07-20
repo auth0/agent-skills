@@ -20,7 +20,13 @@ fi
 
 # Resolve to absolute paths — Chrome's --print-to-pdf is picky about cwd.
 INPUT_ABS="$(cd "$(dirname "$INPUT")" && pwd)/$(basename "$INPUT")"
-OUTPUT_DIR="$(cd "$(dirname "$OUTPUT")" && pwd)"
+
+OUTPUT_PARENT="$(dirname "$OUTPUT")"
+if [[ ! -d "$OUTPUT_PARENT" ]]; then
+  echo "render_pdf: output directory does not exist: $OUTPUT_PARENT" >&2
+  exit 1
+fi
+OUTPUT_DIR="$(cd "$OUTPUT_PARENT" && pwd)"
 OUTPUT_ABS="$OUTPUT_DIR/$(basename "$OUTPUT")"
 
 CHROME_CANDIDATES=(
