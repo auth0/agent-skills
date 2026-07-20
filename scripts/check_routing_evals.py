@@ -160,9 +160,9 @@ def compute_route(section_body: str, case: dict, refs_dir: Path):
       unconditional set plus enabled conditionals plus optional (unmodeled)
       conditionals.
 
-    A grouped reference (framework-<slug>.md/feature-<slug>.md backed by a
-    references/<slug>/ directory instead of a flat file) is expanded via
-    `_resolve_group` into the hub `<slug>/index.md` plus the intent's leaf
+    Every reference is a directory `<slug>/`, so a reference token
+    (framework-<slug>.md/feature-<slug>.md/…) is expanded via `_resolve_group`
+    into the hub `<slug>/index.md` plus, for a leaf group, the intent's leaf
     from the hub's dispatch table.
     """
     required = set()

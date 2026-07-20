@@ -160,6 +160,27 @@ class ReachabilityTest(unittest.TestCase):
             self.assertNotIn("tooling-terraform/index.md", unreachable)
             self.assertIn("tooling-orphan/index.md", unreachable)
 
+    def test_bare_index_md_note_does_not_manufacture_phantom_route(self):
+        # The router's "Reference layout" note mentions a bare `index.md` in
+        # prose. Backtick-harvesting must NOT treat that as a route to a group
+        # literally named `index` (which would surface as a broken route
+        # `index/index.md`). Guarded by discard("index"). This locks in that
+        # guard, which is otherwise only exercised against the live SKILL.md.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            skill = self._make_group_skill(
+                root,
+                "Read: references/framework-{framework}/index.md\n"
+                "| React | `react` |\n"
+                "> always read `references/{name}/index.md`; if that "
+                "`index.md` has a dispatch table, follow it.\n",
+                {},
+                {"framework-react": {"index": "ok", "leaves": {}}},
+            )
+            unreachable, bad_links, broken_routes = check_router(skill)
+            self.assertNotIn("index/index.md", broken_routes)
+            self.assertEqual(broken_routes, [])
+
     def test_left_column_dependency_name_is_not_a_routable_slug(self):
         # A dependency name in the left (detection) column must NOT make a
         # same-named framework group reachable — only value-column slugs route.
