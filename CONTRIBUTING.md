@@ -147,13 +147,16 @@ for why. To add or change coverage:
 
 ### Make it routable (required — CI enforces this)
 Every reference in `references/` MUST be reachable from `SKILL.md`. Navigation is
-a **depth-2 tree**: a reference is either a flat, self-contained `*.md` file (one
-hop from the router) or a **group** (see "Adding a grouped reference" below). A
-flat file and any leaf inside a group may contain **no** link to any `.md` file —
-they are sinks; inline the content instead of linking. The only second hop
-allowed is a group's hub `index.md` dispatching to leaves **in its own
-directory**; cross-group links are forbidden. Claude Code follows the router to a
-file (or to a hub, then one leaf) — nothing deeper is guaranteed.
+a **depth-2 tree**: every reference is a directory `<name>/` with an `index.md`.
+An **index-only** reference puts its whole content in `index.md` and has no
+leaves (one hop from the router). A large reference is a **leaf group** whose
+`index.md` is a hub plus document-section leaves (see "Adding a reference" below).
+An index-only `index.md` and any leaf inside a leaf group may contain **no** link
+to any `.md` file — they are sinks; inline the content instead of linking. The
+only second hop allowed is a leaf-group hub `index.md` dispatching to leaves **in
+its own directory**; cross-group links are forbidden. Claude Code follows the
+router to `index.md` (and, for a leaf group, on to one leaf) — nothing deeper is
+guaranteed.
 
 - **New feature:** add an intent row in Step 1 and a load block in Step 4 of
   `SKILL.md`.
@@ -165,10 +168,12 @@ file (or to a hub, then one leaf) — nothing deeper is guaranteed.
   `<slug>` in a table makes `framework-<slug>.md` reachable — there is no
   separate list to update.
 
-### Adding a grouped reference
-When a reference grows large (roughly >40K), split it into a **group** so the
-router pulls only the slice a task needs instead of the whole file. A group is a
-directory named after the reference stem:
+### Adding a reference
+Every reference is a directory named after its stem, containing an `index.md`.
+Adding a new reference means creating `references/<name>/index.md`. Start
+index-only — the whole reference lives in `index.md` — and only split it into a
+**leaf group** once it grows large (roughly >40K) so the router pulls just the
+slice a task needs instead of the whole file:
 
 ```
 references/framework-<name>/
@@ -180,7 +185,7 @@ references/framework-<name>/
 └── migration.md      # only if the SDK has a major-version migration
 ```
 
-Rules:
+Rules for splitting a large reference into a leaf group:
 - **Leaves are document sections**, not intents (`integrate`, `api-reference`,
   `patterns`, `setup`, `migration`, …). Feature references split by sub-topic
   (`guide`, `api-reference`, `advanced`, `examples`).
@@ -196,13 +201,17 @@ Rules:
   the hub or each other. If two sections cross-reference too heavily to separate,
   merge them into one leaf rather than add a link.
 - **Add a routing case** in `tests/routing-cases.json` with the two-hop
-  `expect_refs` (`<stem>/index.md` + the intent leaf [+ tooling]), and move the
-  slug from the flat presence list in `validate-skill.sh` to its grouped loop.
+  `expect_refs` (`<name>/index.md` + the intent leaf [+ tooling]), and move the
+  slug from the index-only presence check in `validate-skill.sh` to its grouped
+  loop. For an index-only reference, the presence check is simply
+  `<name>/index.md`.
 
-The router's per-intent `Read: references/framework-{framework}.md` token is
-unchanged — a global note in Step 4 tells the agent to read `index.md` when the
-target is a directory. The reachability and routing-eval checkers resolve a
-grouped slug automatically; you don't edit `SKILL.md`'s routing tables.
+The router always emits `Read: references/{framework}/index.md` (or
+`{feature}` / `{tooling}`) regardless of whether the target is index-only or a
+leaf group — a global note in Step 4 tells the agent to follow the `index.md`'s
+dispatch table to a leaf if it has one. The reachability and routing-eval
+checkers resolve a leaf-group slug automatically; you don't edit `SKILL.md`'s
+routing tables.
 
 ### Validate
 ```bash

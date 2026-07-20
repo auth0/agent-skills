@@ -17,11 +17,12 @@ deliverable is the skill itself.
 ```
 plugins/auth0/skills/auth0/
 ├── SKILL.md            # Required: the router (only file allowed in skill root)
-├── references/         # On-demand docs, each reachable from SKILL.md:
-│                       #   framework-<name>.md, feature-<name>.md,
-│                       #   tooling-<name>.md, pattern-<name>.md (kebab-case).
-│                       #   Large refs are groups: framework-<name>/ or
-│                       #   feature-<name>/ with index.md (hub) + section leaves.
+├── references/         # On-demand docs, each reachable from SKILL.md. Every
+│                       #   reference is a directory — framework-<name>/,
+│                       #   feature-<name>/, tooling-<name>/, pattern-<name>/
+│                       #   (kebab-case) — with an index.md that is either the
+│                       #   whole reference (index-only) or a hub + document-
+│                       #   section leaves (leaf group).
 ├── scripts/            # Optional: executable helpers
 └── assets/             # Optional: static resources (templates, data)
 
@@ -48,11 +49,11 @@ Key top-level docs:
    structure. The naming convention (`framework-<name>`, `feature-<name>`,
    `tooling-<name>.md`, `pattern-<name>.md`) and the router-in-`SKILL.md` layout
    exist on purpose — keep them consistent. Navigation is a **depth-2 tree**:
-   every reference must be reachable from `SKILL.md`; a flat file or a group leaf
-   must not link to any other `.md` file; the only allowed second hop is a
-   group's hub `index.md` dispatching to leaves in its own directory. Enforced by
-   `scripts/check_router_reachability.py`. See CONTRIBUTING.md → "Adding a grouped
-   reference" before splitting a large file into a group.
+   every reference must be reachable from `SKILL.md`; an index-only `index.md`
+   or a group leaf must not link to any other `.md`; the only allowed second hop
+   is a leaf-group hub `index.md` dispatching to leaves in its own directory.
+   Enforced by `scripts/check_router_reachability.py`. See CONTRIBUTING.md →
+   "Adding a reference" before splitting a large one into a leaf group.
 
 ## Required SKILL.md frontmatter
 
