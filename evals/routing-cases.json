@@ -6,49 +6,49 @@
       "intent": "integrate",
       "framework": "react",
       "tooling": "cli",
-      "expect_refs": ["framework-react/index.md", "framework-react/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-react/index.md", "framework-react/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-nextjs",
       "intent": "integrate",
       "framework": "nextjs",
       "tooling": "cli",
-      "expect_refs": ["framework-nextjs.md", "tooling-cli.md"]
+      "expect_refs": ["framework-nextjs/index.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-express-api",
       "intent": "integrate",
       "framework": "express-jwt",
       "tooling": "cli",
-      "expect_refs": ["framework-express-jwt.md", "tooling-cli.md"]
+      "expect_refs": ["framework-express-jwt/index.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-php-api",
       "intent": "integrate",
       "framework": "php-api",
       "tooling": "cli",
-      "expect_refs": ["framework-php-api/index.md", "framework-php-api/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-php-api/index.md", "framework-php-api/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-flask-terraform",
       "intent": "integrate",
       "framework": "flask",
       "tooling": "terraform",
-      "expect_refs": ["framework-flask.md", "tooling-terraform.md"]
+      "expect_refs": ["framework-flask/index.md", "tooling-terraform/index.md"]
     },
     {
       "id": "feature-mfa-standalone",
       "intent": "feature:mfa",
       "framework": null,
       "tooling": "cli",
-      "expect_refs": ["feature-mfa.md", "tooling-cli.md"]
+      "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md"]
     },
     {
       "id": "feature-mfa-nextjs-combo",
       "intent": "feature:mfa",
       "framework": "nextjs",
       "tooling": "cli",
-      "expect_refs": ["feature-mfa.md", "tooling-cli.md", "framework-nextjs.md"]
+      "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
     },
     {
       "id": "feature-organizations-b2b-combo",
@@ -56,35 +56,35 @@
       "framework": "react",
       "tooling": "cli",
       "multi_tenant": true,
-      "expect_refs": ["feature-organizations.md", "tooling-cli.md", "framework-react/index.md", "framework-react/integrate.md", "pattern-multi-tenant.md"]
+      "expect_refs": ["feature-organizations/index.md", "tooling-cli/index.md", "framework-react/index.md", "framework-react/integrate.md", "pattern-multi-tenant/index.md"]
     },
     {
       "id": "feature-branding",
       "intent": "feature:branding",
       "framework": null,
       "tooling": "cli",
-      "expect_refs": ["feature-branding/index.md", "feature-branding/guide.md", "tooling-cli.md"]
+      "expect_refs": ["feature-branding/index.md", "feature-branding/guide.md", "tooling-cli/index.md"]
     },
     {
       "id": "feature-custom-domains",
       "intent": "feature:custom-domains",
       "framework": null,
       "tooling": "mcp",
-      "expect_refs": ["feature-custom-domains/index.md", "feature-custom-domains/guide.md", "tooling-mcp.md"]
+      "expect_refs": ["feature-custom-domains/index.md", "feature-custom-domains/guide.md", "tooling-mcp/index.md"]
     },
     {
       "id": "feature-acul",
       "intent": "feature:acul",
       "framework": null,
       "tooling": "cli",
-      "expect_refs": ["feature-acul/index.md", "feature-acul/guide.md", "tooling-cli.md"]
+      "expect_refs": ["feature-acul/index.md", "feature-acul/guide.md", "tooling-cli/index.md"]
     },
     {
       "id": "feature-dpop-spa-combo",
       "intent": "feature:dpop",
       "framework": "vue",
       "tooling": "cli",
-      "expect_refs": ["feature-dpop.md", "tooling-cli.md", "framework-vue.md"]
+      "expect_refs": ["feature-dpop/index.md", "tooling-cli/index.md", "framework-vue/index.md"]
     },
     {
       "id": "guidance-token-handling",
@@ -92,7 +92,7 @@
       "framework": null,
       "tooling": "cli",
       "token_handling": true,
-      "expect_refs": ["pattern-security.md", "pattern-token-handling.md"]
+      "expect_refs": ["pattern-security/index.md", "pattern-token-handling/index.md"]
     },
     {
       "id": "guidance-b2b-architecture",
@@ -100,42 +100,42 @@
       "framework": null,
       "tooling": "cli",
       "multi_tenant": true,
-      "expect_refs": ["pattern-security.md", "pattern-multi-tenant.md", "feature-organizations.md"]
+      "expect_refs": ["pattern-security/index.md", "pattern-multi-tenant/index.md", "feature-organizations/index.md"]
     },
     {
       "id": "debug-401-nextjs",
       "intent": "debug",
       "framework": "nextjs",
       "tooling": "cli",
-      "expect_refs": ["pattern-common-errors.md", "framework-nextjs.md"]
+      "expect_refs": ["pattern-common-errors/index.md", "framework-nextjs/index.md"]
     },
     {
       "id": "debug-rate-limit",
       "intent": "debug:rate-limit",
       "framework": null,
       "tooling": "cli",
-      "expect_refs": ["pattern-rate-limiting.md"]
+      "expect_refs": ["pattern-rate-limiting/index.md"]
     },
     {
       "id": "migrate-firebase-react",
       "intent": "migrate",
       "framework": "react",
       "tooling": "cli",
-      "expect_refs": ["feature-migration.md", "tooling-cli.md", "framework-react/index.md", "framework-react/integrate.md"]
+      "expect_refs": ["feature-migration/index.md", "tooling-cli/index.md", "framework-react/index.md", "framework-react/integrate.md"]
     },
     {
       "id": "migrate-terraform-tenant",
       "intent": "migrate",
       "framework": "nextjs",
       "tooling": "terraform",
-      "expect_refs": ["feature-migration.md", "tooling-terraform.md", "framework-nextjs.md"]
+      "expect_refs": ["feature-migration/index.md", "tooling-terraform/index.md", "framework-nextjs/index.md"]
     },
     {
       "id": "integrate-swift",
       "intent": "integrate",
       "framework": "swift",
       "tooling": "cli",
-      "expect_refs": ["framework-swift/index.md", "framework-swift/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-swift/index.md", "framework-swift/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "upgrade-sdk-swift",
@@ -149,7 +149,7 @@
       "intent": "integrate",
       "framework": "android",
       "tooling": "cli",
-      "expect_refs": ["framework-android/index.md", "framework-android/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-android/index.md", "framework-android/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "upgrade-sdk-android",
@@ -163,56 +163,56 @@
       "intent": "integrate",
       "framework": "ionic-angular",
       "tooling": "cli",
-      "expect_refs": ["framework-ionic-angular/index.md", "framework-ionic-angular/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-ionic-angular/index.md", "framework-ionic-angular/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-ionic-vue",
       "intent": "integrate",
       "framework": "ionic-vue",
       "tooling": "cli",
-      "expect_refs": ["framework-ionic-vue/index.md", "framework-ionic-vue/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-ionic-vue/index.md", "framework-ionic-vue/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-go",
       "intent": "integrate",
       "framework": "go",
       "tooling": "cli",
-      "expect_refs": ["framework-go/index.md", "framework-go/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-go/index.md", "framework-go/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-nuxt",
       "intent": "integrate",
       "framework": "nuxt",
       "tooling": "cli",
-      "expect_refs": ["framework-nuxt/index.md", "framework-nuxt/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-nuxt/index.md", "framework-nuxt/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-expo",
       "intent": "integrate",
       "framework": "expo",
       "tooling": "cli",
-      "expect_refs": ["framework-expo/index.md", "framework-expo/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-expo/index.md", "framework-expo/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-aspnetcore-auth",
       "intent": "integrate",
       "framework": "aspnetcore-auth",
       "tooling": "cli",
-      "expect_refs": ["framework-aspnetcore-auth/index.md", "framework-aspnetcore-auth/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-aspnetcore-auth/index.md", "framework-aspnetcore-auth/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-php",
       "intent": "integrate",
       "framework": "php",
       "tooling": "cli",
-      "expect_refs": ["framework-php/index.md", "framework-php/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-php/index.md", "framework-php/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-java-mvc",
       "intent": "integrate",
       "framework": "java-mvc",
       "tooling": "cli",
-      "expect_refs": ["framework-java-mvc/index.md", "framework-java-mvc/integrate.md", "tooling-cli.md"]
+      "expect_refs": ["framework-java-mvc/index.md", "framework-java-mvc/integrate.md", "tooling-cli/index.md"]
     }
   ]
 }
