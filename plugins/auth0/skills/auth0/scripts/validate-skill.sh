@@ -31,8 +31,8 @@ if [ "$(wc -l < "$SKILL_MD")" -gt 600 ]; then
   exit 1
 fi
 
-TOTAL=$(ls "$REFS_DIR"/*.md 2>/dev/null | wc -l)
-echo "Reference files: $TOTAL"
+TOTAL=$(ls -d "$REFS_DIR"/*/ 2>/dev/null | wc -l)
+echo "Reference directories: $TOTAL"
 
 # Router checks
 if ! grep -q "Detect intent" "$SKILL_MD"; then
@@ -62,8 +62,8 @@ fi
 # slugs from the router itself. Keep this list in sync when adding frameworks.
 EXPECTED_FRAMEWORKS="nextjs vue angular spa-js express flask fastify fastify-api aspnetcore-api express-jwt fastapi-api springboot-api react-native ionic-react flutter-native flutter-web laravel laravel-api maui net-android net-ios winforms wpf"
 for fw in $EXPECTED_FRAMEWORKS; do
-  if [ ! -f "$REFS_DIR/framework-$fw.md" ]; then
-    echo "FAIL: missing references/framework-$fw.md"
+  if [ ! -f "$REFS_DIR/framework-$fw/index.md" ]; then
+    echo "FAIL: missing references/framework-$fw/index.md"
     exit 1
   fi
 done
@@ -86,8 +86,8 @@ fi
 # Feature file checks
 EXPECTED_FEATURES="mfa migration dpop"
 for feat in $EXPECTED_FEATURES; do
-  if [ ! -f "$REFS_DIR/feature-$feat.md" ]; then
-    echo "FAIL: missing references/feature-$feat.md"
+  if [ ! -f "$REFS_DIR/feature-$feat/index.md" ]; then
+    echo "FAIL: missing references/feature-$feat/index.md"
     exit 1
   fi
 done
@@ -105,26 +105,26 @@ if [ "$OLD_FEATURE" -gt 0 ]; then
   exit 1
 fi
 
-if [ ! -f "$REFS_DIR/feature-organizations.md" ]; then
-  echo "FAIL: missing references/feature-organizations.md"
+if [ ! -f "$REFS_DIR/feature-organizations/index.md" ]; then
+  echo "FAIL: missing references/feature-organizations/index.md"
   exit 1
 fi
-ORG_LINES=$(wc -l < "$REFS_DIR/feature-organizations.md")
+ORG_LINES=$(wc -l < "$REFS_DIR/feature-organizations/index.md")
 if [ "$ORG_LINES" -lt 80 ]; then
-  echo "FAIL: feature-organizations.md too short ($ORG_LINES lines, need 80+)"
+  echo "FAIL: feature-organizations/index.md too short ($ORG_LINES lines, need 80+)"
   exit 1
 fi
 
 for t in cli mcp terraform; do
-  if [ ! -f "$REFS_DIR/tooling-$t.md" ]; then
-    echo "FAIL: missing references/tooling-$t.md"
+  if [ ! -f "$REFS_DIR/tooling-$t/index.md" ]; then
+    echo "FAIL: missing references/tooling-$t/index.md"
     exit 1
   fi
 done
 
 for p in security token-handling multi-tenant rate-limiting common-errors; do
-  if [ ! -f "$REFS_DIR/pattern-$p.md" ]; then
-    echo "FAIL: missing references/pattern-$p.md"
+  if [ ! -f "$REFS_DIR/pattern-$p/index.md" ]; then
+    echo "FAIL: missing references/pattern-$p/index.md"
     exit 1
   fi
 done
