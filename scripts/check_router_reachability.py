@@ -34,12 +34,16 @@ from pathlib import Path
 SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
 # A markdown table row: optional leading whitespace, then a `|` cell delimiter.
 TABLE_ROW_RE = re.compile(r"^\s*\|")
-READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
 # Router route to a reference. New uniform form: references/<name>/index.md
 # (name may carry a {placeholder}). The captured group is the reference NAME
 # (no extension), which is a directory under references/.
 READ_INDEX_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?)/index\.md")
-BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
+# Backticked reference targets in tables, e.g. Step 3's tooling table:
+# `tooling-cli/index.md` (uniform form) or legacy bare `tooling-cli.md`.
+# Both name a reference by its GROUP name — check_router normalizes both to
+# NAME (stripping `/index.md` or `.md`) so either spelling routes the group.
+BACKTICK_INDEX_RE = re.compile(r"`([a-z0-9-]+)/index\.md`")
+BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+)\.md`")
 # Markdown links whose target is a .md file — ANY path form (bare `x.md`,
 # `./references/x.md`, `../SKILL.md`), with an optional #anchor. External URLs
 # (http/https) are excluded so real doc links are not flagged; non-.md targets
@@ -220,10 +224,20 @@ def check_router(skill_dir: Path):
     refs_dir = skill_dir / "references"
 
     slugs = _router_slugs(skill_md)
-    backticked_md = set(BACKTICK_MD_RE.findall(skill_md))
+    # Backticked reference targets in tables (Step 3's tooling table): the
+    # uniform `` `tooling-cli/index.md` `` form and the legacy bare
+    # `` `tooling-cli.md` `` form. Both name a reference by its GROUP name;
+    # normalize both to NAME so either spelling routes the group. Exclude the
+    # bare word "index" — the router's own prose note ("Reference layout")
+    # says `` `index.md` `` on its own, with no group prefix; every real
+    # reference slug is namespaced (framework-/feature-/tooling-/pattern-), so
+    # a bare "index" match is always this prose, never a route.
+    backticked_names = set(BACKTICK_INDEX_RE.findall(skill_md))
+    backticked_names |= set(BACKTICK_MD_RE.findall(skill_md))
+    backticked_names.discard("index")
     tooling_slugs = {
-        n[len("tooling-"):-len(".md")]
-        for n in backticked_md
+        n[len("tooling-"):]
+        for n in backticked_names
         if n.startswith("tooling-")
     }
     universes = {"framework": slugs, "tooling": tooling_slugs}
@@ -232,9 +246,9 @@ def check_router(skill_dir: Path):
     for m in READ_INDEX_RE.finditer(skill_md):          # references/<name>/index.md
         for name in _expand(m.group(1), universes):
             routed.add(name)                            # NAME, not filename
-    # Backticked bare `tooling-cli.md` targets in Step 3's table still name a
-    # reference by its GROUP name — strip the .md so it matches a directory.
-    routed |= {n[:-3] for n in backticked_md}           # backticked_md are *.md
+    # Backticked table targets (either spelling) name a reference by its GROUP
+    # name directly — no expansion needed.
+    routed |= backticked_names
 
     flat_files, groups = _discover(refs_dir)
     group_names = set(groups)
@@ -333,7 +347,10 @@ def main() -> int:
         ok = False
         print("UNREACHABLE reference files (not routed from SKILL.md):")
         for f in unreachable:
-            print(f"  - references/{f}")
+            if f.startswith("STRAY:"):
+                print(f"  - STRAY: references/{f[len('STRAY:'):]}")
+            else:
+                print(f"  - references/{f}")
     if broken_routes:
         ok = False
         print("BROKEN routes (SKILL.md routes to a reference file that does not exist):")
