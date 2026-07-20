@@ -236,7 +236,7 @@ Then add these lines at the top of `index.php`, before the existing `require 'au
 
 ```php
 require 'cors.php';
-handleCors(['https://your-spa-domain.com']);
+handleCors(['https://spa.example.com']);
 ```
 
 The updated `index.php` head should be:
@@ -245,7 +245,7 @@ The updated `index.php` head should be:
 <?php
 
 require 'cors.php';
-handleCors(['https://your-spa-domain.com']);
+handleCors(['https://spa.example.com']);
 
 require 'auth0.php';
 require 'middleware.php';

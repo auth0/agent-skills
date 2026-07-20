@@ -102,7 +102,7 @@ export function ApiTest() {
         }
       });
 
-      const response = await fetch('https://your-api.com/data', {
+      const response = await fetch('https://api.example.com/data', {
         headers: {
           Authorization: `Bearer ${token}`
         }

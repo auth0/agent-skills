@@ -373,7 +373,7 @@ const { getSSOCredentials } = useAuth0();
 
 const openWebApp = async () => {
   const ssoCredentials = await getSSOCredentials();
-  const webAppUrl = `https://your-web-app.com/login?session_transfer_token=${ssoCredentials.sessionTransferToken}`;
+  const webAppUrl = `https://webapp.example.com/login?session_transfer_token=${ssoCredentials.sessionTransferToken}`;
   await Linking.openURL(webAppUrl);
 };
 ```

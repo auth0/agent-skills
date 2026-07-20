@@ -222,7 +222,7 @@ Or via servlet context parameters in `web.xml`:
 | `nickname` | User nickname |
 | `updated_at` | Last profile update timestamp |
 
-Custom claims added via Auth0 Actions use namespaced keys, e.g., `https://your-domain.com/roles`.
+Custom claims added via Auth0 Actions use namespaced keys, e.g., `https://example.com/roles`.
 
 ---
 

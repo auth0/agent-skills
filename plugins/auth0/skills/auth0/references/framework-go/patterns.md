@@ -235,7 +235,7 @@ Custom claims added via Auth0 Actions use namespaced keys. Add them to your `Cus
 type CustomClaims struct {
 	Scope       string   `json:"scope"`
 	Permissions []string `json:"permissions"`
-	Email       string   `json:"https://your-domain.com/email"`
+	Email       string   `json:"https://example.com/email"`
 }
 ```
 
