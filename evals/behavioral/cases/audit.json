@@ -1,7 +1,7 @@
 {
   "slug": "audit",
-  "origin_skill": "auth0-checkmate",
-  "skill_name": "auth0-checkmate",
+  "origin_skill": "auth0",
+  "skill_name": "auth0",
   "evals": [
     {
       "id": 1,
@@ -17,7 +17,7 @@
         "Gathers lightweight company context for acmecorp.io (business model, products, auth surfaces)",
         "Produces a findings list with severity, title, and personalized remediation notes",
         "Triages findings into Immediate Actions (current plan) vs After Upgrading (requires upgrade)",
-        "Emits a plan recommendation with exact cost from the pricing reference",
+        "Emits a plan recommendation with plan name only and no price",
         "Saves report as auth0checkmate_<tenant>_<timestamp>.{md,html,pdf}",
         "State written to ~/.auth0-checkmate/state/ (not ~/.claude/skills/)",
         "Does not include sales fit scores or firmographic data in the report"
