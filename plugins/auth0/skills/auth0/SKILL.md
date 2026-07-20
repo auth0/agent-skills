@@ -4,7 +4,7 @@ description: Use when adding, fixing, or improving authentication in any app —
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
-  version: '2.0.0'
+  version: '2.0.1'
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills

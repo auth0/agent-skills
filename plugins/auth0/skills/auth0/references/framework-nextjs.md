@@ -612,7 +612,7 @@ export async function getData() {
     throw new Error('No access token available');
   }
 
-  const response = await fetch('https://your-api.com/data', {
+  const response = await fetch('https://api.example.com/data', {
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -640,7 +640,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(401).json({ error: 'No access token' });
   }
 
-  const response = await fetch('https://your-api.com/data', {
+  const response = await fetch('https://api.example.com/data', {
     headers: { Authorization: `Bearer ${token}` }
   });
 
