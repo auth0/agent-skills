@@ -48,7 +48,7 @@ def check_findings(report_glob='snyk-agent-scan-*.json', ignores=None):
 
         # Extract skill name from filename (e.g. "snyk-agent-scan-skill-plugins-auth0-skills-auth0-expo.json" -> "auth0-expo")
         skill = None
-        match = re.search(r'snyk-agent-scan-skill-.*?-skills-(.+)\.json$', path)
+        match = re.search(r'snyk-agent-scan-skill-.*?-skills-(.+?)(?:--.*)?\.json$', path)
         if match:
             skill = match.group(1)
 
