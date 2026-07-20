@@ -1,24 +1,22 @@
 #!/usr/bin/env python3
-"""Enforce the router's depth-2 tree invariants for the consolidated skill.
+"""Enforce the router's uniform-folder invariants for the consolidated skill.
 
-A reference is either a flat, self-contained `references/*.md` file (one hop from
-the router) or a GROUP: a directory `<stem>/` with a hub `index.md` (shared
-prerequisites + an intent->leaf dispatch table) plus document-section leaves. The
-router routes to the stem either way; for a group it reads `index.md`, whose
-imperative `Read: references/<stem>/<leaf>.md` dispatch sends the agent to one
-leaf — a second hop. This module asserts:
+Every reference is a DIRECTORY `<name>/` containing `index.md`. There are no
+flat `references/*.md` files — a stray one is a failure. The router always
+routes to a reference by NAME via `Read: references/<name>/index.md`; there is
+no flat-vs-group branch, so the resolved path is deterministic. A directory is
+either an index-only group (`index.md` is the whole reference, no leaves) or a
+leaf group (`index.md` is a hub: shared prerequisites + an intent->leaf dispatch
+table, plus document-section leaves). This module asserts:
 
-  1. every flat `references/*.md` and every group is routable from SKILL.md, and
-     every leaf is reachable from its hub's dispatch (no orphans);
-  2. no route (from SKILL.md or a hub) points at a file that doesn't exist
-     (broken route — the failure `present - routed` can't see);
-  3. the ONLY second hop allowed is a hub `index.md` dispatching to leaves in its
-     OWN directory. A flat file or a leaf takes NO second hop to another
-     reference — neither via a .md link (any markdown/HTML form) NOR via the
-     router's non-link dispatch forms (a `references/x.md` prose/backtick path, a
-     backticked bare `x.md`, or a `Read: references/x.md` verb). Cross-group links
-     are forbidden everywhere. Two-level `<group>/<leaf>.md` targets are caught by
-     SIDEWAYS_TWO_LEVEL_RE (the shared single-level regexes below exclude `/`)."""
+  1. `references/` contains only directories (any flat *.md is STRAY);
+  2. every group is routable from SKILL.md and every leaf is reachable from its
+     hub's dispatch (no orphans);
+  3. no route (from SKILL.md or a hub) points at a missing file (broken route);
+  4. the ONLY second hop allowed is a hub `index.md` dispatching to leaves in
+     its OWN directory. A leaf or an index-only hub takes NO second hop — via a
+     .md link (any form) NOR a prose/backtick path NOR a `Read:` verb. Two-level
+     `<group>/<leaf>.md` targets are caught by SIDEWAYS_TWO_LEVEL_RE."""
 import re, sys
 from pathlib import Path
 
@@ -37,6 +35,10 @@ SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
 # A markdown table row: optional leading whitespace, then a `|` cell delimiter.
 TABLE_ROW_RE = re.compile(r"^\s*\|")
 READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
+# Router route to a reference. New uniform form: references/<name>/index.md
+# (name may carry a {placeholder}). The captured group is the reference NAME
+# (no extension), which is a directory under references/.
+READ_INDEX_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?)/index\.md")
 BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
 # Markdown links whose target is a .md file — ANY path form (bare `x.md`,
 # `./references/x.md`, `../SKILL.md`), with an optional #anchor. External URLs
@@ -227,35 +229,38 @@ def check_router(skill_dir: Path):
     universes = {"framework": slugs, "tooling": tooling_slugs}
 
     routed = set()
-    for m in READ_RE.finditer(skill_md):
+    for m in READ_INDEX_RE.finditer(skill_md):          # references/<name>/index.md
         for name in _expand(m.group(1), universes):
-            routed.add(name)
-    routed |= backticked_md
+            routed.add(name)                            # NAME, not filename
+    # Backticked bare `tooling-cli.md` targets in Step 3's table still name a
+    # reference by its GROUP name — strip the .md so it matches a directory.
+    routed |= {n[:-3] for n in backticked_md}           # backticked_md are *.md
 
     flat_files, groups = _discover(refs_dir)
     group_names = set(groups)
 
-    # A routed `framework-<slug>.md` is satisfied by EITHER a flat file of that
-    # name OR a group directory `framework-<slug>/` (read via its index.md).
-    def _satisfied(routed_name):
-        return routed_name in flat_files or routed_name[:-3] in group_names
+    # Uniform model: every reference is a directory. A routed NAME is satisfied
+    # only by a group directory of that name.
+    def _satisfied(name):
+        return name in group_names
 
     variant_bases = _variant_base_slugs(skill_md)
-    exempt = {f"framework-{b}.md" for b in variant_bases}
+    exempt = {f"framework-{b}" for b in variant_bases}
 
-    unreachable = sorted(f for f in flat_files if f not in routed)
+    # STRAY flat files: the uniform model forbids any flat reference file.
+    stray = sorted(f"STRAY:{f}" for f in flat_files)
+
     broken_routes = sorted(
-        r for r in routed
+        f"{r}/index.md" for r in routed
         if "{" not in r and "}" not in r and r not in exempt and not _satisfied(r)
     )
+    unreachable = list(stray)
 
     # Two-level checks for each group.
     for gname, info in groups.items():
-        routed_base = f"{gname}.md"
         idx_path = f"{gname}/index.md"
-        if routed_base not in routed:
-            # SKILL.md never routes to this group at all.
-            unreachable.append(idx_path)
+        if gname not in routed:
+            unreachable.append(idx_path)                # group never routed
             continue
         if not info["has_index"]:
             broken_routes.append(idx_path)
