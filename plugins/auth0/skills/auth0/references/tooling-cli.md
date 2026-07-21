@@ -98,6 +98,8 @@ auth0 users import --connection-name "Username-Password-Authentication" \
   --users '[...]' --upsert --json
 ```
 
+**Note:** `--json` output for user commands returns full profiles (email, metadata) and import payloads carry password hashes — avoid piping to shared logs/CI output.
+
 ### Roles — Manage RBAC Roles
 
 Create roles, assign permissions, and assign roles to users.
