@@ -249,13 +249,17 @@ present and consistent.
 
 ## Step 3: Detect tooling
 
-Read the project file tree. This is a project-context decision, not a product preference.
+This step does **not** decide *whether* to load a tooling reference — Step 4
+does that, per intent, and only when the task actually needs Auth0 tenant
+configuration. This step only picks **which variant** to use if and when one is
+loaded. It's a project-context decision, not a product preference: read the
+project file tree.
 
-| Project has... | Load |
+| Project has... | Tooling variant |
 |---|---|
-| `terraform/` directory OR any `*.tf` files | `tooling-terraform.md` |
-| Auth0 MCP server active in this agent session | `tooling-mcp.md` |
-| Anything else (default) | `tooling-cli.md` |
+| `terraform/` directory OR any `*.tf` files | terraform → `tooling-terraform.md` |
+| Auth0 MCP server active in this agent session | mcp → `tooling-mcp.md` |
+| Neither (default variant) | cli → `tooling-cli.md` |
 
 ---
 
@@ -267,22 +271,22 @@ Step 1, then read the reference files it lists.
 ### integrate
 ```
 Read: references/framework-{framework}.md
-Read: references/tooling-{tooling}.md
+If the task requires Auth0 tenant configuration (create/update an app or API, set callback/logout URLs, enable factors, add a domain) and it isn't already provisioned: Read references/tooling-{tooling}.md
 Follow the integration workflow in framework-{framework}.md.
-Use tooling-{tooling}.md for all Auth0 tenant configuration steps.
+When tenant configuration is needed, use tooling-{tooling}.md for those steps.
 ```
 
 ### feature:mfa
 ```
 Read: references/feature-mfa.md
-Read: references/tooling-{tooling}.md
+If the task requires Auth0 tenant configuration (enable factors, set MFA policy) and it isn't already provisioned: Read references/tooling-{tooling}.md
 If framework detected: Read references/framework-{framework}.md (for SDK-side step-up trigger)
 ```
 
 ### feature:organizations
 ```
 Read: references/feature-organizations.md
-Read: references/tooling-{tooling}.md
+If the task requires Auth0 tenant configuration (create organizations, connections, enable org login) and it isn't already provisioned: Read references/tooling-{tooling}.md
 If framework detected: Read references/framework-{framework}.md
 If multi-tenant architecture / B2B SaaS design question: also Read references/pattern-multi-tenant.md
 ```
@@ -290,25 +294,25 @@ If multi-tenant architecture / B2B SaaS design question: also Read references/pa
 ### feature:custom-domains
 ```
 Read: references/feature-custom-domains.md
-Read: references/tooling-{tooling}.md
+If the task requires Auth0 tenant configuration (add/verify the custom domain) and it isn't already provisioned: Read references/tooling-{tooling}.md
 ```
 
 ### feature:acul
 ```
 Read: references/feature-acul.md
-Read: references/tooling-{tooling}.md
+If the task requires Auth0 tenant configuration (enable ACUL, configure screens/prompts) and it isn't already provisioned: Read references/tooling-{tooling}.md
 ```
 
 ### feature:branding
 ```
 Read: references/feature-branding.md
-Read: references/tooling-{tooling}.md
+If the task requires Auth0 tenant configuration (apply branding/theme to the tenant) and it isn't already provisioned: Read references/tooling-{tooling}.md
 ```
 
 ### feature:dpop
 ```
 Read: references/feature-dpop.md
-Read: references/tooling-{tooling}.md
+If the task requires Auth0 tenant configuration (enable/enforce DPoP on the app or API) and it isn't already provisioned: Read references/tooling-{tooling}.md
 If a SPA framework is detected (vue/react/angular/spa-js): Read references/framework-{framework}.md
 DPoP is SPA-only (no SSR: Next.js/Nuxt) — feature-dpop.md states the exclusion.
 ```
@@ -335,7 +339,7 @@ Read: references/pattern-rate-limiting.md
 ### migrate
 ```
 Read: references/feature-migration.md
-Read: references/tooling-{tooling}.md
+If the task requires Auth0 tenant configuration (create the new app/API, import users, set URLs) and it isn't already provisioned: Read references/tooling-{tooling}.md
 If framework detected: Read references/framework-{framework}.md
 ```
 
