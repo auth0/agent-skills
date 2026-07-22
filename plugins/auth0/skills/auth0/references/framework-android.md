@@ -330,12 +330,16 @@ Avoid:
 Entry point for SDK initialization:
 
 ```kotlin
-// From strings.xml
+// Always initialize from strings.xml — never pass the client ID or domain as
+// string literals in Kotlin/Java source.
 val account = Auth0.getInstance(context)
-
-// Direct
-val account = Auth0.getInstance("CLIENT_ID", "DOMAIN")
 ```
+
+> The `com_auth0_client_id` and `com_auth0_domain` values live in `strings.xml`
+> (`res/values/strings.xml`), and `Auth0.getInstance(context)` reads them from
+> there. Do NOT hardcode credentials in `.kt`/`.java` source — keep
+> configuration in `strings.xml` so it stays in one place and matches the SDK's
+> expected setup.
 
 ### WebAuthProvider
 
