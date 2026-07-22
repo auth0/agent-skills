@@ -267,9 +267,7 @@ Step 1, then read the reference files it lists.
 ### integrate
 ```
 Read: references/framework-{framework}.md
-Read: references/tooling-{tooling}.md
 Follow the integration workflow in framework-{framework}.md.
-Use tooling-{tooling}.md for all Auth0 tenant configuration steps.
 ```
 
 ### feature:mfa
