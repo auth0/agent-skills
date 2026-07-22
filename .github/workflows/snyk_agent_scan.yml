@@ -39,63 +39,15 @@ jobs:
         cd scripts
         uv run --with pytest python -m pytest test_check_snyk_findings.py -q
 
-    - name: Run snyk-agent-scan on skills
+    - name: Run agent-scan + finding gate
       if: ${{ !cancelled() }}
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      run: |
-        set -euo pipefail
-
-        scan_skill() {
-          local skill_file="$1"
-          local skill_name="$2"
-
-          uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$skill_file" --skills --json 2>/dev/null \
-            | tee "snyk-agent-scan-skill-${skill_name}.json" \
-            && return 0
-
-          echo "Retrying ${skill_name} in 5s..."
-          sleep 5
-
-          uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$skill_file" --skills --json 2>/dev/null \
-            | tee "snyk-agent-scan-skill-${skill_name}.json"
-        }
-
-        # Scan all skills on both PRs and pushes to main
-        SKILL_DIRS=$(find plugins/*/skills -maxdepth 1 -mindepth 1 -type d 2>/dev/null | sort)
-
-        if [ -z "$SKILL_DIRS" ]; then
-          echo "No skills to scan"
-          echo '{}' > snyk-agent-scan-skills.json
-          exit 0
-        fi
-
-        echo "Skills to scan:"
-        echo "$SKILL_DIRS"
-
-        EXIT_CODE=0
-        while IFS= read -r skill_dir; do
-          skill_name=$(echo "$skill_dir" | tr '/' '-')
-          # Scan SKILL.md + every references/*.md — the full on-demand surface.
-          while IFS= read -r md_file; do
-            [ -f "$md_file" ] || continue
-            # Per-file suffix (path under skill dir, slugified) keeps the
-            # "-skills-<name>" segment intact for check_snyk_findings.py's regex.
-            rel=$(echo "${md_file#"$skill_dir"/}" | tr '/.' '--')
-            echo "Scanning ${md_file}..."
-            scan_skill "$md_file" "${skill_name}--${rel}" || EXIT_CODE=1
-          done < <(find "$skill_dir" -type f -name '*.md' | sort)
-        done <<< "$SKILL_DIRS"
-
-        exit $EXIT_CODE
+      run: make scan
 
     - name: Combine scan results
       if: ${{ !cancelled() }}
       run: cat snyk-agent-scan-*.json > snyk-agent-scan-combined.json 2>/dev/null || true
-
-    - name: Fail on High or Critical findings
-      if: ${{ !cancelled() }}
-      run: python3 scripts/check_snyk_findings.py
 
     - name: Upload report artifacts
       if: always()
