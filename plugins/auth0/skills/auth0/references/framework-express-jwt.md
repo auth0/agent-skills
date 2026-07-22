@@ -96,7 +96,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 |---------|---------|-----|
 | Created an **Application** instead of an **API** in Auth0 Dashboard | Token validation fails; wrong audience | Create a new **API** (Resource Server) in Auth0 Dashboard → APIs |
 | Audience doesn't match API identifier exactly | `401 Unauthorized` — "Audience mismatch" | Copy the exact API Identifier string from Auth0 Dashboard → APIs |
-| `ISSUER_BASE_URL` missing the `https://` prefix | `Error: Invalid URL` at startup | `ISSUER_BASE_URL` is a full URL — use `https://your-tenant.us.auth0.com`, not the bare hostname |
+| `ISSUER_BASE_URL` set to a bare hostname | Works in dev but HTTP is rejected when `NODE_ENV=production` | Set `ISSUER_BASE_URL` to the full tenant URL including the scheme: `https://your-tenant.us.auth0.com` (the SDK prepends `https://` to a bare hostname, but be explicit) |
 | Checking `scope` claim instead of `permissions` for RBAC | 403 always returned or permissions ignored | Use `requiredScopes()` for scope-based RBAC; use `claimIncludes('permissions', 'read:data')` for Auth0 RBAC permission claims |
 | CORS not configured before auth middleware | Preflight OPTIONS requests return 401 | Add `cors()` middleware before `auth()` in the middleware chain |
 | `.env` file not loaded | `undefined` for domain/audience | Add `import 'dotenv/config'` at the top of the entry file |
