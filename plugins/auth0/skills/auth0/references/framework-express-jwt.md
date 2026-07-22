@@ -40,19 +40,24 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 >    npm install express-oauth2-jwt-bearer
 >    ```
 >
-> 3. **Configure Auth0** — follow the Setup Guide section below. If the user already provided their Auth0 Domain and API Audience in the prompt, use them directly — skip automatic setup and do NOT call `AskUserQuestion` to re-confirm. Otherwise, offer automatic setup via the Auth0 CLI or manual setup.
+> 3. **Configure Auth0** — follow the Setup Guide section below. If the user already provided their Auth0 Domain and API Audience in the prompt, write them to a `.env` file as `ISSUER_BASE_URL` (the full issuer URL, including `https://`) and `AUDIENCE` — the SDK reads these automatically. Skip automatic setup and do NOT call `AskUserQuestion` to re-confirm. **Never hardcode the domain or audience as literal strings (or `||` fallback defaults) in `server.js` / `app.js`** — they belong in `.env` only. Otherwise, offer automatic setup via the Auth0 CLI or manual setup.
 >
-> 4. **Set up middleware** — add to `app.js` or `server.js`:
+> 4. **Set up middleware** — first create a `.env` file with the Auth0 values, then load it and add the middleware. `express-oauth2-jwt-bearer` reads `ISSUER_BASE_URL` and `AUDIENCE` from the environment automatically, so `auth()` needs no arguments:
+>    ```bash
+>    # .env
+>    ISSUER_BASE_URL=https://your-tenant.us.auth0.com
+>    AUDIENCE=https://your-api-identifier
+>    ```
 >    ```javascript
+>    import 'dotenv/config'; // load .env before the SDK reads process.env
 >    import { auth } from 'express-oauth2-jwt-bearer';
 >
->    const checkJwt = auth({
->      issuerBaseURL: process.env.ISSUER_BASE_URL,
->      audience: process.env.AUDIENCE,
->    });
+>    // Reads ISSUER_BASE_URL and AUDIENCE from the environment — no config needed
+>    const checkJwt = auth();
 >
 >    app.use(checkJwt); // apply globally, or per-route
 >    ```
+>    Keep the issuer and audience in `.env` — do not inline literal values or pass them as arguments here.
 >
 > 5. **Protect endpoints** — apply middleware globally or to specific routes:
 >    ```javascript
@@ -96,10 +101,11 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 |---------|---------|-----|
 | Created an **Application** instead of an **API** in Auth0 Dashboard | Token validation fails; wrong audience | Create a new **API** (Resource Server) in Auth0 Dashboard → APIs |
 | Audience doesn't match API identifier exactly | `401 Unauthorized` — "Audience mismatch" | Copy the exact API Identifier string from Auth0 Dashboard → APIs |
-| `ISSUER_BASE_URL` set to a bare hostname | Works in dev but HTTP is rejected when `NODE_ENV=production` | Set `ISSUER_BASE_URL` to the full tenant URL including the scheme: `https://your-tenant.us.auth0.com` (the SDK prepends `https://` to a bare hostname, but be explicit) |
+| `ISSUER_BASE_URL` missing the `https://` scheme | `Error: Invalid URL` at startup | `ISSUER_BASE_URL` must be the full issuer URL: `https://your-tenant.us.auth0.com` |
 | Checking `scope` claim instead of `permissions` for RBAC | 403 always returned or permissions ignored | Use `requiredScopes()` for scope-based RBAC; use `claimIncludes('permissions', 'read:data')` for Auth0 RBAC permission claims |
 | CORS not configured before auth middleware | Preflight OPTIONS requests return 401 | Add `cors()` middleware before `auth()` in the middleware chain |
 | `.env` file not loaded | `undefined` for domain/audience | Add `import 'dotenv/config'` at the top of the entry file |
+| Hardcoded domain/audience in source (incl. `process.env.X \|\| 'literal'` fallbacks) | Secrets committed to source; fails security review | Put values in `.env` (`ISSUER_BASE_URL` / `AUDIENCE`) and let `auth()` read them automatically — no literal fallbacks |
 | `req.auth` is undefined | `TypeError: Cannot read properties of undefined` | Verify `checkJwt` middleware runs before the handler |
 
 ## Related Skills
@@ -128,8 +134,8 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `issuerBaseURL` | `string` | Auth0 domain with `https://` (required unless using env vars) |
-| `audience` | `string` | API Identifier from Auth0 Dashboard (required unless using env vars) |
+| `issuerBaseURL` | `string` | Full issuer URL with `https://`. Optional — defaults to the `ISSUER_BASE_URL` env var |
+| `audience` | `string` | API Identifier from Auth0 Dashboard. Optional — defaults to the `AUDIENCE` env var |
 | `tokenSigningAlg` | `string` | Signing algorithm (default: `RS256`; use `HS256` for symmetric) |
 | `authRequired` | `boolean` | Set `false` to make authentication optional (default: `true`) |
 | `clockTolerance` | `number` | Clock skew tolerance in seconds (no default; undefined unless set) |
@@ -139,8 +145,8 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 
 | Variable | Description |
 |----------|-------------|
-| `ISSUER_BASE_URL` | Auth0 domain with `https://` (auto-detected by SDK) |
-| `AUDIENCE` | API Identifier (auto-detected by SDK) |
+| `ISSUER_BASE_URL` | Full issuer URL with `https://`, e.g. `https://your-tenant.us.auth0.com` (auto-detected by SDK) |
+| `AUDIENCE` | API Identifier, e.g. `https://your-api-identifier` (auto-detected by SDK) |
 
 ### Request Object
 
@@ -212,8 +218,8 @@ All options are passed to the `auth()` function or set via environment variables
 
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `issuerBaseURL` | `string` | Yes (or `ISSUER_BASE_URL` env var) | — | Auth0 domain with `https://`, e.g. `https://your-tenant.us.auth0.com` |
-| `audience` | `string` | Yes (or `AUDIENCE` env var) | — | API Identifier from Auth0 Dashboard, e.g. `https://my-api.com` |
+| `issuerBaseURL` | `string` | No — defaults to `ISSUER_BASE_URL` env var | — | Full issuer URL with `https://`, e.g. `https://your-tenant.us.auth0.com` |
+| `audience` | `string` | No — defaults to `AUDIENCE` env var | — | API Identifier from Auth0 Dashboard, e.g. `https://my-api.com` |
 | `secret` | `string` | For HS256 only | — | Shared secret for symmetric JWT signing (HS256). Not required for RS256. |
 | `tokenSigningAlg` | `string` | No | `RS256` | JWT signing algorithm. Use `HS256` for symmetric keys. |
 | `issuer` | `string` | No (alternative to `issuerBaseURL`) | — | Issuer claim value — use with `jwksUri` for non-standard setups |
@@ -234,21 +240,21 @@ All options are passed to the `auth()` function or set via environment variables
 
 ### Environment Variables (auto-detected)
 
-When no options are passed to `auth()`, these variables are read automatically:
+`express-oauth2-jwt-bearer` reads these variables from the environment automatically, so `auth()` can be called with no arguments. This is the approach this skill uses — put the values in `.env` and let the SDK pick them up:
 
 | Variable | Description |
 |----------|-------------|
-| `ISSUER_BASE_URL` | Auth0 domain with `https://` prefix: `https://your-tenant.us.auth0.com` |
+| `ISSUER_BASE_URL` | Full issuer URL **with** `https://` prefix: `https://your-tenant.us.auth0.com` |
 | `AUDIENCE` | API Identifier: `https://your-api.example.com` |
 
-**Note:** This skill uses the SDK's native `ISSUER_BASE_URL` / `AUDIENCE` keys. Reference them explicitly so the configuration source is visible in the code:
 ```javascript
-auth({
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  audience: process.env.AUDIENCE,
-})
+import 'dotenv/config'; // load .env before the SDK reads process.env
+
+// No arguments needed — ISSUER_BASE_URL and AUDIENCE are read from the environment
+const checkJwt = auth();
 ```
-`ISSUER_BASE_URL` is the full tenant URL including `https://` (e.g. `https://your-tenant.us.auth0.com`); `AUDIENCE` is the API Identifier.
+
+Pass `issuerBaseURL` / `audience` explicitly only if you need to source them from differently-named variables or compute them at runtime.
 
 ## Claims Reference
 
@@ -294,10 +300,8 @@ app.use(cors({
 app.use(express.json());
 
 // 2. JWT validation middleware
-const checkJwt = auth({
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  audience: process.env.AUDIENCE,
-});
+// Reads ISSUER_BASE_URL and AUDIENCE from the environment — no arguments needed
+const checkJwt = auth();
 
 // 3. Public endpoint (no auth required)
 app.get('/api/public', (req, res) => {
@@ -358,10 +362,8 @@ import { auth, requiredScopes } from 'express-oauth2-jwt-bearer';
 
 const app = express();
 
-const checkJwt = auth({
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  audience: process.env.AUDIENCE,
-});
+// Reads ISSUER_BASE_URL and AUDIENCE from the environment — no arguments needed
+const checkJwt = auth();
 
 app.get('/api/private', checkJwt, (req: Request, res: Response) => {
   const sub = req.auth?.payload.sub;
@@ -447,10 +449,8 @@ Apply `checkJwt` middleware globally to protect all routes:
 ```javascript
 import { auth } from 'express-oauth2-jwt-bearer';
 
-const checkJwt = auth({
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  audience: process.env.AUDIENCE,
-});
+// Reads ISSUER_BASE_URL and AUDIENCE from the environment — no arguments needed
+const checkJwt = auth();
 
 // All routes below this require a valid JWT
 app.use(checkJwt);
@@ -480,9 +480,8 @@ app.get('/api/private', checkJwt, (req, res) => {
 Allow unauthenticated requests but attach auth info when present:
 
 ```javascript
+// issuer and audience come from ISSUER_BASE_URL / AUDIENCE in the environment
 const optionalAuth = auth({
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  audience: process.env.AUDIENCE,
   authRequired: false,
 });
 
@@ -584,10 +583,8 @@ app.use(cors({
 }));
 
 // 2. Auth second
-const checkJwt = auth({
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  audience: process.env.AUDIENCE,
-});
+// Reads ISSUER_BASE_URL and AUDIENCE from the environment — no arguments needed
+const checkJwt = auth();
 ```
 
 ## DPoP Support
@@ -597,9 +594,8 @@ DPoP (Demonstration of Proof-of-Possession) binds tokens to the client's key pai
 ### Hybrid mode (Bearer or DPoP both accepted — default)
 
 ```javascript
+// issuer and audience come from ISSUER_BASE_URL / AUDIENCE in the environment
 const checkJwt = auth({
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  audience: process.env.AUDIENCE,
   dpop: {
     enabled: true,
     required: false,  // Accept both Bearer and DPoP tokens
@@ -610,9 +606,8 @@ const checkJwt = auth({
 ### DPoP-only mode (rejects plain Bearer tokens)
 
 ```javascript
+// issuer and audience come from ISSUER_BASE_URL / AUDIENCE in the environment
 const checkJwt = auth({
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  audience: process.env.AUDIENCE,
   dpop: {
     enabled: true,
     required: true,  // Reject plain Bearer tokens
@@ -623,9 +618,8 @@ const checkJwt = auth({
 ### Bearer-only mode (disable DPoP)
 
 ```javascript
+// issuer and audience come from ISSUER_BASE_URL / AUDIENCE in the environment
 const checkJwt = auth({
-  issuerBaseURL: process.env.ISSUER_BASE_URL,
-  audience: process.env.AUDIENCE,
   dpop: { enabled: false },
 });
 ```
@@ -757,6 +751,8 @@ export function mockAuth(payload = { sub: 'test-user' }) {
 > **Agent instruction:**
 >
 > **Check if credentials are already provided in the user's prompt:** If the user's prompt already includes Auth0 Domain and API Audience (e.g. `your-tenant.us.auth0.com` and `https://api.example.com`), use them directly — skip to "Write the .env file" below. Do NOT call `AskUserQuestion` to re-confirm provided credentials, and do NOT run automatic setup.
+>
+> **Env var convention:** This skill uses the SDK-native variables `ISSUER_BASE_URL` (the full issuer URL, including `https://`) and `AUDIENCE`. `express-oauth2-jwt-bearer` reads them automatically, so `auth()` is called with no arguments.
 >
 > If credentials are NOT provided, offer setup choices:
 >
