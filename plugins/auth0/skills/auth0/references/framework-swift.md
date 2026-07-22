@@ -70,7 +70,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 > Auth0.webAuth(clientId: "...", domain: "...")        // ✗ never do this
 > Auth0.authentication(clientId: "...", domain: "...") // ✗ never do this
 > ```
-> The explicit-credential forms are a rare escape hatch (see the API Reference below) — never use them when `Auth0.plist` is present.
+> The explicit-credential forms are a rare escape hatch (see the API Reference below); when `Auth0.plist` is present, always prefer the no-argument forms.
 
 ### Step 3 — Configure Callback URLs
 
