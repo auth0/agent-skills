@@ -97,7 +97,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
    WebAuthProvider.logout(account)
        .withScheme(getString(R.string.com_auth0_scheme))
        .start(this, object : Callback<Void?, AuthenticationException> {
-           override fun onSuccess(result: Void) {
+           override fun onSuccess(result: Void?) {
                // User logged out
            }
            override fun onFailure(error: AuthenticationException) {
@@ -521,7 +521,7 @@ Log out the user and clear their session:
 WebAuthProvider.logout(account)
     .withScheme(getString(R.string.com_auth0_scheme))  // Match your configured scheme
     .start(this, object : Callback<Void?, AuthenticationException> {
-        override fun onSuccess(result: Void) {
+        override fun onSuccess(result: Void?) {
             // User logged out successfully
             // Clear your app's local state
         }
