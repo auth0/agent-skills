@@ -189,5 +189,5 @@ terraform apply -var-file="auth0.tfvars"
 # auth0.tfvars (add to .gitignore — contains secrets)
 auth0_domain        = "your-tenant.auth0.com"
 auth0_client_id     = "your-m2m-client-id"
-auth0_client_secret = "your-m2m-client-secret"
+auth0_client_secret = "<YOUR_M2M_CLIENT_SECRET>"
 ```
