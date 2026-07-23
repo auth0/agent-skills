@@ -143,6 +143,8 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 | Forgetting `.validateClaims()` on direct auth calls | Always call `.validateClaims()` when using `AuthenticationAPIClient` directly (for database, passwordless, or API login). Web Auth validates automatically. |
 | Storing tokens in SharedPreferences without encryption | Use `SecureCredentialsManager` to store credentials. Never store tokens manually in plain text. The manager encrypts tokens at rest. |
 | Missing manifest placeholders | Add `manifestPlaceholders = [auth0Domain: "@string/com_auth0_domain", auth0Scheme: "@string/com_auth0_scheme"]` to your `build.gradle` `defaultConfig` block. |
+| Replacing `@string/` placeholders with literals because "Gradle can't resolve resources" | The `@string/...` values ARE valid here. `manifestPlaceholders` are substituted into `AndroidManifest.xml` at manifest-merge time, where `@string/` resource references resolve normally — they are not evaluated in Gradle's build-config context. Keep the `@string/com_auth0_domain` / `@string/com_auth0_scheme` references; this is the pattern Auth0 documents and recommends. |
+| Manually declaring, or removing with `tools:node="remove"`, a `RedirectActivity`/`AuthorizeActivity` in `AndroidManifest.xml` | Do neither. SDK v2+ auto-registers the callback `intent-filter` via manifest merging using the `manifestPlaceholders`. You do not add a redirect activity yourself, and you must NOT strip the merged one with `tools:node="remove"` — doing so breaks callback handling and login/logout will hang. |
 
 ## Related Capabilities
 
