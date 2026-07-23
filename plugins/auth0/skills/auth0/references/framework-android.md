@@ -53,6 +53,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
    val account = Auth0.getInstance(context)
    ```
+   > **IMPORTANT:** `Auth0.getInstance(context)` auto-reads `com_auth0_client_id` and `com_auth0_domain` from `strings.xml`. **Never** pass `clientId` or `domain` as arguments (e.g. `Auth0.getInstance(clientId, domain)`) — that hardcodes credentials in source.
 
 4. **Add Auth UI**: Implement login and logout with Web Auth:
 
@@ -134,6 +135,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 | Mistake | Fix |
 |---------|-----|
+| Hardcoding credentials via `Auth0.getInstance(clientId, domain)` | Use `Auth0.getInstance(context)` — it auto-reads `com_auth0_client_id` and `com_auth0_domain` from `strings.xml`. Never pass the client ID or domain as arguments or string literals in source. |
 | App type not set to Native in Auth0 Dashboard | Create a Native application type in your Auth0 tenant. The Android SDK requires Native app configuration, not Machine-to-Machine or other types. |
 | Missing callback URL in Allowed Callback URLs | Add `{SCHEME}://{YOUR_AUTH0_DOMAIN}/android/{YOUR_APP_PACKAGE_NAME}/callback` to your Auth0 application's Allowed Callback URLs setting, where `{SCHEME}` matches `com_auth0_scheme` in `strings.xml` (e.g., `demo` by default). |
 | Missing `<uses-permission android:name="android.permission.INTERNET" />` | Add the INTERNET permission to `AndroidManifest.xml`. The SDK requires network access for authentication. |
@@ -330,12 +332,16 @@ Avoid:
 Entry point for SDK initialization:
 
 ```kotlin
-// From strings.xml
+// Always initialize from strings.xml — never pass the client ID or domain as
+// string literals in Kotlin/Java source.
 val account = Auth0.getInstance(context)
-
-// Direct
-val account = Auth0.getInstance("CLIENT_ID", "DOMAIN")
 ```
+
+> The `com_auth0_client_id` and `com_auth0_domain` values live in `strings.xml`
+> (`res/values/strings.xml`), and `Auth0.getInstance(context)` reads them from
+> there. Do NOT hardcode credentials in `.kt`/`.java` source — keep
+> configuration in `strings.xml` so it stays in one place and matches the SDK's
+> expected setup.
 
 ### WebAuthProvider
 
