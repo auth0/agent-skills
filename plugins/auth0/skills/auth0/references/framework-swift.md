@@ -61,6 +61,16 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > If the user chooses **automatic**: Follow the Setup Guide — Automated Setup via Auth0 CLI section (below).
 > If the user chooses **manual**: Follow the Setup Guide — Manual Setup section (below).
+>
+> **IMPORTANT — Never pass credentials in code:** Do NOT hardcode `clientId` or `domain` in Swift source, and do NOT pass them as arguments to `Auth0.webAuth()`, `Auth0.authentication()`, or any other SDK call. The SDK reads these values automatically from `Auth0.plist`. Always use the no-argument forms:
+> ```swift
+> Auth0.webAuth()           // ✓ reads Auth0.plist automatically
+> Auth0.authentication()    // ✓ reads Auth0.plist automatically
+>
+> Auth0.webAuth(clientId: "...", domain: "...")        // ✗ never do this
+> Auth0.authentication(clientId: "...", domain: "...") // ✗ never do this
+> ```
+> The explicit-credential forms are a rare escape hatch (see the API Reference below); when `Auth0.plist` is present, always prefer the no-argument forms.
 
 ### Step 3 — Configure Callback URLs
 
@@ -258,6 +268,7 @@ private let auth = AuthenticationService()
 
 | Mistake | Fix |
 |---------|-----|
+| Hardcoding `domain`/`clientId` in Swift source when they're in `Auth0.plist` | Write them into `Auth0.plist` and call `Auth0.webAuth()` / `Auth0.authentication()` with no arguments — the SDK reads the plist automatically |
 | Auth0 app type not set to **Native** | In Auth0 Dashboard, select "Native" when creating the application |
 | Missing callback URL in Auth0 Dashboard | Add both `https://` Universal Link and `{bundle}://` custom scheme to Allowed Callback URLs and Logout URLs |
 | `Auth0.plist` not added to Xcode target | Right-click file in Navigator → "Add Files to Target" → check your app target |
@@ -403,19 +414,33 @@ let credentialsManager = CredentialsManager(authentication: authentication)
 | `org_id` | String | Organization ID |
 | `org_name` | String | Organization name |
 
-### Decoding Claims
+### Reading User Profile Claims
+
+Read the user's profile from stored credentials with the `CredentialsManager`
+`user` property. It decodes the ID token and returns a `UserInfo?` whose
+properties expose the standard OIDC claims (`sub`, `name`, `email`, `picture`, …):
 
 ```swift
 import Auth0
 
-// Decode ID token claims
-if let claims = try? IDTokenClaimsValidation().validate(credentials.idToken) {
-    print("User ID: \(claims.subject)")
-    print("Email: \(claims.email ?? "none")")
+// Reuse the existing credentialsManager instance
+if let user = credentialsManager.user {
+    print("User ID: \(user.sub)")
+    print("Name: \(user.name ?? "none")")
+    print("Email: \(user.email ?? "none")")
 }
+```
 
-// Or decode manually with JWT libraries
-// The ID token is a standard JWT — decode payload with any JWT library
+To decode the ID token manually, use JWTDecode (bundled with Auth0.swift):
+
+```swift
+import JWTDecode
+
+if let jwt = try? decode(jwt: credentials.idToken) {
+    let email = jwt.claim(name: "email").string
+    let name = jwt.claim(name: "name").string
+    print("Email: \(email ?? "none"), Name: \(name ?? "none")")
+}
 ```
 
 ---
