@@ -953,6 +953,8 @@ Detailed guide for exporting users from existing auth providers and importing th
 
 ## Exporting Users from Common Providers
 
+**Caution:** These export files contain password hashes and PII. Never commit them (add to `.gitignore`), keep them out of shared/CI logs, and delete them once the import succeeds.
+
 ### Firebase
 
 **Via Firebase Console:**
