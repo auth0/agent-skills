@@ -2,10 +2,10 @@
 
 Protect Go HTTP API endpoints with JWT access token validation using github.com/auth0/go-jwt-middleware/v3.
 
-<!-- Shared prerequisites: critical rules, version-fetch instruction,
-     prerequisites, when-NOT-to-use, SDK install, and base .env config. Read
-     this first (hop 1), then follow the dispatch table below to the one leaf
-     for your intent. (Carved from the original framework-go.md.) -->
+<!-- Standalone hub: critical rules, version-fetch instruction, prerequisites,
+     when-NOT-to-use, and an inline quick start that gets a basic integration
+     working without a second read. The dispatch table below routes to the
+     leaves for setup variants, deeper patterns, API reference, and migration. -->
 
 ## Critical rules
 
@@ -31,24 +31,6 @@ Protect Go HTTP API endpoints with JWT access token validation using github.com/
 - **Single Page Applications** - Use the Auth0 integration workflow for React, Vue, or Angular for client-side auth
 - **Mobile applications** - Use the Auth0 integration workflow for Swift, Android, or React Native
 - **Non-Go backends** - Use the Auth0 integration workflow for ASP.NET Core (.NET), or `express-jwt` for Node.js
-
-## Install SDK
-
-```bash
-go get github.com/auth0/go-jwt-middleware/v3
-go get github.com/joho/godotenv
-```
-
-## Configure .env
-
-```env
-AUTH0_DOMAIN=your-tenant.auth0.com
-AUTH0_AUDIENCE=https://my-api.example.com
-```
-
-**Important:** Domain must NOT include `https://`. The middleware constructs the issuer URL automatically.
-
----
 
 ## Quick start
 
