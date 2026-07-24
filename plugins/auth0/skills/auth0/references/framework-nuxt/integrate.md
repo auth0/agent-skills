@@ -144,7 +144,7 @@ export default defineEventHandler(async (event) => {
 });
 ```
 
-**For role-based, permission-based, and advanced patterns, see the Route Protection Patterns section below.**
+**For role-based, permission-based, and advanced patterns (including page-level `definePageMeta` middleware), see the Route Protection Patterns section in this group's patterns guide.**
 
 ## Session Management
 
@@ -163,7 +163,7 @@ modules: [
 ]
 ```
 
-**For complete session store implementations, see the Custom Session Stores section below.**
+**For complete session store implementations, see the Custom Session Stores section in this group's patterns guide.**
 
 ## API Integration
 
@@ -214,7 +214,7 @@ export default defineEventHandler(async (event) => {
 
 ## Additional Resources
 
-**Guides (sections below):** Route Protection Patterns • Custom Session Stores • Common Examples
+**Guides (in this group's patterns guide):** Route Protection Patterns • Custom Session Stores • Advanced examples (Organizations, multi-tenant, token refresh, error handling)
 
 ## Related Capabilities
 
