@@ -25,6 +25,94 @@ Add authentication to React single-page applications using @auth0/auth0-react.
 - **Embedded login** - This SDK uses Auth0 Universal Login (redirect-based)
 - **Backend API authentication** - Use express-openid-connect or JWT validation instead
 
+## Quick start
+
+### 1. Install SDK
+
+```bash
+npm install @auth0/auth0-react
+```
+
+### 2. Configure Environment
+
+**For automated setup with Auth0 CLI**, see this group's integration guide (Setup → Quick Setup (Automated) section) for complete scripts.
+
+**For manual setup:**
+
+Create `.env` file:
+
+**Vite:**
+```bash
+VITE_AUTH0_DOMAIN=your-tenant.auth0.com
+VITE_AUTH0_CLIENT_ID=your-client-id
+```
+
+**Create React App:**
+```bash
+REACT_APP_AUTH0_DOMAIN=your-tenant.auth0.com
+REACT_APP_AUTH0_CLIENT_ID=your-client-id
+```
+
+### 3. Wrap App with Auth0Provider
+
+Update `src/main.tsx` (Vite) or `src/index.tsx` (CRA):
+
+```tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { Auth0Provider } from '@auth0/auth0-react';
+import App from './App';
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
+    <Auth0Provider
+      domain={import.meta.env.VITE_AUTH0_DOMAIN} // or process.env.REACT_APP_AUTH0_DOMAIN
+      clientId={import.meta.env.VITE_AUTH0_CLIENT_ID}
+      authorizationParams={{
+        redirect_uri: window.location.origin
+      }}
+    >
+      <App />
+    </Auth0Provider>
+  </React.StrictMode>
+);
+```
+
+### 4. Add Authentication UI
+
+```tsx
+import { useAuth0 } from '@auth0/auth0-react';
+
+export function LoginButton() {
+  const { loginWithRedirect, logout, isAuthenticated, user, isLoading } = useAuth0();
+
+  if (isLoading) return <div>Loading...</div>;
+
+  if (isAuthenticated) {
+    return (
+      <div>
+        <span>Welcome, {user?.name}</span>
+        <button onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}>
+          Logout
+        </button>
+      </div>
+    );
+  }
+
+  return <button onClick={() => loginWithRedirect()}>Login</button>;
+}
+```
+
+### 5. Test Authentication
+
+Start your dev server and test the login flow:
+
+```bash
+npm run dev  # Vite
+# or
+npm start    # CRA
+```
+
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared setup above,
@@ -37,7 +125,7 @@ read the leaf for your task:
 | migrate | `Read: references/framework-react/integrate.md` |
 
 **Then, as needed for your task:**
-- Tenant setup, CLI provisioning, automated `.env` scripts, and advanced framework patterns (protected routes, calling APIs, error handling, MFA handling, security) all live in `integrate.md` (Setup and Integration Patterns sections).
+- The quick start above gets a basic integration working. For tenant setup, CLI provisioning, automated `.env` scripts, and advanced framework patterns (protected routes, calling APIs, error handling, MFA handling, security): `Read: references/framework-react/integrate.md` (Setup and Integration Patterns sections).
 - Full API / configuration lookup (Auth0Provider config, useAuth0 hook, MFA error types, TypeScript types): `Read: references/framework-react/api-reference.md`
 - Any other task (guidance, debugging, Organizations, provider migration):
   start with `Read: references/framework-react/integrate.md`

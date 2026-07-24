@@ -1,115 +1,15 @@
 # Auth0 Android — Integration
 
-The core integration walkthrough: quick-start workflow, login/logout with Web
-Auth, build verification, common mistakes, and the quick reference.
+Setup depth and integration patterns: login/logout with Web Auth, build
+verification, common mistakes, and the quick reference.
 
 > **Prerequisites & setup:** the shared version-fetch instruction, critical
 > rules, prerequisites, and when-NOT-to-use notes live in this group's hub
-> index (already read on the way here). Tenant configuration, `strings.xml`
-> provisioning, and integration patterns are all in this file (see the Setup
-> and Integration Patterns sections below). The full API/configuration
-> reference lives in this group's api-reference leaf.
-
-## Quick Start Workflow
-
-1. **Install SDK**: Add the Auth0 Android SDK dependency to your `build.gradle`:
-   ```gradle
-   implementation 'com.auth0.android:auth0:{LATEST_VERSION}'
-   ```
-
-2. **Configure Auth0**:
-
-   > **Agent instruction:** Check whether the user prompt already includes both Auth0 **Client ID** and **Domain**.
-   > - If both are provided, proceed directly to the Setup → Manual Setup section below using those values.
-   > - If either is missing, you MUST ask the user BEFORE writing any code or files:
-   >   - Question: "How would you like to configure Auth0 for this project?"
-   >   - Options: "Automatic setup (Recommended) — Auth0 CLI creates the app and writes credentials to strings.xml" / "Manual setup — I'll provide my Client ID and Domain"
-   >
-   > Then follow the matching Setup section below for the chosen path.
-   > **Do NOT proceed to step 3 until Auth0 credentials are confirmed.**
-
-3. **Initialize**: Create an Auth0 account instance:
-   ```kotlin
-   import com.auth0.android.Auth0
-
-   val account = Auth0.getInstance(context)
-   ```
-
-4. **Add Auth UI**: Implement login and logout with Web Auth:
-
-   > **Agent instruction:** Before adding new UI elements, search the project for existing click handlers for login, logout, sign-in, or sign-out buttons (e.g., `loginButton`, `signInButton`, `logoutButton`, `signOutButton`, or `setOnClickListener` with auth-related naming). If existing handlers are found, hook the Auth0 code into them without modifying the existing UI. Only create new buttons if no existing handlers are found.
-
-   **Login:**
-   ```kotlin
-   import com.auth0.android.Auth0
-   import com.auth0.android.authentication.AuthenticationAPIClient
-   import com.auth0.android.authentication.storage.SecureCredentialsManager
-   import com.auth0.android.authentication.storage.SharedPreferencesStorage
-   import com.auth0.android.callback.Callback
-   import com.auth0.android.authentication.AuthenticationException
-   import com.auth0.android.provider.WebAuthProvider
-   import com.auth0.android.result.Credentials
-
-   val account = Auth0.getInstance(context)
-   val authentication = AuthenticationAPIClient(account)
-   val storage = SharedPreferencesStorage(context)
-   val credentialsManager = SecureCredentialsManager(context, authentication, storage)
-
-   WebAuthProvider.login(account)
-       .withScheme(getString(R.string.com_auth0_scheme))
-       .withScope("openid profile email offline_access")
-       .start(this, object : Callback<Credentials, AuthenticationException> {
-           override fun onSuccess(result: Credentials) {
-               // User authenticated
-               val idToken = result.idToken
-               val accessToken = result.accessToken
-               // Store credentials securely
-               credentialsManager.saveCredentials(result)
-           }
-           override fun onFailure(error: AuthenticationException) {
-               // Handle authentication failure
-               Log.e("Auth0", "Authentication failed", error)
-           }
-       })
-   ```
-
-   **Logout:**
-   ```kotlin
-   WebAuthProvider.logout(account)
-       .withScheme(getString(R.string.com_auth0_scheme))
-       .start(this, object : Callback<Void?, AuthenticationException> {
-           override fun onSuccess(result: Void) {
-               // User logged out
-           }
-           override fun onFailure(error: AuthenticationException) {
-               Log.e("Auth0", "Logout failed", error)
-           }
-       })
-   ```
-
-5. **Build & Verify**:
-
-   > **Agent instruction:** After completing the integration, build the project to verify it compiles successfully:
-   > ```bash
-   > ./gradlew assembleDebug
-   > ```
-   > If the build fails, analyze the error output and fix the issues. Common integration build failures include:
-   > - **Unresolved reference**: Missing import statements — add the required `import com.auth0.android.*` imports
-   > - **Cannot resolve symbol `R.string.com_auth0_scheme`**: `strings.xml` not updated — verify `com_auth0_scheme`, `com_auth0_client_id`, and `com_auth0_domain` entries exist
-   > - **Incompatible types in callback**: Callback type parameters don't match — ensure `Callback<Credentials, AuthenticationException>` for login and `Callback<Void?, AuthenticationException>` for logout
-   > - **Unresolved `lifecycleScope`**: Missing dependency — add `implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.+'` or move code out of coroutine scope
-   > - **minSdk too low**: SDK requires API 21+ — update `minSdkVersion` to at least 21
-   > - **Java version mismatch**: SDK requires Java 8 — add `compileOptions` with `JavaVersion.VERSION_1_8`
-   >
-   > Re-run the build after each fix. Track the number of build-fix iterations.
-   >
-   > **Failcheck:** If the build still fails after 5–6 fix attempts, stop and ask the user:
-   > - Question: "The build is still failing after several fix attempts. How would you like to proceed?"
-   > - Options: "Let the agent continue fixing iteratively" / "I'll fix it manually — show me the errors" / "Skip build verification and proceed"
-   >
-   > Repeat this check after every 5–6 iterations if errors persist. Do not leave the project in a non-compiling state without the user's explicit consent.
-
-   The callback URL must match your Auth0 application settings: `{SCHEME}://{YOUR_AUTH0_DOMAIN}/android/{YOUR_APP_PACKAGE_NAME}/callback`
+> index (already read on the way here). The quick start lives in this group's
+> hub index too — this file holds tenant configuration, `strings.xml`
+> provisioning, and integration patterns (see the Setup and Integration
+> Patterns sections below). The full API/configuration reference lives in
+> this group's api-reference leaf.
 
 ## Common Mistakes
 

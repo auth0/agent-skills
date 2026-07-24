@@ -2,9 +2,10 @@
 
 Server-side session authentication for Nuxt 3/4 with `@auth0/auth0-nuxt`. Uses server-side encrypted cookie sessions, NOT client-side tokens (not the same as `@auth0/auth0-vue`).
 
-<!-- Shared prerequisites and critical rules that every leaf needs. Read this
-     first (hop 1), then follow the dispatch table below to the one leaf for
-     your intent. Full install/secret/.env/config steps live in integrate.md.
+<!-- Standalone hub: critical rules, when-not-to-use, and an inline quick start
+     that gets a basic login/logout integration working without a second
+     read. The dispatch table below routes to the leaves for route/API
+     protection depth, session management, and troubleshooting.
      (Carved from the original framework-nuxt.md.) -->
 
 ## Critical rules
@@ -22,12 +23,88 @@ Server-side session authentication for Nuxt 3/4 with `@auth0/auth0-nuxt`. Uses s
 - **Static site generation only (SSG) without a server runtime.**
 - **Non-Auth0 authentication provider.**
 
+## Quick start
+
+```bash
+# 1. Install
+npm install @auth0/auth0-nuxt
+
+# 2. Generate secret
+openssl rand -hex 64
+```
+
+```bash
+# 3. .env
+NUXT_AUTH0_DOMAIN=your-tenant.auth0.com
+NUXT_AUTH0_CLIENT_ID=your-client-id
+NUXT_AUTH0_CLIENT_SECRET=your-client-secret
+NUXT_AUTH0_SESSION_SECRET=<from-openssl>
+NUXT_AUTH0_APP_BASE_URL=http://localhost:3000
+NUXT_AUTH0_AUDIENCE=https://your-api  # optional
+```
+
+```typescript
+// 4. nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['@auth0/auth0-nuxt'],
+  runtimeConfig: {
+    auth0: {
+      domain: '',
+      clientId: '',
+      clientSecret: '',
+      sessionSecret: '',
+      appBaseUrl: 'http://localhost:3000',
+      audience: '',  // optional
+    },
+  },
+})
+```
+
+### Built-in Routes
+
+The SDK automatically mounts these routes:
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/auth/login` | GET | Initiates login flow. Supports `?returnTo=/path` parameter |
+| `/auth/callback` | GET | Handles Auth0 callback after login |
+| `/auth/logout` | GET | Logs user out and redirects to Auth0 logout |
+| `/auth/backchannel-logout` | POST | Receives logout tokens for back-channel logout |
+
+**Customize:** Pass `routes: { login, callback, logout, backchannelLogout }` or `mountRoutes: false` to module config.
+
+### Composables
+
+| Composable | Context | Usage |
+|------------|---------|-------|
+| `useAuth0(event)` | Server-side | Access `getUser()`, `getSession()`, `getAccessToken()`, `logout()` |
+| `useUser()` | Client-side | Display user data only. **Never use for security checks** — instead, enforce them server-side with `useAuth0(event).getSession()` |
+
+```typescript
+// Server example
+const auth0 = useAuth0(event);
+const session = await auth0.getSession();
+```
+
+```vue
+<script setup>
+const user = useUser();
+</script>
+
+<template>
+  <div v-if="user">Welcome {{ user.name }}</div>
+<template>
+```
+
+This gets a basic login/logout integration working. For route/API protection depth, session management, API integration, and troubleshooting, see this group's integration guide below.
+
 ---
 
 ## Choose your task
 
-You arrived here for a specific intent. After reading the shared setup above,
-read the leaf for your task:
+You arrived here for a specific intent. The quick start above gets a basic
+integration working. After reading the shared setup above, read the leaf for
+your task:
 
 | Intent | Read |
 |---|---|
