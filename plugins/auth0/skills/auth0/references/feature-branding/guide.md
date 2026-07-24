@@ -1,191 +1,11 @@
 
 # Auth0 Branding
 
-Style Auth0 Universal Login to match a brand. Covers the theme (colors, typography, borders, widget layout), tenant-level branding settings (logo, favicon, primary color), page templates (Liquid HTML that wraps the widget), and custom text per screen.
-
-## Capabilities
-
-When this skill is invoked **with a specific intent** in the opening message (e.g., "brand my tenant from ferrari.com", "reset the theme", "check if Universal Login is on"), parse the intent and route directly to the matching capability below. Do not show a picker.
-
-When this skill is invoked **without intent** (bare `/auth0-branding`, or a vague "help me with branding"), show the table below and ask in one line: "Pick a number, name one, or describe what you want." Parse the reply — accept `1`, `"brand my tenant"`, or `"make it look like acme.com"` equivalently.
-
-| # | Capability | What it does |
-|---|---|---|
-| 1 | **Brand my tenant** | Style Universal Login end-to-end from a website I own, brand assets I have, or manual input. Colors, logo, typography, page layout, and (optionally) login text voice, applied together |
-| 2 | **Change specific settings** | Update individual pieces directly: a logo, color, font, corner radius, background, button label, or the page template. No URL extraction or asset parsing needed |
-| 3 | **Match my brand voice** | Rewrite Universal Login text to sound like a source I provide: my website, sample copy, or a voice descriptor. Text only; doesn't touch colors or layout |
-| 4 | **Rollback to Auth0 defaults** | Pick what to clear: tenant branding settings, the theme, the page template, or custom text on specific prompts |
-| 5 | **Check my setup** | Verify that login, signup, password reset, and MFA are actually running Universal Login on my tenant and not Classic. Safe read-only starter |
-
-The **Prerequisites** section applies to all capabilities.
-
-## Prompt style
-
-Prefer free-text prompts. The skill should parse natural replies, not force clicks. Use `AskUserQuestion` **only** when one of these applies:
-
-1. **Multi-select of non-obvious options** where seeing the full list helps the user (e.g., Capability 3's flow categories — user won't remember the full set off the top of their head).
-2. **Destructive-path safety gate** (e.g., Capability 4's "save a backup before reset?" yes/no).
-3. **Disambiguation between 3+ distinct paths with meaningful trade-offs** the user wouldn't know by heart.
-
-Everything else is free text. Specifically:
-
-- **Review prompts** ("proceed? apply / edit / cancel, or tell me what to change") are free text. Parse the reply. If the reply names specific changes, apply them inline and re-render the proposal; don't make the user click through an edit submenu.
-- **"Paste a value"** asks (hex code, URL, font name) are free text. Don't wrap single-field input in a picker.
-- **Capability routing at entry** is free text. See the paragraph above the capabilities table.
-
-Discoverability cue: every proposal must list the editable knobs inline, including **"off by default"** ones (voice rewriting, page template, layout override). Users can't ask to edit what they don't know exists. The "Also available" block under the main proposal in Capability 1 is the canonical pattern.
-
-Don't auto-run optional steps (e.g., voice-flow detection, Brandfetch lookup on an unverified domain). Ask first whether the user wants to list, detect, or pick.
-
-## Plan mode
-
-When Claude Code is in plan mode, the skill's writes — PATCH/PUT/DELETE/POST against the Management API, plus local file writes (backup JSON, Brandfetch key) — are held until the plan is approved.
-
-**What's allowed:**
-- GETs against the Management API (loading current theme, branding, custom text, prompts, connections, tenant settings). These drive the proposal and diagnostics.
-- LLM-only work: voice classification, translation generation, proposal rendering.
-- Capability 5 runs unchanged; it's already read-only.
-
-**What's deferred:**
-- All Management API writes (no PATCH/PUT/DELETE/POST).
-- Local file writes: Capability 4 backup JSON, Capability 1 Brandfetch-key save.
-- `auth0 test login` (it starts an auth flow in a browser — not a tenant mutation, but a side effect; defer it along with the writes).
-
-**Still do the interactive asks.** The Brandfetch-key prompt in Capability 1, the source/screens/locale prompts in Capability 3, the surface/backup prompts in Capability 4 — all still happen. Plan mode defers *execution*, not *intent gathering*. For any ask whose answer triggers a write (e.g., "paste a Brandfetch key"), collect the answer and note in the plan "will save to `${XDG_CONFIG_HOME:-$HOME/.config}/auth0-branding/brandfetch.key` on approval."
-
-**Plan contents.** Produce a complete plan covering:
-- Target tenant (from `auth0 tenants list`) and the active-tenant confirmation.
-- Every concrete API call the skill will make, in order: method, path, and a summary of the body (full payloads for small objects like `PATCH /branding`; key names + change counts for large ones like the merged theme object or custom-text PUTs).
-- Every local file write, with absolute path.
-- Scope pre-check outcome for Capability 4, so scope failures surface before approval.
-- The post-apply `auth0 test login` step, if applicable.
-
-Then call `ExitPlanMode`.
-
-**After approval.** Normal execution resumes. All existing gates still apply: active-tenant confirmation, production-write confirmation, WCAG contrast warnings, template-tag validation, merge-before-PUT for custom text, scope checks for destructive operations.
-
-## Verify in browser (post-apply)
-
-After **any capability writes to the tenant** (capabilities 1–4), offer to open the live Universal Login page so the user can see the result immediately. Free-text prompt, not a picker:
-
-> Open the login page in a browser to verify? (yes / no)
-
-If **yes**: run `auth0 test login` on the active tenant. The CLI starts an authorization code flow against the default app and opens the browser. If the environment is headless or the browser fails to open, the CLI prints the authorize URL to stdout — capture it and pass it to the user to open manually.
-
-If **no**: end with the summary of what was written.
-
-Notes:
-- This applies to Capability 1 (Brand my tenant), Capability 2 (Change specific settings), Capability 3 (Match my brand voice), and Capability 4 (Rollback to Auth0 defaults). In the rollback case, the browser page should render Auth0's built-in defaults — that's the verification.
-- Capability 5 (Check my setup) is read-only; skip this step.
-- If the user has a preferred client they test against, they'll mention it; `auth0 test login --client-id <id>` targets a specific app. Otherwise use the default.
-
-## Key Concepts
-
-| Concept | Description |
-|---|---|
-| Theme | Visual settings (colors, fonts, borders, widget layout, backgrounds) applied to Universal Login. Auth0 currently renders only the default theme; additional themes can be created via the API but are not used by Universal Login |
-| Branding Settings | Tenant-level logo, favicon, primary color, and page background color |
-| Page Template | Custom HTML using Liquid syntax that wraps the login widget; requires a custom domain |
-| Text Customization | Per-prompt, per-screen, per-language text overrides on Universal Login pages |
-| Custom Text Variables | Customer-defined keys (prefixed `var-`) in the Custom Text API, referenced from templates and partials as camelCase |
-| Custom Domain | Required for page templates; maps your domain to Auth0's login pages |
-| Universal Login vs Classic | Tenants can render each flow (login/signup, password reset, MFA) in either experience. Theme, template, and no-code editor only apply to flows running Universal Login |
-
-## Prerequisites
-
-These apply to any capability that writes to the tenant. "Check my setup" is read-only and can be run first to verify these are in place.
-
-### CLI Tenant Context (if using the `auth0` CLI)
-
-The Auth0 CLI is authenticated to **one tenant at a time**. All `auth0 ...` commands run against whichever tenant the CLI is currently logged into:
-
-```bash
-auth0 tenants list       # shows all tenants; the active one is marked with →
-auth0 tenants use <name> # switch active tenant; prompts for browser login if not already authenticated
-```
-
-**Before any write operation in any capability, run `auth0 tenants list`, show the active tenant to the user, and get explicit confirmation to proceed.** If it's the wrong tenant, stop. Tell the user to run `auth0 tenants use <name>` (or `auth0 login` if the target isn't in the list) themselves and re-invoke the skill. Do not try to switch tenants on the user's behalf.
-
-For non-interactive or multi-tenant automation, skip the CLI and call the **Management API** directly with an explicit domain + bearer token per call. (see the cURL examples section below)
-
-**Tooling note.** The `auth0 ul` commands below are one way to write branding settings. The loaded tooling reference has the equivalent for infrastructure-as-code projects: the Terraform `auth0_branding` resource (`logo_url`, `favicon_url`, `colors` block). The Auth0 MCP server exposes **no** branding/Universal Login tool — for an MCP-only session, fall back to the CLI, Terraform, or the Management API directly. This interactive branding workflow (extract → propose → apply) stays CLI/API-driven regardless, because it is a guided flow rather than a static config write.
-
-### Universal Login Active for the Flows You Want to Brand
-
-Themes and templates only apply to flows actually running in Universal Login. Tenants can run in hybrid mode where some flows are Classic. Run Capability 5 ("Check my setup") to diagnose which flows will and won't be affected. (see the Check Setup section below for the Classic-toggle mechanics)
-
-### Custom Domain (only if working with page templates)
-
-Page templates require a custom domain on the tenant. Branding settings, theme, and text customization do not. If the task involves page templates and no custom domain is configured, set up a custom domain first (custom domains, feature:custom-domains).
-
-## Capability 1: Brand my tenant
-
-End-to-end branding from a website URL, inline brand values, or a short ask — fills primary color, logo, font, and page background, shows one proposal, and applies the theme.
-
-**See the Brand My Tenant section below.**
-
-## Capability 2: Change specific settings
-
-Manual branding update driven by the user's natural-language intent — the skill resolves the phrase to specific fields, stages changes, and applies as a batch.
-
-**See the Change Specific Settings section below.**
-
-## Capability 3: Match my brand voice
-
-Rewrite Universal Login text to match a source the user provides (website, sample copy, or voice descriptor); doesn't touch colors, layout, or logo.
-
-**See the Match Brand Voice section below.**
-
-## Capability 4: Rollback to Auth0 defaults
-
-Clear one or more branding surfaces and restore Auth0's defaults, per-surface. Destructive; always confirms before writing.
-
-**See the Rollback section below.**
-
-## Capability 5: Check my setup
-
-Read-only diagnosis. Answers "will theme changes actually show up on the flows I care about?" Safe to run first when diagnosing "why doesn't my theme show up?"
-
-**See the Check Setup section below.**
-
-## Common Mistakes
-
-| Mistake | What to Do Instead |
-|---|---|
-| Creating additional themes via `POST /branding/themes` (Universal Login only renders the default theme; POSTed themes exist but never apply) | Always update the default theme: `GET /branding/themes/default`, then PATCH by its `themeId` |
-| Sending a partial PATCH on a theme (PATCH requires all top-level sections) | GET the theme, apply your changes, then PATCH with the full object |
-| Theme or page template changes do not appear on login/reset/MFA (a tenant-wide toggle is forcing that flow into Classic) | Run "Check my setup". Fix the offending tenant toggle: `universal_login_experience: classic` (login/signup), `change_password.enabled: true` (reset), or `guardian_mfa_page.enabled: true` (MFA) |
-| Missing `auth0:head` or `auth0:widget` in templates (both are required; the page will not render without them) | Always include both; refuse the PUT otherwise |
-| Using PUT for custom text without merging (PUT replaces all text for that prompt/language) | GET current text first, merge, then PUT the full object |
-
-For the extended list (theme field requirements, Brandfetch ToS, homepage-only extraction gaps, CSS class names, CLI tenant context), see the API Reference section below.
-
-## References
-
-This file contains all branding guidance inline. Sections: Brand My Tenant · Change Specific Settings · Match Brand Voice · Rollback · Check Setup · API Reference · Examples.
-
-Related capabilities:
-
-- Custom domains, required for page templates (custom domains, feature:custom-domains)
-- Organization-specific branding for B2B multi-tenancy (Organizations, feature:organizations)
-- Custom login-flow logic via Auth0 Actions
-- Advanced Customizations for Universal Login (ACUL) — build fully custom screens beyond what theme + template can do (ACUL, feature:acul)
-
-External:
-
-- [Customize Universal Login](https://auth0.com/docs/customize/login-pages/universal-login)
-- [Customize Themes](https://auth0.com/docs/customize/login-pages/universal-login/customize-themes)
-- [Customize Page Templates](https://auth0.com/docs/customize/login-pages/universal-login/customize-templates)
-- [Customize Text Elements](https://auth0.com/docs/customize/login-pages/universal-login/customize-text-elements)
-- [Branding API Reference](https://auth0.com/docs/api/management/v2/branding)
-- [Brandfetch Brand API](https://docs.brandfetch.com/brand-api/overview)
-- [Brandfetch Logo API Guidelines](https://docs.brandfetch.com/logo-api/guidelines)
-
----
+> Orientation (capabilities table, prompt style, plan-mode rules, verify-in-browser step, key concepts, prerequisites, common mistakes) lives in this reference group's hub. Read that first if you haven't already; this file picks up at the detailed capability playbooks.
 
 # Capability 1: Brand my tenant
 
-End-to-end branding. The tenant's theme, logo, and typography are updated to match a single source. Invoked from SKILL.md when the user asks to brand a tenant from a website or brand assets.
+End-to-end branding. The tenant's theme, logo, and typography are updated to match a single source. Invoked when the user asks to brand a tenant from a website or brand assets.
 
 Scope is intentionally narrow: **four brand values** (primary color, logo URL, font family, page background) plus the target tenant. Layout, voice rewriting, and locale handling are out of the default path; users opt in to them via `[edit]` on the review.
 
@@ -362,7 +182,7 @@ Before writing, diff the proposed changes against current tenant state. In produ
 
 Report what was written and what was skipped (for example, "page template skipped — no custom domain configured"). If voice rewriting was opted in, chain into Capability 3 after the theme write succeeds.
 
-After reporting (and after voice rewriting chains complete, if enabled), run the "Verify in browser (post-apply)" step from SKILL.md.
+After reporting (and after voice rewriting chains complete, if enabled), run the "Verify in browser (post-apply)" step from the hub index.
 
 ---
 
@@ -424,7 +244,7 @@ Summary:
     PATCH /tenants/settings --data '{"guardian_mfa_page": {"enabled": false}}'
 ```
 
-This capability is read-only and does not write to the tenant; skip the "Verify in browser (post-apply)" step from SKILL.md.
+This capability is read-only and does not write to the tenant; skip the "Verify in browser (post-apply)" step from the hub index.
 
 ---
 
@@ -512,9 +332,9 @@ After the user finishes staging changes, batch the writes by surface:
 3. Page template change (if any) → one `PUT /api/v2/branding/templates/universal-login` after verifying `auth0:head` and `auth0:widget` are present.
 4. Per-screen text changes → one `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` per affected prompt/language (GET-merge-PUT; do not overwrite other screens in that prompt).
 
-Before writing, show the consolidated diff **and the target tenant name** (per the "CLI Tenant Context" prerequisite in SKILL.md). Require explicit confirmation for the whole batch. Auth0 does not retain prior versions, so there is no automatic rollback; suggest the user export current state locally first if they want a backup.
+Before writing, show the consolidated diff **and the target tenant name** (per the "CLI Tenant Context" prerequisite in the hub index). Require explicit confirmation for the whole batch. Auth0 does not retain prior versions, so there is no automatic rollback; suggest the user export current state locally first if they want a backup.
 
-After the batch completes, run the "Verify in browser (post-apply)" step from SKILL.md.
+After the batch completes, run the "Verify in browser (post-apply)" step from the hub index.
 
 ## Guardrails
 
@@ -583,7 +403,7 @@ Reset is destructive and one-way. Auth0 does not maintain prior versions of them
 
 ## Confirm
 
-Show the concrete plan, including the target tenant (per the "CLI Tenant Context" prerequisite in SKILL.md):
+Show the concrete plan, including the target tenant (per the "CLI Tenant Context" prerequisite in the hub index):
 
 ```text
 Target tenant: acme-prod  (active in the Auth0 CLI)
@@ -622,7 +442,7 @@ In production environments, require explicit confirmation before any write.
 
 Report what was reset, what was left alone, and (if saved) the full path to the backup file so the user can find it later.
 
-After the report, run the "Verify in browser (post-apply)" step from SKILL.md. In the rollback case, the browser should render Auth0 built-in defaults; that's the verification.
+After the report, run the "Verify in browser (post-apply)" step from the hub index. In the rollback case, the browser should render Auth0 built-in defaults; that's the verification.
 
 ---
 
@@ -787,7 +607,7 @@ Show each locale's proposed text so the user can spot-check and edit any transla
 
 ### Step 4: Apply
 
-Before writing, show the target tenant name and the prompt/locale pairs about to be updated, and get explicit confirmation (per the "CLI Tenant Context" prerequisite in SKILL.md).
+Before writing, show the target tenant name and the prompt/locale pairs about to be updated, and get explicit confirmation (per the "CLI Tenant Context" prerequisite in the hub index).
 
 Batch by prompt: one `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` per prompt-locale pair, with approved new keys merged across all screens under that prompt and any existing overrides preserved.
 
@@ -797,7 +617,7 @@ Never PUT without merging; PUT replaces the full object for that prompt/lang. Th
 
 **Rate limits.** A multi-prompt, multi-locale rewrite can produce 20+ PUTs in quick succession. The Management API's default per-tenant write budget is a few hundred requests per minute, but concurrent writes are the real risk: run PUTs **sequentially**, not in parallel. If the API returns **429 Too Many Requests**, back off and retry the failed PUT only — don't re-run the batch. Use exponential backoff: wait 5s, 10s, 20s, 30s, 60s; stop after five attempts and surface the failed prompt/locale pair to the user. Honor the `Retry-After` response header if present (seconds to wait before the next attempt). Successful PUTs don't need to be retried; the per-prompt design means each PUT is independent.
 
-After all PUTs succeed, run the "Verify in browser (post-apply)" step from SKILL.md.
+After all PUTs succeed, run the "Verify in browser (post-apply)" step from the hub index.
 
 ## Learn new screens
 
@@ -805,7 +625,7 @@ If the run included a screen that was not in the screens catalog below (because 
 
 ```text
 I rewrote `<screen-name>` under the `<prompt-name>` prompt. It wasn't in my
-reference list. Add it to screens.md so I'll remember it next time?
+reference list. Add it to the screens catalog so I'll remember it next time?
 
   [y] Yes, add it under <inferred-category>
   [c] Yes, but put it under a different category (I'll pick)
