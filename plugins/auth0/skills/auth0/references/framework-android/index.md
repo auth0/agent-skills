@@ -52,6 +52,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
    val account = Auth0.getInstance(context)
    ```
+   > **IMPORTANT:** `Auth0.getInstance(context)` auto-reads `com_auth0_client_id` and `com_auth0_domain` from `strings.xml`. **Never** pass `clientId` or `domain` as arguments (e.g. `Auth0.getInstance(clientId, domain)`) — that hardcodes credentials in source.
 
 4. **Add Auth UI**: Implement login and logout with Web Auth:
 

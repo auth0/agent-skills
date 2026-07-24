@@ -14,6 +14,7 @@ verification, common mistakes, and the quick reference.
 
 | Mistake | Fix |
 |---------|-----|
+| Hardcoding credentials via `Auth0.getInstance(clientId, domain)` | Use `Auth0.getInstance(context)` — it auto-reads `com_auth0_client_id` and `com_auth0_domain` from `strings.xml`. Never pass the client ID or domain as arguments or string literals in source. |
 | App type not set to Native in Auth0 Dashboard | Create a Native application type in your Auth0 tenant. The Android SDK requires Native app configuration, not Machine-to-Machine or other types. |
 | Missing callback URL in Allowed Callback URLs | Add `{SCHEME}://{YOUR_AUTH0_DOMAIN}/android/{YOUR_APP_PACKAGE_NAME}/callback` to your Auth0 application's Allowed Callback URLs setting, where `{SCHEME}` matches `com_auth0_scheme` in `strings.xml` (e.g., `demo` by default). |
 | Missing `<uses-permission android:name="android.permission.INTERNET" />` | Add the INTERNET permission to `AndroidManifest.xml`. The SDK requires network access for authentication. |
