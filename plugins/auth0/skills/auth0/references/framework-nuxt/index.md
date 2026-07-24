@@ -34,7 +34,7 @@ read the leaf for your task:
 | integrate | `Read: references/framework-nuxt/integrate.md` |
 
 **Then, as needed for your task:**
-- Advanced route-protection / session-store patterns: `Read: references/framework-nuxt/patterns.md`
+- Protecting pages/routes (page-level `definePageMeta` middleware, role/permission guards) or custom session stores: `Read: references/framework-nuxt/patterns.md` — integrate.md covers only the baseline global/server middleware.
 - Any other task (guidance, debugging, API integration, session management): start with `Read: references/framework-nuxt/integrate.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.
