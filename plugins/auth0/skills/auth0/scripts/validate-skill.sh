@@ -77,9 +77,7 @@ if [ "$OLD_PATTERNS" -gt 0 ]; then
   exit 1
 fi
 
-# Feature file checks. Same smoke check as frameworks above: assert index.md
-# exists for each expected feature. Real hub/leaf structure is enforced by
-# check_router_reachability.py.
+# Feature file checks
 EXPECTED_FEATURES="mfa branding custom-domains migration acul dpop"
 for feat in $EXPECTED_FEATURES; do
   if [ ! -f "$REFS_DIR/feature-$feat/index.md" ]; then
