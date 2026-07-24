@@ -119,13 +119,13 @@ def _disambiguation_variant_slugs(skill_md: str) -> set:
 def _variant_base_slugs(skill_md: str) -> set:
     """Slugs the router marks as an abstract variant base — a value cell whose
     text carries the `(variant below)` annotation (e.g. `aspnetcore`) — that
-    truly resolve to NO `framework-<slug>.md`. A base is only such an abstract
-    stand-in when it does NOT itself appear as a concrete variant slug in the
-    disambiguation table: `aspnetcore` splits into `aspnetcore-auth`/`-api` (so
-    `framework-aspnetcore.md` never exists and must be exempt), whereas
+    truly resolve to NO `framework-<slug>/` reference. A base is only such an
+    abstract stand-in when it does NOT itself appear as a concrete variant slug
+    in the disambiguation table: `aspnetcore` splits into `aspnetcore-auth`/`-api`
+    (so `framework-aspnetcore/` never exists and must be exempt), whereas
     `express`/`fastify`/`php`/`laravel` ARE their own web-app variant slug and
-    DO ship `framework-<base>.md` — those must stay in broken-route scope so a
-    later delete/rename of the real file is caught. Derived from the router's
+    DO ship `framework-<base>/` — those must stay in broken-route scope so a
+    later delete/rename of the real reference is caught. Derived from the router's
     own tables, not a hardcoded exception list, and not from file presence
     (which would circularly re-exempt a file the moment it goes missing)."""
     annotated: set = set()

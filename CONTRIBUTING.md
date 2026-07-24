@@ -140,10 +140,12 @@ All Auth0 guidance ships in the single `auth0` skill
 for why. To add or change coverage:
 
 ### Pick the right reference prefix
-- `feature-<name>.md` — a capability spanning frameworks (e.g. mfa, dpop).
-- `framework-<name>.md` — a single SDK/framework integration.
-- `tooling-<name>.md` — a provisioning tool (cli, mcp, terraform).
-- `pattern-<name>.md` — cross-cutting guidance.
+Every reference is a directory `<name>/` with an `index.md` (see "Adding a
+reference"); pick the prefix that fits:
+- `feature-<name>/` — a capability spanning frameworks (e.g. mfa, dpop).
+- `framework-<name>/` — a single SDK/framework integration.
+- `tooling-<name>/` — a provisioning tool (cli, mcp, terraform).
+- `pattern-<name>/` — cross-cutting guidance.
 
 ### Make it routable (required — CI enforces this)
 Every reference in `references/` MUST be reachable from `SKILL.md`. Navigation is
@@ -165,7 +167,7 @@ guaranteed.
   keyword) — and, if it has a web-vs-API split, a row in "Variant
   disambiguation." The reachability checker derives routable slugs directly from
   these router tables (the backticked value column), so simply naming your
-  `<slug>` in a table makes `framework-<slug>.md` reachable — there is no
+  `<slug>` in a table makes `framework-<slug>/index.md` reachable — there is no
   separate list to update.
 
 ### Adding a reference
