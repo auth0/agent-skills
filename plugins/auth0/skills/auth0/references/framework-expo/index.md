@@ -1,4 +1,4 @@
-# Auth0 Expo — reference hub
+# Auth0 Expo
 
 Add authentication to Expo (React Native) applications using `react-native-auth0` with the Expo Config Plugin.
 
@@ -181,7 +181,7 @@ export default function App() {
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared setup above,
-read the leaf for your task:
+read the reference for your task:
 
 | Intent | Read |
 |---|---|
@@ -192,4 +192,4 @@ read the leaf for your task:
 - Full API / configuration lookup, testing checklist, common issues, security considerations: `Read: references/framework-expo/api-reference.md`
 - Any other task (guidance, debugging, Organizations, provider migration): start with `Read: references/framework-expo/integrate.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

@@ -1,4 +1,4 @@
-# Auth0 Go — reference hub
+# Auth0 Go
 
 Protect Go HTTP API endpoints with JWT access token validation using github.com/auth0/go-jwt-middleware/v3.
 
@@ -404,7 +404,7 @@ curl -s http://localhost:8080/api/private -H "Authorization: Bearer $TEST_TOKEN"
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared prerequisites
-above, read the leaf for your task:
+above, read the reference for your task:
 
 | Intent | Read |
 |---|---|
@@ -415,4 +415,4 @@ above, read the leaf for your task:
 - Full API / configuration lookup, testing checklist, security considerations: `Read: references/framework-go/api-reference.md`
 - Any other task (guidance, debugging, scope enforcement): start with `Read: references/framework-go/integrate.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

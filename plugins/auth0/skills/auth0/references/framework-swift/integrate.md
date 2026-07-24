@@ -6,12 +6,12 @@ secure Keychain storage via `CredentialsManager`, biometric protection,
 organizations, error handling, and common mistakes.
 
 > **Prerequisites & setup:** the shared critical rules, prerequisites, and
-> when-NOT-to-use notes live in this group's hub index (already read on the way
-> here). The quick start lives in this group's hub index too — this file holds
+> when-NOT-to-use notes live in this group's overview (already read on the way
+> here). The quick start lives in this group's overview too — this file holds
 > SDK installation, Auth0 CLI configuration, `Auth0.plist`, URL scheme
 > registration, Associated Domains, integration patterns, and verification
 > depth (see the Setup and Integration Patterns sections below). The
-> full API/configuration reference lives in this group's api-reference leaf.
+> full API/configuration reference lives in this group's API reference.
 
 ## Common Mistakes
 
@@ -46,7 +46,7 @@ organizations, error handling, and common mistakes.
 
 > **Agent instruction:** Run these pre-flight checks. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
-> **Credential privacy (see Critical rules in the hub index):** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands, redirect output to a private temporary file (created with `mktemp` under a restrictive umask) rather than a predictable path:
+> **Credential privacy (see Critical rules in the overview):** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands, redirect output to a private temporary file (created with `mktemp` under a restrictive umask) rather than a predictable path:
 >
 > ```bash
 > umask 077
@@ -808,7 +808,7 @@ func verifyMFA(mfaToken: String, otp: String) async throws -> Credentials {
 - Auth0 setup — if Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 - Manage Auth0 resources from the terminal with the Auth0 CLI (`tooling-cli`)
 - Multi-factor authentication — the step-up / second-factor challenge flow is in the MFA section above
-- Major-version SDK migration (v2 → v3) — see this group's migration leaf
+- Major-version SDK migration (v2 → v3) — see this group's migration guide
 
 
 ## References

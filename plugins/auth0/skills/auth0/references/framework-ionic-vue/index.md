@@ -1,4 +1,4 @@
-# Auth0 Ionic Vue (Capacitor) — reference hub
+# Auth0 Ionic Vue (Capacitor)
 
 Add Auth0 authentication to Ionic Vue applications using Capacitor. This skill covers native mobile authentication using the `@auth0/auth0-vue` SDK combined with `@capacitor/browser` and `@capacitor/app` plugins for deep link handling on iOS and Android.
 
@@ -192,7 +192,7 @@ const doLogout = async () => {
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared setup above,
-read the leaf for your task:
+read the reference for your task:
 
 | Intent | Read |
 |---|---|
@@ -203,4 +203,4 @@ read the leaf for your task:
 - Full API / configuration lookup, claims reference, testing checklist, security considerations: `Read: references/framework-ionic-vue/api-reference.md`
 - Any other task (guidance, debugging, Organizations): start with `Read: references/framework-ionic-vue/integrate.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

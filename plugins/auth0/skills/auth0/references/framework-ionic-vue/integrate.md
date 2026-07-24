@@ -3,13 +3,13 @@
 Add Auth0 authentication to Ionic Vue applications using Capacitor. This skill covers native mobile authentication using the `@auth0/auth0-vue` SDK combined with `@capacitor/browser` and `@capacitor/app` plugins for deep link handling on iOS and Android.
 
 > **Prerequisites & setup:** the shared critical rules, prerequisites, and
-> when-NOT-to-use notes live in this group's hub index (already read on the way
-> here). The quick start lives in this group's hub index too — this file holds
+> when-NOT-to-use notes live in this group's overview (already read on the way
+> here). The quick start lives in this group's overview too — this file holds
 > setup variants (automated Auth0 CLI provisioning, manual setup, deep linking),
 > plus advanced patterns (login/logout flows, token management, route guards,
 > error handling, Capacitor lifecycle) at pattern depth (see the Setup and
 > Integration Patterns sections below). The full API/config/claims lookup and
-> testing checklist live in this group's API reference leaf.
+> testing checklist live in this group's API reference.
 
 ## Common Mistakes
 

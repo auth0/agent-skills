@@ -1,4 +1,4 @@
-# Auth0 Swift — reference hub
+# Auth0 Swift
 
 Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS). This skill adds complete native authentication to Swift apps using Web Auth (system browser redirect), secure Keychain credential storage via `CredentialsManager`, and optional biometric protection.
 
@@ -250,7 +250,7 @@ private let auth = AuthenticationService()
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared prerequisites
-above, read the leaf for your task:
+above, read the reference for your task:
 
 | Intent | Read |
 |---|---|
@@ -264,4 +264,4 @@ above, read the leaf for your task:
 - Any other task (guidance, debugging, Organizations, provider migration):
   start with `Read: references/framework-swift/integrate.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

@@ -1,4 +1,4 @@
-# Auth0 Ionic Angular (Capacitor) — reference hub
+# Auth0 Ionic Angular (Capacitor)
 
 Add authentication to an Ionic Angular application using the `@auth0/auth0-angular` SDK with Capacitor plugins for native iOS and Android. This skill covers login, logout, user profile display, and secure token management using the system browser (SFSafariViewController on iOS, Chrome Custom Tabs on Android) via Capacitor's Browser plugin.
 
@@ -253,7 +253,7 @@ export class ProfileComponent {
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared setup above,
-read the leaf for your task:
+read the reference for your task:
 
 | Intent | Read |
 |---|---|
@@ -264,4 +264,4 @@ read the leaf for your task:
 - Full API / configuration lookup, claims reference, testing checklist, security considerations: `Read: references/framework-ionic-angular/api-reference.md`
 - Any other task (guidance, debugging, Organizations): start with `Read: references/framework-ionic-angular/integrate.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

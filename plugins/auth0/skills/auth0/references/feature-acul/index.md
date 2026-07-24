@@ -1,4 +1,4 @@
-# Auth0 ACUL (Advanced Customization for Universal Login) — reference hub
+# Auth0 ACUL (Advanced Customization for Universal Login)
 
 Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. Covers the multi-phase ACUL Screen Generator workflow (CLI auth, project setup, screen scaffolding, theme extraction, code generation, build validation, dev-mode wiring), the ACUL React + JS SDK APIs, the `auth0 acul` CLI commands, the full screen catalog, and social-login + theming patterns.
 
@@ -10,7 +10,7 @@ Always resolve the correct reference for a screen using this priority order. **B
 
 ```text
 1. Check auth0-acul-samples availability first  (gate for CLI usage)
-   → Check the Screen Catalog section in this group's guide leaf for the Samples column
+   → Check the Screen Catalog section in this group's guide for the Samples column
    → Verify the screen directory exists at:
      React:    https://github.com/auth0-samples/auth0-acul-samples/tree/main/react/src/screens/<screen-name>
      React-JS: https://github.com/auth0-samples/auth0-acul-samples/tree/main/react-js/src/screens/<screen-name>
@@ -32,7 +32,7 @@ Always resolve the correct reference for a screen using this priority order. **B
    → Structural component pattern only — never use their hooks/actions for other screens
 ```
 
-For which screens are in auth0-acul-samples → see the Screen Catalog section in this group's guide leaf.
+For which screens are in auth0-acul-samples → see the Screen Catalog section in this group's guide.
 
 
 ## auth0-acul-samples Architecture
@@ -84,7 +84,7 @@ const <ScreenName>Screen = () => {
 export default <ScreenName>Screen   // REQUIRED: screenLoader registers via lazy(), which needs a default export
 ```
 
-> **`index.tsx` must have a `export default`.** The project's screen registry (`src/utils/screen/screenLoader.ts`) loads each screen with `lazy(() => import('@/screens/<screen-name>'))`, and `React.lazy` resolves the module's **default** export. A named-only export (`export const <ScreenName>Screen`) compiles fine but renders blank / "screen not implemented" at runtime. See "Screen Registration" in this group's guide leaf, Phase 6.
+> **`index.tsx` must have a `export default`.** The project's screen registry (`src/utils/screen/screenLoader.ts`) loads each screen with `lazy(() => import('@/screens/<screen-name>'))`, and `React.lazy` resolves the module's **default** export. A named-only export (`export const <ScreenName>Screen`) compiles fine but renders blank / "screen not implemented" at runtime. See "Screen Registration" in this group's guide, Phase 6.
 
 **hooks/use\<ScreenName\>Manager.ts pattern:**
 ```ts
@@ -133,4 +133,4 @@ You arrived here for the ACUL intent. The reference hierarchy, auth0-acul-sample
 - SDK API + CLI reference (React `@auth0/auth0-acul-react` hooks + action functions, JS `@auth0/auth0-acul-js` manager classes, import paths, component structure, plus the full `auth0 acul` CLI command and flag reference — `init`, `screen add`, `config`, `dev`, typical workflows): `Read: references/feature-acul/api-reference.md`
 - Screen catalog (all React + JS screens with samples availability and SDK URLs), social-login button patterns, and theming/design-token patterns live in the guide's Patterns section: `Read: references/feature-acul/guide.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

@@ -3,14 +3,14 @@
 Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-auth-commons`. Provides `AuthenticationController` for building authorize URLs and handling callbacks, with session-based authentication and support for Organizations and Multiple Custom Domains.
 
 > **Prerequisites & setup:** the version-fetch instruction, prerequisites,
-> when-NOT-to-use notes, and quick start all live in this group's hub index
+> when-NOT-to-use notes, and quick start all live in this group's overview
 > (already read on the way here) — that gets a basic integration working
 > without a second read. This file holds setup variants (automatic vs. manual
 > application creation, secret management, project structure) and deeper
 > integration patterns (logout, Organizations, MCD, custom scopes, filters,
 > claims, error handling) — see the Setup and Integration Patterns sections
 > below. The full API/configuration reference and testing checklist live in
-> this group's api-reference leaf.
+> this group's API reference.
 
 ## Common Mistakes
 

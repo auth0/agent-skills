@@ -3,13 +3,12 @@
 Add login, logout, and user profile to an ASP.NET Core MVC, Razor Pages, or Blazor Server application using `Auth0.AspNetCore.Authentication`.
 
 > **Prerequisites & setup:** the shared prerequisites, when-NOT-to-use notes,
-> and quick start for a basic MVC integration live in this group's hub index
+> and quick start for a basic MVC integration live in this group's overview
 > (already read on the way here). This file covers the Blazor Server and
 > Razor Pages setup variants, tenant setup/provisioning, and advanced
 > server-side patterns (protected routes, calling APIs, custom login, Blazor
 > auth, error handling) — see the Setup and Integration Patterns sections
-> below. Full API/configuration lookup lives in this group's api-reference
-> leaf.
+> below. Full API/configuration lookup lives in this group's API reference.
 
 ## Blazor Server Variant
 

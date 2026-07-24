@@ -6,7 +6,7 @@ Server-side session authentication for Nuxt 3/4. NOT the same as @auth0/auth0-vu
 
 **Core principle:** Uses server-side encrypted cookie sessions, not client-side tokens.
 
-> **Quick start:** installation, session secret generation, `.env` setup, `nuxt.config.ts` module wiring, the built-in `/auth/*` routes, and baseline `useAuth0()`/`useUser()` composable usage live in this group's hub index — already read on the way here. This file covers route and API protection depth, session management, API integration, and troubleshooting.
+> **Quick start:** installation, session secret generation, `.env` setup, `nuxt.config.ts` module wiring, the built-in `/auth/*` routes, and baseline `useAuth0()`/`useUser()` composable usage live in this group's overview — already read on the way here. This file covers route and API protection depth, session management, API integration, and troubleshooting.
 
 ## When to Use
 

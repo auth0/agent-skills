@@ -1,4 +1,4 @@
-# Auth0 Branding — reference hub
+# Auth0 Branding
 
 Style Auth0 Universal Login to match a brand. Covers the theme (colors, typography, borders, widget layout), tenant-level branding settings (logo, favicon, primary color), page templates (Liquid HTML that wraps the widget), and custom text per screen.
 
@@ -105,13 +105,13 @@ auth0 tenants use <name> # switch active tenant; prompts for browser login if no
 
 **Before any write operation in any capability, run `auth0 tenants list`, show the active tenant to the user, and get explicit confirmation to proceed.** If it's the wrong tenant, stop. Tell the user to run `auth0 tenants use <name>` (or `auth0 login` if the target isn't in the list) themselves and re-invoke the skill. Do not try to switch tenants on the user's behalf.
 
-For non-interactive or multi-tenant automation, skip the CLI and call the **Management API** directly with an explicit domain + bearer token per call. (see the cURL examples in this group's api-reference leaf)
+For non-interactive or multi-tenant automation, skip the CLI and call the **Management API** directly with an explicit domain + bearer token per call. (see the cURL examples in this group's API reference)
 
 **Tooling note.** The `auth0 ul` commands below are one way to write branding settings. The loaded tooling reference has the equivalent for infrastructure-as-code projects: the Terraform `auth0_branding` resource (`logo_url`, `favicon_url`, `colors` block). The Auth0 MCP server exposes **no** branding/Universal Login tool — for an MCP-only session, fall back to the CLI, Terraform, or the Management API directly. This interactive branding workflow (extract → propose → apply) stays CLI/API-driven regardless, because it is a guided flow rather than a static config write.
 
 ### Universal Login Active for the Flows You Want to Brand
 
-Themes and templates only apply to flows actually running in Universal Login. Tenants can run in hybrid mode where some flows are Classic. Run Capability 5 ("Check my setup") to diagnose which flows will and won't be affected. (see the Check Setup flow in this group's guide leaf for the Classic-toggle mechanics)
+Themes and templates only apply to flows actually running in Universal Login. Tenants can run in hybrid mode where some flows are Classic. Run Capability 5 ("Check my setup") to diagnose which flows will and won't be affected. (see the Check Setup flow in this group's guide for the Classic-toggle mechanics)
 
 ### Custom Domain (only if working with page templates)
 
@@ -121,31 +121,31 @@ Page templates require a custom domain on the tenant. Branding settings, theme, 
 
 End-to-end branding from a website URL, inline brand values, or a short ask — fills primary color, logo, font, and page background, shows one proposal, and applies the theme.
 
-**See the Brand My Tenant flow in this group's guide leaf.**
+**See the Brand My Tenant flow in this group's guide.**
 
 ## Capability 2: Change specific settings
 
 Manual branding update driven by the user's natural-language intent — the skill resolves the phrase to specific fields, stages changes, and applies as a batch.
 
-**See the Change Specific Settings flow in this group's guide leaf.**
+**See the Change Specific Settings flow in this group's guide.**
 
 ## Capability 3: Match my brand voice
 
 Rewrite Universal Login text to match a source the user provides (website, sample copy, or voice descriptor); doesn't touch colors, layout, or logo.
 
-**See the Match Brand Voice flow in this group's guide leaf.**
+**See the Match Brand Voice flow in this group's guide.**
 
 ## Capability 4: Rollback to Auth0 defaults
 
 Clear one or more branding surfaces and restore Auth0's defaults, per-surface. Destructive; always confirms before writing.
 
-**See the Rollback flow in this group's guide leaf.**
+**See the Rollback flow in this group's guide.**
 
 ## Capability 5: Check my setup
 
 Read-only diagnosis. Answers "will theme changes actually show up on the flows I care about?" Safe to run first when diagnosing "why doesn't my theme show up?"
 
-**See the Check Setup flow in this group's guide leaf.**
+**See the Check Setup flow in this group's guide.**
 
 ## Common Mistakes
 
@@ -157,11 +157,11 @@ Read-only diagnosis. Answers "will theme changes actually show up on the flows I
 | Missing `auth0:head` or `auth0:widget` in templates (both are required; the page will not render without them) | Always include both; refuse the PUT otherwise |
 | Using PUT for custom text without merging (PUT replaces all text for that prompt/language) | GET current text first, merge, then PUT the full object |
 
-For the extended list (theme field requirements, Brandfetch ToS, homepage-only extraction gaps, CSS class names, CLI tenant context), see the API Reference in this group's api-reference leaf.
+For the extended list (theme field requirements, Brandfetch ToS, homepage-only extraction gaps, CSS class names, CLI tenant context), see the API Reference in this group's API reference.
 
 ## References
 
-This hub carries the orientation; the detailed capability flows and screens catalog live in this group's guide leaf, and the API Reference and Examples live in this group's api-reference leaf.
+This overview carries the orientation; the detailed capability flows and screens catalog live in this group's guide, and the API Reference and Examples live in this group's API reference.
 
 Related capabilities:
 
@@ -184,7 +184,7 @@ External:
 
 You arrived here for the branding intent. The orientation above (capabilities
 table, prompt style, plan-mode rules, verify-in-browser step, key concepts,
-prerequisites, common mistakes) is inline in this hub — no second hop needed
+prerequisites, common mistakes) is inline in this overview — no second hop needed
 for it. For the capability playbooks themselves, go to the guide, which holds
 all five detailed capability flows (Brand my tenant, Change specific settings,
 Match my brand voice, Rollback, Check my setup) plus the Universal Login
@@ -198,4 +198,4 @@ screens catalog:
 - API / endpoint / configuration-property lookup (Management API endpoints, CLI commands, theme/branding property tables, error codes, URL validation, extended gotchas), plus Management API cURL examples and CI/CD deployment + tenant-migration scripts (Examples section): `Read: references/feature-branding/api-reference.md`
 - Page templates and text customization (Liquid template variables, minimal/custom-layout templates, supported prompts, custom-text API behavior) — the Templates section: `Read: references/feature-branding/guide.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

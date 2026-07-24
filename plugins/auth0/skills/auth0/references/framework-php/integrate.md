@@ -2,12 +2,12 @@
 
 Add login, logout, and user profile to a PHP web application using `auth0/auth0-php`.
 > **Prerequisites & setup:** the shared prerequisites, when-NOT-to-use notes,
-> and the quick start live in this group's hub index (already read on the way
+> and the quick start live in this group's overview (already read on the way
 > here). This file holds tenant setup variants (automated CLI provisioning,
 > manual setup), and advanced integration patterns (protected routes, calling
 > external APIs, session management, organizations, error handling, Slim) —
 > see the Setup and Integration Patterns sections below. Full
-> API/configuration lookup lives in this group's API reference leaf.
+> API/configuration lookup lives in this group's API reference.
 
 ## Common Mistakes
 

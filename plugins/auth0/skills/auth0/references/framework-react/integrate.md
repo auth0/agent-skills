@@ -3,8 +3,8 @@
 Add authentication to React single-page applications using @auth0/auth0-react.
 
 > **Prerequisites & setup:** the shared critical rules, prerequisites, and
-> when-NOT-to-use notes live in this group's hub index (already read on the way
-> here). The quick start lives in this group's hub index too — this file holds
+> when-NOT-to-use notes live in this group's overview (already read on the way
+> here). The quick start lives in this group's overview too — this file holds
 > setup variants, tenant/CLI provisioning, automated `.env` scripts, and
 > advanced patterns (protected routes, calling APIs, error handling, MFA
 > handling, security) (see the Setup and Integration Patterns sections below).
@@ -382,7 +382,7 @@ auth0 login --force
 
 ## Next Steps
 
-After setup is complete, continue with the quick start in this group's hub index for integration steps.
+After setup is complete, continue with the quick start in this group's overview for integration steps.
 
 ---
 
@@ -972,7 +972,7 @@ logout({
 - `MfaEnrollmentError`, `MfaChallengeError`, `MfaVerifyError` - Thrown by respective `mfa.*` methods
 
 **Common Use Cases:**
-- Login/Logout buttons → see the quick start in this group's hub index
+- Login/Logout buttons → see the quick start in this group's overview
 - Protected routes → see the Integration Patterns → Protected Routes section below
 - API calls with tokens → see the Integration Patterns → Calling APIs section below
 - Error handling → see the Integration Patterns → Error Handling section below

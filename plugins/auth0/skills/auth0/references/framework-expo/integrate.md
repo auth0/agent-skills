@@ -4,8 +4,7 @@ Setup depth and integration patterns for Expo (React Native) authentication
 using `react-native-auth0` with the Expo Config Plugin.
 
 > **Prerequisites & setup:** the shared prerequisites, version/compatibility
-> notes, when-NOT-to-use guidance, and the quick start live in this group's hub
-> index (already read on the way here). Full tenant configuration, automated
+> notes, when-NOT-to-use guidance, and the quick start live in this group's overview (already read on the way here). Full tenant configuration, automated
 > CLI provisioning, HTTPS callbacks, multiple domains, EAS Build, secret
 > management, and advanced patterns (credential management, biometric auth,
 > DPoP, organizations, error handling) are all in this file (see the Setup and
@@ -108,7 +107,7 @@ using `react-native-auth0` with the Expo Config Plugin.
 
 The `react-native-auth0` SDK uses native modules and **does not work with Expo Go**. A custom Expo development client is required.
 
-> **Agent instruction:** Before proceeding with Auth0 SDK installation, check the project's `package.json` for `expo-dev-client` in `dependencies` or `devDependencies`. If not found, ask the user how they'd like to proceed (install automatically or set it up themselves). See this group's hub index quick start (Step 2 — Verify Expo Dev Client) for the full agent instruction.
+> **Agent instruction:** Before proceeding with Auth0 SDK installation, check the project's `package.json` for `expo-dev-client` in `dependencies` or `devDependencies`. If not found, ask the user how they'd like to proceed (install automatically or set it up themselves). See this group's overview quick start (Step 2 — Verify Expo Dev Client) for the full agent instruction.
 
 ### Check for expo-dev-client
 

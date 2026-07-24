@@ -1,4 +1,4 @@
-# Auth0 PHP API — reference hub
+# Auth0 PHP API
 
 Protect PHP API endpoints with JWT access token validation using `auth0/auth0-php` in API mode (`STRATEGY_API`).
 
@@ -441,7 +441,7 @@ Get a test token via Auth0 Dashboard -> APIs -> Test tab, or via the M2M flow de
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared setup above,
-read the leaf for your task:
+read the reference for your task:
 
 | Intent | Read |
 |---|---|
@@ -452,4 +452,4 @@ read the leaf for your task:
 - Full API / configuration lookup (SdkConfiguration, Auth0 class, Token accessors, exceptions, verification flow): `Read: references/framework-php-api/api-reference.md`
 - Any other task (guidance, debugging, scope enforcement): start with `Read: references/framework-php-api/integrate.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

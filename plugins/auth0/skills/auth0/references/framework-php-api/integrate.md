@@ -7,8 +7,8 @@ CORS, caching, custom claims, Organizations, HS256, testing, and common
 mistakes.
 
 > **Prerequisites & setup:** the shared critical rules, prerequisites, and
-> when-NOT-to-use notes live in this group's hub index (already read on the way
-> here). The quick start lives in this group's hub index too — this file holds
+> when-NOT-to-use notes live in this group's overview (already read on the way
+> here). The quick start lives in this group's overview too — this file holds
 > tenant/API/M2M provisioning setup variants (automated vs. manual) and
 > advanced integration patterns (scopes, RBAC, multi-audience, CORS, caching,
 > custom claims, Organizations, HS256, testing) (see the Setup and Integration
@@ -728,8 +728,8 @@ $token = $auth0->decode(
 - `AUTH0_AUDIENCE` - your API identifier (e.g. `https://api.example.com`)
 
 **Common Use Cases:**
-- Protect routes -> `requireAuth($auth0)` (see the hub's quick start middleware step)
-- Scope enforcement -> `requireAuth($auth0, ['read:messages'])` (see the hub's quick start middleware step)
+- Protect routes -> `requireAuth($auth0)` (see the overview's quick start middleware step)
+- Scope enforcement -> `requireAuth($auth0, ['read:messages'])` (see the overview's quick start middleware step)
 - CORS setup -> see the Integration Patterns → CORS Configuration section below
 - Multi-audience validation -> see the Integration Patterns → Multi-Audience Validation section below
 - Advanced configuration -> see this group's API reference guide

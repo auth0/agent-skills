@@ -3,7 +3,7 @@
 
 Generates production-ready, fully themed Auth0 ACUL screen components. Follows a strict 9-phase workflow (Phases 0–8): CLI authentication → intent detection → project setup → screen requirements → tech stack and design → theme extraction → structured code generation → build validation & iterative fix → dev mode wiring.
 
-> **Orientation:** the reference hierarchy, auth0-acul-samples architecture, and prerequisites live in this group's hub index (already read on the way here). This file holds the full Phase 0–8 generator playbook, plus the screen catalog, social-login patterns, and theming patterns below.
+> **Orientation:** the reference hierarchy, auth0-acul-samples architecture, and prerequisites live in this group's overview (already read on the way here). This file holds the full Phase 0–8 generator playbook, plus the screen catalog, social-login patterns, and theming patterns below.
 
 ## Phase 0: Environment Validation & CLI Authentication
 
@@ -28,7 +28,7 @@ auth0 acul config list --rendering-mode advanced
 
 If `auth0 acul config list` returns an error about custom domain: stop and inform the customer they must configure a custom domain on their tenant before ACUL is available.
 
-For full CLI flag reference → see the CLI Reference section in this group's api-reference leaf.
+For full CLI flag reference → see the CLI Reference section in this group's API reference.
 
 > **Tooling note.** ACUL is CLI-driven by design: the CLI scaffolds and previews
 > the screen *code*, which neither Terraform nor the MCP server can do — so this
@@ -113,7 +113,7 @@ Proceed to Phase 3.
      - Fetch: `https://github.com/auth0/universal-login/blob/master/packages/auth0-acul-js/examples/<screen-name>.md`
      - Parse for: manager class name, method names, and payload shapes
 
-   Determine whether the example is React (JSX/TSX, hooks) or plain JS (class-based manager) and match it to the project's framework. If the project is React but only a JS example exists (or vice versa), adapt the patterns accordingly using the appropriate SDK reference (the React SDK or JS SDK section in this group's api-reference leaf).
+   Determine whether the example is React (JSX/TSX, hooks) or plain JS (class-based manager) and match it to the project's framework. If the project is React but only a JS example exists (or vice versa), adapt the patterns accordingly using the appropriate SDK reference (the React SDK or JS SDK section in this group's API reference).
 
    **Step 4c — Generate the screen files using the project structure**, populated with the SDK reference data from step 4b. This ensures correct directory layout, config integration, and build compatibility. Follow the modular architecture pattern from the "auth0-acul-samples Architecture" section if React, or a single-file component if the example is simple enough.
 
@@ -173,8 +173,8 @@ Confirm or detect:
 - **Existing theme file?** Check for `tailwind.config.ts`, `styles/tokens.css`, `theme/index.ts`
 
 Load the appropriate SDK reference:
-- React → see the React SDK section in this group's api-reference leaf
-- JS → see the JS SDK section in this group's api-reference leaf
+- React → see the React SDK section in this group's API reference
+- JS → see the JS SDK section in this group's API reference
 
 For social button implementation → see the Social Providers section in this file.
 
@@ -243,7 +243,7 @@ Do NOT discard CLI-generated code to re-generate from a GitHub reference.
 
 ### Path B — Screen from auth0-acul-samples (only when CLI doesn't support the screen)
 
-Use the project structure captured from the CLI dummy-page strategy (Phase 2B, Step 4a) as the foundation. Generate the screen directory using the samples pattern (see the auth0-acul-samples Architecture section in this group's hub index), matching the directory layout and config wiring from the dummy page:
+Use the project structure captured from the CLI dummy-page strategy (Phase 2B, Step 4a) as the foundation. Generate the screen directory using the samples pattern (see the auth0-acul-samples Architecture section in this group's overview), matching the directory layout and config wiring from the dummy page:
 
 ```
 <screen-name>/
@@ -404,12 +404,12 @@ auth0 acul dev --connected -s <screen-name> -d <project-dir>
 
 | File | Load when |
 |------|-----------|
-| React SDK section (this group's api-reference leaf) | Framework is React |
-| JS SDK section (this group's api-reference leaf) | Framework is JS / Vanilla |
+| React SDK section (this group's API reference) | Framework is React |
+| JS SDK section (this group's API reference) | Framework is JS / Vanilla |
 | Screen Catalog section (in this file) | Selecting screen type or triggering CLI fallback |
 | Social Providers section (in this file) | Social login buttons are needed |
 | Theming Patterns section (in this file) | Generating or applying a shared theme file |
-| CLI Reference section (this group's api-reference leaf) | Need full CLI flag details |
+| CLI Reference section (this group's API reference) | Need full CLI flag details |
 
 ## Asset Templates
 

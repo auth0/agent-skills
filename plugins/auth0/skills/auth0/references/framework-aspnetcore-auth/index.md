@@ -1,4 +1,4 @@
-# Auth0 ASP.NET Core Web App — reference hub
+# Auth0 ASP.NET Core Web App
 
 Add login, logout, and user profile to an ASP.NET Core MVC, Razor Pages, or Blazor Server application using `Auth0.AspNetCore.Authentication`.
 
@@ -201,7 +201,7 @@ Visit `http://localhost:5000` and click Login to start the Auth0 login flow.
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared setup above,
-read the leaf for your task:
+read the reference for your task:
 
 | Intent | Read |
 |---|---|
@@ -212,4 +212,4 @@ read the leaf for your task:
 - Full API / configuration lookup (options, builders, claims, cookies, testing): `Read: references/framework-aspnetcore-auth/api-reference.md`
 - Any other task (guidance, debugging, Organizations): start with `Read: references/framework-aspnetcore-auth/integrate.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

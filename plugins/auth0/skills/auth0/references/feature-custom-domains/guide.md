@@ -1,6 +1,6 @@
 # Auth0 Custom Domains
 
-> Orientation (overview, interaction style, error-code triage, capabilities, key concepts, prerequisites, common mistakes) lives in this reference group's hub. Read that first if you haven't already; this file picks up at advanced depth and the capability flows.
+> Orientation (interaction style, error-code triage, capabilities, key concepts, prerequisites, common mistakes) lives in this reference's overview. Read that first if you haven't already; this file picks up at advanced depth and the capability flows.
 
 ## Advanced
 

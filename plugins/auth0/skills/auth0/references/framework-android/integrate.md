@@ -4,12 +4,11 @@ Setup depth and integration patterns: login/logout with Web Auth, build
 verification, common mistakes, and the quick reference.
 
 > **Prerequisites & setup:** the shared version-fetch instruction, critical
-> rules, prerequisites, and when-NOT-to-use notes live in this group's hub
-> index (already read on the way here). The quick start lives in this group's
-> hub index too — this file holds tenant configuration, `strings.xml`
+> rules, prerequisites, and when-NOT-to-use notes live in this group's overview (already read on the way here). The quick start lives in this group's
+> overview too — this file holds tenant configuration, `strings.xml`
 > provisioning, and integration patterns (see the Setup and Integration
 > Patterns sections below). The full API/configuration reference lives in
-> this group's api-reference leaf.
+> this group's API reference.
 
 ## Common Mistakes
 

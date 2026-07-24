@@ -1,4 +1,4 @@
-# Auth0 PHP Web App — reference hub
+# Auth0 PHP Web App
 
 Add login, logout, and user profile to a PHP web application using `auth0/auth0-php`.
 
@@ -499,7 +499,7 @@ Visit `http://localhost:3000/login` to start the login flow.
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared setup above,
-read the leaf for your task:
+read the reference for your task:
 
 | Intent | Read |
 |---|---|
@@ -510,4 +510,4 @@ read the leaf for your task:
 - Full API / configuration lookup (SdkConfiguration, Auth0 class methods, credentials, session storage, exceptions): `Read: references/framework-php/api-reference.md`
 - Any other task (guidance, debugging, Organizations): start with `Read: references/framework-php/integrate.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

@@ -1,4 +1,4 @@
-# Auth0 Java MVC Common — reference hub
+# Auth0 Java MVC Common
 
 Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-auth-commons`. Provides `AuthenticationController` for building authorize URLs and handling callbacks, with session-based authentication and support for Organizations and Multiple Custom Domains.
 
@@ -269,7 +269,7 @@ public class AuthenticationFilter implements Filter {
 ## Choose your task
 
 You arrived here for a specific intent. After reading the shared setup above,
-read the leaf for your task:
+read the reference for your task:
 
 | Intent | Read |
 |---|---|
@@ -280,4 +280,4 @@ read the leaf for your task:
 - Full API / configuration lookup, testing checklist, security considerations: `Read: references/framework-java-mvc/api-reference.md`
 - Any other task (guidance, debugging, Organizations, provider migration): start with `Read: references/framework-java-mvc/integrate.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

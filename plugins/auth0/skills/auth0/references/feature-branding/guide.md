@@ -1,7 +1,7 @@
 
 # Auth0 Branding
 
-> Orientation (capabilities table, prompt style, plan-mode rules, verify-in-browser step, key concepts, prerequisites, common mistakes) lives in this reference group's hub. Read that first if you haven't already; this file picks up at the detailed capability playbooks.
+> Orientation (capabilities table, prompt style, plan-mode rules, verify-in-browser step, key concepts, prerequisites, common mistakes) lives in this reference's overview. Read that first if you haven't already; this file picks up at the detailed capability playbooks.
 
 # Capability 1: Brand my tenant
 
@@ -182,7 +182,7 @@ Before writing, diff the proposed changes against current tenant state. In produ
 
 Report what was written and what was skipped (for example, "page template skipped — no custom domain configured"). If voice rewriting was opted in, chain into Capability 3 after the theme write succeeds.
 
-After reporting (and after voice rewriting chains complete, if enabled), run the "Verify in browser (post-apply)" step from the hub index.
+After reporting (and after voice rewriting chains complete, if enabled), run the "Verify in browser (post-apply)" step from the overview.
 
 ---
 
@@ -244,7 +244,7 @@ Summary:
     PATCH /tenants/settings --data '{"guardian_mfa_page": {"enabled": false}}'
 ```
 
-This capability is read-only and does not write to the tenant; skip the "Verify in browser (post-apply)" step from the hub index.
+This capability is read-only and does not write to the tenant; skip the "Verify in browser (post-apply)" step from the overview.
 
 ---
 
@@ -332,9 +332,9 @@ After the user finishes staging changes, batch the writes by surface:
 3. Page template change (if any) → one `PUT /api/v2/branding/templates/universal-login` after verifying `auth0:head` and `auth0:widget` are present.
 4. Per-screen text changes → one `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` per affected prompt/language (GET-merge-PUT; do not overwrite other screens in that prompt).
 
-Before writing, show the consolidated diff **and the target tenant name** (per the "CLI Tenant Context" prerequisite in the hub index). Require explicit confirmation for the whole batch. Auth0 does not retain prior versions, so there is no automatic rollback; suggest the user export current state locally first if they want a backup.
+Before writing, show the consolidated diff **and the target tenant name** (per the "CLI Tenant Context" prerequisite in the overview). Require explicit confirmation for the whole batch. Auth0 does not retain prior versions, so there is no automatic rollback; suggest the user export current state locally first if they want a backup.
 
-After the batch completes, run the "Verify in browser (post-apply)" step from the hub index.
+After the batch completes, run the "Verify in browser (post-apply)" step from the overview.
 
 ## Guardrails
 
@@ -403,7 +403,7 @@ Reset is destructive and one-way. Auth0 does not maintain prior versions of them
 
 ## Confirm
 
-Show the concrete plan, including the target tenant (per the "CLI Tenant Context" prerequisite in the hub index):
+Show the concrete plan, including the target tenant (per the "CLI Tenant Context" prerequisite in the overview):
 
 ```text
 Target tenant: acme-prod  (active in the Auth0 CLI)
@@ -442,7 +442,7 @@ In production environments, require explicit confirmation before any write.
 
 Report what was reset, what was left alone, and (if saved) the full path to the backup file so the user can find it later.
 
-After the report, run the "Verify in browser (post-apply)" step from the hub index. In the rollback case, the browser should render Auth0 built-in defaults; that's the verification.
+After the report, run the "Verify in browser (post-apply)" step from the overview. In the rollback case, the browser should render Auth0 built-in defaults; that's the verification.
 
 ---
 
@@ -607,7 +607,7 @@ Show each locale's proposed text so the user can spot-check and edit any transla
 
 ### Step 4: Apply
 
-Before writing, show the target tenant name and the prompt/locale pairs about to be updated, and get explicit confirmation (per the "CLI Tenant Context" prerequisite in the hub index).
+Before writing, show the target tenant name and the prompt/locale pairs about to be updated, and get explicit confirmation (per the "CLI Tenant Context" prerequisite in the overview).
 
 Batch by prompt: one `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` per prompt-locale pair, with approved new keys merged across all screens under that prompt and any existing overrides preserved.
 
@@ -617,7 +617,7 @@ Never PUT without merging; PUT replaces the full object for that prompt/lang. Th
 
 **Rate limits.** A multi-prompt, multi-locale rewrite can produce 20+ PUTs in quick succession. The Management API's default per-tenant write budget is a few hundred requests per minute, but concurrent writes are the real risk: run PUTs **sequentially**, not in parallel. If the API returns **429 Too Many Requests**, back off and retry the failed PUT only — don't re-run the batch. Use exponential backoff: wait 5s, 10s, 20s, 30s, 60s; stop after five attempts and surface the failed prompt/locale pair to the user. Honor the `Retry-After` response header if present (seconds to wait before the next attempt). Successful PUTs don't need to be retried; the per-prompt design means each PUT is independent.
 
-After all PUTs succeed, run the "Verify in browser (post-apply)" step from the hub index.
+After all PUTs succeed, run the "Verify in browser (post-apply)" step from the overview.
 
 ## Learn new screens
 

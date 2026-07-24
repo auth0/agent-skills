@@ -231,7 +231,7 @@ export const LoginIdScreen: React.FC = () => {
 | reset-password | `@auth0/auth0-acul-react/reset-password` |
 | passkey-enrollment | `@auth0/auth0-acul-react/passkey-enrollment` |
 
-For full screen list and fallback URLs → see the Screen Catalog section in this group's guide leaf.
+For full screen list and fallback URLs → see the Screen Catalog section in this group's guide.
 
 ---
 
@@ -418,7 +418,7 @@ render()
 | reset-password | `@auth0/auth0-acul-js/reset-password` | `ResetPassword` |
 | passkey-enrollment | `@auth0/auth0-acul-js/passkey-enrollment` | `PasskeyEnrollment` |
 
-For full screen list and fallback URLs → see the Screen Catalog section in this group's guide leaf.
+For full screen list and fallback URLs → see the Screen Catalog section in this group's guide.
 
 ---
 
@@ -473,7 +473,7 @@ auth0 acul screen add mfa-otp-challenge -d ./my-project
 | `--dir` | `-d` | Path to project directory (must contain `acul_config.json`) |
 | `--tenant` | | Target a specific tenant |
 
-**ON ERROR:** Fall back to SDK examples — see the Screen Catalog section in this group's guide leaf for URLs.
+**ON ERROR:** Fall back to SDK examples — see the Screen Catalog section in this group's guide for URLs.
 
 ---
 

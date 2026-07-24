@@ -4,7 +4,7 @@ Full configuration reference (WebAuth and CredentialsManager options), claims
 reference, testing checklist, common issues, and security considerations.
 
 > **Prerequisites & setup:** the shared critical rules and prerequisites live in
-> this group's hub index; SDK installation and `Auth0.plist` configuration live
+> this group's overview; SDK installation and `Auth0.plist` configuration live
 > in this group's setup guide (both already available on the way here).
 
 ## Configuration Reference

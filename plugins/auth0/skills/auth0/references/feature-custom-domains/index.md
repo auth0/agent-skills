@@ -1,4 +1,4 @@
-# Auth0 Custom Domains — reference hub
+# Auth0 Custom Domains
 
 Drive Auth0 custom-domain work end-to-end: Auth0 Management API, DNS provider, verification polling, and the configuration that stitches everything together. Detects the user's DNS provider (Cloudflare, Route 53, Azure DNS, or other) and automates record creation when the provider supports it.
 
@@ -48,7 +48,7 @@ If the user's message is primarily about an HTTP error code from the Management 
 | **404** on any custom-domain endpoint | Wrong `custom_domain_id`, or wrong tenant. Verify with `auth0 tenants list` + `auth0 domains list`. |
 | **429** | Rate limited. Back off; the skill's verify-poll backoff pattern (5s, 10s, 20s, 30s, 60s) avoids this. |
 
-Full error-code reference with all cases and resolutions: see the API Reference in this group's api-reference leaf (Error Codes).
+Full error-code reference with all cases and resolutions: see the API Reference in this group's API reference (Error Codes).
 
 ## Capabilities
 
@@ -56,11 +56,11 @@ When this skill is invoked and the user is NOT asking about an error code, ask t
 
 | # | Capability | What it does |
 |---|---|---|
-| 1 | **Set up a custom domain** | End-to-end: create the domain in Auth0, detect the DNS provider, write the CNAME record (automated on Cloudflare / Route 53 / Azure; guided on other providers), verify ownership, and report what to update in the user's apps. Handles first-time setup and adding to MCD. (flow in this group's guide leaf) |
-| 2 | **Troubleshoot verification** | Domain stuck in `pending_verification` or verification failing. Diagnostic ladder: compare DNS to expected, check for proxies / CNAME flattening / conflicting records / propagation / private-zone issues, then retry. (flow in this group's guide leaf) |
-| 3 | **Manage existing domains** | Surgical edits on already-configured domains: set or change the default (for MCD), update TLS policy, configure the custom client IP header, set the relying party identifier for passkeys, manage per-domain metadata (up to 10 key-value pairs readable from Actions), list domains and show status. Intent-driven. Certificate type is fixed at create time; PATCH rejects `type` changes. (flow in this group's guide leaf) |
-| 4 | **Remove a custom domain** | Delete a domain safely: warn if it's the default, surface dependent applications, delete in Auth0, clean up the CNAME in DNS. (flow in this group's guide leaf) |
-| 5 | **Check domain health** | Read-only: list all custom domains, check DNS records match expected values, surface default-domain config, flag anything needing attention. Safe starter capability. (flow in this group's guide leaf) |
+| 1 | **Set up a custom domain** | End-to-end: create the domain in Auth0, detect the DNS provider, write the CNAME record (automated on Cloudflare / Route 53 / Azure; guided on other providers), verify ownership, and report what to update in the user's apps. Handles first-time setup and adding to MCD. (flow in this group's guide) |
+| 2 | **Troubleshoot verification** | Domain stuck in `pending_verification` or verification failing. Diagnostic ladder: compare DNS to expected, check for proxies / CNAME flattening / conflicting records / propagation / private-zone issues, then retry. (flow in this group's guide) |
+| 3 | **Manage existing domains** | Surgical edits on already-configured domains: set or change the default (for MCD), update TLS policy, configure the custom client IP header, set the relying party identifier for passkeys, manage per-domain metadata (up to 10 key-value pairs readable from Actions), list domains and show status. Intent-driven. Certificate type is fixed at create time; PATCH rejects `type` changes. (flow in this group's guide) |
+| 4 | **Remove a custom domain** | Delete a domain safely: warn if it's the default, surface dependent applications, delete in Auth0, clean up the CNAME in DNS. (flow in this group's guide) |
+| 5 | **Check domain health** | Read-only: list all custom domains, check DNS records match expected values, surface default-domain config, flag anything needing attention. Safe starter capability. (flow in this group's guide) |
 
 Pick a capability, then follow the flow in its reference file. The **Prerequisites** and **Key Concepts** sections below apply across all capabilities.
 
@@ -79,7 +79,7 @@ Pick a capability, then follow the flow in its reference file. The **Prerequisit
 | Custom Client IP Header | `custom_client_ip_header` tells Auth0 which request header carries the real client IP when traffic passes through a reverse proxy. Valid values: `true-client-ip`, `cf-connecting-ip`, `x-forwarded-for`, `x-azure-clientip`. Set at create or via PATCH |
 | Domain Metadata | Up to 10 custom key-value pairs attached to a custom domain (keys and values ≤ 255 chars). Read from Actions via `event.custom_domain.domain_metadata` for per-domain logic (region, brand, env tagging) |
 
-Full schema and token / `iss` behavior live in this group's guide leaf (Advanced section).
+Full schema and token / `iss` behavior live in this group's guide (Advanced section).
 
 ## Prerequisites
 
@@ -89,7 +89,7 @@ These apply to any capability that writes to the tenant. **Check domain health**
 
 All capabilities use the Management API. Either:
 - The Auth0 CLI (`auth0 ...`) authenticated to the target tenant (`auth0 tenants use <name>`), or
-- A Machine-to-Machine application with the scopes in this group's api-reference leaf.
+- A Machine-to-Machine application with the scopes in this group's API reference.
 
 **Check the active tenant immediately before the first Auth0 CLI command in a capability, not at skill invocation.** Do not check the tenant before the user has chosen a capability. If a capability uses only non-CLI tools (e.g., DNS lookups, Cloudflare MCP, direct Management API calls via curl), skip the tenant check entirely.
 
@@ -116,7 +116,7 @@ Then re-confirm before proceeding. For mutating calls (create, PATCH, delete), r
 - **Tier 3 Azure DNS**: Azure CLI signed in. Verified with `az account show`.
 - **Tier 4 other**: no programmatic access; user manually adds the record in their provider's dashboard.
 
-**Plan requirements for automation**: None of the three automated tiers require a paid plan on the DNS provider side. Cloudflare DNS record CRUD via the MCP works on the Free plan (Free zones created after Sept 2024 cap at 200 DNS records per zone; Auth0's CNAME counts as one). Route 53 is pay-per-use (~$0.50/hosted zone/month + query costs, not in AWS free tier). Azure DNS is subscription-based with no tier gating; the signed-in identity needs the DNS Zone Contributor role. Full detail per tier in the DNS Provider Playbook in this group's guide leaf.
+**Plan requirements for automation**: None of the three automated tiers require a paid plan on the DNS provider side. Cloudflare DNS record CRUD via the MCP works on the Free plan (Free zones created after Sept 2024 cap at 200 DNS records per zone; Auth0's CNAME counts as one). Route 53 is pay-per-use (~$0.50/hosted zone/month + query costs, not in AWS free tier). Azure DNS is subscription-based with no tier gating; the signed-in identity needs the DNS Zone Contributor role. Full detail per tier in the DNS Provider Playbook in this group's guide.
 
 ### Credit card on file (Free-tier tenants)
 
@@ -126,19 +126,19 @@ Surface this as the likely cause on any 403 rather than suggesting a plan upgrad
 
 ## Common Mistakes
 
-Quick index; each entry references the canonical treatment in this group's guide leaf or api-reference leaf, as noted.
+Quick index; each entry references the canonical treatment in this group's guide or API reference, as noted.
 
 | Mistake | See |
 |---|---|
-| Assuming a 403 on create means plan upgrade | This group's api-reference leaf: Error Codes |
-| Removing the CNAME after verification (breaks cert renewal) | Check Domain Health flow in this group's guide leaf: interpreting results |
-| Using a subdomain with passkeys without setting `relying_party_identifier` | Manage Existing Domains flow in this group's guide leaf: Set the relying party identifier |
-| Trying to change certificate type via PATCH | Manage Existing Domains flow in this group's guide leaf: scope note |
-| Enabling DNS proxy on the CNAME (Cloudflare orange cloud) | Troubleshoot flow in this group's guide leaf: proxy check |
-| Enabling CNAME flattening on the zone | Troubleshoot flow in this group's guide leaf: flattening check |
-| Deleting and recreating to "unstick" verification | Troubleshoot flow in this group's guide leaf: what not to do |
-| Not updating SDK `domain` / `issuerBaseURL` after verification | Set Up flow in this group's guide leaf: report next steps |
-| Calling Management API via tenant domain under MCD | Advanced section in this group's guide leaf: the auth0-custom-domain header |
+| Assuming a 403 on create means plan upgrade | This group's API reference: Error Codes |
+| Removing the CNAME after verification (breaks cert renewal) | Check Domain Health flow in this group's guide: interpreting results |
+| Using a subdomain with passkeys without setting `relying_party_identifier` | Manage Existing Domains flow in this group's guide: Set the relying party identifier |
+| Trying to change certificate type via PATCH | Manage Existing Domains flow in this group's guide: scope note |
+| Enabling DNS proxy on the CNAME (Cloudflare orange cloud) | Troubleshoot flow in this group's guide: proxy check |
+| Enabling CNAME flattening on the zone | Troubleshoot flow in this group's guide: flattening check |
+| Deleting and recreating to "unstick" verification | Troubleshoot flow in this group's guide: what not to do |
+| Not updating SDK `domain` / `issuerBaseURL` after verification | Set Up flow in this group's guide: report next steps |
+| Calling Management API via tenant domain under MCD | Advanced section in this group's guide: the auth0-custom-domain header |
 
 ## Choose your task
 
@@ -155,4 +155,4 @@ themselves, plus advanced depth and the DNS provider playbook, go to the guide:
 - API / endpoint / object-property lookup (Management API endpoints, CLI commands, PATCH/POST bodies, status lifecycle, error codes, scopes), plus Management API cURL examples and CI/CD automation scripts (Examples section): `Read: references/feature-custom-domains/api-reference.md`
 - Advanced topics (Multiple Custom Domains, default domain + `auth0-custom-domain` header, self-managed certs, token `iss` behavior, verification troubleshooting depth) live in the guide's Advanced section: `Read: references/feature-custom-domains/guide.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.

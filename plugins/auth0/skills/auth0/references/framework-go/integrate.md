@@ -4,12 +4,12 @@ Protect Go HTTP API endpoints with JWT access token validation using github.com/
 
 > **Prerequisites & setup:** the shared critical rules, version-fetch
 > instruction, prerequisites, and when-NOT-to-use notes live in this group's
-> hub index (already read on the way here). The quick start lives in this
-> group's hub index too — this file holds tenant/API/M2M provisioning setup
+> overview (already read on the way here). The quick start lives in this
+> group's overview too — this file holds tenant/API/M2M provisioning setup
 > variants (automated vs. manual) and advanced framework patterns
 > (permissions, CORS, DPoP, framework adapters, testing) (see the Setup and
 > Integration Patterns sections below). The full API/configuration reference
-> lives in this group's api-reference leaf.
+> lives in this group's API reference.
 
 ## Common Mistakes
 
@@ -893,7 +893,7 @@ curl -H "Authorization: Bearer $TOKEN" http://localhost:8080/api/private
 - Permission enforcement → see the Integration Patterns → Permission-Based Authorization section below
 - DPoP token binding → see the Integration Patterns → DPoP Support section below
 - Framework adapters (Gin, Echo) → see the Integration Patterns → Framework Adapters section below
-- Advanced JWT config → see this group's api-reference leaf
+- Advanced JWT config → see this group's API reference
 
 ## References
 

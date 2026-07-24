@@ -3,13 +3,13 @@
 Add authentication to an Ionic Angular application using the `@auth0/auth0-angular` SDK with Capacitor plugins for native iOS and Android — login, logout, user profile display, and secure token management using the system browser (SFSafariViewController on iOS, Chrome Custom Tabs on Android) via Capacitor's Browser plugin.
 
 > **Prerequisites & setup:** the shared critical rules, prerequisites, and
-> when-NOT-to-use notes live in this group's hub index (already read on the way
-> here). The quick start lives in this group's hub index too — this file holds
+> when-NOT-to-use notes live in this group's overview (already read on the way
+> here). The quick start lives in this group's overview too — this file holds
 > full tenant/CLI/Dashboard provisioning, deep linking, and advanced setup
 > variants and integration patterns (login/logout flows, token management,
 > route guards, error handling, Capacitor lifecycle) at pattern depth (see the
 > Setup and Integration Patterns sections below). The full API/config/claims
-> lookup and testing checklist live in this group's API reference leaf.
+> lookup and testing checklist live in this group's API reference.
 
 ## Common Mistakes
 

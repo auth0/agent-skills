@@ -1,4 +1,4 @@
-# Auth0 Nuxt SDK — reference hub
+# Auth0 Nuxt SDK
 
 Server-side session authentication for Nuxt 3/4 with `@auth0/auth0-nuxt`. Uses server-side encrypted cookie sessions, NOT client-side tokens (not the same as `@auth0/auth0-vue`).
 
@@ -97,8 +97,8 @@ This gets a basic login/logout integration working. For route/API protection dep
 ## Choose your task
 
 You arrived here for a specific intent. The quick start above gets a basic
-integration working. After reading the shared setup above, read the leaf for
-your task:
+integration working. After reading the shared setup above, read the reference
+for your task:
 
 | Intent | Read |
 |---|---|
@@ -108,4 +108,4 @@ your task:
 - Protecting pages/routes (page-level `definePageMeta` middleware, role/permission guards) or custom session stores: `Read: references/framework-nuxt/patterns.md` — integrate.md covers only the baseline global/server middleware.
 - Any other task (guidance, debugging, API integration, session management): start with `Read: references/framework-nuxt/integrate.md`
 
-Read only the leaf (or leaves) your task needs — not all of them.
+Read only the reference (or references) your task needs — not all of them.
