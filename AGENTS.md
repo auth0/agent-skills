@@ -8,17 +8,21 @@ An **Agent Skill** that teaches coding assistants how to implement Auth0
 authentication that follows Auth0's documented SDK usage and passes this
 repo's routing and behavioral evals. It ships as a single Claude Code / Cursor / Copilot
 plugin (`auth0`) containing **one** consolidated skill at
-`plugins/auth0/skills/auth0/`: a router `SKILL.md` over a flat pool of on-demand
-reference files. The deliverable is the skill itself.
+`plugins/auth0/skills/auth0/`: a router `SKILL.md` over a pool of on-demand
+reference files, some of which are grouped into hub+leaf directories. The
+deliverable is the skill itself.
 
 ## Repository layout
 
 ```
 plugins/auth0/skills/auth0/
 ├── SKILL.md            # Required: the router (only file allowed in skill root)
-├── references/         # Flat pool of on-demand docs, each reachable from SKILL.md:
-│                       #   framework-<name>.md, feature-<name>.md,
-│                       #   tooling-<name>.md, pattern-<name>.md (kebab-case)
+├── references/         # On-demand docs, each reachable from SKILL.md. Every
+│                       #   reference is a directory — framework-<name>/,
+│                       #   feature-<name>/, tooling-<name>/, pattern-<name>/
+│                       #   (kebab-case) — with an index.md that is either the
+│                       #   whole reference (index-only) or a hub + document-
+│                       #   section leaves (leaf group).
 ├── scripts/            # Optional: executable helpers
 └── assets/             # Optional: static resources (templates, data)
 
@@ -42,12 +46,14 @@ Key top-level docs:
 1. Read [`CONTRIBUTING.md`](./CONTRIBUTING.md). The conventions there are
    enforced and not optional.
 2. Match the patterns of the existing reference files rather than inventing new
-   structure. The flat naming convention (`framework-<name>.md`,
-   `feature-<name>.md`, `tooling-<name>.md`, `pattern-<name>.md`) and the
-   router-in-`SKILL.md` layout exist on purpose — keep them consistent. Every
-   new reference file must be reachable from `SKILL.md` and must not link to
-   another reference file (the one-hop rule, enforced by
-   `scripts/check_router_reachability.py`).
+   structure. The naming convention (`framework-<name>`, `feature-<name>`,
+   `tooling-<name>`, `pattern-<name>`) and the router-in-`SKILL.md` layout
+   exist on purpose — keep them consistent. Navigation is a **depth-2 tree**:
+   every reference must be reachable from `SKILL.md`; an index-only `index.md`
+   or a group leaf must not link to any other `.md`; the only allowed second hop
+   is a leaf-group hub `index.md` dispatching to leaves in its own directory.
+   Enforced by `scripts/check_router_reachability.py`. See CONTRIBUTING.md →
+   "Adding a reference" before splitting a large one into a leaf group.
 
 ## Required SKILL.md frontmatter
 
