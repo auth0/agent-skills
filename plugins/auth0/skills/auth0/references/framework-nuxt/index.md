@@ -39,6 +39,8 @@ NUXT_AUTH0_AUDIENCE=https://your-api  # optional
 
 ```typescript
 // 4. nuxt.config.ts
+// Leave values as empty strings — Nuxt auto-fills them from NUXT_AUTH0_* env vars at runtime.
+// If you prefer explicit mapping, use: domain: process.env.NUXT_AUTH0_DOMAIN || ''
 export default defineNuxtConfig({
   modules: ['@auth0/auth0-nuxt'],
   runtimeConfig: {
