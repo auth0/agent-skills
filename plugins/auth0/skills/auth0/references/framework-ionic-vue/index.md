@@ -2,10 +2,6 @@
 
 Add Auth0 authentication to Ionic Vue applications using Capacitor. This skill covers native mobile authentication using the `@auth0/auth0-vue` SDK combined with `@capacitor/browser` and `@capacitor/app` plugins for deep link handling on iOS and Android.
 
-<!-- Shared prerequisites: critical rules, prerequisites, and when-NOT-to-use.
-     Read this first (hop 1), then follow the dispatch table below to the one
-     leaf for your intent. (Carved from the original framework-ionic-vue.md.) -->
-
 ## Critical rules
 
 - **IMPORTANT — never display credentials.** After obtaining the domain, client ID, or any credential value from the CLI or user input, write them directly into config files. Do not echo, print, or display them in conversation output.

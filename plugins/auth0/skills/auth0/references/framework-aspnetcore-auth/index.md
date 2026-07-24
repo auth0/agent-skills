@@ -2,10 +2,6 @@
 
 Add login, logout, and user profile to an ASP.NET Core MVC, Razor Pages, or Blazor Server application using `Auth0.AspNetCore.Authentication`.
 
-<!-- Shared prerequisites: prerequisites and when-NOT-to-use notes. Read this
-     first (hop 1), then follow the dispatch table below to the one leaf for
-     your intent. (Carved from the original framework-aspnetcore-auth.md.) -->
-
 ## Prerequisites
 
 - ASP.NET Core application (.NET 8 or higher)

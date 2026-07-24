@@ -2,11 +2,6 @@
 
 Add authentication to Android applications using `com.auth0.android:auth0`.
 
-<!-- Shared prerequisites: version-fetch instruction, critical rules,
-     prerequisites, and when-NOT-to-use. Read this first (hop 1), then follow
-     the dispatch table below to the one leaf for your intent. (Carved from the
-     original framework-android.md.) -->
-
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```
 > gh api repos/auth0/Auth0.Android/releases/latest --jq '.tag_name'

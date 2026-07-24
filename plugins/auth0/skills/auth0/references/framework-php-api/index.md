@@ -2,11 +2,6 @@
 
 Protect PHP API endpoints with JWT access token validation using `auth0/auth0-php` in API mode (`STRATEGY_API`).
 
-<!-- Shared prerequisites: critical rules, prerequisites, when-NOT-to-use, SDK
-     install, and base .env config. Read this first (hop 1), then follow the
-     dispatch table below to the one leaf for your intent. (Carved from the
-     original framework-php-api.md.) -->
-
 ## Critical rules
 
 - TOKEN ISOLATION: the agent must NEVER directly see, display, echo, log, or store access token values. Do not run `auth0 test token` on its own, and do not ask the user to paste a token into the conversation.

@@ -2,10 +2,6 @@
 
 Add authentication to React single-page applications using @auth0/auth0-react.
 
-<!-- Shared prerequisites: critical rules, prerequisites, and when-NOT-to-use.
-     Read this first (hop 1), then follow the dispatch table below to the one
-     leaf for your intent. (Carved from the original framework-react.md.) -->
-
 ## Critical rules
 
 - Always ask the user for explicit confirmation before running any setup step that writes to `.env`; wait for their answer before proceeding.

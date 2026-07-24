@@ -2,11 +2,6 @@
 
 Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, watchOS, visionOS). This skill adds complete native authentication to Swift apps using Web Auth (system browser redirect), secure Keychain credential storage via `CredentialsManager`, and optional biometric protection.
 
-<!-- Standalone hub: critical rules, when-not-to-use, prerequisites, and an
-     inline quick start that gets a basic integration working without a second
-     read. The dispatch table below routes to the leaves for setup variants,
-     deeper patterns, API reference, and migration. -->
-
 ## Critical rules
 
 - **Credential privacy is IMPORTANT:** never echo Auth0 credentials (domain, client ID, client secret) in response text or terminal output. Instead, redirect Auth0 CLI output to a temp file and use the Read tool to extract values, then write them directly into config files (e.g. `Auth0.plist`) with the Write or Edit tool. When confirming the active tenant, mask the domain (e.g. `your-te****.us.auth0.com`).

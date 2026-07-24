@@ -2,16 +2,6 @@
 
 Style Auth0 Universal Login to match a brand. Covers the theme (colors, typography, borders, widget layout), tenant-level branding settings (logo, favicon, primary color), page templates (Liquid HTML that wraps the widget), and custom text per screen.
 
-<!-- Single-intent FEATURE group carved from the original feature-branding.md.
-     This hub holds the orientation (capabilities table, prompt style, plan-mode
-     rules, verify-in-browser step, key concepts, prerequisites, capability
-     dispatch, common mistakes, references) inline. The guide leaf is the
-     detailed playbook: all five capability flows (Brand my tenant, Change
-     specific settings, Match my brand voice, Rollback, Check my setup), the
-     Universal Login screens catalog used by the voice-matching flow, and page
-     templates / text customization. The other leaves are on-demand lookups.
-     Read this hub first (hop 1), then the leaf your task needs. -->
-
 ## Capabilities
 
 When this skill is invoked **with a specific intent** in the opening message (e.g., "brand my tenant from ferrari.com", "reset the theme", "check if Universal Login is on"), parse the intent and route directly to the matching capability below. Do not show a picker.

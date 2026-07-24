@@ -2,10 +2,6 @@
 
 Add authentication to Expo (React Native) applications using `react-native-auth0` with the Expo Config Plugin.
 
-<!-- Shared prerequisites: prerequisites and when-NOT-to-use notes. Read this
-     first (hop 1), then follow the dispatch table below to the one leaf for
-     your intent. (Carved from the original framework-expo.md.) -->
-
 ## Prerequisites
 
 - Expo SDK 53 or higher (react-native-auth0 v5.x requires Expo 53+)

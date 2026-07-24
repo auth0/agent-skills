@@ -2,11 +2,6 @@
 
 Protect Go HTTP API endpoints with JWT access token validation using github.com/auth0/go-jwt-middleware/v3.
 
-<!-- Standalone hub: critical rules, version-fetch instruction, prerequisites,
-     when-NOT-to-use, and an inline quick start that gets a basic integration
-     working without a second read. The dispatch table below routes to the
-     leaves for setup variants, deeper patterns, API reference, and migration. -->
-
 ## Critical rules
 
 - Access token values must stay out of the agent's view. Capture a token into a shell variable inside a single command chain and use it there; print only its length, and discard the shell variable when the command ends. The token itself remains valid until normal expiry or revocation.

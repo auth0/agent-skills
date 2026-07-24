@@ -2,14 +2,6 @@
 
 Drive Auth0 custom-domain work end-to-end: Auth0 Management API, DNS provider, verification polling, and the configuration that stitches everything together. Detects the user's DNS provider (Cloudflare, Route 53, Azure DNS, or other) and automates record creation when the provider supports it.
 
-<!-- Single-intent FEATURE group carved from the original feature-custom-domains.md.
-     The guide leaf is the entry point for every custom-domain task: it holds the
-     overview, interaction style, error-code triage (CHECK THIS FIRST), key
-     concepts, prerequisites, common mistakes, the DNS Provider Playbook, and all
-     five capability flows (Set up, Troubleshoot, Manage, Remove, Health check).
-     The other leaves are on-demand lookups. Read the guide first (hop 1), then
-     the leaf your task needs. -->
-
 ## Overview
 
 This skill is **capability-based**, not step-based. It groups the work a user might want to do into five distinct capabilities (setup, troubleshoot, manage, remove, health check), each with its own flow in a dedicated reference file. The main SKILL.md acts as a lobby: it holds the capabilities table, key concepts, prerequisites, and common mistakes that apply across all flows. When a user invokes the skill, pick the matching capability from the table, load its reference file, and follow that flow.

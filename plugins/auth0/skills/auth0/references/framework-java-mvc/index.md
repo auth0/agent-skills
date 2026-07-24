@@ -2,11 +2,6 @@
 
 Add Auth0 authentication to Java Servlet web applications using `com.auth0:mvc-auth-commons`. Provides `AuthenticationController` for building authorize URLs and handling callbacks, with session-based authentication and support for Organizations and Multiple Custom Domains.
 
-<!-- Shared prerequisites: version-fetch instruction, prerequisites, and
-     when-NOT-to-use. Read this first (hop 1), then follow the dispatch table
-     below to the one leaf for your intent. (Carved from the original
-     framework-java-mvc.md.) -->
-
 > **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running:
 > ```bash
 > gh api repos/auth0/auth0-java-mvc-common/releases/latest --jq '.tag_name'

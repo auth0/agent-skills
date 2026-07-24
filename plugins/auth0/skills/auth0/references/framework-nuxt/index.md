@@ -2,12 +2,6 @@
 
 Server-side session authentication for Nuxt 3/4 with `@auth0/auth0-nuxt`. Uses server-side encrypted cookie sessions, NOT client-side tokens (not the same as `@auth0/auth0-vue`).
 
-<!-- Standalone hub: critical rules, when-not-to-use, and an inline quick start
-     that gets a basic login/logout integration working without a second
-     read. The dispatch table below routes to the leaves for route/API
-     protection depth, session management, and troubleshooting.
-     (Carved from the original framework-nuxt.md.) -->
-
 ## Critical rules
 
 - **Never use `useUser()` for security checks.** It is client-side only and can be tampered with. Enforce all security-critical decisions server-side with `useAuth0(event).getSession()`.

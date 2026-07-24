@@ -2,10 +2,6 @@
 
 Add login, logout, and user profile to a PHP web application using `auth0/auth0-php`.
 
-<!-- Shared prerequisites: prerequisites and when-NOT-to-use notes. Read this
-     first (hop 1), then follow the dispatch table below to the one leaf for
-     your intent. (Carved from the original framework-php.md.) -->
-
 ## Prerequisites
 
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
