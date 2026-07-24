@@ -34,13 +34,12 @@ above, read the leaf for your task:
 | Intent | Read |
 |---|---|
 | integrate | `Read: references/framework-swift/integrate.md` |
-| feature:mfa | `Read: references/framework-swift/mfa.md` |
+| feature:mfa | `Read: references/framework-swift/integrate.md` |
 | upgrade-sdk | `Read: references/framework-swift/migration.md` |
 
 **Then, as needed for your task:**
-- Tenant setup / CLI provisioning / `Auth0.plist` / URL scheme / Associated Domains / SDK install: `Read: references/framework-swift/setup.md`
+- Tenant setup, CLI provisioning, `Auth0.plist`, URL scheme, Associated Domains, SDK install, integration patterns (login/logout, biometric protection, error handling, Organizations, SwiftUI/UIKit lifecycle, calling APIs), and MFA step-up all live in `integrate.md` (Setup and Integration Patterns sections).
 - Full API / configuration lookup (WebAuth & CredentialsManager options, claims, testing checklist, security considerations): `Read: references/framework-swift/api-reference.md`
-- Advanced framework patterns (login/logout, biometric protection, error handling, Organizations, SwiftUI/UIKit lifecycle, calling APIs): `Read: references/framework-swift/patterns.md`
 - Any other task (guidance, debugging, Organizations, provider migration):
   start with `Read: references/framework-swift/integrate.md`
 
