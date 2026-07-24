@@ -60,6 +60,16 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > If the user chooses **automatic**: Follow this group's integration guide (Automated Setup via Auth0 CLI section).
 > If the user chooses **manual**: Follow this group's integration guide (Manual Setup section).
+>
+> **IMPORTANT — Never pass credentials in code:** Do NOT hardcode `clientId` or `domain` in Swift source, and do NOT pass them as arguments to `Auth0.webAuth()`, `Auth0.authentication()`, or any other SDK call. The SDK reads these values automatically from `Auth0.plist`. Always use the no-argument forms:
+> ```swift
+> Auth0.webAuth()           // ✓ reads Auth0.plist automatically
+> Auth0.authentication()    // ✓ reads Auth0.plist automatically
+>
+> Auth0.webAuth(clientId: "...", domain: "...")        // ✗ never do this
+> Auth0.authentication(clientId: "...", domain: "...") // ✗ never do this
+> ```
+> The explicit-credential forms are a rare escape hatch (see the API Reference below); when `Auth0.plist` is present, always prefer the no-argument forms.
 
 ### Step 3 — Configure Callback URLs
 

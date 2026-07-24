@@ -17,6 +17,7 @@ organizations, error handling, and common mistakes.
 
 | Mistake | Fix |
 |---------|-----|
+| Hardcoding `domain`/`clientId` in Swift source when they're in `Auth0.plist` | Write them into `Auth0.plist` and call `Auth0.webAuth()` / `Auth0.authentication()` with no arguments — the SDK reads the plist automatically |
 | Auth0 app type not set to **Native** | In Auth0 Dashboard, select "Native" when creating the application |
 | Missing callback URL in Auth0 Dashboard | Add both `https://` Universal Link and `{bundle}://` custom scheme to Allowed Callback URLs and Logout URLs |
 | `Auth0.plist` not added to Xcode target | Right-click file in Navigator → "Add Files to Target" → check your app target |
