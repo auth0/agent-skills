@@ -77,19 +77,13 @@ if [ "$OLD_PATTERNS" -gt 0 ]; then
   exit 1
 fi
 
-# Feature file checks
-EXPECTED_FEATURES="mfa migration dpop"
+# Feature file checks. Same smoke check as frameworks above: assert index.md
+# exists for each expected feature. Real hub/leaf structure is enforced by
+# check_router_reachability.py.
+EXPECTED_FEATURES="mfa migration dpop custom-domains branding acul"
 for feat in $EXPECTED_FEATURES; do
   if [ ! -f "$REFS_DIR/feature-$feat/index.md" ]; then
     echo "FAIL: missing references/feature-$feat/index.md"
-    exit 1
-  fi
-done
-
-# Grouped features: directory with an index.md hub and at least one leaf.
-for grp in custom-domains branding acul; do
-  if [ ! -f "$REFS_DIR/feature-$grp/index.md" ]; then
-    echo "FAIL: missing references/feature-$grp/index.md (grouped feature)"
     exit 1
   fi
 done
