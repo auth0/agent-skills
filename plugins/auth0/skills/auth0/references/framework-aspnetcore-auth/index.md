@@ -32,9 +32,8 @@ read the leaf for your task:
 | integrate | `Read: references/framework-aspnetcore-auth/integrate.md` |
 
 **Then, as needed for your task:**
+- Tenant setup / app provisioning (CLI + manual, dashboard config) and advanced framework patterns (protected routes, calling APIs, custom login, Blazor auth, error handling) both live in `integrate.md` (Setup and Integration Patterns sections).
 - Full API / configuration lookup (options, builders, claims, cookies, testing): `Read: references/framework-aspnetcore-auth/api-reference.md`
-- Tenant setup / app provisioning (CLI + manual, dashboard config): `Read: references/framework-aspnetcore-auth/setup.md`
-- Advanced framework patterns (protected routes, calling APIs, custom login, Blazor auth, error handling): `Read: references/framework-aspnetcore-auth/patterns.md`
 - Any other task (guidance, debugging, Organizations): start with `Read: references/framework-aspnetcore-auth/integrate.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.

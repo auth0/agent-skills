@@ -35,8 +35,7 @@ read the leaf for your task:
 
 **Then, as needed for your task:**
 - Full API / configuration lookup (SdkConfiguration, Auth0 class methods, credentials, session storage, exceptions): `Read: references/framework-php/api-reference.md`
-- Tenant setup / CLI provisioning / manual setup: `Read: references/framework-php/setup.md`
-- Advanced framework patterns (protected routes, calling external APIs, session management, organizations, error handling, Slim): `Read: references/framework-php/patterns.md`
+- Tenant setup, CLI provisioning, manual setup, and advanced framework patterns (protected routes, calling external APIs, session management, organizations, error handling, Slim) all live in `integrate.md` (Setup and Integration Patterns sections).
 - Any other task (guidance, debugging, Organizations): start with `Read: references/framework-php/integrate.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.

@@ -63,9 +63,8 @@ read the leaf for your task:
 | integrate | `Read: references/framework-php-api/integrate.md` |
 
 **Then, as needed for your task:**
+- Tenant setup, API + M2M provisioning, test tokens, and advanced framework patterns (scopes, RBAC, multi-audience, CORS, caching, custom claims, Organizations, HS256, testing) all live in `integrate.md` (Setup and Integration Patterns sections).
 - Full API / configuration lookup (SdkConfiguration, Auth0 class, Token accessors, exceptions, verification flow): `Read: references/framework-php-api/api-reference.md`
-- Tenant setup / API + M2M provisioning / test tokens: `Read: references/framework-php-api/setup.md`
-- Advanced framework patterns (scopes, RBAC, multi-audience, CORS, caching, custom claims, Organizations, HS256, testing): `Read: references/framework-php-api/patterns.md`
 - Any other task (guidance, debugging, scope enforcement): start with `Read: references/framework-php-api/integrate.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.

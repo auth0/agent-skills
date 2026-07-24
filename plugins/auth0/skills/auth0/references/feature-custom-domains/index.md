@@ -21,8 +21,7 @@ the overview, error-code triage, capabilities, prerequisites, and the DNS provid
 | feature:custom-domains | `Read: references/feature-custom-domains/guide.md` |
 
 **Then, as needed for your task:**
-- API / endpoint / object-property lookup (Management API endpoints, CLI commands, PATCH/POST bodies, status lifecycle, error codes, scopes): `Read: references/feature-custom-domains/api-reference.md`
-- Advanced topics (Multiple Custom Domains, default domain + `auth0-custom-domain` header, self-managed certs, token `iss` behavior, verification troubleshooting depth): `Read: references/feature-custom-domains/advanced.md`
-- Management API cURL examples and CI/CD automation scripts: `Read: references/feature-custom-domains/examples.md`
+- API / endpoint / object-property lookup (Management API endpoints, CLI commands, PATCH/POST bodies, status lifecycle, error codes, scopes), plus Management API cURL examples and CI/CD automation scripts (Examples section): `Read: references/feature-custom-domains/api-reference.md`
+- Advanced topics (Multiple Custom Domains, default domain + `auth0-custom-domain` header, self-managed certs, token `iss` behavior, verification troubleshooting depth) live in the guide's Advanced section: `Read: references/feature-custom-domains/guide.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.

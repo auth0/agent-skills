@@ -23,8 +23,7 @@ voice, Rollback, Check my setup) plus the Universal Login screens catalog:
 | feature:branding | `Read: references/feature-branding/guide.md` |
 
 **Then, as needed for your task:**
-- API / endpoint / configuration-property lookup (Management API endpoints, CLI commands, theme/branding property tables, error codes, URL validation, extended gotchas): `Read: references/feature-branding/api-reference.md`
-- Page templates and text customization (Liquid template variables, minimal/custom-layout templates, supported prompts, custom-text API behavior): `Read: references/feature-branding/templates.md`
-- Management API cURL examples and CI/CD deployment + tenant-migration scripts: `Read: references/feature-branding/examples.md`
+- API / endpoint / configuration-property lookup (Management API endpoints, CLI commands, theme/branding property tables, error codes, URL validation, extended gotchas), plus Management API cURL examples and CI/CD deployment + tenant-migration scripts (Examples section): `Read: references/feature-branding/api-reference.md`
+- Page templates and text customization (Liquid template variables, minimal/custom-layout templates, supported prompts, custom-text API behavior) — the Templates section: `Read: references/feature-branding/guide.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.

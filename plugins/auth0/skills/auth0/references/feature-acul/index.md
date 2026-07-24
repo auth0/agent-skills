@@ -27,8 +27,7 @@ You arrived here for the ACUL intent. Start with the guide, which holds the refe
 | feature:acul | `Read: references/feature-acul/guide.md` |
 
 **Then, as needed for your task:**
-- SDK API lookup (React `@auth0/auth0-acul-react` hooks + action functions, JS `@auth0/auth0-acul-js` manager classes, import paths, component structure): `Read: references/feature-acul/sdk-reference.md`
-- `auth0 acul` CLI command and flag reference (`init`, `screen add`, `config`, `dev`, typical workflows): `Read: references/feature-acul/cli-reference.md`
-- Screen catalog (all React + JS screens with samples availability and SDK URLs), social-login button patterns, and theming/design-token patterns: `Read: references/feature-acul/patterns.md`
+- SDK API + CLI reference (React `@auth0/auth0-acul-react` hooks + action functions, JS `@auth0/auth0-acul-js` manager classes, import paths, component structure, plus the full `auth0 acul` CLI command and flag reference — `init`, `screen add`, `config`, `dev`, typical workflows): `Read: references/feature-acul/api-reference.md`
+- Screen catalog (all React + JS screens with samples availability and SDK URLs), social-login button patterns, and theming/design-token patterns live in the guide's Patterns section: `Read: references/feature-acul/guide.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.

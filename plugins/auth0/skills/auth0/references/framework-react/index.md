@@ -37,9 +37,8 @@ read the leaf for your task:
 | migrate | `Read: references/framework-react/integrate.md` |
 
 **Then, as needed for your task:**
+- Tenant setup, CLI provisioning, automated `.env` scripts, and advanced framework patterns (protected routes, calling APIs, error handling, MFA handling, security) all live in `integrate.md` (Setup and Integration Patterns sections).
 - Full API / configuration lookup (Auth0Provider config, useAuth0 hook, MFA error types, TypeScript types): `Read: references/framework-react/api-reference.md`
-- Tenant setup / CLI provisioning / automated `.env` scripts: `Read: references/framework-react/setup.md`
-- Advanced framework patterns (protected routes, calling APIs, error handling, MFA handling, security): `Read: references/framework-react/patterns.md`
 - Any other task (guidance, debugging, Organizations, provider migration):
   start with `Read: references/framework-react/integrate.md`
 

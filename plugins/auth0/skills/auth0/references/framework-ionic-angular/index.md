@@ -42,9 +42,8 @@ read the leaf for your task:
 | integrate | `Read: references/framework-ionic-angular/integrate.md` |
 
 **Then, as needed for your task:**
+- Tenant setup, Auth0 CLI provisioning, Dashboard config, deep linking, and advanced framework patterns (login/logout flows, token management, route guards, error handling, Capacitor lifecycle) all live in `integrate.md` (Setup and Integration Patterns sections).
 - Full API / configuration lookup, claims reference, testing checklist, security considerations: `Read: references/framework-ionic-angular/api-reference.md`
-- Tenant setup / Auth0 CLI provisioning / Dashboard config / deep linking: `Read: references/framework-ionic-angular/setup.md`
-- Advanced framework patterns (login/logout flows, token management, route guards, error handling, Capacitor lifecycle): `Read: references/framework-ionic-angular/patterns.md`
 - Any other task (guidance, debugging, Organizations): start with `Read: references/framework-ionic-angular/integrate.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.

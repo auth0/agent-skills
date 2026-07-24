@@ -43,9 +43,8 @@ read the leaf for your task:
 | integrate | `Read: references/framework-java-mvc/integrate.md` |
 
 **Then, as needed for your task:**
+- Tenant setup / application provisioning, secret management, project structure, and advanced framework patterns (logout, Organizations, MCD, custom scopes, filters, claims, error handling) all live in `integrate.md` (Setup and Integration Patterns sections).
 - Full API / configuration lookup, testing checklist, security considerations: `Read: references/framework-java-mvc/api-reference.md`
-- Tenant setup / application provisioning, secret management, project structure: `Read: references/framework-java-mvc/setup.md`
-- Advanced framework patterns (logout, Organizations, MCD, custom scopes, filters, claims, error handling): `Read: references/framework-java-mvc/patterns.md`
 - Any other task (guidance, debugging, Organizations, provider migration): start with `Read: references/framework-java-mvc/integrate.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.

@@ -60,9 +60,8 @@ read the leaf for your task:
 | integrate | `Read: references/framework-go/integrate.md` |
 
 **Then, as needed for your task:**
+- Tenant setup, API + M2M provisioning, and advanced framework patterns (permissions, CORS, DPoP, framework adapters, testing) all live in `integrate.md` (Setup and Integration Patterns sections): `Read: references/framework-go/integrate.md`
 - Full API / configuration lookup, testing checklist, security considerations: `Read: references/framework-go/api-reference.md`
-- Tenant setup / API + M2M provisioning: `Read: references/framework-go/setup.md`
-- Advanced framework patterns (permissions, CORS, DPoP, framework adapters, testing): `Read: references/framework-go/patterns.md`
 - Any other task (guidance, debugging, scope enforcement): start with `Read: references/framework-go/integrate.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.

@@ -44,9 +44,8 @@ read the leaf for your task:
 | upgrade-sdk | `Read: references/framework-android/migration.md` |
 
 **Then, as needed for your task:**
+- Tenant setup, CLI provisioning, `strings.xml`, SDK install, App Links, and integration patterns (login, storage, biometrics, passwordless, Organizations, MFA handling) all live in `integrate.md` (Setup and Integration Patterns sections).
 - Full API / configuration lookup, testing checklist, security considerations: `Read: references/framework-android/api-reference.md`
-- Tenant setup / CLI provisioning / `strings.xml`: `Read: references/framework-android/setup.md`
-- Advanced framework patterns (login, storage, biometrics, passwordless, Organizations, MFA handling): `Read: references/framework-android/patterns.md`
 - Any other task (guidance, debugging, Organizations, provider migration):
   start with `Read: references/framework-android/integrate.md`
 

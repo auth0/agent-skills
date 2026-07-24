@@ -40,8 +40,7 @@ read the leaf for your task:
 
 **Then, as needed for your task:**
 - Full API / configuration lookup, testing checklist, common issues, security considerations: `Read: references/framework-expo/api-reference.md`
-- Tenant setup / CLI provisioning, dev client, callback URLs, EAS Build, secret management: `Read: references/framework-expo/setup.md`
-- Advanced framework patterns (login/logout, credential management, biometric auth, DPoP, organizations, error handling): `Read: references/framework-expo/patterns.md`
+- Tenant setup / CLI provisioning, dev client, callback URLs, EAS Build, secret management, and advanced framework patterns (login/logout, credential management, biometric auth, DPoP, organizations, error handling) all live in `integrate.md` (Setup and Integration Patterns sections): `Read: references/framework-expo/integrate.md`
 - Any other task (guidance, debugging, Organizations, provider migration): start with `Read: references/framework-expo/integrate.md`
 
 Read only the leaf (or leaves) your task needs — not all of them.
