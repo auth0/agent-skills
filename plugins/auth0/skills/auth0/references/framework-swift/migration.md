@@ -1277,3 +1277,35 @@ Present a concise summary covering:
 **Security reminder:** Never include tokens, secrets, client credentials, or Keychain values in the summary output.
 
 ---
+
+## Common Mistakes
+
+| Mistake | Correct approach |
+|---|---|
+| Applying a §6.x section when Step 4 didn't find that API in the project | Step 4 file-reading is the gate. Not found = skip the section entirely |
+| Using grep alone to decide if an API is used | Grep misses multi-line call chains, calls with `domain:clientId:` params, and variable aliases. Read the actual files |
+| Touching `CredentialsManager` when the project doesn't use it | Only migrate what the project actually calls |
+| Removing `DispatchQueue.main` wrappers around non-Auth0 code | Only remove dispatch wrappers that are solely inside an Auth0 callback body |
+| Silently deleting Management API call sites | Add `// TODO:` and surface in the summary — removing the call breaks functionality |
+| Silently deleting old MFA call sites | Same as above — add `TODO` and note in the summary |
+| Applying changes based on assumed knowledge, not the fetched SDK source | Every fix must trace to a signature in the files fetched in Step 3 |
+| Pinning `from: "3.0.0"` when the developer chose a beta tag | Stable range specifiers won't resolve betas; use `exact: "<TAG>"` for pre-releases |
+| Starting migration on a dirty working tree | Always verify `git status --porcelain` is empty first |
+| Skipping straight to build without applying known changes first | Apply all known changes first, then build to catch remainders |
+| Continuing past 10 failed build cycles | Stop and show the user the remaining errors |
+| Skipping the migration summary | Always produce the full summary — the user needs it |
+
+## Related Capabilities
+
+- New Auth0.swift integration from scratch — the Auth0 integration workflow for Swift
+- Android native authentication — the Auth0 integration workflow for Android
+
+---
+
+## References
+
+- [Auth0.swift GitHub](https://github.com/auth0/Auth0.swift)
+- [Auth0.swift Releases](https://github.com/auth0/Auth0.swift/releases)
+- [Auth0.swift API Documentation](https://auth0.github.io/Auth0.swift/documentation/auth0/)
+
+> **Security:** Never echo tokens, client secrets, or credentials in build logs or terminal output. Never commit secrets to version control.
