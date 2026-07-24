@@ -56,22 +56,16 @@ if ! grep -q "pattern-common-errors" "$SKILL_MD"; then
   exit 1
 fi
 
-# Framework file checks. This list is a smoke check only; the authoritative
+# Framework file checks. Every reference is a directory whose index.md the
+# router opens by name, so this loop just asserts index.md exists for each
+# expected framework. This list is a smoke check only; the authoritative
 # "every routed framework has a file and every file is routed" guarantee is
 # enforced by scripts/check_router_reachability.py (run below), which derives
 # slugs from the router itself. Keep this list in sync when adding frameworks.
-EXPECTED_FRAMEWORKS="nextjs vue angular spa-js express flask fastify fastify-api aspnetcore-api express-jwt fastapi-api springboot-api react-native ionic-react flutter-native flutter-web laravel laravel-api maui net-android net-ios winforms wpf"
+EXPECTED_FRAMEWORKS="nextjs vue angular spa-js express flask fastify fastify-api aspnetcore-api express-jwt fastapi-api springboot-api react-native ionic-react flutter-native flutter-web laravel laravel-api maui net-android net-ios winforms wpf swift android go php php-api react java-mvc ionic-angular ionic-vue aspnetcore-auth expo nuxt"
 for fw in $EXPECTED_FRAMEWORKS; do
   if [ ! -f "$REFS_DIR/framework-$fw/index.md" ]; then
     echo "FAIL: missing references/framework-$fw/index.md"
-    exit 1
-  fi
-done
-
-# Grouped frameworks: directory with an index.md hub and at least one leaf.
-for grp in swift android go php php-api react java-mvc ionic-angular ionic-vue aspnetcore-auth expo nuxt; do
-  if [ ! -f "$REFS_DIR/framework-$grp/index.md" ]; then
-    echo "FAIL: missing references/framework-$grp/index.md (grouped framework)"
     exit 1
   fi
 done
