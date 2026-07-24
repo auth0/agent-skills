@@ -264,11 +264,6 @@ Read the project file tree. This is a project-context decision, not a product pr
 Find the section below whose heading matches the **Intent** you picked in
 Step 1, then read the reference files it lists.
 
-> **Reference layout:** every reference is a directory — always read
-> `references/{name}/index.md`. If that `index.md` contains an intent→document
-> dispatch table, follow it to the single document for your intent and read
-> only that document; otherwise the `index.md` is the whole reference.
-
 ### integrate
 ```
 Read: references/framework-{framework}/index.md
