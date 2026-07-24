@@ -200,7 +200,7 @@ Rules for splitting a large reference into a leaf group:
   one destination; leaves repeat any shared context inline rather than linking to
   the hub or each other. If two sections cross-reference too heavily to separate,
   merge them into one leaf rather than add a link.
-- **Add a routing case** in `tests/routing-cases.json` with the two-hop
+- **Add a routing case** in `evals/routing-cases.json` with the two-hop
   `expect_refs` (`<name>/index.md` + the intent leaf [+ tooling]), and move the
   slug from the index-only presence check in `validate-skill.sh` to its grouped
   loop. For an index-only reference, the presence check is simply
