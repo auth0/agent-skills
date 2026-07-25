@@ -306,28 +306,6 @@ private let auth = AuthenticationService()
 | `ClientId` | String | Yes | Your Auth0 application Client ID |
 | `Domain` | String | Yes | Your Auth0 tenant domain (e.g., `tenant.auth0.com`) |
 
-### Programmatic Initialization
-
-Use when you cannot use `Auth0.plist` (e.g., reading credentials from environment):
-
-```swift
-// Web Auth with explicit credentials
-Auth0
-    .webAuth(clientId: "YOUR_CLIENT_ID", domain: "YOUR_DOMAIN")
-    .start()
-
-// Authentication API with explicit credentials
-Auth0
-    .authentication(clientId: "YOUR_CLIENT_ID", domain: "YOUR_DOMAIN")
-    .login(usernameOrEmail: "user@example.com", password: "password",
-           realmOrConnection: "Username-Password-Authentication",
-           scope: "openid profile email")
-
-// CredentialsManager with explicit credentials
-let authentication = Auth0.authentication(clientId: "YOUR_CLIENT_ID", domain: "YOUR_DOMAIN")
-let credentialsManager = CredentialsManager(authentication: authentication)
-```
-
 ### WebAuth Builder Options
 
 | Method | Type | Description |
