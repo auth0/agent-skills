@@ -1,6 +1,6 @@
 {
   "slug": "audit",
-  "origin_skill": "auth0",
+  "origin_skill": "auth0-checkmate",
   "skill_name": "auth0",
   "evals": [
     {
