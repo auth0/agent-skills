@@ -48,7 +48,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > **Swift Package Manager — Xcode project (`.xcodeproj`, no `Package.swift`):** The CLI command does not apply. Instruct the user to add the package via Xcode: File → Add Package Dependencies → `https://github.com/auth0/Auth0.swift` → Up to Next Major Version from `2.18.0`.
 >
-> **CocoaPods or Carthage:** Follow the matching installation steps in this group's setup guide (SDK Installation section). Do not just show the instructions — perform the file edits and run the commands.
+> **CocoaPods or Carthage:** Follow the matching installation steps in this group's integration guide (SDK Installation section). Do not just show the instructions — perform the file edits and run the commands.
 
 ### Step 2 — Configure Auth0
 
@@ -58,8 +58,8 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >   - **Automatic (Auth0 CLI)** — I'll create the application, set callback URLs, and configure everything using the Auth0 CLI.
 >   - **Manual** — You provide a pre-configured `Auth0.plist` file and I'll add it to your project.
 >
-> If the user chooses **automatic**: Follow this group's setup guide (Automated Setup via Auth0 CLI section).
-> If the user chooses **manual**: Follow this group's setup guide (Manual Setup section).
+> If the user chooses **automatic**: Follow this group's integration guide (Automated Setup via Auth0 CLI section).
+> If the user chooses **manual**: Follow this group's integration guide (Manual Setup section).
 >
 > **IMPORTANT — Never pass credentials in code:** Do NOT hardcode `clientId` or `domain` in Swift source, and do NOT pass them as arguments to `Auth0.webAuth()`, `Auth0.authentication()`, or any other SDK call. The SDK reads these values automatically from `Auth0.plist`. Always use the no-argument forms:
 > ```swift
@@ -101,7 +101,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 > ```
 > If there are no existing URLs, omit the `EXISTING_` prefix and use only the new URL.
 >
-> Then follow the URL scheme registration steps in this group's setup guide (Post-Setup Steps section) to register `$(PRODUCT_BUNDLE_IDENTIFIER)` as a URL type in Xcode.
+> Then follow the URL scheme registration steps in this group's integration guide (Post-Setup Steps section) to register `$(PRODUCT_BUNDLE_IDENTIFIER)` as a URL type in Xcode.
 
 #### Path B — HTTPS Universal Links
 
@@ -135,7 +135,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 > Auth0 will now host the `apple-app-site-association` file automatically — required for Universal Links to work on device.
 >
 > **Step B3 — Add Associated Domains entitlement in Xcode:**
-> Add `com.apple.developer.associated-domains` to the app's `.entitlements` file with both `applinks:` and `webcredentials:` entries for the Auth0 domain. See this group's setup guide (Associated Domains Setup section) for the complete entitlements XML, Xcode capability steps, and build settings verification.
+> Add `com.apple.developer.associated-domains` to the app's `.entitlements` file with both `applinks:` and `webcredentials:` entries for the Auth0 domain. See this group's integration guide (Associated Domains Setup section) for the complete entitlements XML, Xcode capability steps, and build settings verification.
 >
 > **Step B4 — Use `.useHTTPS()` in the SDK:**
 > ```swift
@@ -193,7 +193,7 @@ class AuthenticationService: ObservableObject {
 // In body: if auth.isAuthenticated { HomeView() } else { LoginView() }
 ```
 
-For complete SwiftUI app lifecycle wiring, see this group's patterns guide (SwiftUI patterns section).
+For complete SwiftUI app lifecycle wiring, see this group's integration guide (SwiftUI App Lifecycle section).
 
 #### UIKit
 
@@ -247,7 +247,7 @@ private let auth = AuthenticationService()
 }
 ```
 
-> **Note — SFSafariViewController only:** If the app uses `.provider(WebAuthentication.safariProvider())` instead of the default `ASWebAuthenticationSession`, add `WebAuthentication.resume(with: url)` to `AppDelegate.application(_:open:url:options:)` and `SceneDelegate.scene(_:openURLContexts:)`. See this group's patterns guide (Platform-Specific Patterns section) for the exact code.
+> **Note — SFSafariViewController only:** If the app uses `.provider(WebAuthentication.safariProvider())` instead of the default `ASWebAuthenticationSession`, add `WebAuthentication.resume(with: url)` to `AppDelegate.application(_:open:url:options:)` and `SceneDelegate.scene(_:openURLContexts:)`. See this group's integration guide (UIKit App Lifecycle section) for the exact code.
 
 ### Step 5 — Verify Build
 
@@ -264,15 +264,14 @@ above, read the reference for your task:
 
 | Intent | Read |
 |---|---|
-| setup, install | `Read: references/framework-swift/setup.md` |
-| integrate, login, logout | `Read: references/framework-swift/patterns.md` |
-| feature:mfa | `Read: references/framework-swift/patterns.md` |
+| integrate | `Read: references/framework-swift/integrate.md` |
+| feature:mfa | `Read: references/framework-swift/integrate.md` |
 | upgrade-sdk | `Read: references/framework-swift/migration.md` |
 
 **Then, as needed for your task:**
-- Setup variants (CocoaPods/Carthage, manual `Auth0.plist`, URL schemes, Associated Domains): `Read: references/framework-swift/setup.md`
-- Integration patterns (login/logout, CredentialsManager, biometrics, Organizations, MFA, calling APIs, platform-specific lifecycle): `Read: references/framework-swift/patterns.md`
+- The quick start above gets a basic integration working. For setup variants (CocoaPods/Carthage, manual `Auth0.plist`), and advanced patterns (biometrics, Organizations, MFA step-up, calling APIs, lifecycle): `Read: references/framework-swift/integrate.md`
 - Full API / configuration lookup (WebAuth & CredentialsManager options, claims, testing checklist, security considerations): `Read: references/framework-swift/api-reference.md`
-- v2→v3 migration: `Read: references/framework-swift/migration.md`
+- Any other task (guidance, debugging, Organizations, provider migration):
+  start with `Read: references/framework-swift/integrate.md`
 
 Read only the reference (or references) your task needs — not all of them.
