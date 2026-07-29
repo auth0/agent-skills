@@ -248,20 +248,17 @@ Add to your app's `Info.plist`:
 ### Web Auth Errors
 
 ```swift
-Auth0.webAuth().start { result in
-    switch result {
-    case .success(let credentials):
-        // Handle success
-        break
-    case .failure(let error):
-        if error.isUserCancelled {
-            print("User cancelled login")
-        } else if error.isNetworkError {
-            print("Network error: \(error.localizedDescription)")
-        } else {
-            print("Error: \(error)")
-        }
-    }
+do {
+    let credentials = try await Auth0.webAuth().start()
+} catch WebAuthError.userCancelled {
+    // User tapped Cancel — no action needed, just return to UI
+} catch WebAuthError.noCredentialsAvailable {
+    print("No credentials available — unexpected after login")
+} catch WebAuthError.pkceNotAllowed {
+    print("PKCE not enabled — check Auth0 Dashboard → Application → Advanced Settings → OAuth")
+} catch {
+    // Other error (network, configuration)
+    print("Web Auth error: \(error)")
 }
 ```
 
@@ -270,16 +267,19 @@ Auth0.webAuth().start { result in
 ```swift
 do {
     let credentials = try await credentialsManager.credentials()
-} catch CredentialsManagerError.noCredentials {
-    // No credentials stored — navigate to login
-} catch CredentialsManagerError.noRefreshToken {
-    // Stored credentials expired, no refresh token — navigate to login
-} catch CredentialsManagerError.renewFailed {
-    // Refresh token invalid or revoked — navigate to login
+} catch CredentialsManagerError.noCredentialsAvailable {
+    // First launch or after logout
+    await showLoginScreen()
+} catch CredentialsManagerError.failedToRenewCredentials(let renewalError) {
+    // Refresh token expired — must re-authenticate
+    _ = credentialsManager.clear()
+    await showLoginScreen()
 } catch CredentialsManagerError.biometricsFailed {
-    // User cancelled or failed biometric prompt
-} catch {
-    print("Unexpected error: \(error)")
+    // Face ID / Touch ID failed
+    await showBiometricFailureMessage()
+} catch CredentialsManagerError.cannotAccessKeychainItem {
+    // Keychain access denied (e.g., device locked, missing entitlements)
+    print("Keychain error: \(error)")
 }
 ```
 
