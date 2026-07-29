@@ -6,7 +6,7 @@
 - Routing is **file-based and deterministic**: the router reads `package.json`,
   `composer.json`, `go.mod`, `*.csproj`, `pubspec.yaml`, etc. — code-driven, not
   a model guess.
-- **Navigation is a depth-2 tree.** Claude Code loads the router, then the files
+- **Navigation is a depth-3 tree.** Claude Code loads the router, then the files
   it names. Every reference is a directory `<stem>/` with an `index.md`. An
   **index-only** reference puts its whole content in `index.md` (one hop from the
   router, no leaves). A large reference is a **leaf group**: `index.md` is a hub
@@ -17,7 +17,8 @@
   link to nothing (they are sinks); cross-group links are forbidden. All
   framework/tooling detection still lives in `SKILL.md`. Leaf groups exist so a
   large reference doesn't force the agent to load the whole file when it needs
-  one section's worth.
+  one section's worth. Split references into leaf groups when `index.md` exceeds
+  ~1000 lines.
 
 ## Structure
 `plugins/auth0/skills/auth0/`
@@ -50,7 +51,7 @@ dispatches to the leaf the task needs.
 4. **Load** 2–3 reference files and follow them.
 
 ## Reachability invariant (CI-enforced)
-`scripts/check_router_reachability.py` asserts the depth-2 tree holds: every
+`scripts/check_router_reachability.py` asserts the depth-3 tree holds: every
 reference directory is routable from `SKILL.md` (via template expansion over the
 known framework and tooling value sets) and has an `index.md`; every leaf-group
 leaf is reachable from that hub's dispatch; no route points at a missing file;

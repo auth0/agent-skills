@@ -48,12 +48,13 @@ Key top-level docs:
 2. Match the patterns of the existing reference files rather than inventing new
    structure. The naming convention (`framework-<name>`, `feature-<name>`,
    `tooling-<name>`, `pattern-<name>`) and the router-in-`SKILL.md` layout
-   exist on purpose — keep them consistent. Navigation is a **depth-2 tree**:
+   exist on purpose — keep them consistent. Navigation is a **depth-3 tree**:
    every reference must be reachable from `SKILL.md`; an index-only `index.md`
    or a group leaf must not link to any other `.md`; the only allowed second hop
    is a leaf-group hub `index.md` dispatching to leaves in its own directory.
    Enforced by `scripts/check_router_reachability.py`. See CONTRIBUTING.md →
-   "Adding a reference" before splitting a large one into a leaf group.
+   "Adding a reference" before splitting a large one (>1000 lines) into a leaf
+   group.
 
 ## Required SKILL.md frontmatter
 

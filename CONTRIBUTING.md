@@ -149,7 +149,7 @@ reference"); pick the prefix that fits:
 
 ### Make it routable (required — CI enforces this)
 Every reference in `references/` MUST be reachable from `SKILL.md`. Navigation is
-a **depth-2 tree**: every reference is a directory `<name>/` with an `index.md`.
+a **depth-3 tree**: every reference is a directory `<name>/` with an `index.md`.
 An **index-only** reference puts its whole content in `index.md` and has no
 leaves (one hop from the router). A large reference is a **leaf group** whose
 `index.md` is a hub plus document-section leaves (see "Adding a reference" below).
@@ -174,8 +174,8 @@ guaranteed.
 Every reference is a directory named after its stem, containing an `index.md`.
 Adding a new reference means creating `references/<name>/index.md`. Start
 index-only — the whole reference lives in `index.md` — and only split it into a
-**leaf group** once it grows large (roughly >40K) so the router pulls just the
-slice a task needs instead of the whole file:
+**leaf group** once it grows large (roughly >1000 lines) so the router pulls just
+the slice a task needs instead of the whole file:
 
 ```
 references/framework-<name>/
