@@ -187,7 +187,7 @@ func logout() async throws {
 
 ---
 
-## Biometric Protection
+### Biometric Protection
 
 Enable Touch ID / Face ID / Optic ID protection for credential retrieval.
 
@@ -218,11 +218,28 @@ do {
 }
 ```
 
-> **iOS Requirement:** Add `NSFaceIDUsageDescription` key to `Info.plist` if targeting Face ID:
-> ```xml
-> <key>NSFaceIDUsageDescription</key>
-> <string>Unlock to access your account</string>
-> ```
+### Handle Biometric Errors
+
+```swift
+do {
+    let credentials = try await credentialsManager.credentials()
+    useCredentials(credentials)
+} catch CredentialsManagerError.biometricsFailed {
+    // Biometric auth failed — ask user to log in again
+    _ = credentialsManager.clear()
+    await login()
+} catch CredentialsManagerError.noCredentialsAvailable {
+    await login()
+}
+```
+
+### Info.plist Permission (Required)
+
+Add to your app's `Info.plist`:
+```xml
+<key>NSFaceIDUsageDescription</key>
+<string>Authenticate to access your account securely.</string>
+```
 
 ---
 
@@ -329,6 +346,19 @@ if let orgId = credentials.idToken["org"] as? String {
 }
 ```
 
+### Accept Organization Invitation
+
+```swift
+// Handle invitation URL from deep link
+func handleInvitation(url: URL) async {
+    try? await Auth0
+        .webAuth()
+        .useHTTPS()
+        .invitationURL(url)
+        .start()
+}
+```
+
 ---
 
 ## Platform-Specific Patterns
@@ -368,6 +398,25 @@ func application(_ application: NSApplication, open urls: [URL]) {
     WebAuthentication.resume(with: url)
 }
 ```
+
+### Using SFSafariViewController (Instead of ASWebAuthenticationSession)
+
+```swift
+// For apps that cannot use ASWebAuthenticationSession
+Auth0
+    .webAuth()
+    .provider(WebAuthentication.safariProvider())
+    .start { result in
+        switch result {
+        case .success(let credentials):
+            print("Login success")
+        case .failure(let error):
+            print("Login failed: \(error)")
+        }
+    }
+```
+
+> **Note:** SFSafariViewController requires `WebAuthentication.resume(with:)` to be called from `AppDelegate` or `SceneDelegate` (see UIKit pattern above).
 
 ### SwiftUI — Login Button
 
