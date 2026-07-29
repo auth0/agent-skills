@@ -6,7 +6,7 @@
       "intent": "integrate",
       "framework": "react",
       "tooling": "cli",
-      "expect_refs": ["framework-react/index.md", "tooling-cli/index.md"]
+      "expect_refs": ["framework-react/index.md", "framework-react/integrate.md", "tooling-cli/index.md"]
     },
     {
       "id": "integrate-nextjs",
@@ -56,7 +56,7 @@
       "framework": "react",
       "tooling": "cli",
       "multi_tenant": true,
-      "expect_refs": ["feature-organizations/index.md", "tooling-cli/index.md", "framework-react/index.md", "pattern-multi-tenant/index.md"]
+      "expect_refs": ["feature-organizations/index.md", "tooling-cli/index.md", "framework-react/index.md", "framework-react/integrate.md", "pattern-multi-tenant/index.md"]
     },
     {
       "id": "feature-branding",
@@ -121,7 +121,7 @@
       "intent": "migrate",
       "framework": "react",
       "tooling": "cli",
-      "expect_refs": ["feature-migration/index.md", "tooling-cli/index.md", "framework-react/index.md"]
+      "expect_refs": ["feature-migration/index.md", "tooling-cli/index.md", "framework-react/index.md", "framework-react/integrate.md"]
     },
     {
       "id": "migrate-terraform-tenant",

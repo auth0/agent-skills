@@ -31,7 +31,7 @@ npm install @auth0/auth0-react
 
 ### 2. Configure Environment
 
-**For automated setup with Auth0 CLI**, see this group's setup guide for complete scripts.
+**For automated setup with Auth0 CLI**, see this group's integration guide (Setup → Quick Setup (Automated) section) for complete scripts.
 
 **For manual setup:**
 
@@ -109,38 +109,21 @@ npm run dev  # Vite
 npm start    # CRA
 ```
 
-## Common Mistakes
-
-| Mistake | Fix |
-|---------|-----|
-| Forgot to add redirect URI in Auth0 Dashboard | Add your application URL (e.g., `http://localhost:3000`, `https://app.example.com`) to Allowed Callback URLs in Auth0 Dashboard |
-| Using wrong env var prefix | Vite uses `VITE_` prefix, Create React App uses `REACT_APP_` |
-| Not handling loading state | Always check `isLoading` before rendering auth-dependent UI |
-| Storing tokens in localStorage | Never manually store tokens - SDK handles secure storage automatically |
-| Missing Auth0Provider wrapper | Entire app must be wrapped in `<Auth0Provider>` |
-| Provider not at root level | Auth0Provider must wrap all components that use auth hooks |
-| Wrong import path for env vars | Vite uses `import.meta.env.VITE_*`, CRA uses `process.env.REACT_APP_*` |
-| Using `acr_values` redirect for in-app MFA | Use `useAuth0().mfa` API for in-app enrollment/challenge/verify flows |
-| Not catching `MfaRequiredError` | Wrap `getAccessTokenSilently` in try/catch and check `instanceof MfaRequiredError` |
-| Making direct HTTP calls to MFA endpoints | Use the `mfa` property from `useAuth0()` — it handles token management automatically |
-| Forgetting refresh tokens for step-up MFA | Set `useRefreshTokens={true}` on Auth0Provider when using `interactiveErrorHandler="popup"` |
-
 ## Choose your task
 
-You arrived here for a specific intent. After reading the shared prerequisites
-above, read the reference for your task:
+You arrived here for a specific intent. After reading the shared setup above,
+read the reference for your task:
 
 | Intent | Read |
 |---|---|
-| setup, install, automated | `Read: references/framework-react/setup.md` |
-| config, provider, hooks | `Read: references/framework-react/api-reference.md` |
-| integrate, patterns, routes, api-calls | `Read: references/framework-react/patterns.md` |
-| mfa, security, advanced | `Read: references/framework-react/advanced.md` |
+| integrate | `Read: references/framework-react/integrate.md` |
+| feature:organizations | `Read: references/framework-react/integrate.md` |
+| migrate | `Read: references/framework-react/integrate.md` |
 
 **Then, as needed for your task:**
-- Automated or manual setup (Auth0 CLI scripts, .env configuration, dashboard setup): `Read: references/framework-react/setup.md`
-- Configuration & Hooks (Auth0Provider props, useAuth0 hook, TypeScript types): `Read: references/framework-react/api-reference.md`
-- Integration patterns (Protected routes, custom hooks, testing, calling APIs, error handling): `Read: references/framework-react/patterns.md`
-- Advanced features (MFA enrollment/challenge, security considerations, advanced patterns): `Read: references/framework-react/advanced.md`
+- The quick start above gets a basic integration working. For tenant setup, CLI provisioning, automated `.env` scripts, and advanced framework patterns (protected routes, calling APIs, error handling, MFA handling, security): `Read: references/framework-react/integrate.md` (Setup and Integration Patterns sections).
+- Full API / configuration lookup (Auth0Provider config, useAuth0 hook, MFA error types, TypeScript types): `Read: references/framework-react/api-reference.md`
+- Any other task (guidance, debugging, Organizations, provider migration):
+  start with `Read: references/framework-react/integrate.md`
 
 Read only the reference (or references) your task needs — not all of them.

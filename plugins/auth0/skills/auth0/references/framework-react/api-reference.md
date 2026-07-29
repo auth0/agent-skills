@@ -1,11 +1,8 @@
-# Auth0 React — API Reference
+# Auth0 React SDK API Reference
 
-Complete API documentation for @auth0/auth0-react SDK: Auth0Provider
-configuration, useAuth0 hook, and TypeScript types.
+Complete API documentation for @auth0/auth0-react SDK.
 
-> **Prerequisites:** The shared critical rules, prerequisites, and setup steps
-> live in this group's overview and setup file. This file provides the full
-> API reference.
+---
 
 ## Auth0Provider Configuration
 
@@ -461,3 +458,149 @@ import {
 ---
 
 ## Custom Hooks
+
+### withAuth0
+
+Higher-order component for class components:
+
+```tsx
+import { withAuth0 } from '@auth0/auth0-react';
+
+class Profile extends React.Component {
+  render() {
+    const { auth0, isLoading, isAuthenticated, user } = this.props;
+    // Use auth0 methods and state
+  }
+}
+
+export default withAuth0(Profile);
+```
+
+### withAuthenticationRequired
+
+HOC to protect components requiring authentication:
+
+```tsx
+import { withAuthenticationRequired } from '@auth0/auth0-react';
+
+const ProtectedComponent = () => {
+  return <div>Protected content</div>;
+};
+
+export default withAuthenticationRequired(ProtectedComponent, {
+  onRedirecting: () => <div>Loading...</div>,
+  returnTo: '/profile', // Where to return after login
+  loginOptions: {
+    authorizationParams: {
+      connection: 'google-oauth2'
+    }
+  }
+});
+```
+
+---
+
+## Testing
+
+### Testing with React Testing Library
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { Auth0Provider } from '@auth0/auth0-react';
+import App from './App';
+
+// Mock Auth0
+jest.mock('@auth0/auth0-react', () => ({
+  ...jest.requireActual('@auth0/auth0-react'),
+  Auth0Provider: ({ children }) => children,
+  useAuth0: () => ({
+    isLoading: false,
+    isAuthenticated: true,
+    user: {
+      name: 'Test User',
+      email: 'test@example.com'
+    },
+    loginWithRedirect: jest.fn(),
+    logout: jest.fn(),
+  }),
+}));
+
+test('renders authenticated app', () => {
+  render(<App />);
+  expect(screen.getByText('Test User')).toBeInTheDocument();
+});
+```
+
+### Testing with Custom Mock
+
+```tsx
+// testUtils.tsx
+import { Auth0Provider } from '@auth0/auth0-react';
+
+export const mockAuth0User = {
+  name: 'Test User',
+  email: 'test@example.com',
+  picture: 'https://example.com/avatar.jpg',
+};
+
+export function renderWithAuth0(ui: React.ReactElement, isAuthenticated = true) {
+  return render(
+    <Auth0Provider
+      domain="test.auth0.com"
+      clientId="test-client-id"
+      authorizationParams={{
+        redirect_uri: window.location.origin
+      }}
+    >
+      {ui}
+    </Auth0Provider>
+  );
+}
+```
+
+---
+
+## TypeScript Types
+
+### Import Types
+
+```typescript
+import type {
+  Auth0ContextInterface,
+  User,
+  RedirectLoginOptions,
+  PopupLoginOptions,
+  LogoutOptions,
+  GetTokenSilentlyOptions,
+  MfaApiClient,
+  Authenticator,
+  EnrollParams,
+  ChallengeResponse,
+  VerifyParams,
+  EnrollmentFactor,
+} from '@auth0/auth0-react';
+
+// MFA error types (value imports, not type-only)
+import {
+  MfaRequiredError,
+  MfaEnrollmentError,
+  MfaChallengeError,
+  MfaVerifyError,
+} from '@auth0/auth0-react';
+```
+
+### Type User Profile
+
+```typescript
+interface CustomUser extends User {
+  app_metadata?: {
+    roles?: string[];
+  };
+  user_metadata?: {
+    preferences?: any;
+  };
+}
+
+const { user } = useAuth0<CustomUser>();
+console.log(user?.app_metadata?.roles);
+```
