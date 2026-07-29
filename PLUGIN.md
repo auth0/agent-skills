@@ -47,7 +47,7 @@ pool**:
     multi-tenant, rate limiting, common errors).
 
 One skill means one `description` competing for activation. Navigation is a
-depth-2 tree: an index-only `index.md` or a leaf-group leaf links to nothing, and
+depth-3 tree: an index-only `index.md` or a leaf-group leaf links to nothing, and
 the only second hop is a leaf-group's hub `index.md` dispatching to a leaf in its
 own directory. See [`docs/architecture.md`](./docs/architecture.md) for the full
 rationale, routing flow, and the CI-enforced reachability invariant.

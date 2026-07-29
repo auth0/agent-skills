@@ -268,8 +268,8 @@ Step 1, then read the reference files it lists.
 ```
 Read: references/framework-{framework}/index.md
 Read: references/tooling-{tooling}/index.md
-Follow the integration workflow in framework-{framework}/index.md.
-Use tooling-{tooling}/index.md for all Auth0 tenant configuration steps.
+Follow the integration workflow in references/framework-{framework}/index.md.
+Use references/tooling-{tooling}/index.md for all Auth0 tenant configuration steps.
 ```
 
 ### feature:mfa
