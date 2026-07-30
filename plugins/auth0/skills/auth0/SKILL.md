@@ -357,7 +357,7 @@ Read: references/feature-audit.md
 Read: references/feature-audit-pricing.md
 Read: references/feature-audit-remediation.md
 Read: references/tooling-{tooling}.md
-Run the audit workflow first (supplies findings + company context), then score and recommend a plan. No scan available → hygiene is "Not scored"; still score capability fit. Never quote Enterprise pricing.
+Where a scan can run, run the audit workflow first (supplies findings + company context), then score and recommend a plan. If it can't, don't stop: hygiene is "Not scored" and capability fit, plan matching and the recommendation still run. Never quote Enterprise pricing.
 ```
 
 ### upgrade-sdk
