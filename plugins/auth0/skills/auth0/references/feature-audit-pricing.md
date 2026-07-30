@@ -1,8 +1,9 @@
 # Auth0 Pricing
 
-Source: https://auth0.com/pricing
+`https://auth0.com/pricing.md` holds the up-to-date prices — retrieve it before quoting any
+figure. The feature→plan matrix below is local; read it from here.
 
-Auth0 offers flexible authentication and authorization plans for both B2C (consumer-facing) and B2B (business-facing) applications. The Free plan is identical regardless of use case. Paid plans are priced by Monthly Active Users (MAUs) and differ between B2C and B2B. Yearly billing is 11× the monthly price (equivalent to 1 month free).
+Auth0 offers flexible authentication and authorization plans for both B2C (consumer-facing) and B2B (business-facing) applications. The Free plan is identical regardless of use case. Paid plans are priced by Monthly Active Users (MAUs) and differ between B2C and B2B.
 
 ---
 
@@ -10,13 +11,17 @@ Auth0 offers flexible authentication and authorization plans for both B2C (consu
 
 To quote pricing for a customer, follow these steps in order:
 
-1. **Determine use case:** B2C (consumer-facing) or B2B (business-facing).
-2. **Identify their MAU tier:** Find the tier that meets or exceeds their expected monthly active users. If usage falls between tiers, use the next tier up.
-3. **Select the plan:** Match required features against the Feature Comparison tables to determine the minimum plan (Free, Essentials, Professional, or Enterprise).
-4. **Look up the base price:** Use the appropriate B2C or B2B base price table (monthly or yearly).
-5. **Add any add-ons:** Check if the customer needs AI Agents, additional M2M tokens, Enterprise SSO connections, or Enterprise MFA. Look up each add-on price from the explicit tables.
-6. **Calculate total cost:** Total = Base Price + sum of all applicable add-on prices.
-7. **Enterprise or "Contact us" tiers:** If any component shows "Contact us", direct the customer to Auth0 sales for a custom quote.
+1. **Fetch `https://auth0.com/pricing.md` first.** Do this before quoting any figure. It carries
+   the B2C and B2B base-price tables (monthly and yearly), every add-on table (Auth for AI
+   Agents, M2M tokens, Enterprise SSO connections, Enterprise MFA), and the current MAU tiers.
+   If it can't be fetched, give the plan name without a figure — never a price from memory.
+2. **Determine use case:** B2C (consumer-facing) or B2B (business-facing).
+3. **Identify their MAU tier:** Find the tier that meets or exceeds their expected monthly active users. If usage falls between tiers, use the next tier up.
+4. **Select the plan:** Match required features against the Feature Comparison tables below to determine the minimum plan (Free, Essentials, Professional, or Enterprise).
+5. **Look up the base price** in the fetched page, using the appropriate B2C or B2B table.
+6. **Add any add-ons:** Check whether the customer needs AI Agents, additional M2M tokens, Enterprise SSO connections, or Enterprise MFA, and take each add-on price from the fetched page.
+7. **Calculate total cost:** Total = Base Price + sum of all applicable add-on prices.
+8. **"Contact us" or "Not available" components:** If any component reads "Contact us", direct the customer to Auth0 sales for a custom quote. If it reads "Not available", that plan or add-on does not exist at their MAU tier — do not recommend it and do not total it; move up a plan or send them to sales.
 
 ---
 
@@ -30,20 +35,17 @@ To quote pricing for a customer, follow these steps in order:
 
 ## Plans Overview
 
-Auth0 has four tiers: **Free**, **Essentials**, **Professional**, and **Enterprise**. Pricing differs between B2C and B2B use cases.
-
-| Plan | B2C Starting Price | B2B Starting Price | MAUs at Starting Price |
-|---|---|---|---|
-| Free | $0/month | $0/month | Up to 25,000 |
-| Essentials | $35/month | $150/month | 500 MAUs |
-| Professional | $240/month | $800/month | 500 MAUs |
-| Enterprise | Contact us | Contact us | Custom |
+Auth0 has four tiers: **Free**, **Essentials**, **Professional**, and **Enterprise**. Free is
+identical for B2C and B2B; the paid tiers are priced separately for each. Starting prices, the
+MAU tier they apply at, and how Enterprise is sold are in the fetched pricing page — read
+Enterprise off that page rather than assuming, and never quote or estimate an Enterprise price
+yourself.
 
 ---
 
 ## Free Plan
 
-**Free — $0/month** (same for B2C and B2B)
+**Free** (same for B2C and B2B)
 
 No credit card needed to sign up.
 
@@ -66,7 +68,7 @@ No credit card needed to sign up.
 
 ### Plan Highlights
 
-**Essentials — from $35/month**
+**Essentials**
 - Everything in Free, plus:
 - Higher Auth, API limits, and feature limits
 - Pro Multi-Factor Authentication
@@ -77,7 +79,7 @@ No credit card needed to sign up.
 - Standard Support
 - Add-ons: Enterprise MFA, Enterprise SSO Connections, M2M Tokens
 
-**Professional — from $240/month**
+**Professional**
 - Everything in Essentials, plus:
 - Enhanced Attack Protection
 - Use your existing User Database for Logins
@@ -94,121 +96,12 @@ No credit card needed to sign up.
 
 *Pricing is available only at the listed MAU tiers. If your usage falls between tiers, you are billed at the next tier up.*
 
-### B2C Base Price by MAUs (monthly)
+### B2C Prices
 
-| MAUs | Essentials | Professional |
-|------|-----------|--------------|
-| 500 | $35 | $240 |
-| 1,000 | $70 | $240 |
-| 2,500 | $175 | $545 |
-| 5,000 | $350 | $1,000 |
-| 7,500 | $525 | $1,200 |
-| 10,000 | $700 | $1,600 |
-| 20,000 | $1,400 | $3,200 |
-| 30,000 | $2,100 | Contact us |
-| 40,000 | $2,800 | Not available |
-| 50,000 | $3,500 | Not available |
-
-### B2C Base Price by MAUs (yearly)
-
-| MAUs | Essentials | Professional |
-|------|-----------|--------------|
-| 500 | $385 | $2,640 |
-| 1,000 | $770 | $2,640 |
-| 2,500 | $1,925 | $5,995 |
-| 5,000 | $3,850 | $11,000 |
-| 7,500 | $5,775 | $13,200 |
-| 10,000 | $7,700 | $17,600 |
-| 20,000 | $15,400 | $35,200 |
-| 30,000 | $23,100 | Contact us |
-| 40,000 | $30,800 | Not available |
-| 50,000 | $38,500 | Not available |
-
-### B2C Add-ons
-
-**Auth0 for AI Agents**
-- Adds 50% to the base price (rounded up to the dollar)
-- Unlimited Token Vault
-- All forms of CIBA
-
-*B2C AI Agents Add-On Price by MAUs (monthly)*
-
-| MAUs | Essentials | Professional |
-|------|-----------|--------------|
-| 500 | $18 | $120 |
-| 1,000 | $35 | $120 |
-| 2,500 | $88 | $273 |
-| 5,000 | $175 | $500 |
-| 7,500 | $263 | $600 |
-| 10,000 | $350 | $800 |
-| 20,000 | $700 | $1,600 |
-| 30,000 | $1,050 | Contact us |
-| 40,000 | $1,400 | Not available |
-| 50,000 | $1,750 | Not available |
-
-*B2C AI Agents Add-On Price by MAUs (yearly — 11× monthly)*
-
-| MAUs | Essentials | Professional |
-|------|-----------|--------------|
-| 500 | $198 | $1,320 |
-| 1,000 | $385 | $1,320 |
-| 2,500 | $968 | $3,003 |
-| 5,000 | $1,925 | $5,500 |
-| 7,500 | $2,893 | $6,600 |
-| 10,000 | $3,850 | $8,800 |
-| 20,000 | $7,700 | $17,600 |
-| 30,000 | $11,550 | Contact us |
-| 40,000 | $15,400 | Not available |
-| 50,000 | $19,250 | Not available |
-
-
-**M2M Token Add-On Tier Pricing** (Professional plan only; 5,000 included)
-
-*B2C M2M Token Add-On (monthly)*
-
-| M2M Tokens | Price/month |
-|-----------|-------------|
-| 5,000 | Included |
-| 7,500 | $30 |
-| 10,000 | $40 |
-| 20,000 | $80 |
-| 30,000 | $120 |
-| 40,000 | $160 |
-| 50,000 | $200 |
-| 60,000 | $240 |
-| 70,000 | $280 |
-| 80,000 | $320 |
-| 90,000 | $360 |
-| 100,000 | $400 |
-| 125,000 | $500 |
-| 150,000 | $600 |
-| 175,000 | $700 |
-| 200,000 | $800 |
-| 250,000 | $1,000 |
-| 300,000 | $1,200 |
-
-*B2C M2M Token Add-On (yearly — 11× monthly)*
-
-| M2M Tokens | Price/year |
-|-----------|------------|
-| 5,000 | Included |
-| 7,500 | $330 |
-| 10,000 | $440 |
-| 20,000 | $880 |
-| 30,000 | $1,320 |
-| 40,000 | $1,760 |
-| 50,000 | $2,200 |
-| 60,000 | $2,640 |
-| 70,000 | $3,080 |
-| 80,000 | $3,520 |
-| 90,000 | $3,960 |
-| 100,000 | $4,400 |
-| 125,000 | $5,500 |
-| 150,000 | $6,600 |
-| 175,000 | $7,700 |
-| 200,000 | $8,800 |
-| 250,000 | $11,000 |
-| 300,000 | $13,200 |
+Base prices (monthly and yearly) by MAU tier, and every B2C add-on — Auth0 for AI Agents
+(adds 50% to base, rounded up to the dollar; unlimited Token Vault, all forms of CIBA) and
+M2M tokens — are in the **B2C section of the fetched pricing page**. Read them there; which
+plans each add-on is available on is in the B2C Feature Comparison below.
 
 ---
 
@@ -216,7 +109,7 @@ No credit card needed to sign up.
 
 ### Plan Highlights
 
-**Essentials — from $150/month**
+**Essentials**
 - Everything in Free, plus:
 - Unlimited** Organizations
 - 3 SSO Enterprise Connections
@@ -228,7 +121,7 @@ No credit card needed to sign up.
 - Standard Support
 - Add-ons: Enterprise MFA, Enterprise SSO Connections, M2M Tokens
 
-**Professional — from $800/month**
+**Professional**
 - Everything in Essentials, plus:
 - Enhanced Attack Protection
 - Use your existing User Database for Logins
@@ -246,123 +139,13 @@ No credit card needed to sign up.
 - Enterprise Administration & Support
 - Add-ons: Advanced Security Features, Private Deployment
 
-### B2B Base Price by MAUs (monthly)
+### B2B Prices
 
-| MAUs | Essentials | Professional |
-|------|-----------|--------------|
-| 500 | $150 | $800 |
-| 1,000 | $300 | $800 |
-| 2,500 | $700 | $1,200 |
-| 5,000 | $1,300 | $1,500 |
-| 7,500 | $1,725 | $1,800 |
-| 10,000 | $2,100 | $2,400 |
-| 20,000 | $3,800 | Contact us |
-| 30,000+ | Contact us | Contact us |
-
-### B2B Base Price by MAUs (yearly)
-
-| MAUs | Essentials | Professional |
-|------|-----------|--------------|
-| 500 | $1,650 | $8,800 |
-| 1,000 | $3,300 | $8,800 |
-| 2,500 | $7,700 | $13,200 |
-| 5,000 | $14,300 | $16,500 |
-| 7,500 | $18,975 | $19,800 |
-| 10,000 | $23,100 | $26,400 |
-| 20,000 | $41,800 | Contact us |
-| 30,000+ | Contact us | Contact us |
-
-### B2B Add-ons
-
-**Auth0 for AI Agents**
-- Adds 50% to the base price (rounded up to the dollar)
-- Unlimited Token Vault
-- All forms of CIBA
-
-*B2B AI Agents Add-On Price by MAUs (monthly)*
-
-| MAUs | Essentials | Professional |
-|------|-----------|--------------|
-| 500 | $75 | $400 |
-| 1,000 | $150 | $400 |
-| 2,500 | $350 | $600 |
-| 5,000 | $650 | $750 |
-| 7,500 | $863 | $900 |
-| 10,000 | $1,050 | $1,200 |
-| 20,000 | $1,900 | Contact us |
-| 30,000+ | Contact us | Contact us |
-
-*B2B AI Agents Add-On Price by MAUs (yearly — 11× monthly)*
-
-| MAUs | Essentials | Professional |
-|------|-----------|--------------|
-| 500 | $825 | $4,400 |
-| 1,000 | $1,650 | $4,400 |
-| 2,500 | $3,850 | $6,600 |
-| 5,000 | $7,150 | $8,250 |
-| 7,500 | $9,493 | $9,900 |
-| 10,000 | $11,550 | $13,200 |
-| 20,000 | $20,900 | Contact us |
-| 30,000+ | Contact us | Contact us |
-
-**M2M Tokens — Essentials and Professional plan** (Professional plan 5,000 included)
-
-*B2B M2M Token Add-On (monthly)*
-
-| M2M Tokens | Price/month |
-|-----------|-------------|
-| 2,500 | $10 |
-| 5,000 | $20 |
-| 7,500 | $30 |
-| 10,000 | $40 |
-| 20,000 | $80 |
-| 30,000 | $120 |
-| 40,000 | $160 |
-| 50,000 | $200 |
-| 60,000 | $240 |
-| 70,000 | $280 |
-| 80,000 | $320 |
-| 90,000 | $360 |
-| 100,000 | $400 |
-| 125,000 | $500 |
-| 150,000 | $600 |
-| 175,000 | $700 |
-| 200,000 | $800 |
-| 250,000 | $1,000 |
-| 300,000 | $1,200 |
-
-*B2B M2M Token Add-On (yearly — 11× monthly)*
-
-| M2M Tokens | Price/year |
-|-----------|------------|
-| 2,500 | $110 |
-| 5,000 | $220 |
-| 7,500 | $330 |
-| 10,000 | $440 |
-| 20,000 | $880 |
-| 30,000 | $1,320 |
-| 40,000 | $1,760 |
-| 50,000 | $2,200 |
-| 60,000 | $2,640 |
-| 70,000 | $3,080 |
-| 80,000 | $3,520 |
-| 90,000 | $3,960 |
-| 100,000 | $4,400 |
-| 125,000 | $5,500 |
-| 150,000 | $6,600 |
-| 175,000 | $7,700 |
-| 200,000 | $8,800 |
-| 250,000 | $11,000 |
-| 300,000 | $13,200 |
-
-
-**Enterprise SSO Connections**
-- Essentials: 3 included. $100/month ($1,100/year) per additional connection (max 30 total)
-- Professional: 5 included. $100/month ($1,100/year) per additional connection (max 30 total)
-
-**Enterprise MFA**
-- Essentials: $100/month ($1,100/year)
-- Professional: Included
+Base prices (monthly and yearly) by MAU tier, and every B2B add-on — Auth0 for AI Agents,
+M2M tokens, additional Enterprise SSO connections, and Enterprise MFA — are in the **B2B
+section of the fetched pricing page**. Read them there; which plans each add-on is available
+on, and how many Enterprise Connections each plan includes, are in the B2B Feature Comparison
+below.
 
 ---
 
