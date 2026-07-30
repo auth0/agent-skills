@@ -53,8 +53,8 @@ Run the decision tree below (regulated vertical first → B2B/B2C/Mixed → AI).
 - ELSE → **MIXED (B2B + B2C)**. Surface: both feature sets — Organizations (B2B tenants), Social Connections (B2C users), Custom Domain (required for both).
 
 **Step 3 — AI use case.**
-- IF `ai_use_case == true` AND `integrations.length > 0` AND integrations contain (Gmail, Slack, Salesforce, GitHub, Stripe, HubSpot, Jira, etc.) → **AI-NATIVE or AI-DIFFERENTIATED**. Surface: Token Vault (securely store/refresh OAuth tokens for agent integrations — list the specific APIs), CIBA (async approval for high-stakes actions — critical if `autonomous_actions` contains sending emails, updating records, publishing, financial transactions), M2M Authentication (agent-to-API flows), Custom Claims (agent context in tokens). Gap severities: Token Vault CRITICAL, CIBA HIGH (if autonomous actions detected), M2M Auth MODERATE, Custom Claims LOW.
-- ELSE IF `ai_use_case == true` AND `integrations.length == 0` → **AI-ADJACENT** (LLM integration, no OAuth/external APIs). Surface: M2M Authentication (LLM API calls), Custom Claims. Gap severities: M2M Auth MODERATE; Token Vault / CIBA not relevant.
+- IF `ai_use_case == true` AND `ai_integrations.length > 0` AND `ai_integrations` contain (Gmail, Slack, Salesforce, GitHub, Stripe, HubSpot, Jira, etc.) → **AI-NATIVE or AI-DIFFERENTIATED**. Surface: Token Vault (securely store/refresh OAuth tokens for agent integrations — list the specific APIs), CIBA (async approval for high-stakes actions — critical if `autonomous_actions` contains sending emails, updating records, publishing, financial transactions), M2M Authentication (agent-to-API flows), Custom Claims (agent context in tokens). Gap severities: Token Vault CRITICAL, CIBA HIGH (if autonomous actions detected), M2M Auth MODERATE, Custom Claims LOW.
+- ELSE IF `ai_use_case == true` AND `ai_integrations.length == 0` → **AI-ADJACENT** (LLM integration, no OAuth/external APIs). Surface: M2M Authentication (LLM API calls), Custom Claims. Gap severities: M2M Auth MODERATE; Token Vault / CIBA not relevant.
 
 **Feature gap severity classification (overall):**
 - CRITICAL: Custom Domain (missing = brand credibility killer), Organizations (B2B missing = can't isolate customers), Enterprise Connections (B2B missing = can't SSO with corporate IdPs), Token Vault (AI missing = OAuth token security risk), Log Streaming (regulated missing = compliance failure).
@@ -78,8 +78,8 @@ Run the decision tree below (regulated vertical first → B2B/B2C/Mixed → AI).
     {"feature": "Organizations", "severity": "CRITICAL", "reason": "Can't isolate each fintech customer's data + branding"},
     {"feature": "Token Vault", "severity": "CRITICAL", "reason": "AI agents need secure OAuth token storage for Salesforce + Stripe integrations"}
   ],
-  "readiness_score": 0.35,
-  "readiness_level": "Not Ready"
+  "fit_score": 35,
+  "fit_level": "Not Ready"
 }
 ```
 
@@ -281,12 +281,12 @@ For the underlying per-plan feature tables (Branding, Security & Compliance, Org
 **Plan recommendation validation.**
 - `use_case == "Unknown"` → default to "B2C Essentials" (conservative fallback, confidence 0.3).
 - `use_case == "B2B"` but Organizations not detected and `business_model` indicates multi-tenant → override to "B2B Essentials" (minimum for B2B; Organizations is a CRITICAL gap).
-- AI-Native/AI-Differentiated with `integrations.length > 0` → surface A4AA as CRITICAL (Token Vault is non-negotiable for OAuth integrations, confidence 0.85+).
+- AI-Native/AI-Differentiated with `ai_integrations.length > 0` → surface A4AA as CRITICAL (Token Vault is non-negotiable for OAuth integrations, confidence 0.85+).
 - `ai_use_case == true` AND autonomous actions detected AND `current_plan` in {Free, Essentials} → recommend Professional, not Essentials (CIBA requires a Professional base) — do not recommend Essentials + A4AA when autonomous actions are detected. Compare plans by explicit tier rank (Free < Essentials < Professional < Enterprise), never by lexical string comparison.
 - CRITICAL gap → minimum unlocking plan: Custom Domain → Essentials+, Organizations → B2B Essentials+, Enterprise Connections (3+) → B2B Professional+, Token Vault → A4AA add-on (any base), CIBA → A4AA + Professional base+, Log Streaming → Essentials+.
 - If the current plan already has the required feature: recommend staying, focus on optimization. Otherwise recommend the minimum plan that unlocks it.
 
-**A4AA Fit Score** = sum of: +0.25 if `ai_use_case == "AI-Native"`; +0.20 if `"AI-Differentiated"`; +0.15 if `integrations.length >= 3`; +0.15 if autonomous actions detected (sending emails, charging customers, etc.); +0.10 if an approval workflow (CIBA) is required; +0.05 if custom claims are needed; +0.10 if `m2m_apps_count > 0`. Validation: `a4aa_fit_score >= 0.40` → recommend A4AA as CRITICAL; `0.20–0.39` → HIGH priority; `< 0.20` → optional/not recommended.
+**A4AA Fit Score** = sum of: +0.25 if `ai_use_case == "AI-Native"`; +0.20 if `"AI-Differentiated"`; +0.15 if `ai_integrations.length >= 3`; +0.15 if autonomous actions detected (sending emails, charging customers, etc.); +0.10 if an approval workflow (CIBA) is required; +0.05 if custom claims are needed; +0.10 if `m2m_apps_count > 0`. Validation: `a4aa_fit_score >= 0.40` → recommend A4AA as CRITICAL; `0.20–0.39` → HIGH priority; `< 0.20` → optional/not recommended.
 
 **Pricing data consistency.** Fetch `https://auth0.com/pricing.md` once, then take every figure from that single response: the B2C base table, the B2B base table, A4AA add-on pricing, M2M token add-on pricing, Enterprise SSO connection add-on pricing, and Enterprise MFA add-on pricing. Do not mix figures across fetches or interpolate between MAU tiers. If the fetch fails, or a tier reads "Contact us": surface "Contact Auth0 sales for custom quote" and never calculate or estimate an unlisted price. Total Monthly Cost = Base Price + sum(add-ons); if an add-on price is null or "Contact us," output "Base Price + [Add-on name] (contact sales)" rather than assuming a number. If A4AA is recommended: Cost = Base Price + (Base Price × 0.50, rounded up) — cross-check against the A4AA table in the fetched page rather than trusting the arithmetic alone. If M2M tokens exceed the included allowance on Professional: read the add-on cost from the fetched M2M table.
 
@@ -307,7 +307,7 @@ Language consistency: use plan names and feature names exactly as they appear in
 1. **MAU forecast** vs. the tenant's own track ceiling (mechanics below) + the co-loaded pricing reference. Never hardcode limits.
 2. **Enterprise-need detection FIRST** — run the decision logic below. It can short-circuit plan matching.
 3. **Plan matching** keyed on current plan (decision tree below):
-   - **Self-service (no Enterprise need):** recommend a specific plan + **exact cost** from the fetched pricing page. Suggest the **A4AA add-on only when `a4aa_fit_score ≥ 0.4` AND there are concrete agent integrations** (`integrations.length > 0` / autonomous-action workflows in the company context) — a high fit score alone, with no integrations, is NOT enough. The `a4aa_fit_score` here is this workflow's own metric, computed from use-case + integration signals (data-integrity rules above), not an external score.
+   - **Self-service (no Enterprise need):** recommend a specific plan + **exact cost** from the fetched pricing page. Suggest the **A4AA add-on only when `a4aa_fit_score ≥ 0.4` AND there are concrete agent integrations** (`ai_integrations.length > 0` / autonomous-action workflows in the company context) — a high fit score alone, with no integrations, is NOT enough. The `a4aa_fit_score` here is this workflow's own metric, computed from use-case + integration signals (data-integrity rules above), not an external score.
    - **Enterprise need = TRUE:** recommend **"Enterprise — contact sales"** with **NO price**, and emit the Talk-to-Sales block (below).
    - **Enterprise need = SOFT:** recommend the best self-service plan + cost, AND add a "you may also qualify for Enterprise" note + offer the Talk-to-Sales block.
    - **Already on Enterprise:** no upsell — optimization / governance / feature-adoption of what they already own.
@@ -322,7 +322,7 @@ Language consistency: use plan names and feature names exactly as they appear in
 - B2B Essentials: up to 20,000 MAU (30k+ = Contact us) · B2B Professional: up to ~20,000 MAU (beyond = Contact us)
 - Enterprise: Custom (contact sales)
 
-**Formula:** `MAU_at_month_N = current_mau × (1 + growth_rate) ^ N`, where `growth_rate` is the monthly growth **as a decimal**, derived once from the collected percentage: `growth_rate = monthly_growth_rate / 100` (15 → 0.15). Keep the two units distinct — the decimal is only for this arithmetic; `monthly_growth_rate` stays the percentage that the urgency bands, the `monthly_growth > 20%` plan-matching thresholds, and every human-facing `%/mo` output read. Never feed the percentage into `(1 + growth_rate)`: passing 15 forecasts 16× monthly growth instead of 1.15×.
+**Formula:** `MAU_at_month_N = current_mau × (1 + growth_rate) ^ N`, where `growth_rate` is the monthly growth **as a decimal**, derived once from the collected percentage: `growth_rate = monthly_growth_rate / 100` (15 → 0.15). Keep the two units distinct — the decimal is only for this arithmetic; `monthly_growth_rate` stays the percentage that the urgency bands, the `monthly_growth_rate > 20%` plan-matching thresholds, and every human-facing `%/mo` output read. Never feed the percentage into `(1 + growth_rate)`: passing 15 forecasts 16× monthly growth instead of 1.15×.
 
 Example: current MAU 500, monthly growth 15% → Month 1 ≈575, Month 6 ≈1,157, Month 12 ≈2,675, Month 24 ≈14,313, Month 28 ≈25,033 (reaches the Free tier's 25k limit). Result: "At 15% monthly growth from 500 MAU you reach the Free tier's 25,000-MAU limit in ~28 months — MAU urgency is LOW; choose a plan on feature-fit, not capacity." The decision tree compares `current_mau` against `track_ceiling` — the tenant's published per-track MAU limit (from the pricing reference) — never a flat number. "Approaching" means `current_mau ≥ 80% of track_ceiling`.
 
@@ -380,36 +380,36 @@ Maps current plan + use case + gaps → a recommended plan. Runs AFTER the Enter
 **Current Plan: FREE**
 - B2B business model with a critical gap in Organizations / Enterprise Connections / Custom Domain → recommend **B2B Essentials** (multi-tenant B2B needs Organizations, Enterprise Connections, Custom Domain). Unlocks: Organizations, Enterprise Connections (3 included), Custom Domain, Pro MFA, RBAC, Log Streaming.
 - B2C business model with a critical gap in Custom Domain / Social Connections → recommend **B2C Essentials** (consumer apps need Custom Domain, social auth, MFA). Unlocks: Custom Domain, Pro MFA, Email Provider, Branding, Social Connections (unlimited).
-- AI use case, `integrations.length > 0`, `a4aa_fit_score ≥ 0.4`, autonomous actions detected → recommend **B2B Professional + A4AA add-on** (Token Vault + CIBA require Professional base or higher + A4AA). Unlocks: Token Vault, CIBA, M2M Access for Organizations, Enhanced MFA.
+- AI use case, `ai_integrations.length > 0`, `a4aa_fit_score ≥ 0.4`, autonomous actions detected → recommend **B2B Professional + A4AA add-on** (Token Vault + CIBA require Professional base or higher + A4AA). Unlocks: Token Vault, CIBA, M2M Access for Organizations, Enhanced MFA.
 - AI use case, integrations present, `a4aa_fit_score ≥ 0.4`, but autonomous actions NOT detected (read-only/passive agents) → recommend **B2B Essentials + A4AA add-on** (Token Vault sufficient for passive AI workflows). Unlocks: Token Vault (basic), M2M Authentication.
 - Compliance vertical detected (fintech, healthcare, education, government) → recommend **B2B Essentials** (regulated verticals need Log Streaming, MFA enforcement, Breached Password Detection). Unlocks: Log Streaming, MFA enforcement, Email Provider, Branding.
 - No clear signals or mixed use case → default to **B2C Essentials** (entry point for production use). Unlocks: Custom Domain, Pro MFA, Email Provider, Social Connections.
 
 **Current Plan: B2C ESSENTIALS**
-- `readiness_score > 80%` AND `current_mau < 80% of track_ceiling` AND no critical gaps → **stay** on B2C Essentials ("Well-fitted for current use case"; monitor MAU growth).
-- `current_mau ≥ 80% of track_ceiling` OR (`monthly_growth > 20%` AND months-until-limit < 6) → upgrade to **B2C Professional** (approaching the Essentials MAU ceiling per the pricing reference). Unlocks: Enhanced Password Protection, Breached Password Detection, Security Center, Custom Database Connections.
+- `fit_score > 80` AND `current_mau < 80% of track_ceiling` AND no critical gaps → **stay** on B2C Essentials ("Well-fitted for current use case"; monitor MAU growth).
+- `current_mau ≥ 80% of track_ceiling` OR (`monthly_growth_rate > 20%` AND months-until-limit < 6) → upgrade to **B2C Professional** (approaching the Essentials MAU ceiling per the pricing reference). Unlocks: Enhanced Password Protection, Breached Password Detection, Security Center, Custom Database Connections.
 - Critical gap in Custom DB Connections / Enhanced Password Protection / 5k+ M2M tokens/month → upgrade to **B2C Professional** (these require Professional). Unlocks: Enhanced Password Protection, Breached Password Detection, Custom Database Connections, Security Center.
 
 **Current Plan: B2C PROFESSIONAL**
-- `readiness_score > 90%` AND `current_mau < 80% of track_ceiling` → **stay** ("Optimal configuration for use case"; monitor, no upgrade required).
-- `current_mau ≥ 80% of track_ceiling` OR (`monthly_growth > 20%` AND months-until-limit < 3) → recommend **contacting Enterprise sales** ("You've outgrown standard plans"; approaching the Professional MAU ceiling per the pricing reference, custom contract needed).
+- `fit_score > 90` AND `current_mau < 80% of track_ceiling` → **stay** ("Optimal configuration for use case"; monitor, no upgrade required).
+- `current_mau ≥ 80% of track_ceiling` OR (`monthly_growth_rate > 20%` AND months-until-limit < 3) → recommend **contacting Enterprise sales** ("You've outgrown standard plans"; approaching the Professional MAU ceiling per the pricing reference, custom contract needed).
 
 **Current Plan: B2B ESSENTIALS**
-- `readiness_score > 80%` AND `current_mau < 80% of track_ceiling` AND no critical gaps → **stay** ("Well-fitted for current use case"; monitor MAU growth).
-- `current_mau ≥ 80% of track_ceiling` OR (`monthly_growth > 20%` AND months-until-limit < 6) → upgrade to **B2B Professional** (approaching the Essentials ceiling). Unlocks: 5 Enterprise Connections (vs 3), Enhanced Password Protection, Breached Password Detection, Security Center, Custom Database Connections.
+- `fit_score > 80` AND `current_mau < 80% of track_ceiling` AND no critical gaps → **stay** ("Well-fitted for current use case"; monitor MAU growth).
+- `current_mau ≥ 80% of track_ceiling` OR (`monthly_growth_rate > 20%` AND months-until-limit < 6) → upgrade to **B2B Professional** (approaching the Essentials ceiling). Unlocks: 5 Enterprise Connections (vs 3), Enhanced Password Protection, Breached Password Detection, Security Center, Custom Database Connections.
 - Critical gap in Custom DB Connections / 4+ Enterprise Connections / M2M Access for Organizations / 5k+ M2M tokens/month → upgrade to **B2B Professional**. Unlocks: 5 Enterprise Connections, M2M Access for Organizations, Enhanced Password Protection, Breached Password Detection, Security Center, Custom Database Connections.
 - AI use case, integrations present, `a4aa_fit_score ≥ 0.4` → recommend **B2B Essentials + A4AA add-on** (Token Vault sufficient on Essentials base). Unlocks: Token Vault, M2M token pool. If autonomous actions are detected, upgrade this to **B2B Professional + A4AA** instead (CIBA requires Professional base). Unlocks: CIBA, Token Vault, Enhanced MFA.
 
 **Current Plan: B2B PROFESSIONAL**
-- `readiness_score > 90%` AND `current_mau < 80% of track_ceiling` → **stay** ("Optimal configuration for use case"; monitor, no upgrade required).
-- `current_mau ≥ 80% of track_ceiling` OR (`monthly_growth > 20%` AND months-until-limit < 3) → recommend **contacting Enterprise sales** ("You've outgrown standard plans"; custom contract needed).
+- `fit_score > 90` AND `current_mau < 80% of track_ceiling` → **stay** ("Optimal configuration for use case"; monitor, no upgrade required).
+- `current_mau ≥ 80% of track_ceiling` OR (`monthly_growth_rate > 20%` AND months-until-limit < 3) → recommend **contacting Enterprise sales** ("You've outgrown standard plans"; custom contract needed).
 - AI use case, integrations present, `a4aa_fit_score ≥ 0.4` → recommend **B2B Professional + A4AA add-on** (unlock Token Vault unlimited, CIBA all forms, Enhanced M2M token pool).
 
 **Current Plan: ENTERPRISE.** **No upsell.** The customer already owns the top tier — recommendations focus on **optimization, governance, and adopting features they already own**: enforce/raise MFA assurance, enable Continuous Session Protection, Adaptive MFA, Bot Detection / Credential Guard (if licensed), tighten Tenant ACLs, route Prioritized Security Log Streams to their SIEM, adopt the FAPI profile where relevant, and govern Organizations/RBAC at scale. Frame each as "you already have this — here's how to get value from it," never as a purchase. Only the A4AA add-on may be *suggested* (a genuine add, not a tier change).
-- `readiness_score > 90%` AND `custom_sla_active` → **stay** ("Optimized for scale and compliance"; continue with the Auth0 support team, no action needed).
+- `fit_score > 90` AND `custom_sla_active` → **stay** ("Optimized for scale and compliance"; continue with the Auth0 support team, no action needed).
 - AI use case, integrations present, `a4aa_fit_score ≥ 0.4` → recommend **adding A4AA to the existing Enterprise contract** ("Contact your Auth0 account team to add A4AA to your contract").
 
-**A4AA detection logic (used above):** IF `ai_use_case == true` AND `integrations.length > 0` AND integrations contain (Gmail, Slack, Salesforce, Stripe, HubSpot, GitHub, Jira, etc.) AND `a4aa_fit_score ≥ 0.4` → A4AA is relevant. Tier requirement: autonomous actions detected (sending emails, charging customers, modifying records, publishing) → requires B2B Professional + A4AA (Token Vault, CIBA async approval, Enhanced M2M token pool); read-only/passive agent flows → B2B Essentials + A4AA is sufficient (Token Vault basic, M2M token pool). A4AA pricing: adds 50% to base price, rounded up to the dollar — take the base and the A4AA figure for the customer's plan and MAU tier from the fetched pricing page, never from this example.
+**A4AA detection logic (used above):** IF `ai_use_case == true` AND `ai_integrations.length > 0` AND `ai_integrations` contain (Gmail, Slack, Salesforce, Stripe, HubSpot, GitHub, Jira, etc.) AND `a4aa_fit_score ≥ 0.4` → A4AA is relevant. Tier requirement: autonomous actions detected (sending emails, charging customers, modifying records, publishing) → requires B2B Professional + A4AA (Token Vault, CIBA async approval, Enhanced M2M token pool); read-only/passive agent flows → B2B Essentials + A4AA is sufficient (Token Vault basic, M2M token pool). A4AA pricing: adds 50% to base price, rounded up to the dollar — take the base and the A4AA figure for the customer's plan and MAU tier from the fetched pricing page, never from this example.
 
 Output shape:
 
