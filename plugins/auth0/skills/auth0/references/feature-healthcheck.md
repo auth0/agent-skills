@@ -283,7 +283,7 @@ For the underlying per-plan feature tables (Branding, Security & Compliance, Org
 - `use_case == "B2B"` but Organizations not detected and `business_model` indicates multi-tenant → override to "B2B Essentials" (minimum for B2B; Organizations is a CRITICAL gap).
 - AI-Native/AI-Differentiated with `ai_integrations.length > 0` → surface A4AA as CRITICAL (Token Vault is non-negotiable for OAuth integrations, confidence 0.85+).
 - `ai_use_case == true` AND autonomous actions detected AND `current_plan` in {Free, Essentials} → recommend Professional, not Essentials (CIBA requires a Professional base) — do not recommend Essentials + A4AA when autonomous actions are detected. Compare plans by explicit tier rank (Free < Essentials < Professional < Enterprise), never by lexical string comparison.
-- CRITICAL gap → minimum unlocking plan: Custom Domain → Essentials+, Organizations → B2B Essentials+, Enterprise Connections (3+) → B2B Professional+, Token Vault → A4AA add-on (any base), CIBA → A4AA + Professional base+, Log Streaming → Essentials+.
+- CRITICAL gap → minimum unlocking plan: Custom Domain → **already on Free** (1 included, credit-card verification required) — an Immediate Action on every plan, never an upgrade, Organizations → B2B Essentials+, Enterprise Connections (3+) → B2B Professional+, Token Vault → A4AA add-on (any base), CIBA → A4AA + Professional base+, Log Streaming → Essentials+.
 - If the current plan already has the required feature: recommend staying, focus on optimization. Otherwise recommend the minimum plan that unlocks it.
 
 **A4AA Fit Score** = sum of: +0.25 if `ai_use_case == "AI-Native"`; +0.20 if `"AI-Differentiated"`; +0.15 if `ai_integrations.length >= 3`; +0.15 if autonomous actions detected (sending emails, charging customers, etc.); +0.10 if an approval workflow (CIBA) is required; +0.05 if custom claims are needed; +0.10 if `m2m_apps_count > 0`. Validation: `a4aa_fit_score >= 0.40` → recommend A4AA as CRITICAL; `0.20–0.39` → HIGH priority; `< 0.20` → optional/not recommended.
@@ -378,12 +378,12 @@ Output object:
 Maps current plan + use case + gaps → a recommended plan. Runs AFTER the Enterprise-need gate above.
 
 **Current Plan: FREE**
-- B2B business model with a critical gap in Organizations / Enterprise Connections / Custom Domain → recommend **B2B Essentials** (multi-tenant B2B needs Organizations, Enterprise Connections, Custom Domain). Unlocks: Organizations, Enterprise Connections (3 included), Custom Domain, Pro MFA, RBAC, Log Streaming.
-- B2C business model with a critical gap in Custom Domain / Social Connections → recommend **B2C Essentials** (consumer apps need Custom Domain, social auth, MFA). Unlocks: Custom Domain, Pro MFA, Email Provider, Branding, Social Connections (unlimited).
+- B2B business model with a critical gap in Organizations / Enterprise Connections → recommend **B2B Essentials** (multi-tenant B2B needs Organizations and Enterprise Connections). Unlocks: Organizations, Enterprise Connections (3 included), Pro MFA, RBAC, Log Streaming. A Custom Domain gap does not motivate this upgrade — fix it on the current plan.
+- B2C business model with a critical gap in Social Connections → recommend **B2C Essentials** (consumer apps need social auth and MFA). Unlocks: Pro MFA, Email Provider, Branding, Social Connections (unlimited). A Custom Domain gap does not motivate this upgrade — fix it on the current plan.
 - AI use case, `ai_integrations.length > 0`, `a4aa_fit_score ≥ 0.4`, autonomous actions detected → recommend **B2B Professional + A4AA add-on** (Token Vault + CIBA require Professional base or higher + A4AA). Unlocks: Token Vault, CIBA, M2M Access for Organizations, Enhanced MFA.
 - AI use case, integrations present, `a4aa_fit_score ≥ 0.4`, but autonomous actions NOT detected (read-only/passive agents) → recommend **B2B Essentials + A4AA add-on** (Token Vault sufficient for passive AI workflows). Unlocks: Token Vault (basic), M2M Authentication.
 - Compliance vertical detected (fintech, healthcare, education, government) → recommend **B2B Essentials** (regulated verticals need Log Streaming, MFA enforcement, Breached Password Detection). Unlocks: Log Streaming, MFA enforcement, Email Provider, Branding.
-- No clear signals or mixed use case → default to **B2C Essentials** (entry point for production use). Unlocks: Custom Domain, Pro MFA, Email Provider, Social Connections.
+- No clear signals or mixed use case → default to **B2C Essentials** (entry point for production use). Unlocks: Pro MFA, Email Provider, Social Connections.
 
 **Current Plan: B2C ESSENTIALS**
 - `fit_score > 80` AND `current_mau < 80% of track_ceiling` AND no critical gaps → **stay** on B2C Essentials ("Well-fitted for current use case"; monitor MAU growth).
@@ -419,7 +419,7 @@ Output shape:
   "recommended_plan": "B2B Essentials",
   "a4aa_recommended": true,
   "mau_forecast": {"current_mau": 500, "monthly_growth_rate": 0.15, "months_until_free_limit": 28, "forecast_note": "..."},
-  "feature_unlocks": [{"feature": "Custom Domain", "severity": "CRITICAL", "reason": "..."}],
+  "feature_unlocks": [{"feature": "Organizations", "severity": "CRITICAL", "reason": "..."}],
   "a4aa_features": [{"feature": "Token Vault", "reason": "..."}],
   "estimated_cost": "<base>/month B2B Essentials @ 1k MAU + <a4aa>/month A4AA = <total>/month (all three read from the fetched pricing page)"
 }
