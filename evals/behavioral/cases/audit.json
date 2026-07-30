@@ -1,0 +1,40 @@
+{
+  "slug": "audit",
+  "origin_skill": "auth0-checkmate",
+  "skill_name": "auth0",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run an Auth0 CheckMate tenant audit for the company acmecorp.io. The Auth0 tenant is acmecorp.us.auth0.com. Generate a personalized security/configuration report as a PDF.",
+      "expected_output": "Phased CheckMate audit producing a personalized Auth0 Platform Development Review with triaged findings, immediate vs. post-upgrade action lists, and a plan recommendation. Report saved as markdown, HTML, and PDF.",
+      "files": [],
+      "assertions": [
+        "Bootstraps the Auth0 CLI (auth0 login or verifies existing session)",
+        "Creates or reuses a dedicated CheckMate M2M application in the tenant",
+        "Writes credentials to ~/.auth0-checkmate.env with mode 600 (chmod 600)",
+        "Substitutes <tenant_domain>, <client_id>, and <client_secret> before writing the env file",
+        "Runs the CheckMate audit tool against the tenant",
+        "Gathers lightweight company context for acmecorp.io (business model, products, auth surfaces)",
+        "Produces a findings list with severity, title, and personalized remediation notes",
+        "Triages findings into Immediate Actions (current plan) vs After Upgrading (requires upgrade)",
+        "Emits a plan recommendation with plan name only and no price",
+        "Saves report as auth0checkmate_<tenant>_<timestamp>.{md,html,pdf}",
+        "State written to ~/.auth0-checkmate/state/ (not ~/.claude/skills/)",
+        "Does not include sales fit scores or firmographic data in the report"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I already have my Auth0 tenant set up and the M2M app created. Just run CheckMate and give me the findings — skip the bootstrap steps.",
+      "expected_output": "CheckMate audit skipping Phase 1/2 bootstrap if credentials exist, producing findings and a report.",
+      "files": [],
+      "assertions": [
+        "Reads existing credentials from ~/.auth0-checkmate.env or ~/.auth0-checkmate/state/setup.json",
+        "Skips M2M app creation if client_id is already cached",
+        "Runs the CheckMate audit and parses data.report.summary[]",
+        "Produces a report with triaged findings"
+      ]
+    }
+  ],
+  "graders": null
+}
