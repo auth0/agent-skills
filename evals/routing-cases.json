@@ -213,6 +213,13 @@
       "framework": "java-mvc",
       "tooling": "cli",
       "expect_refs": ["framework-java-mvc/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "audit-tenant",
+      "intent": "audit",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-audit/index.md", "feature-audit-pricing/index.md", "feature-audit-remediation/index.md", "tooling-cli/index.md"]
     }
   ]
 }

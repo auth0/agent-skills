@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<!--
+  Locked HTML report template for the audit workflow (feature-audit reference).
+  Phase 5 (report generation) substitutes every placeholder token with the same data feeding report-template.md.
+  Visual design models the "Auth0 Platform Development Review" reference layout (orange brand accent, severity-coded chips, four-section structure).
+  Render to PDF with scripts/render_pdf.sh (Chrome headless).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Auth0 Platform Development Review — {{customer_name}}</title>
+<style>
+  :root {
+    --orange: #E94B1F;
+    --orange-soft: #FCE9E2;
+    --ink: #1A1A2E;
+    --ink-soft: #4F4F66;
+    --line: #E6E6EE;
+    --bg: #FFFFFF;
+    --severity-high: #C8260A;
+    --severity-moderate: #C46B1D;
+    --severity-low: #1F6FB5;
+    --severity-pass: #1F8A4C;
+  }
+  @page {
+    size: Letter;
+    margin: 0.6in 0.7in 0.7in 0.7in;
+    @bottom-right {
+      content: "{{review_month_year}}";
+      font: 9pt -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink-soft);
+    }
+    @bottom-left {
+      content: "Confidential · Auth0 tenant configuration review for {{customer_name}}";
+      font: 9pt -apple-system, "Segoe UI", sans-serif;
+      color: var(--ink-soft);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    color: var(--ink);
+    background: var(--bg);
+    font-family: -apple-system, "Inter", "Segoe UI", system-ui, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.45;
+  }
+  .header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-bottom: 14pt;
+    border-bottom: 3pt solid var(--orange);
+    margin-bottom: 18pt;
+  }
+  .header h1 {
+    font-size: 24pt;
+    font-weight: 700;
+    margin: 0 0 4pt 0;
+    line-height: 1.15;
+  }
+  .header .subtitle {
+    color: var(--ink-soft);
+    font-size: 11pt;
+  }
+  .plan-badge {
+    border: 1.5pt solid var(--orange);
+    color: var(--orange);
+    border-radius: 18pt;
+    padding: 4pt 12pt;
+    font-size: 10pt;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .header-right {
+    text-align: right;
+    font-size: 10pt;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .header-right .plan-badge {
+    display: inline-block;
+    margin-bottom: 6pt;
+  }
+  .header-right .meta-line {
+    display: block;
+    color: var(--ink);
+  }
+  .meta-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12pt 0 24pt 0;
+  }
+  .meta-table th, .meta-table td {
+    text-align: left;
+    padding: 10pt 12pt;
+    border-bottom: 1pt solid var(--line);
+    font-size: 10.5pt;
+  }
+  .meta-table th {
+    width: 38%;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .meta-table td {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  h2.section {
+    color: var(--orange);
+    text-transform: uppercase;
+    font-size: 11pt;
+    letter-spacing: 0.05em;
+    font-weight: 700;
+    margin: 22pt 0 12pt 0;
+  }
+  table.data {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8pt 0 18pt 0;
+  }
+  table.data th {
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 8.5pt;
+    letter-spacing: 0.05em;
+    color: var(--ink-soft);
+    font-weight: 600;
+    padding: 8pt 12pt;
+    border-bottom: 1pt solid var(--line);
+  }
+  table.data td {
+    padding: 11pt 12pt;
+    border-bottom: 1pt solid var(--line);
+    vertical-align: top;
+  }
+  table.data td.label {
+    font-weight: 600;
+  }
+  .severity {
+    display: inline-block;
+    margin-right: 18pt;
+    font-weight: 600;
+  }
+  .severity.high { color: var(--severity-high); }
+  .severity.moderate { color: var(--severity-moderate); }
+  .severity.low { color: var(--severity-low); }
+  .severity.pass { color: var(--severity-pass); }
+  .gap {
+    border-left: 3pt solid var(--orange);
+    padding: 4pt 0 4pt 14pt;
+    margin: 12pt 0;
+  }
+  .gap .gap-name {
+    font-weight: 700;
+    margin-bottom: 4pt;
+  }
+  .gap p { margin: 0; }
+  .opportunities th, .opportunities td {
+    vertical-align: top;
+  }
+  .opportunities .feature { font-weight: 700; width: 18%; }
+  .opportunities .challenge { width: 36%; color: var(--ink); }
+  .opportunities .solution { width: 18%; color: var(--orange); font-weight: 600; }
+  .opportunities .impact { width: 28%; color: var(--ink-soft); }
+  .roadmap-banner {
+    font-weight: 700;
+    margin: 4pt 0 12pt 0;
+  }
+  .roadmap-banner em { color: var(--orange); font-style: normal; font-weight: 700; }
+  .roadmap p { margin: 6pt 0; }
+  .actions {
+    list-style: none;
+    counter-reset: action;
+    padding: 0;
+    margin: 6pt 0 16pt 0;
+  }
+  .actions li {
+    counter-increment: action;
+    display: flex;
+    align-items: flex-start;
+    margin: 6pt 0;
+  }
+  .actions li::before {
+    content: counter(action);
+    color: var(--ink-soft);
+    font-weight: 600;
+    width: 22pt;
+    flex: 0 0 22pt;
+    text-align: left;
+  }
+  .docs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8pt 12pt;
+    margin: 8pt 0 0 0;
+  }
+  .docs a {
+    display: block;
+    padding: 10pt 14pt;
+    border: 1pt solid var(--line);
+    border-radius: 6pt;
+    color: var(--orange);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 10pt;
+  }
+  hr.section-divider {
+    border: 0;
+    border-top: 1pt solid var(--line);
+    margin: 18pt 0;
+  }
+  .small { font-size: 9pt; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <h1>Auth0 Platform<br>Development Review</h1>
+    {{subtitle_html}}  <!-- a subtitle div reading "Prepared by <org>" if reviewer_org is non-empty; emit empty string otherwise -->
+  </div>
+  <div class="header-right">
+    <span class="plan-badge">{{plan_tag}}</span>
+    <span class="meta-line">{{customer_name}} · {{tenant_domain}}</span>
+    <span class="meta-line">{{review_date_long}}</span>
+  </div>
+</header>
+
+<table class="meta-table">
+  <tr><th>Prepared by</th><td>{{reviewer_name}}</td></tr>
+  <tr><th>Date of Review</th><td>{{review_date_long}}</td></tr>
+  <tr><th>Customer Account</th><td>{{customer_name}} ({{tenant_domain}})</td></tr>
+  <tr><th>Current Auth0 Tier</th><td>{{tier}}</td></tr>
+  <tr><th>Use Case Diagnosis</th><td>{{business_model}} — {{product_summary_short}}</td></tr>
+  <tr><th>Recommended Plan</th><td>{{recommended_plan}} · Auth for AI Agents: {{a4aa_yes_no}}</td></tr>
+</table>
+
+<h2 class="section">1. Account Health</h2>
+
+<table class="data">
+  <thead>
+    <tr><th>Metric</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="label">Applications Registered</td><td>{{apps_count}}</td></tr>
+    <tr><td class="label">Login Activity</td><td>{{login_activity}}</td></tr>
+    <tr>
+      <td class="label">Security Findings</td>
+      <td>
+        <span class="severity high">{{findings_high_count}} High</span>
+        <span class="severity moderate">{{findings_moderate_count}} Moderate</span>
+        <span class="severity low">{{findings_low_count}} Low / Info</span>
+        <span class="severity pass">{{findings_passing_count}} Passing</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- gaps_html: rendered from the included gap callouts. Each block is a gap div with a
+     gap-name heading and a one-line body paragraph. Only include gaps the data supports. -->
+{{gaps_html}}
+
+<h2 class="section">2. Executive Summary</h2>
+
+<p>{{exec_summary_paragraph}}</p>
+
+<p><strong>Configuration Posture at a Glance</strong></p>
+
+<table class="data">
+  <thead>
+    <tr><th>Severity</th><th>Count</th><th>Key Examples</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="label" style="color:var(--severity-high)">High</td><td>{{findings_high_count}}</td><td>{{findings_high_examples}}</td></tr>
+    <tr><td class="label" style="color:var(--severity-moderate)">Moderate</td><td>{{findings_moderate_count}}</td><td>{{findings_moderate_examples}}</td></tr>
+    <tr><td class="label" style="color:var(--severity-low)">Low / Info</td><td>{{findings_low_count}}</td><td>{{findings_low_examples}}</td></tr>
+    <tr><td class="label" style="color:var(--severity-pass)">Passing</td><td>{{findings_passing_count}} of {{findings_total_count}}</td><td>{{findings_passing_examples}}</td></tr>
+  </tbody>
+</table>
+
+<h2 class="section">3. Strategic Opportunities &amp; Action Plan</h2>
+
+<table class="data opportunities">
+  <thead>
+    <tr><th>Feature Area</th><th>The Enterprise Challenge</th><th>The Solution</th><th>Strategic Impact</th></tr>
+  </thead>
+  <tbody>
+    <!-- opportunities_rows: one table row per included row — feature area, a personalized
+         challenge cell, the solution label, and the strategic impact. Every challenge cell
+         MUST name a specific product, segment, or capability from the company context. -->
+    {{opportunities_rows}}
+  </tbody>
+</table>
+
+<h2 class="section">4. Recommended Roadmap &amp; Next Steps</h2>
+
+<p class="roadmap-banner">Recommended Plan: <em>{{recommended_plan}}{{a4aa_addon_suffix}}</em></p>
+
+<div class="roadmap">
+  {{plan_recommendation_paragraphs_html}}
+</div>
+
+<p><strong>Immediate Actions — Available Today (Free)</strong></p>
+<ol class="actions">
+  <!-- immediate_actions_html: one list item per item. Each must name affected apps/connections explicitly. -->
+  {{immediate_actions_html}}
+</ol>
+
+<p><strong>After Upgrading</strong></p>
+<ol class="actions">
+  <!-- after_upgrading_html: one list item per item. -->
+  {{after_upgrading_html}}
+</ol>
+
+<p><strong>Key Documentation</strong></p>
+<div class="docs">
+  <!-- docs_html: one anchor link per included row. Match Section 3 rows. -->
+  {{docs_html}}
+</div>
+
+</body>
+</html>
