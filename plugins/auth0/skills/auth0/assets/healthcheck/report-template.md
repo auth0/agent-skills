@@ -6,6 +6,7 @@
 -->
 
 # Auth0 Tenant Health Check — {{customer_name}}
+
 {{prepared_by_line}}  <!-- the "Prepared by <org>" line if reviewer_org is non-empty; else omit this line -->
 
 **{{plan_tag}}** · {{customer_name}} · {{tenant_domain}} · {{review_date_long}}

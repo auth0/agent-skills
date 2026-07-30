@@ -31,10 +31,12 @@ See **Graceful degradation** at the end for missing scan / missing company conte
 ### Phase 1 — Auth0 CLI bootstrap (only when self-driving the CLI)
 
 Needed when this workflow drives the CLI directly (gathering extra facts in Phase 0, or applying fixes in Phase 7). Skip if the assessment runs purely off a provided CheckMate-style JSON and the user declines the apply step.
+
 ```bash
 auth0 --version
 auth0 tenants list --json
 ```
+
 Install if missing — per-platform install commands are covered by the co-loaded audit workflow reference (Phase 1). Run `auth0 login --scopes "create:client_grants,read:client_grants"` if empty/401. Pin `tenant_domain` from `tenants list --json` (don't parse region from the suffix) — this is the only source for `tenant_domain`, never the company context.
 
 ### Phase 2 — Classify use case
@@ -61,6 +63,7 @@ Run the decision tree below (regulated vertical first → B2B/B2C/Mixed → AI).
 - LOW: Session Management tweaks, Passwordless (nice-to-have), Bot Detection (unless abuse detected).
 
 **Output shape** for each detected use case:
+
 ```json
 {
   "detected_use_case": "B2B SaaS + AI Agents",
@@ -86,7 +89,7 @@ One universal assessment, two scored tracks.
 
 **3A — Security & Config Hygiene (universal, plan-independent).** From the scan's `summary[]`: count by severity, compute the **Hygiene Score**:
 
-```
+```text
 weighted_failures = 5·(#critical) + 2·(#warning) + 0.5·(#info_failing)
 weighted_total    = weighted_failures + 1·(#passing)
 penalty_ratio     = clamp(weighted_failures / weighted_total, 0, 1)
@@ -102,7 +105,7 @@ This is a security claim — **if there was no scan, do NOT emit a number** ("No
 
 **3B — Capability Fit (tier-aware framing, plan-independent number).** Build the feature-gap matrix: required features for the use case (from the feature-recommendations tables below, including the use-case capability + FOUNDATIONAL items from the production-readiness grounding below so the score stays graduated) vs. configured, marked ✅ / ❌ / ⚠️. (Production-readiness itself = the scan, summarized, Track A. Part B is the use-case *expansion* layer.) Tag each gap's **Plan Home** via the feature-unlock reference below + the co-loaded pricing reference: *Available now on `current_plan`* / *Unlocks on `<plan>`* / *Enterprise-only*. Compute the **Capability Fit Score**:
 
-```
+```text
 weight: CRITICAL = 4, HIGH = 3, MODERATE = 2, LOW = 1
 required_weight   = Σ weight(required_feature)
 configured_weight = Σ weight(✅ configured feature)   ;  ⚠️ partial counts at 0.5 × weight
@@ -359,6 +362,7 @@ Decides whether to route a tenant to **"Enterprise — contact sales"** instead 
 - When `enterprise_need` is TRUE or SOFT, populate the Talk-to-Sales block with the matched triggers as the "why now."
 
 Output object:
+
 ```json
 {
   "enterprise_need": "TRUE | SOFT | FALSE",
@@ -408,6 +412,7 @@ Maps current plan + use case + gaps → a recommended plan. Runs AFTER the Enter
 **A4AA detection logic (used above):** IF `ai_use_case == true` AND `integrations.length > 0` AND integrations contain (Gmail, Slack, Salesforce, Stripe, HubSpot, GitHub, Jira, etc.) AND `a4aa_fit_score ≥ 0.4` → A4AA is relevant. Tier requirement: autonomous actions detected (sending emails, charging customers, modifying records, publishing) → requires B2B Professional + A4AA (Token Vault, CIBA async approval, Enhanced M2M token pool); read-only/passive agent flows → B2B Essentials + A4AA is sufficient (Token Vault basic, M2M token pool). A4AA pricing: adds 50% to base price, rounded up to the dollar — take the base and the A4AA figure for the customer's plan and MAU tier from the fetched pricing page, never from this example.
 
 Output shape:
+
 ```json
 {
   "current_plan": "Free",
@@ -425,7 +430,8 @@ Output shape:
 Emitted only when Enterprise-need detection above returns `TRUE` or `SOFT`. Appears in **both** the in-chat summary and the report (Part B enterprise/soft variant). Goal: make the sales reach-out one copy-paste — this workflow already knows everything sales would ask, so it pre-fills the brief. It **cannot** submit a form or create a CRM lead on the user's behalf — it provides a ready-to-send brief + a contact link.
 
 Template:
-```
+
+```text
 **Talk to Sales — prefilled brief**
 
 - Company:             {{customer_name}} ({{company_domain}})
@@ -456,21 +462,27 @@ Rules: **never include a price or estimate** for Enterprise. Keep the brief fact
 5. **Confidence / provenance note.**
 
 **On request ("generate the report" / "PDF"):** produce three files with one timestamped basename in `~/Documents/` (fallback `~/auth0-healthcheck-reports/`):
-```
+
+```text
 auth0_healthcheck_<sanitized_tenant>_<YYYYMMDD_HHMMSS>.{md,html,pdf}
 ```
+
 Markdown per the markdown report template in `assets/healthcheck/`; HTML per `assets/healthcheck/report-template.html`; PDF via:
+
 ```bash
 ${CLAUDE_SKILL_DIR}/scripts/render_pdf.sh "$HTML_PATH" "$PDF_PATH"
 # ${CLAUDE_SKILL_DIR} = absolute path to this skill folder (auto-set by Claude Code).
 # Other agents: substitute the absolute path to wherever the skill folder was extracted.
 ```
+
 If the renderer exits non-zero, surface its stderr — the md + html are already saved (don't fail the run).
 
 **Fusion lint before saving (must be empty):**
+
 ```bash
 grep -nE '\{\{|the customer[^A-Za-z]|enterprise clients[^A-Za-z]|the affected apps' "$MD_PATH" "$HTML_PATH"
 ```
+
 Every gap/opportunity must name a real product, app, or segment. No `{{placeholder}}` may survive. Prices appear only for self-service recommendations — never for Enterprise.
 
 ### Phase 6 — Walk the user through it
