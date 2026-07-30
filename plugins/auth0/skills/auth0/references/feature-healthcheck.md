@@ -377,22 +377,26 @@ Output object:
 
 Maps current plan + use case + gaps → a recommended plan. Runs AFTER the Enterprise-need gate above.
 
+`<track>` below = **B2B** when `business_model == "B2B"`, else **B2C**. Pick the track from the business model, never from the use case: the AI features (Token Vault, CIBA, M2M Authentication) and the compliance features (Log Streaming, Pro MFA) are identical on both tracks, while the B2B track costs roughly 3–4× more at the same MAU tier and has a *lower* published MAU ceiling. Putting a B2C tenant on B2B over-quotes it for capability it already had and shrinks its headroom.
+
 **Current Plan: FREE**
 - B2B business model with a critical gap in Organizations / Enterprise Connections → recommend **B2B Essentials** (multi-tenant B2B needs Organizations and Enterprise Connections). Unlocks: Organizations, Enterprise Connections (3 included), Pro MFA, RBAC, Log Streaming. A Custom Domain gap does not motivate this upgrade — fix it on the current plan.
 - B2C business model with a critical gap in Social Connections → recommend **B2C Essentials** (consumer apps need social auth and MFA). Unlocks: Pro MFA, Email Provider, Branding, Social Connections (unlimited). A Custom Domain gap does not motivate this upgrade — fix it on the current plan.
-- AI use case, `ai_integrations.length > 0`, `a4aa_fit_score ≥ 0.4`, autonomous actions detected → recommend **B2B Professional + A4AA add-on** (Token Vault + CIBA require Professional base or higher + A4AA). Unlocks: Token Vault, CIBA, M2M Access for Organizations, Enhanced MFA.
-- AI use case, integrations present, `a4aa_fit_score ≥ 0.4`, but autonomous actions NOT detected (read-only/passive agents) → recommend **B2B Essentials + A4AA add-on** (Token Vault sufficient for passive AI workflows). Unlocks: Token Vault (basic), M2M Authentication.
-- Compliance vertical detected (fintech, healthcare, education, government) → recommend **B2B Essentials** (regulated verticals need Log Streaming, MFA enforcement, Breached Password Detection). Unlocks: Log Streaming, MFA enforcement, Email Provider, Branding.
+- AI use case, `ai_integrations.length > 0`, `a4aa_fit_score ≥ 0.4`, autonomous actions detected → recommend **`<track>` Professional + A4AA add-on** (Token Vault + CIBA require Professional base or higher + A4AA). Unlocks: Token Vault, CIBA, Enhanced MFA — plus M2M Access for Organizations on the B2B track only.
+- AI use case, integrations present, `a4aa_fit_score ≥ 0.4`, but autonomous actions NOT detected (read-only/passive agents) → recommend **`<track>` Essentials + A4AA add-on** (Token Vault sufficient for passive AI workflows). Unlocks: Token Vault (basic), M2M Authentication.
+- Compliance vertical detected (fintech, healthcare, education, government) → recommend **`<track>` Essentials** (regulated verticals need Log Streaming and MFA enforcement). Unlocks: Log Streaming, MFA enforcement, Email Provider, Branding. Breached Password Detection is **not** included — it requires Professional on either track; if the vertical genuinely needs it, recommend `<track>` Professional instead.
 - No clear signals or mixed use case → default to **B2C Essentials** (entry point for production use). Unlocks: Pro MFA, Email Provider, Social Connections.
 
 **Current Plan: B2C ESSENTIALS**
 - `fit_score > 80` AND `current_mau < 80% of track_ceiling` AND no critical gaps → **stay** on B2C Essentials ("Well-fitted for current use case"; monitor MAU growth).
 - `current_mau ≥ 80% of track_ceiling` OR (`monthly_growth_rate > 20%` AND months-until-limit < 6) → upgrade to **B2C Professional** (approaching the Essentials MAU ceiling per the pricing reference). Unlocks: Enhanced Password Protection, Breached Password Detection, Security Center, Custom Database Connections.
 - Critical gap in Custom DB Connections / Enhanced Password Protection / 5k+ M2M tokens/month → upgrade to **B2C Professional** (these require Professional). Unlocks: Enhanced Password Protection, Breached Password Detection, Custom Database Connections, Security Center.
+- AI use case, integrations present, `a4aa_fit_score ≥ 0.4` → recommend **B2C Essentials + A4AA add-on** (Token Vault sufficient on an Essentials base). Unlocks: Token Vault, M2M token pool. If autonomous actions are detected, upgrade this to **B2C Professional + A4AA** instead (CIBA requires a Professional base). Unlocks: CIBA, Token Vault, Enhanced MFA.
 
 **Current Plan: B2C PROFESSIONAL**
 - `fit_score > 90` AND `current_mau < 80% of track_ceiling` → **stay** ("Optimal configuration for use case"; monitor, no upgrade required).
 - `current_mau ≥ 80% of track_ceiling` OR (`monthly_growth_rate > 20%` AND months-until-limit < 3) → recommend **contacting Enterprise sales** ("You've outgrown standard plans"; approaching the Professional MAU ceiling per the pricing reference, custom contract needed).
+- AI use case, integrations present, `a4aa_fit_score ≥ 0.4` → recommend **B2C Professional + A4AA add-on** (unlock Token Vault unlimited, CIBA all forms, Enhanced M2M token pool).
 
 **Current Plan: B2B ESSENTIALS**
 - `fit_score > 80` AND `current_mau < 80% of track_ceiling` AND no critical gaps → **stay** ("Well-fitted for current use case"; monitor MAU growth).
@@ -409,7 +413,7 @@ Maps current plan + use case + gaps → a recommended plan. Runs AFTER the Enter
 - `fit_score > 90` AND `custom_sla_active` → **stay** ("Optimized for scale and compliance"; continue with the Auth0 support team, no action needed).
 - AI use case, integrations present, `a4aa_fit_score ≥ 0.4` → recommend **adding A4AA to the existing Enterprise contract** ("Contact your Auth0 account team to add A4AA to your contract").
 
-**A4AA detection logic (used above):** IF `ai_use_case == true` AND `ai_integrations.length > 0` AND `ai_integrations` contain (Gmail, Slack, Salesforce, Stripe, HubSpot, GitHub, Jira, etc.) AND `a4aa_fit_score ≥ 0.4` → A4AA is relevant. Tier requirement: autonomous actions detected (sending emails, charging customers, modifying records, publishing) → requires B2B Professional + A4AA (Token Vault, CIBA async approval, Enhanced M2M token pool); read-only/passive agent flows → B2B Essentials + A4AA is sufficient (Token Vault basic, M2M token pool). A4AA pricing: adds 50% to base price, rounded up to the dollar — take the base and the A4AA figure for the customer's plan and MAU tier from the fetched pricing page, never from this example.
+**A4AA detection logic (used above):** IF `ai_use_case == true` AND `ai_integrations.length > 0` AND `ai_integrations` contain (Gmail, Slack, Salesforce, Stripe, HubSpot, GitHub, Jira, etc.) AND `a4aa_fit_score ≥ 0.4` → A4AA is relevant. Tier requirement: autonomous actions detected (sending emails, charging customers, modifying records, publishing) → requires `<track>` Professional + A4AA (Token Vault, CIBA async approval, Enhanced M2M token pool); read-only/passive agent flows → `<track>` Essentials + A4AA is sufficient (Token Vault basic, M2M token pool). A4AA applies on either track — the AI feature rows are identical for B2C and B2B, so a B2C tenant with agent integrations gets A4AA on its own track rather than being moved to B2B. A4AA pricing: adds 50% to base price, rounded up to the dollar — take the base and the A4AA figure for the customer's plan and MAU tier from the fetched pricing page, never from this example.
 
 Output shape:
 
