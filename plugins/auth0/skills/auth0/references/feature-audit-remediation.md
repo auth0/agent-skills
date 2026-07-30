@@ -90,6 +90,8 @@ Options:
 - **Not yet — queue for after upgrade** → write all After Upgrading items to `state/queue.json` with `status: "pending_upgrade"`, print the upgrade link `https://manage.auth0.com/dashboard/<region>/<tenant>/billing`, end
 - **Skip remaining** → write items with `status: "skipped"` (with optional rationale), end
 
+**When the recommended plan is "Enterprise — contact sales," don't ask this question** — there is no self-service upgrade to confirm. Write the plan-gated items with `status: "pending_enterprise"`, point the user at Auth0 sales instead of the billing link, and end. On a later run, treat `pending_enterprise` exactly like `pending_upgrade`: re-check whether the plan now covers each item, run the ones it does through Loop B, and leave the rest queued. Never present a `pending_enterprise` item as something the user can unlock themselves.
+
 ### Loop B — After Upgrading
 
 Always uses the Guided per-item flow regardless of mode (plan-gated changes are too consequential to batch). If any command fails with a plan-feature error, surface it and ask whether to queue.

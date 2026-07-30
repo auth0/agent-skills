@@ -319,7 +319,7 @@ Language consistency: use plan names and feature names exactly as they appear in
 - B2B Essentials: up to 20,000 MAU (30k+ = Contact us) · B2B Professional: up to ~20,000 MAU (beyond = Contact us)
 - Enterprise: Custom (contact sales)
 
-**Formula:** `MAU_at_month_N = current_mau × (1 + growth_rate) ^ N`.
+**Formula:** `MAU_at_month_N = current_mau × (1 + growth_rate) ^ N`, where `growth_rate` is the monthly growth **as a decimal** (0.15 for 15%) — convert the collected percentage once, before forecasting, and use that decimal everywhere.
 
 Example: current MAU 500, monthly growth 15% → Month 1 ≈575, Month 6 ≈1,157, Month 12 ≈2,675, Month 24 ≈14,313, Month 28 ≈25,033 (reaches the Free tier's 25k limit). Result: "At 15% monthly growth from 500 MAU you reach the Free tier's 25,000-MAU limit in ~28 months — MAU urgency is LOW; choose a plan on feature-fit, not capacity." The decision tree compares `current_mau` against `track_ceiling` — the tenant's published per-track MAU limit (from the pricing reference) — never a flat number. "Approaching" means `current_mau ≥ 80% of track_ceiling`.
 
