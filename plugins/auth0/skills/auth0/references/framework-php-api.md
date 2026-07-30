@@ -8,6 +8,7 @@ Protect PHP API endpoints with JWT access token validation using `auth0/auth0-ph
 - TOKEN ISOLATION: the agent must NEVER directly see, display, echo, log, or store access token values. Do not run `auth0 test token` on its own, and do not ask the user to paste a token into the conversation.
 - When testing protected endpoints, ALWAYS chain token acquisition and the `curl` call in a single `&&` command that captures the token into a shell variable and uses it immediately.
 - A Client ID is REQUIRED for the M2M token flow — if M2M setup was not completed, ask the user first.
+- Before any setup step that writes to a `.env` file, ask the user for explicit confirmation first.
 - ALWAYS read `domain` and `audience` from environment variables; never embed credentials in source.
 
 ## Prerequisites

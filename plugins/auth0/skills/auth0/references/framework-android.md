@@ -11,7 +11,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 ## Critical rules
 
-- Before running any part of the automatic setup that writes to `strings.xml`, you MUST ask the user for explicit confirmation before proceeding.
+- Before running any part of any setup path (automatic or manual) that writes to `strings.xml`, you MUST ask the user for explicit confirmation before proceeding.
 - After either automatic or manual Auth0 configuration, you MUST apply the required Post-Setup changes to the project (manifest placeholders in `app/build.gradle` for `auth0Domain` and `auth0Scheme`, etc.) before treating the integration as complete.
 
 ## Prerequisites
@@ -1092,8 +1092,15 @@ SCHEME="demo"
 
 # Install Auth0 CLI
 if ! command -v auth0 &> /dev/null; then
-  [[ "$OSTYPE" == "darwin"* ]] && brew install auth0/auth0-cli/auth0 || \
-  curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    brew install auth0/auth0-cli/auth0
+  else
+    # Download and review the install script before executing
+    curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh
+    echo "⚠️  Review the install script at /tmp/auth0-install.sh before running"
+    sh /tmp/auth0-install.sh -b /usr/local/bin
+    rm /tmp/auth0-install.sh
+  fi
 fi
 
 # Login
@@ -1218,7 +1225,7 @@ After the script runs, proceed to **Post-Setup Steps** below.
 
 ### Manual Setup (User-Provided Credentials)
 
-> **Agent instruction:** Ask the user for their Auth0 **Client ID** and **Domain**. Then update `strings.xml` with the values they provide:
+> **Agent instruction:** Ask the user for their Auth0 **Client ID** and **Domain**. Before writing to `strings.xml`, ask the user for explicit confirmation and do not proceed until they confirm. Then update `strings.xml` with the values they provide:
 > ```xml
 > <string name="com_auth0_client_id">USER_PROVIDED_CLIENT_ID</string>
 > <string name="com_auth0_domain">USER_PROVIDED_DOMAIN</string>

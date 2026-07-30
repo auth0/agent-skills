@@ -995,7 +995,13 @@ npx cap open android  # Build and run on device from Android Studio
 > ```bash
 > brew install auth0/auth0-cli/auth0
 > ```
-> On Linux: `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh`
+> On Linux, download and review the install script before executing:
+> ```bash
+> curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh
+> echo "⚠️  Review the install script at /tmp/auth0-install.sh before running"
+> sh /tmp/auth0-install.sh
+> rm /tmp/auth0-install.sh
+> ```
 >
 > ---
 >
