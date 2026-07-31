@@ -25,13 +25,15 @@ and [`docs/architecture.md`](../../../docs/architecture.md).
 - **Depth-3 tree + reachability:** every reference is a directory `<name>/`
   containing an `index.md`, and that directory name MUST be named in a
   `SKILL.md` router table. Start **index-only** (the whole reference lives in
-  `index.md`, no leaves — one hop from the router). Only once a reference grows
-  large (roughly >1000 lines) split it into a **leaf group**: `index.md` becomes
-  a hub (shared prerequisites + an intent→leaf dispatch table) over document-
-  section leaves. An index-only `index.md`, and any leaf inside a leaf group,
-  MUST NOT link to any other `.md` file — they are sinks. The only second hop
-  allowed is a leaf-group hub dispatching to leaves in its **own** directory;
-  cross-group links are forbidden. Both are stated in full under
+  `index.md`, no leaves — one hop from the router). `index.md` MUST NOT exceed
+  1000 lines — once it passes ~500 lines, consider splitting it into a **leaf
+  group** (`index.md` becomes a hub — shared prerequisites + an intent→leaf
+  dispatch table — over document-section leaves), but only if the content
+  actually separates into distinct sections; don't split a reference that's
+  long but cohesive. An index-only `index.md`, and any leaf inside a leaf
+  group, MUST NOT link to any other `.md` file — they are sinks. The only
+  second hop allowed is a leaf-group hub dispatching to leaves in its **own**
+  directory; cross-group links are forbidden. Both are stated in full under
   [`CONTRIBUTING.md` → "Make it routable"](../../../CONTRIBUTING.md#make-it-routable-required--ci-enforces-this)
   and [`CONTRIBUTING.md` → "Adding a reference"](../../../CONTRIBUTING.md#adding-a-reference);
   the paths below tell you which table to edit.
@@ -124,8 +126,11 @@ points only at a leaf in its own directory.
 
 ## Step 5 — Splitting into a leaf group (only for large references)
 
-Skip this step for an index-only reference. Once `index.md` grows past
-roughly 1000 lines, split it so the router pulls just the slice a task needs:
+Skip this step for an index-only reference. Past ~500 lines (the 1000-line
+cap is in "Critical rules" above), consider splitting into a leaf group so the
+router pulls just the slice a task needs — but only if the content actually
+separates into distinct sections; a long but cohesive reference stays
+index-only:
 
 ```
 references/framework-<slug>/
