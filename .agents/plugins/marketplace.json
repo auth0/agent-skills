@@ -1,7 +1,7 @@
 {
   "name": "auth0-agent-skills",
   "interface": {
-    "displayName": "Auth0 Agent Skills"
+    "displayName": "Auth0"
   },
   "plugins": [
     {
