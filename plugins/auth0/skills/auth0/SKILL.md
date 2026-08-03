@@ -46,7 +46,7 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
 | Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
 | Audit a tenant for security/config issues, report, then optionally fix findings. *Auth0: tenant audit, CheckMate.* | **audit** |
-| Check if a tenant is healthy and on the right plan (Free→Enterprise) — two scores + a plan recommendation. *Auth0: health check.* | **healthcheck** |
+| Check if a tenant is healthy and on the right plan — two scores + a recommendation. *Auth0: health check.* | **healthcheck** |
 | Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
 | Hit an error: 401 Unauthorized, 403 Forbidden, CORS, callback URL mismatch, redirect loop. *Auth0: debugging.* | **debug** |
 | Hit rate limiting: 429 Too Many Requests, quota exceeded. *Auth0: rate limits.* | **debug:rate-limit** |
@@ -357,7 +357,7 @@ Read: references/feature-audit/index.md
 Read: references/feature-audit-pricing/index.md
 Read: references/feature-audit-remediation/index.md
 Read: references/tooling-{tooling}/index.md
-Where a scan can run, run the audit workflow first (supplies findings + company context), then score and recommend a plan. If it can't, don't stop: hygiene is "Not scored" and capability fit, plan matching and the recommendation still run. Never quote Enterprise pricing.
+If a scan can run, do the audit workflow first, then score and recommend a plan. If not, score capability fit and recommend anyway. Never quote Enterprise pricing.
 ```
 
 ### upgrade-sdk
