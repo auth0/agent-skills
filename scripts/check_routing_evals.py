@@ -39,8 +39,12 @@ import sys
 from pathlib import Path
 
 SECTION_RE = re.compile(r"^###\s+(\S+)\s*$", re.M)
-# A reference token as it appears in Step 4, e.g. references/framework-{framework}.md
-REF_RE = re.compile(r"references/([A-Za-z0-9_{}-]+\.md)")
+# A reference token in Step 4. Two forms:
+#   references/<name>/index.md   (uniform route -> reference NAME)
+#   references/<name>.md         (legacy flat form, still parsed for safety)
+# Both normalize to "<name>.md" so _resolve_group handles them identically.
+REF_INDEX_RE = re.compile(r"references/([A-Za-z0-9_{}-]+)/index\.md")
+REF_FLAT_RE = re.compile(r"references/([A-Za-z0-9_{}-]+\.md)")
 # Frameworks that count as a SPA for the DPoP "If a SPA framework is detected" gate.
 SPA_FRAMEWORKS = {"vue", "react", "angular", "spa-js"}
 
@@ -98,6 +102,39 @@ def _expand(token: str, case: dict):
     return token
 
 
+# Hub dispatch row: `| <intent> | `Read: references/<group>/<leaf>.md` |`
+_HUB_ROW_RE = re.compile(
+    r"\|\s*([A-Za-z0-9:_-]+)\s*\|\s*`?Read:\s*references/[a-z0-9-]+/([a-z0-9-]+\.md)`?"
+)
+
+
+def _hub_leaf_for_intent(refs_dir, group, intent):
+    """Read the group's index.md dispatch table; return the leaf for `intent`."""
+    index_path = refs_dir / group / "index.md"
+    if not index_path.exists():
+        return None
+    for row_intent, leaf in _HUB_ROW_RE.findall(index_path.read_text()):
+        if row_intent == intent:
+            return leaf
+    return None
+
+
+def _resolve_group(fname, intent, refs_dir):
+    """Every reference is a directory. Expand <name>.md into
+    {<name>/index.md, intent-leaf?}. Falls back to {fname} only if the
+    directory is genuinely absent (surfaced elsewhere as a broken route)."""
+    if not fname.endswith(".md"):
+        return {fname}
+    stem = fname[:-3]
+    if not (refs_dir / stem).is_dir():
+        return {fname}  # not a group on disk -> unchanged (missing-file check catches it)
+    resolved = {f"{stem}/index.md"}
+    leaf = _hub_leaf_for_intent(refs_dir, stem, intent)
+    if leaf is not None:
+        resolved.add(f"{stem}/{leaf}")
+    return resolved
+
+
 def _conditional_enabled(line_low: str, case: dict):
     """Whether an `If ...` line's references route for this case.
 
@@ -115,18 +152,27 @@ def _conditional_enabled(line_low: str, case: dict):
     return None  # unmodeled conditional -> optional
 
 
-def compute_route(section_body: str, case: dict):
+def compute_route(section_body: str, case: dict, refs_dir: Path):
     """Return (required, allowed) reference-file sets for a case.
 
     - required: unconditional references that MUST appear in expect_refs.
     - allowed: every reference expect_refs is permitted to name — the
       unconditional set plus enabled conditionals plus optional (unmodeled)
       conditionals.
+
+    Every reference is a directory `<slug>/`, so a reference token
+    (framework-<slug>.md/feature-<slug>.md/…) is expanded via `_resolve_group`
+    into the hub `<slug>/index.md` plus, for a leaf group, the intent's leaf
+    from the hub's dispatch table.
     """
     required = set()
     allowed = set()
+    intent = case["intent"]
     for line in section_body.splitlines():
-        tokens = REF_RE.findall(line)
+        index_names = REF_INDEX_RE.findall(line)          # <name> (no ext)
+        flat_names = [m for m in REF_FLAT_RE.findall(line)
+                      if not m.endswith("/index.md")]      # legacy <name>.md
+        tokens = [f"{n}.md" for n in index_names] + flat_names
         if not tokens:
             continue
         line_low = line.strip().lower()
@@ -136,20 +182,21 @@ def compute_route(section_body: str, case: dict):
             fname = _expand(token, case)
             if fname is None:
                 continue
+            resolved = _resolve_group(fname, intent, refs_dir)
             if not is_conditional:
-                required.add(fname)
-                allowed.add(fname)
+                required |= resolved
+                allowed |= resolved
             elif enabled is True:
                 # Modeled conditional whose gate is ON for this case: the route
                 # WILL load it, so expect_refs must name it (required). This is
                 # the combo path (e.g. "MFA in a Next.js app" -> framework-nextjs)
                 # that would otherwise be silently under-specifiable.
-                required.add(fname)
-                allowed.add(fname)
+                required |= resolved
+                allowed |= resolved
             elif enabled is None:
                 # Unmodeled conditional: we can't decide the gate, so it's
                 # optional — allowed but not required (don't over-constrain).
-                allowed.add(fname)
+                allowed |= resolved
             # enabled is False: not allowed, not required
     return required, allowed
 
@@ -157,7 +204,11 @@ def compute_route(section_body: str, case: dict):
 def check_routing(skill_dir: Path):
     skill_md = (skill_dir / "SKILL.md").read_text()
     sections = step4_sections(skill_md)
-    present = {p.name for p in (skill_dir / "references").glob("*.md")}
+    refs_root = skill_dir / "references"
+    present = set()
+    for sub in refs_root.iterdir():
+        if sub.is_dir():
+            present |= {f"{sub.name}/{p.name}" for p in sub.glob("*.md")}
 
     failures = []
     for case in load_cases(skill_dir):
@@ -186,7 +237,8 @@ def check_routing(skill_dir: Path):
                 )
 
         # (c) expect_refs matches the route the section computes for this case.
-        required, allowed = compute_route(sections[intent], case)
+        required, allowed = compute_route(sections[intent], case,
+                                          skill_dir / "references")
         expect_set = set(expect_refs)
         for ref in sorted(required - expect_set):
             failures.append(
