@@ -1,6 +1,6 @@
-# Claude Code Plugin Architecture
+# Agent Plugin Architecture
 
-This repository provides a **single Claude Code plugin** managed by a marketplace.json file.
+This repository provides one canonical Auth0 skill distributed through Claude Code, Cursor, and OpenAI/Codex plugin packaging. The OpenAI package is also usable by ChatGPT desktop through the universal plugin directory.
 
 ## Architecture Overview
 
@@ -62,6 +62,9 @@ auth0/agent-skills/
 │   └── marketplace.json          # Marketplace metadata
 ├── .cursor-plugin/
 │   └── marketplace.json          # Cursor marketplace metadata
+├── .agents/
+│   └── plugins/
+│       └── marketplace.json      # OpenAI/Codex local marketplace
 ├── plugins/
 │   └── auth0/                    # Single unified plugin
 │       ├── .claude-plugin/
@@ -93,6 +96,13 @@ auth0/agent-skills/
 
 ## File Purposes
 
+### .agents/plugins/marketplace.json
+
+**Purpose**: OpenAI/Codex local marketplace metadata.
+
+Use it to test the plugin locally in ChatGPT desktop or Codex. Public listing
+requires submission and approval through the OpenAI plugin submission portal.
+
 ### .claude-plugin/marketplace.json
 
 **Purpose**: Master marketplace listing for the plugin
@@ -117,7 +127,14 @@ auth0/agent-skills/
 
 ## Installation Methods
 
-### Method 1: Marketplace (Recommended)
+### OpenAI / Codex
+
+For local testing, add `.agents/plugins/marketplace.json` to the ChatGPT
+desktop or Codex Plugins UI and install Auth0. Public distribution requires
+submission through https://platform.openai.com/plugins and OpenAI approval.
+See [`docs/openai-plugin.md`](docs/openai-plugin.md).
+
+### Method 1: Claude marketplace (Recommended)
 
 1. Open Claude Code
 2. Navigate to **Settings > Plugins**
@@ -156,7 +173,8 @@ no per-framework skill to pick.
 
 ### Update Version
 
-Edit `.claude-plugin/marketplace.json` and `plugins/auth0/.claude-plugin/plugin.json`.
+Edit the relevant marketplace and plugin manifests. For OpenAI/Codex, update
+`.agents/plugins/marketplace.json` and `plugins/auth0/.codex-plugin/plugin.json`.
 
 ### Create Release
 

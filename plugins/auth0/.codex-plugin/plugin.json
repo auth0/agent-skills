@@ -1,14 +1,26 @@
 {
   "name": "auth0",
   "version": "2.0.1",
-  "description": "A single unified Auth0 skill that detects your framework, feature, and tooling, then loads the right reference guides for adding authentication — login, MFA, Organizations, ACUL, custom domains, branding, JWT validation, migration, and debugging — to any app.",
+  "description": "Implement and troubleshoot Auth0 authentication across web, mobile, and API applications.",
   "skills": "./skills/",
   "author": {
     "name": "Auth0",
-    "email": "support@auth0.com"
+    "email": "support@auth0.com",
+    "url": "https://auth0.com"
   },
+  "homepage": "https://auth0.com/developers",
   "repository": "https://github.com/auth0/agent-skills",
   "license": "Apache-2.0",
+  "interface": {
+    "displayName": "Auth0",
+    "shortDescription": "Add Auth0 authentication to your application",
+    "longDescription": "Implement and troubleshoot Auth0 authentication across web, mobile, and API applications.",
+    "developerName": "Auth0",
+    "category": "Developer tools",
+    "websiteURL": "https://auth0.com",
+    "privacyPolicyURL": "https://auth0.com/privacy",
+    "termsOfServiceURL": "https://auth0.com/terms"
+  },
   "keywords": [
     "auth0",
     "quickstart",

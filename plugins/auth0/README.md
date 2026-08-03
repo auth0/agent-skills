@@ -4,6 +4,13 @@ Auth0 skills for setting up authentication, migrating from other providers, impl
 
 ## Installation
 
+**Via Codex / ChatGPT desktop:**
+
+For local testing, add the repository marketplace from
+`.agents/plugins/marketplace.json` to the Plugins UI, then install **Auth0**.
+The public plugin directory requires submission and approval through the
+[OpenAI plugin submission portal](https://platform.openai.com/plugins).
+
 **Via Claude Code:**
 
 First, add the Auth0 marketplace if you haven't already:
