@@ -252,13 +252,17 @@ private let auth = AuthenticationService()
 
 ### Step 5 — Verify Build
 
-> **Agent instruction:** If Xcode and an iOS simulator runtime are available, build to verify the
-> integration compiles without errors:
+> **Agent instruction:** If Xcode and an iOS simulator are available, build to verify the integration
+> compiles without errors. Pick a device that actually exists rather than assuming a name:
+>
 > ```bash
-> xcodebuild build -scheme YOUR_SCHEME -destination "platform=iOS Simulator,name=iPhone 16"
+> xcrun simctl list devices available          # choose an installed device
+> xcodebuild build -scheme YOUR_SCHEME \
+>   -destination "platform=iOS Simulator,name=<INSTALLED_DEVICE>,OS=latest"
 > ```
-> Skip the build when Xcode is absent (no `xcodebuild` on PATH, or no installed simulator runtime) —
-> it will spend many minutes and then fail for reasons unrelated to your changes. Re-read the files you
+>
+> Skip the build when Xcode is absent (no `xcodebuild` on PATH) or `simctl` lists no available device —
+> it will then spend many minutes and fail for reasons unrelated to your changes. Re-read the files you
 > edited instead.
 >
 > If the build fails, review error messages and fix up to 5 times before asking the user.

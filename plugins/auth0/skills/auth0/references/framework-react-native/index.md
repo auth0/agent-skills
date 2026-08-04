@@ -19,8 +19,10 @@ Add authentication to React Native and Expo mobile applications using react-nati
 
 ## Files to Change
 
-A bare React Native integration touches exactly these files. Read and edit them directly rather than
-exploring the project first:
+These are the files a bare React Native integration touches. Use the table as your starting scope: read
+these paths directly instead of searching the project from scratch, but confirm the real entry point and
+the actual iOS target directory name before editing — `ios/{YourApp}/` varies per project. You do not
+need to read anything under `node_modules/` to confirm the SDK's API.
 
 | File | Change |
 |------|--------|
@@ -61,10 +63,18 @@ AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 ```
 
-Read these with `react-native-dotenv` (or `react-native-config`) and never hardcode the Client ID into
-a `.ts`/`.tsx` file. That includes a config module holding the literal, and it includes fallbacks —
-write `process.env.AUTH0_CLIENT_ID!`, never `process.env.AUTH0_CLIENT_ID ?? 'your-client-id'`, because
-a default puts the literal straight back into source. Add `.env` to `.gitignore`.
+Read these with `react-native-dotenv`, which exposes them on `process.env` — the accessor every example
+below uses. (If you prefer `react-native-config`, note it exposes values on an imported `Config` object
+instead, so substitute `Config.AUTH0_CLIENT_ID` for `process.env.AUTH0_CLIENT_ID` throughout.)
+
+Never hardcode the Client ID into a `.ts`/`.tsx` file. That includes a config module holding the
+literal, and it includes fallbacks — write `process.env.AUTH0_CLIENT_ID!`, never
+`process.env.AUTH0_CLIENT_ID ?? 'your-client-id'`, because a default puts the literal straight back
+into source. Add `.env` to `.gitignore`.
+
+The `!` only silences the TypeScript error; it is erased at compile time and does not check anything at
+runtime. If the variable is unset the SDK receives `undefined` and login fails, so make sure `.env` is
+loaded — or add an explicit throw at startup if you want to fail fast.
 
 The Android `manifestPlaceholders` and iOS `Info.plist` values (step 3) are a separate matter — those
 are native build config, not source, and the domain there is not a secret.
@@ -225,15 +235,25 @@ export default function App() {
 
 ### 6. Verify
 
-Verify with the cheapest check that proves the integration compiles:
+Verification has two parts, because a typecheck proves nothing about native configuration.
+
+**Source** — run the cheapest check that proves the JavaScript compiles:
 
 ```bash
 npm run typecheck   # or: npx tsc --noEmit
 ```
 
+**Native configuration** — a typecheck never reads the native projects, so verify these by reading the
+files back:
+
+- `android/app/build.gradle` sets `auth0Domain` and `auth0Scheme` in `defaultConfig.manifestPlaceholders`
+- `auth0Scheme` is `${applicationId}.auth0`, matching the callback URL registered in the Dashboard
+- `ios/{YourApp}/Info.plist` has a `CFBundleURLTypes` entry with `$(PRODUCT_BUNDLE_IDENTIFIER).auth0`
+
 Launching a simulator (`npx react-native run-ios` / `run-android`) takes many minutes and needs a
-configured native toolchain, so only do it when the user asks to exercise the login flow on a device.
-See the Testing section below for the manual flow to walk through when you do.
+configured native toolchain, so only do it when the user asks to exercise the login flow on a device —
+it is the only way to prove the redirect actually resolves. See the Testing section below for the manual
+flow to walk through when you do.
 
 ## Common Mistakes
 

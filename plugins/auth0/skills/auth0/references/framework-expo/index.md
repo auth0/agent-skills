@@ -26,8 +26,10 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 
 ## Files to Change
 
-An Expo integration touches exactly these files. Read and edit them directly rather than exploring the
-project first:
+These are the files an Expo integration touches. Use the table as your starting scope: read these paths
+directly instead of searching the project from scratch, but confirm the real entry point before editing
+— an expo-router project roots the provider in `app/_layout.tsx`, not `App.tsx`. You do not need to
+read anything under `node_modules/` to confirm the SDK's API.
 
 | File | Change |
 |------|--------|
@@ -187,14 +189,27 @@ export default function App() {
 
 ### 7. Verify
 
-> **Agent instruction:** Verify with the cheapest check that proves the integration compiles. Prefer a
-> typecheck over a native build:
-> ```bash
-> npm run typecheck   # or: npx tsc --noEmit
-> ```
-> A full `npx expo prebuild` + `expo run:ios` / `run:android` cycle takes many minutes and needs a
-> configured native toolchain. Only run it when the user asks for a device or simulator run, or when a
-> typecheck cannot surface the problem. Do not loop on native build failures by default.
+Verification has two parts, because a typecheck proves nothing about native configuration.
+
+**Source** — run the cheapest check that proves the JavaScript compiles:
+
+```bash
+npm run typecheck   # or: npx tsc --noEmit
+```
+
+**Native configuration** — a typecheck cannot see whether the config plugin applied, so verify these by
+reading the files back:
+
+- `app.json` registers `react-native-auth0` in `plugins` with `domain` and `customScheme`
+- `ios.bundleIdentifier` and `android.package` are set
+- `authorize()` / `clearSession()` pass the same `customScheme` declared in `app.json`
+
+> **Agent instruction:** If you need to confirm the plugin actually writes the native projects, run
+> `npx expo prebuild --no-install` and check that `ios/{AppName}/Info.plist` contains the URL scheme and
+> `android/app/build.gradle` contains the `auth0Domain` / `auth0Scheme` placeholders. A full
+> `expo run:ios` / `run:android` cycle takes many minutes and needs a configured native toolchain — run
+> it only when the user asks for a device or simulator run. Do not loop on native build failures by
+> default.
 
 Common build failures, when you do run a native build:
 
@@ -1224,6 +1239,15 @@ clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!,
 
 // Not this — the literal is now committed source
 clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID ?? 'your-client-id',
+```
+
+The `!` only silences the TypeScript error; it is erased at compile time and checks nothing at runtime.
+If the variable is unset, `Auth0Provider` receives `undefined` and login fails, so confirm `.env` is
+loaded — or throw explicitly at startup if you want to fail fast:
+
+```typescript
+const clientId = process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID;
+if (!clientId) throw new Error('EXPO_PUBLIC_AUTH0_CLIENT_ID is not set');
 ```
 
 For environment-specific configuration, use `app.config.js` (dynamic config). The `domain` and

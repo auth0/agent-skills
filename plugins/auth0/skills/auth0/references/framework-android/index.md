@@ -111,12 +111,15 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
    > **Agent instruction:** If an Android SDK/Gradle toolchain is available, build the project to verify
    > it compiles successfully:
+   >
    > ```bash
    > ./gradlew assembleDebug
    > ```
-   > Skip the build when the environment has no Android toolchain (no `ANDROID_HOME` or `local.properties`,
-   > or the Gradle wrapper cannot reach its distribution) — it will spend many minutes and then fail for
-   > reasons unrelated to your changes. Re-read the files you edited instead.
+   >
+   > Skip the build only when none of `ANDROID_HOME`, `ANDROID_SDK_ROOT`, or an `sdk.dir` entry in
+   > `local.properties` is present, or the Gradle wrapper cannot reach its distribution — it will then
+   > spend many minutes and fail for reasons unrelated to your changes. Re-read the files you edited
+   > instead.
    >
    > If the build fails, analyze the error output and fix the issues. Common integration build failures include:
    > - **Unresolved reference**: Missing import statements — add the required `import com.auth0.android.*` imports
