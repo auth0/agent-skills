@@ -61,7 +61,28 @@ AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 ```
 
+Read these with `react-native-dotenv` (or `react-native-config`) and never hardcode the Client ID into
+a `.ts`/`.tsx` file. That includes a config module holding the literal, and it includes fallbacks —
+write `process.env.AUTH0_CLIENT_ID!`, never `process.env.AUTH0_CLIENT_ID ?? 'your-client-id'`, because
+a default puts the literal straight back into source. Add `.env` to `.gitignore`.
+
+The Android `manifestPlaceholders` and iOS `Info.plist` values (step 3) are a separate matter — those
+are native build config, not source, and the domain there is not a secret.
+
 ### 3. Configure Native Platforms
+
+The callback URL scheme is derived from the bundle identifier / application id — you do not need to
+read the SDK's Swift, Kotlin, or TypeScript sources to work this out. For a bundle id of
+`com.example.app` and tenant `your-tenant.auth0.com`:
+
+| Platform | Scheme | Callback URL to register in the Auth0 Dashboard |
+|----------|--------|------------------------------------------------|
+| iOS | `com.example.app.auth0` | `com.example.app.auth0://your-tenant.auth0.com/ios/com.example.app/callback` |
+| Android | `com.example.app` | `com.example.app://your-tenant.auth0.com/android/com.example.app/callback` |
+
+All values are lowercase with no trailing slash. On iOS the scheme is `$(PRODUCT_BUNDLE_IDENTIFIER).auth0`;
+on Android it is the bare `${applicationId}` supplied via `auth0Scheme`. Pass a `customScheme` to
+`authorize()` / `clearSession()` only when you deliberately override these defaults.
 
 **iOS** - Update `ios/{YourApp}/Info.plist`:
 

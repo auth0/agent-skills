@@ -80,8 +80,13 @@ EXPO_PUBLIC_AUTH0_CLIENT_ID=your-client-id
 ```
 
 Never hardcode the Client ID into a `.tsx`/`.ts` source file — read it from `process.env` (see step 6),
-and add `.env` to `.gitignore`. The `domain` and `customScheme` in `app.json` (step 4) stay as literal
-values: they are not secrets, and the config plugin is read at prebuild time rather than runtime.
+and add `.env` to `.gitignore`. That includes fallbacks: write
+`process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!`, never
+`process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID ?? 'barkbook_client_abc123xyz'` — a default puts the literal
+straight back into source.
+
+The `domain` and `customScheme` in `app.json` (step 4) stay as literal values: they are not secrets,
+and the config plugin is read at prebuild time rather than runtime.
 
 ### 4. Configure Expo Config Plugin
 
@@ -1208,7 +1213,22 @@ Expo / React Native mobile apps do **not** use a Client Secret. The Auth0 Native
 - Never include Client Secret in mobile apps
 - Never commit sensitive tokens to source control
 
-For environment-specific configuration, use `app.config.js` (dynamic config):
+**Never write a literal credential as a fallback in a `.ts`/`.tsx` file.** A default like
+`process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID ?? 'your-client-id'` puts the real value back into source —
+it defeats the point of reading from the environment. Read the variable with no fallback and let it
+fail loudly if unset:
+
+```typescript
+// Do this
+clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!,
+
+// Not this — the literal is now committed source
+clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID ?? 'your-client-id',
+```
+
+For environment-specific configuration, use `app.config.js` (dynamic config). The `domain` and
+`customScheme` here are plugin values, not secrets, so literal defaults are acceptable in this one
+place:
 
 ```javascript
 export default ({ config }) => ({
