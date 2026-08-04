@@ -78,11 +78,14 @@ read the SDK's Swift, Kotlin, or TypeScript sources to work this out. For a bund
 | Platform | Scheme | Callback URL to register in the Auth0 Dashboard |
 |----------|--------|------------------------------------------------|
 | iOS | `com.example.app.auth0` | `com.example.app.auth0://your-tenant.auth0.com/ios/com.example.app/callback` |
-| Android | `com.example.app` | `com.example.app://your-tenant.auth0.com/android/com.example.app/callback` |
+| Android | `com.example.app.auth0` | `com.example.app.auth0://your-tenant.auth0.com/android/com.example.app/callback` |
 
-All values are lowercase with no trailing slash. On iOS the scheme is `$(PRODUCT_BUNDLE_IDENTIFIER).auth0`;
-on Android it is the bare `${applicationId}` supplied via `auth0Scheme`. Pass a `customScheme` to
-`authorize()` / `clearSession()` only when you deliberately override these defaults.
+Both platforms append `.auth0` to the bundle id / application id — the SDK defines that suffix
+internally (`APPLICATION_ID_SUFFIX = '.auth0'`), so `auth0Scheme` must be `${applicationId}.auth0`,
+not the bare `${applicationId}`. On iOS the equivalent is `$(PRODUCT_BUNDLE_IDENTIFIER).auth0`.
+
+All values are lowercase with no trailing slash. Pass a `customScheme` to `authorize()` /
+`clearSession()` only when you deliberately override these defaults.
 
 **iOS** - Update `ios/{YourApp}/Info.plist`:
 
@@ -111,7 +114,7 @@ android {
     defaultConfig {
         manifestPlaceholders = [
             auth0Domain: "YOUR_AUTH0_DOMAIN",
-            auth0Scheme: "${applicationId}"
+            auth0Scheme: "${applicationId}.auth0"
         ]
     }
 }
@@ -130,7 +133,7 @@ Only declare the activity yourself if you need to override the merged one:
         <data
             android:host="YOUR_AUTH0_DOMAIN"
             android:pathPrefix="/android/${applicationId}/callback"
-            android:scheme="${applicationId}" />
+            android:scheme="${applicationId}.auth0" />
     </intent-filter>
 </activity>
 ```
@@ -628,7 +631,22 @@ Update `ios/{YourApp}/Info.plist`:
 
 ### 4. Configure Android
 
-Update `android/app/src/main/AndroidManifest.xml`:
+Preferred — set `manifestPlaceholders` in `android/app/build.gradle` (the SDK merges in its own
+`RedirectActivity`, so this is all it needs):
+
+```groovy
+android {
+    defaultConfig {
+        manifestPlaceholders = [
+            auth0Domain: "YOUR_DOMAIN",
+            auth0Scheme: "${applicationId}.auth0"
+        ]
+    }
+}
+```
+
+Only declare the activity yourself in `android/app/src/main/AndroidManifest.xml` if you need to
+override the merged one:
 
 ```xml
 <activity android:name="com.auth0.android.provider.RedirectActivity" android:exported="true">
@@ -639,7 +657,7 @@ Update `android/app/src/main/AndroidManifest.xml`:
     <data
       android:host="YOUR_DOMAIN"
       android:pathPrefix="/android/${applicationId}/callback"
-      android:scheme="${applicationId}" />
+      android:scheme="${applicationId}.auth0" />
   </intent-filter>
 </activity>
 ```
