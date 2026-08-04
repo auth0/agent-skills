@@ -109,18 +109,10 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 5. **Build & Verify**:
 
-   > **Agent instruction:** If an Android SDK/Gradle toolchain is available, build the project to verify
-   > it compiles successfully:
-   >
+   > **Agent instruction:** After completing the integration, build the project to verify it compiles successfully:
    > ```bash
    > ./gradlew assembleDebug
    > ```
-   >
-   > Skip the build only when none of `ANDROID_HOME`, `ANDROID_SDK_ROOT`, or an `sdk.dir` entry in
-   > `local.properties` is present, or the Gradle wrapper cannot reach its distribution — it will then
-   > spend many minutes and fail for reasons unrelated to your changes. Re-read the files you edited
-   > instead.
-   >
    > If the build fails, analyze the error output and fix the issues. Common integration build failures include:
    > - **Unresolved reference**: Missing import statements — add the required `import com.auth0.android.*` imports
    > - **Cannot resolve symbol `R.string.com_auth0_scheme`**: `strings.xml` not updated — verify `com_auth0_scheme`, `com_auth0_client_id`, and `com_auth0_domain` entries exist
