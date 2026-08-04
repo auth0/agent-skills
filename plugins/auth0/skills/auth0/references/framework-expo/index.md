@@ -24,6 +24,20 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 | Native Android (Kotlin/Java) | the Auth0 integration workflow for Android |
 | Backend API (JWT validation) | the Auth0 integration workflow for Fastify or Express.js |
 
+## Files to Change
+
+An Expo integration touches exactly these files. Read and edit them directly rather than exploring the
+project first:
+
+| File | Change |
+|------|--------|
+| `package.json` | add `react-native-auth0` (and `expo-dev-client` if missing) |
+| `.env` | `EXPO_PUBLIC_AUTH0_DOMAIN`, `EXPO_PUBLIC_AUTH0_CLIENT_ID` |
+| `app.json` | `react-native-auth0` plugin with `domain` + `customScheme`; `ios.bundleIdentifier`, `android.package` |
+| `App.tsx` (or your root component) | `Auth0Provider` + `useAuth0`, guarded by `isLoading` |
+
+Do **not** hand-edit `ios/` or `android/` native files — the config plugin generates them at prebuild.
+
 ## Quick Start Workflow
 
 ### 1. Configure Auth0
@@ -56,6 +70,18 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 ```bash
 npx expo install react-native-auth0
 ```
+
+Create `.env` for the values your JavaScript reads. Expo inlines `EXPO_PUBLIC_*` variables at build
+time, so no extra config is needed:
+
+```bash
+EXPO_PUBLIC_AUTH0_DOMAIN=your-tenant.auth0.com
+EXPO_PUBLIC_AUTH0_CLIENT_ID=your-client-id
+```
+
+Never hardcode the Client ID into a `.tsx`/`.ts` source file — read it from `process.env` (see step 6),
+and add `.env` to `.gitignore`. The `domain` and `customScheme` in `app.json` (step 4) stay as literal
+values: they are not secrets, and the config plugin is read at prebuild time rather than runtime.
 
 ### 4. Configure Expo Config Plugin
 
@@ -145,8 +171,8 @@ function HomeScreen() {
 export default function App() {
   return (
     <Auth0Provider
-      domain="YOUR_AUTH0_DOMAIN"
-      clientId="YOUR_AUTH0_CLIENT_ID"
+      domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
+      clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
     >
       <HomeScreen />
     </Auth0Provider>
@@ -154,28 +180,25 @@ export default function App() {
 }
 ```
 
-### 7. Build & Verify
+### 7. Verify
 
-> **Agent instruction:** After completing the integration, build the project to verify it compiles:
+> **Agent instruction:** Verify with the cheapest check that proves the integration compiles. Prefer a
+> typecheck over a native build:
 > ```bash
-> npx expo prebuild --clean
-> npx expo run:ios
-> # or
-> npx expo run:android
+> npm run typecheck   # or: npx tsc --noEmit
 > ```
-> If the build fails, analyze the error output. Common integration build failures include:
-> - **"Invariant Violation: Native module cannot be null"**: Using Expo Go instead of a development build — run `npx expo run:ios` or `npx expo run:android` instead of `npx expo start`
-> - **Plugin not applied**: Missing `react-native-auth0` in app.json plugins array — verify the plugin configuration
-> - **Pod install fails (iOS)**: Run `npx expo prebuild --clean` to regenerate native projects
-> - **Manifest merge failure (Android)**: Conflicting auth0Domain placeholder — ensure only the config plugin sets the domain
->
-> Re-run the build after each fix. Track the number of build-fix iterations.
->
-> **Failcheck:** If the build still fails after 5–6 fix attempts, stop and ask the user using `AskUserQuestion`:
-> _"The build is still failing after several fix attempts. How would you like to proceed?"_
-> - **Let the skill continue fixing iteratively**
-> - **Fix it manually** — show the remaining errors
-> - **Skip build verification** — proceed without a successful build
+> A full `npx expo prebuild` + `expo run:ios` / `run:android` cycle takes many minutes and needs a
+> configured native toolchain. Only run it when the user asks for a device or simulator run, or when a
+> typecheck cannot surface the problem. Do not loop on native build failures by default.
+
+Common build failures, when you do run a native build:
+
+| Failure | Cause and fix |
+|---------|---------------|
+| `Invariant Violation: Native module cannot be null` | Using Expo Go instead of a development build — run `npx expo run:ios` / `run:android`, not `npx expo start` |
+| Plugin not applied | `react-native-auth0` missing from the `app.json` plugins array |
+| Pod install fails (iOS) | Run `npx expo prebuild --clean` to regenerate native projects |
+| Manifest merge failure (Android) | Conflicting `auth0Domain` placeholder — only the config plugin should set the domain |
 
 ## Detailed Documentation
 
@@ -226,6 +249,20 @@ export default function App() {
 - [Security Considerations](#security-considerations) — PKCE, secure storage, custom scheme, tokens, network
 
 ## Configuration Reference
+
+This reference is authoritative for `react-native-auth0` v5. Treat it as complete: you do not need to
+read `.d.ts` files, the SDK README, or anything else under `node_modules/` to confirm these names.
+
+### useAuth0() Hook
+
+| Value | Description |
+|-------|-------------|
+| `authorize(params?, options?)` | Initiate login |
+| `clearSession(options?)` | Logout |
+| `user` | User profile object, or `null` when unauthenticated |
+| `isLoading` | Loading state; guard auth-dependent UI on this |
+| `error` | Last authentication error, or `null` |
+| `getCredentials()` | Get tokens for API calls |
 
 ### Auth0Provider Props
 
@@ -471,8 +508,8 @@ function LoginScreen() {
 import Auth0 from 'react-native-auth0';
 
 const auth0 = new Auth0({
-  domain: 'YOUR_AUTH0_DOMAIN',
-  clientId: 'YOUR_AUTH0_CLIENT_ID',
+  domain: process.env.EXPO_PUBLIC_AUTH0_DOMAIN!,
+  clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!,
 });
 
 const credentials = await auth0.webAuth.authorize(
@@ -622,8 +659,8 @@ import {
 export default function App() {
   return (
     <Auth0Provider
-      domain="YOUR_AUTH0_DOMAIN"
-      clientId="YOUR_AUTH0_CLIENT_ID"
+      domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
+      clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
       localAuthenticationOptions={{
         title: 'Authenticate to access credentials',
         subtitle: 'Please verify your identity',
@@ -661,8 +698,8 @@ import Auth0, {
 } from 'react-native-auth0';
 
 const auth0 = new Auth0({
-  domain: 'YOUR_AUTH0_DOMAIN',
-  clientId: 'YOUR_AUTH0_CLIENT_ID',
+  domain: process.env.EXPO_PUBLIC_AUTH0_DOMAIN!,
+  clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!,
   localAuthenticationOptions: {
     title: 'Authenticate to access credentials',
     evaluationPolicy: LocalAuthenticationStrategy.deviceOwnerWithBiometrics,
@@ -682,8 +719,8 @@ DPoP is enabled by default in react-native-auth0:
 
 ```typescript
 <Auth0Provider
-  domain="YOUR_AUTH0_DOMAIN"
-  clientId="YOUR_AUTH0_CLIENT_ID"
+  domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
+  clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
   // DPoP is enabled by default (useDPoP: true)
 >
   <App />
@@ -887,8 +924,8 @@ For unstable network conditions, configure automatic retry for credential renewa
 
 ```typescript
 <Auth0Provider
-  domain="YOUR_AUTH0_DOMAIN"
-  clientId="YOUR_AUTH0_CLIENT_ID"
+  domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
+  clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
   maxRetries={2}
 >
   <App />
@@ -903,8 +940,8 @@ If using refresh token rotation, configure a token overlap period of at least **
 
 ```typescript
 <Auth0Provider
-  domain="YOUR_AUTH0_DOMAIN"
-  clientId="YOUR_AUTH0_CLIENT_ID"
+  domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
+  clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
   headers={{
     'Accept-Language': 'fr-CA',
     'X-App-Version': '1.0.0',

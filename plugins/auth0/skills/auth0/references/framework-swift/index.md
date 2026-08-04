@@ -252,10 +252,15 @@ private let auth = AuthenticationService()
 
 ### Step 5 — Verify Build
 
-> **Agent instruction:** Run a build to verify the integration compiles without errors:
+> **Agent instruction:** If Xcode and an iOS simulator runtime are available, build to verify the
+> integration compiles without errors:
 > ```bash
 > xcodebuild build -scheme YOUR_SCHEME -destination "platform=iOS Simulator,name=iPhone 16"
 > ```
+> Skip the build when Xcode is absent (no `xcodebuild` on PATH, or no installed simulator runtime) —
+> it will spend many minutes and then fail for reasons unrelated to your changes. Re-read the files you
+> edited instead.
+>
 > If the build fails, review error messages and fix up to 5 times before asking the user.
 
 ## Detailed Documentation

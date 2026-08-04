@@ -17,6 +17,22 @@ Add authentication to React Native and Expo mobile applications using react-nati
 - **Non-React native apps** - Use platform-specific SDKs (Swift for iOS, Kotlin for Android)
 - **Backend APIs** - Use JWT validation libraries for your server language
 
+## Files to Change
+
+A bare React Native integration touches exactly these files. Read and edit them directly rather than
+exploring the project first:
+
+| File | Change |
+|------|--------|
+| `package.json` | add `react-native-auth0` |
+| `.env` | `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID` |
+| `App.tsx` (or your root component) | `Auth0Provider` + `useAuth0`, guarded by `isLoading` |
+| `android/app/build.gradle` | `manifestPlaceholders` (`auth0Domain`, `auth0Scheme`) |
+| `ios/{YourApp}/Info.plist` | `CFBundleURLTypes` entry |
+
+You do **not** need to touch `MainActivity`, `MainApplication`, `AndroidManifest.xml`, `AppDelegate`,
+or the Xcode project — the SDK's own manifest merge and autolinking handle those.
+
 ## Quick Start Workflow
 
 ### 1. Install SDK
@@ -65,7 +81,22 @@ AUTH0_CLIENT_ID=your-client-id
 </array>
 ```
 
-**Android** - Update `android/app/src/main/AndroidManifest.xml`:
+**Android** — add `manifestPlaceholders` to `android/app/build.gradle` inside
+`android { defaultConfig { ... } }`. This is the preferred route: the SDK ships its own
+`RedirectActivity` and merges it into your manifest, so these two values are all it needs.
+
+```groovy
+android {
+    defaultConfig {
+        manifestPlaceholders = [
+            auth0Domain: "YOUR_AUTH0_DOMAIN",
+            auth0Scheme: "${applicationId}"
+        ]
+    }
+}
+```
+
+Only declare the activity yourself if you need to override the merged one:
 
 ```xml
 <activity
@@ -168,19 +199,17 @@ export default function App() {
 }
 ```
 
-### 6. Test Authentication
+### 6. Verify
 
-**Expo:**
+Verify with the cheapest check that proves the integration compiles:
+
 ```bash
-npx expo start
+npm run typecheck   # or: npx tsc --noEmit
 ```
 
-**React Native:**
-```bash
-npx react-native run-ios
-# or
-npx react-native run-android
-```
+Launching a simulator (`npx react-native run-ios` / `run-android`) takes many minutes and needs a
+configured native toolchain, so only do it when the user asks to exercise the login flow on a device.
+See the Testing section below for the manual flow to walk through when you do.
 
 ## Common Mistakes
 
@@ -203,13 +232,17 @@ npx react-native run-android
 
 ## Quick Reference
 
-**Core Hook API:**
+**Core Hook API** (v5) — this is the complete surface for a login/logout integration. Treat it as
+authoritative: you do not need to read `.d.ts` files, the SDK README, or anything else under
+`node_modules/` to confirm these names.
+
 - `useAuth0()` - Main hook for authentication
 - `authorize()` - Initiate login
 - `clearSession()` - Logout
 - `user` - User profile object
+- `error` - Last authentication error, or `null`
 - `getCredentials()` - Get tokens for API calls
-- `isLoading` - Loading state
+- `isLoading` - Loading state; guard auth-dependent UI on this
 
 **Common Use Cases:**
 - Login/Logout → See Step 5 above
