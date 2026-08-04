@@ -96,14 +96,26 @@ rules:
   # This repo's single skill is a router: SKILL.md is a detection/dispatch table
   # (frameworks, intents, tooling) locked down by scripts/check_routing_evals.py
   # and check_router_reachability.py, so its token budget is intentionally large
-  # and can't be trimmed without dropping routes. Raise the skill body warn limit
-  # to 4000 (still catches real bloat) while keeping the 6000 error ceiling. The
+  # and can't be trimmed without dropping routes. Each intent adds a table row +
+  # a Step 4 loader block, so the body grows as intents are added. Warn limit is
+  # 4100 (still catches real bloat) with the 6000 error ceiling unchanged. The
   # skill-description budget (200) is unchanged and enforced separately.
   context-budget:
     limits:
       skill:
-        warn: 4000
+        warn: 4100
         error: 6000
+
+  # feature-audit.md and feature-healthcheck.md express Auth0 feature-gap severity
+  # as literal table values ("CRITICAL", "REQUIRED", "MUST") in scoring and
+  # classification tables — data, not misplaced prose instructions. The
+  # content-critical-position heuristic reads those as high-attention directives
+  # stranded mid-file and flags every row. Exempt ONLY these two files; the rule
+  # stays active (at warning) for every other file in the repo.
+  content-critical-position:
+    exclude:
+      - "plugins/auth0/skills/auth0/references/feature-audit.md"
+      - "plugins/auth0/skills/auth0/references/feature-healthcheck.md"
 
   # validate-skill.sh is a CI-only structural gate (invoked from
   # .github/workflows/skillsaw.yml), not agent-facing behavior the router should
