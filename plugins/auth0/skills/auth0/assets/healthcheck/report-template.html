@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<!--
+  Locked HTML report template for the plan-aware health check (feature-healthcheck reference).
+  Phase 5 (report generation) substitutes every placeholder token with the same data feeding report-template.md.
+  Two-section layout: PART A Security & Config Hygiene (universal) + PART B Capability Fit (tier-aware).
+  CSS adapted from the audit report template. Render to PDF with scripts/render_pdf.sh.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Auth0 Tenant Health Check — {{customer_name}}</title>
+<style>
+  :root {
+    --orange: #E94B1F;
+    --orange-soft: #FCE9E2;
+    --ink: #1A1A2E;
+    --ink-soft: #4F4F66;
+    --line: #E6E6EE;
+    --bg: #FFFFFF;
+    --severity-high: #C8260A;
+    --severity-moderate: #C46B1D;
+    --severity-low: #1F6FB5;
+    --severity-pass: #1F8A4C;
+  }
+  @page {
+    size: Letter;
+    margin: 0.6in 0.7in 0.7in 0.7in;
+    @bottom-right { content: "{{review_month_year}}"; font: 9pt -apple-system, "Segoe UI", sans-serif; color: var(--ink-soft); }
+    @bottom-left { content: "Confidential · Auth0 tenant health check for {{customer_name}}"; font: 9pt -apple-system, "Segoe UI", sans-serif; color: var(--ink-soft); }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; color: var(--ink); background: var(--bg); font-family: -apple-system, "Inter", "Segoe UI", system-ui, sans-serif; font-size: 10.5pt; line-height: 1.45; }
+  .header { display: flex; align-items: flex-start; justify-content: space-between; padding-bottom: 14pt; border-bottom: 3pt solid var(--orange); margin-bottom: 18pt; }
+  .header h1 { font-size: 24pt; font-weight: 700; margin: 0 0 4pt 0; line-height: 1.15; }
+  .header .subtitle { color: var(--ink-soft); font-size: 11pt; }
+  .plan-badge { border: 1.5pt solid var(--orange); color: var(--orange); border-radius: 18pt; padding: 4pt 12pt; font-size: 10pt; font-weight: 600; white-space: nowrap; }
+  .header-right { text-align: right; font-size: 10pt; color: var(--ink-soft); line-height: 1.5; }
+  .header-right .plan-badge { display: inline-block; margin-bottom: 6pt; }
+  .header-right .meta-line { display: block; color: var(--ink); }
+  /* two headline score chips */
+  .scores { display: flex; gap: 14pt; margin: 4pt 0 20pt 0; }
+  .scorechip { flex: 1; border: 1pt solid var(--line); border-radius: 8pt; padding: 12pt 14pt; }
+  .scorechip .label { font-size: 8.5pt; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 600; }
+  .scorechip .value { font-size: 22pt; font-weight: 700; margin: 2pt 0; }
+  .scorechip .band { font-size: 10pt; font-weight: 600; }
+  .scorechip .conf { font-size: 8.5pt; color: var(--ink-soft); }
+  .scorechip.good .value, .scorechip.good .band { color: var(--severity-pass); }
+  .scorechip.warn .value, .scorechip.warn .band { color: var(--severity-moderate); }
+  .scorechip.bad .value, .scorechip.bad .band { color: var(--severity-high); }
+  .scorechip.na .value { color: var(--ink-soft); font-size: 14pt; }
+  .meta-table { width: 100%; border-collapse: collapse; margin: 12pt 0 24pt 0; }
+  .meta-table th, .meta-table td { text-align: left; padding: 10pt 12pt; border-bottom: 1pt solid var(--line); font-size: 10.5pt; }
+  .meta-table th { width: 38%; color: var(--ink-soft); font-weight: 500; }
+  .meta-table td { color: var(--ink); font-weight: 600; }
+  h2.part { color: var(--orange); text-transform: uppercase; font-size: 12pt; letter-spacing: 0.05em; font-weight: 700; margin: 24pt 0 4pt 0; }
+  h2.part .part-sub { display: block; text-transform: none; letter-spacing: 0; font-size: 9.5pt; font-weight: 500; color: var(--ink-soft); margin-top: 2pt; }
+  h3.section { color: var(--ink); font-size: 11pt; font-weight: 700; margin: 16pt 0 8pt 0; }
+  table.data { width: 100%; border-collapse: collapse; margin: 8pt 0 18pt 0; }
+  table.data th { text-align: left; text-transform: uppercase; font-size: 8.5pt; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 600; padding: 8pt 12pt; border-bottom: 1pt solid var(--line); }
+  table.data td { padding: 11pt 12pt; border-bottom: 1pt solid var(--line); vertical-align: top; }
+  table.data td.label { font-weight: 600; }
+  .severity { display: inline-block; margin-right: 18pt; font-weight: 600; }
+  .severity.high { color: var(--severity-high); }
+  .severity.moderate { color: var(--severity-moderate); }
+  .severity.low { color: var(--severity-low); }
+  .severity.pass { color: var(--severity-pass); }
+  .status-ok { color: var(--severity-pass); font-weight: 700; }
+  .status-miss { color: var(--severity-high); font-weight: 700; }
+  .status-partial { color: var(--severity-moderate); font-weight: 700; }
+  .planhome { font-size: 9.5pt; color: var(--ink-soft); }
+  .planhome.now { color: var(--severity-pass); font-weight: 600; }
+  .planhome.ent { color: var(--orange); font-weight: 600; }
+  .gap { border-left: 3pt solid var(--orange); padding: 4pt 0 4pt 14pt; margin: 12pt 0; }
+  .gap .gap-name { font-weight: 700; margin-bottom: 4pt; }
+  .gap p { margin: 0; }
+  .opportunities .feature { font-weight: 700; width: 18%; }
+  .opportunities .challenge { width: 36%; }
+  .opportunities .solution { width: 18%; color: var(--orange); font-weight: 600; }
+  .opportunities .impact { width: 28%; color: var(--ink-soft); }
+  .plan-block { border: 1pt solid var(--line); border-radius: 8pt; padding: 14pt 16pt; margin: 12pt 0; }
+  .plan-block.enterprise { border-color: var(--orange); background: var(--orange-soft); }
+  .plan-banner { font-weight: 700; margin: 0 0 8pt 0; }
+  .plan-banner em { color: var(--orange); font-style: normal; }
+  .sales-brief { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 9pt; white-space: pre-wrap; background: #FFF; border: 1pt solid var(--line); border-radius: 6pt; padding: 10pt 12pt; margin: 8pt 0; }
+  .actions { list-style: none; counter-reset: action; padding: 0; margin: 6pt 0 16pt 0; }
+  .actions li { counter-increment: action; display: flex; align-items: flex-start; margin: 6pt 0; }
+  .actions li::before { content: counter(action); color: var(--ink-soft); font-weight: 600; width: 22pt; flex: 0 0 22pt; text-align: left; }
+  .docs { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt 12pt; margin: 8pt 0 0 0; }
+  .docs a { display: block; padding: 10pt 14pt; border: 1pt solid var(--line); border-radius: 6pt; color: var(--orange); font-weight: 600; text-decoration: none; font-size: 10pt; }
+  .footer-note { font-size: 9pt; color: var(--ink-soft); margin-top: 22pt; border-top: 1pt solid var(--line); padding-top: 10pt; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div>
+    <h1>Auth0 Tenant<br>Health Check</h1>
+    {{subtitle_html}}  <!-- a subtitle div reading "Prepared by <org>" if reviewer_org is non-empty; else empty string -->
+  </div>
+  <div class="header-right">
+    <span class="plan-badge">{{plan_tag}}</span>
+    <span class="meta-line">{{customer_name}} · {{tenant_domain}}</span>
+    <span class="meta-line">{{review_date_long}}</span>
+  </div>
+</header>
+
+<!-- Two headline scores. For Hygiene with no scan, use class "na" and value "Not scored". -->
+<div class="scores">
+  <div class="scorechip {{hygiene_chip_class}}">
+    <div class="label">Security &amp; Config Hygiene</div>
+    <div class="value">{{hygiene_score}}</div>
+    <div class="band">{{hygiene_band}}</div>
+    <div class="conf">confidence {{hygiene_confidence}}</div>
+  </div>
+  <div class="scorechip {{fit_chip_class}}">
+    <div class="label">Capability Fit</div>
+    <div class="value">{{fit_score}}</div>
+    <div class="band">{{fit_band}}</div>
+    <div class="conf">confidence {{fit_confidence}}</div>
+  </div>
+</div>
+
+<table class="meta-table">
+  <tr><th>Prepared by</th><td>{{reviewer_name}}</td></tr>
+  <tr><th>Date of Review</th><td>{{review_date_long}}</td></tr>
+  <tr><th>Customer Account</th><td>{{customer_name}} ({{tenant_domain}})</td></tr>
+  <tr><th>Current Auth0 Plan</th><td>{{current_plan}}</td></tr>
+  <tr><th>Use Case Diagnosis</th><td>{{business_model}} — {{product_summary_short}}</td></tr>
+</table>
+
+<!-- ============ PART A — SECURITY & CONFIG HYGIENE (universal) ============ -->
+<h2 class="part">Part A — Security &amp; Config Hygiene<span class="part-sub">Applies on every plan, Free → Enterprise. Score: {{hygiene_score}} — {{hygiene_band}}.</span></h2>
+
+<h3 class="section">Account Health</h3>
+<table class="data">
+  <thead><tr><th>Metric</th><th>Status</th></tr></thead>
+  <tbody>
+    <tr><td class="label">Applications Registered</td><td>{{apps_count}}</td></tr>
+    <tr><td class="label">Login Activity</td><td>{{login_activity}}</td></tr>
+    <tr>
+      <td class="label">Security Findings</td>
+      <td>
+        <span class="severity high">{{findings_critical_count}} Critical</span>
+        <span class="severity moderate">{{findings_warning_count}} Warning</span>
+        <span class="severity low">{{findings_info_count}} Info</span>
+        <span class="severity pass">{{findings_passing_count}} Passing</span>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- gaps_html: one gap block per supported gap — a gap-name div followed by a one-line body paragraph. Each names a real product/app/segment. -->
+{{gaps_html}}
+
+<h3 class="section">Configuration Posture at a Glance</h3>
+<table class="data">
+  <thead><tr><th>Severity</th><th>Count</th><th>Key Examples</th></tr></thead>
+  <tbody>
+    <tr><td class="label" style="color:var(--severity-high)">Critical</td><td>{{findings_critical_count}}</td><td>{{findings_critical_examples}}</td></tr>
+    <tr><td class="label" style="color:var(--severity-moderate)">Warning</td><td>{{findings_warning_count}}</td><td>{{findings_warning_examples}}</td></tr>
+    <tr><td class="label" style="color:var(--severity-low)">Info</td><td>{{findings_info_count}}</td><td>{{findings_info_examples}}</td></tr>
+    <tr><td class="label" style="color:var(--severity-pass)">Passing</td><td>{{findings_passing_count}}</td><td>{{findings_passing_examples}}</td></tr>
+  </tbody>
+</table>
+
+<h3 class="section">Immediate Actions — Available Today on {{current_plan}}</h3>
+<ol class="actions">
+  <!-- immediate_actions_html: one list item per action, each naming affected apps/connections explicitly. -->
+  {{immediate_actions_html}}
+</ol>
+
+<!-- ============ PART B — CAPABILITY FIT (tier-aware) ============ -->
+<h2 class="part">Part B — Capability Fit<span class="part-sub">For your use case ({{detected_use_case}}) on {{current_plan}}. Score: {{fit_score}} — {{fit_band}}.</span></h2>
+
+<h3 class="section">Feature-Gap Matrix</h3>
+<table class="data">
+  <thead><tr><th>Feature</th><th>Status</th><th>Plan Home</th><th>Why it matters</th></tr></thead>
+  <tbody>
+    <!-- gap_matrix_rows: one table row per feature — feature name, a status span (ok / miss / partial),
+         a Plan Home span (Available now / Unlocks on a plan / Enterprise-only), and a personalized
+         "why it matters" cell that names a real product/segment. -->
+    {{gap_matrix_rows}}
+  </tbody>
+</table>
+
+<h3 class="section">Strategic Opportunities</h3>
+<table class="data opportunities">
+  <thead><tr><th>Feature Area</th><th>The Challenge</th><th>The Solution</th><th>Strategic Impact</th></tr></thead>
+  <tbody>
+    <!-- opportunities_rows: every challenge cell MUST name a specific product/segment/capability from enrichment. Omit a row if it can't be made specific. -->
+    {{opportunities_rows}}
+  </tbody>
+</table>
+
+<h3 class="section">Plan Guidance</h3>
+<!-- Render exactly ONE of the three variants in place of the plan_guidance_block placeholder below:
+
+  SELF-SERVICE: a .plan-block with a "Recommended Plan: <plan> — <exact cost>" banner (append the
+  A4AA add-on suffix only when gated), a personalized rationale paragraph, an "After Upgrading"
+  heading, and an actions list.
+
+  ENTERPRISE (no price; include Talk-to-Sales): a .plan-block.enterprise with an
+  "Enterprise — contact sales" banner, the enterprise rationale plus a "Triggered by: <triggers>"
+  note, the Talk-to-Sales brief, and a "Contact Auth0 sales" link to https://auth0.com/contact-us
+  (plus the custom AE link if one is set).
+
+  ALREADY-ENTERPRISE (optimize/govern; no upsell): a .plan-block with a
+  "You're on Enterprise — optimize what you already own" banner and an optimization actions list.
+-->
+{{plan_guidance_block}}
+
+<h3 class="section">Key Documentation</h3>
+<div class="docs">
+  <!-- docs_html: one anchor link per row, matched to the opportunities above. -->
+  {{docs_html}}
+</div>
+
+<div class="footer-note">{{confidence_note}}</div>
+
+</body>
+</html>

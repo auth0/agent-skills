@@ -220,6 +220,13 @@
       "framework": null,
       "tooling": "cli",
       "expect_refs": ["feature-audit/index.md", "feature-audit-pricing/index.md", "feature-audit-remediation/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "healthcheck-all-plans",
+      "intent": "healthcheck",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-healthcheck/index.md", "feature-audit/index.md", "feature-audit-pricing/index.md", "feature-audit-remediation/index.md", "tooling-cli/index.md"]
     }
   ]
 }

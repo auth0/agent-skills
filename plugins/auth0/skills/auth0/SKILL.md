@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use when adding, fixing, or improving authentication in any app — login, logout, signup, route protection, JWT/access token validation, refresh token rotation, MFA, passkeys, step-up auth, SSO, RBAC, Organizations for B2B multi-tenant SaaS, custom login domains, ACUL, or Universal Login branding. Use to audit a tenant (CheckMate) or fix findings. Use even if Auth0 isn't mentioned — any time a developer asks how to authenticate users, secure an API, debug a 401, CORS error, callback URL mismatch, redirect loop, or 429 rate limit, or migrate from Clerk, NextAuth.js, Firebase, Supabase, Cognito, or Passport.js. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android, Flutter, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and all Auth0 SDKs.
+description: Use when adding, fixing, or improving authentication in any app — login, logout, signup, route protection, JWT/access token validation, refresh token rotation, MFA, passkeys, step-up auth, SSO, RBAC, Organizations for B2B SaaS, custom login domains, ACUL, or Universal Login branding. Use to audit a tenant (CheckMate), check tenant health and plan fit, or fix findings. Use even if Auth0 isn't mentioned — whenever a developer asks how to authenticate users, secure an API, debug a 401, CORS, callback mismatch, redirect loop, or 429, or migrate from Clerk, NextAuth.js, Firebase, Supabase, Cognito, or Passport.js. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android, Flutter, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and all Auth0 SDKs.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -45,7 +45,8 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
 | Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
-| Audit an existing Auth0 tenant for security & configuration issues and produce a report — run CheckMate, get a tenant configuration / platform development review, then optionally fix findings via the CLI. *Auth0: tenant audit, CheckMate.* | **audit** |
+| Audit a tenant for security/config issues, report, then optionally fix findings. *Auth0: tenant audit, CheckMate.* | **audit** |
+| Check if a tenant is healthy and on the right plan — two scores + a recommendation. *Auth0: health check.* | **healthcheck** |
 | Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
 | Hit an error: 401 Unauthorized, 403 Forbidden, CORS, callback URL mismatch, redirect loop. *Auth0: debugging.* | **debug** |
 | Hit rate limiting: 429 Too Many Requests, quota exceeded. *Auth0: rate limits.* | **debug:rate-limit** |
@@ -347,6 +348,16 @@ Read: references/feature-audit-pricing/index.md
 Read: references/feature-audit-remediation/index.md
 Read: references/tooling-{tooling}/index.md
 Apply findings only with per-command confirmation; verify each change by re-fetch.
+```
+
+### healthcheck
+```
+Read: references/feature-healthcheck/index.md
+Read: references/feature-audit/index.md
+Read: references/feature-audit-pricing/index.md
+Read: references/feature-audit-remediation/index.md
+Read: references/tooling-{tooling}/index.md
+If a scan can run, do the audit workflow first, then score and recommend a plan. If not, score capability fit and recommend anyway. Never quote Enterprise pricing.
 ```
 
 ### upgrade-sdk

@@ -35,6 +35,19 @@ policies, and Prompts customization, and `post` when creating a resource. `patch
 universal. Note that `auth0 api` defaults to `GET` without `--data` and `POST` with
 `--data`, so always state the method explicitly.
 
+## Fix dependencies / prerequisites
+
+Some fixes only work once a prerequisite is in place — applying them out of order fails or, worse, silently half-applies. Before running an item, detect whether its prerequisite is met; if not, order the prerequisite first (or, when it's outside this run's scope, queue the item and tell the user what to do first). Never apply a fix whose prerequisite isn't met.
+
+| Fix | Prerequisite that must come first |
+|---|---|
+| Email MFA factor / branded email templates | A configured email provider (SMTP or a supported provider) — without it, email delivery fails |
+| Enforcing an MFA policy | At least one MFA factor enabled **and** able to deliver (SMS provider configured / email domain verified / WebAuthn available) — enforcing before a factor can deliver locks users out |
+| Custom domain (verify/activate) | The CNAME/TXT DNS record created at the DNS provider — verification fails until DNS propagates |
+| Enterprise connection SSO | The connection created and enabled on the target app(s) before it can be used for login |
+
+When a prerequisite depends on something the user must do outside the CLI (e.g. adding a DNS record), surface it explicitly and queue the dependent fix rather than attempting it.
+
 ## Per-item flow (Guided mode)
 
 For each item, when in **Guided** mode:
@@ -76,6 +89,8 @@ Options:
 - **Yes — proceed** → Loop B
 - **Not yet — queue for after upgrade** → write all After Upgrading items to `state/queue.json` with `status: "pending_upgrade"`, print the upgrade link `https://manage.auth0.com/dashboard/<region>/<tenant>/billing`, end
 - **Skip remaining** → write items with `status: "skipped"` (with optional rationale), end
+
+**When the recommended plan is "Enterprise — contact sales," don't ask this question** — there is no self-service upgrade to confirm. Write the plan-gated items with `status: "pending_enterprise"`, point the user at Auth0 sales instead of the billing link, and end. On a later run, treat `pending_enterprise` exactly like `pending_upgrade`: re-check whether the plan now covers each item, run the ones it does through Loop B, and leave the rest queued. Never present a `pending_enterprise` item as something the user can unlock themselves.
 
 ### Loop B — After Upgrading
 

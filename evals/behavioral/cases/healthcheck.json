@@ -1,0 +1,43 @@
+{
+  "slug": "healthcheck",
+  "origin_skill": "auth0-healthcheck-all-plans",
+  "skill_name": "auth0",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Run a full Auth0 tenant health check for my tenant. I'm on the Free plan and building a B2C SaaS app — about 2,000 MAU today and growing 15% per month.",
+      "expected_output": "Plan-aware health check producing two scores (Security & Config Hygiene + Capability Fit), a plan recommendation with exact cost, and an optional remediation pass. Report saved as markdown, HTML, and PDF.",
+      "files": [],
+      "assertions": [
+        "Runs the co-loaded audit (CheckMate) workflow first for the tenant scan + company context",
+        "Waits for the audit's company-context step to complete before starting use-case classification",
+        "Classifies tenant as B2C use case",
+        "Computes a Security & Config Hygiene score from the CheckMate summary[]",
+        "Computes a Capability Fit score based on use-case feature gaps",
+        "Computes a4aa_fit_score per the data-integrity rules before the A4AA gate",
+        "Runs enterprise-need detection before plan matching",
+        "Fetches https://auth0.com/pricing.md for live pricing rather than quoting a remembered figure",
+        "Produces a plan recommendation with exact monthly/annual cost taken from the fetched pricing page",
+        "Does not recommend Enterprise if self-service plans cover the use case",
+        "Saves report to ~/.auth0-checkmate/state/ (shared state dir with the audit workflow)",
+        "Report files named auth0_healthcheck_<tenant>_<timestamp>.{md,html,pdf}",
+        "Uses ${CLAUDE_SKILL_DIR}/scripts/render_pdf.sh for PDF rendering"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Check my Auth0 tenant health. We use Organizations and need SAML enterprise connections for our B2B product.",
+      "expected_output": "Health check classifying tenant as B2B, detecting enterprise-grade needs, and recommending an appropriate plan or Enterprise path.",
+      "files": [],
+      "assertions": [
+        "Classifies tenant as B2B use case",
+        "Detects Organizations feature usage",
+        "Detects SAML enterprise connections as an enterprise-grade feature signal",
+        "Runs enterprise-need detection and correctly routes to Enterprise or B2B Professional",
+        "If recommending Enterprise, emits the Talk-to-Sales block with no price",
+        "Capability Fit score reflects SAML and Organizations gaps or confirmations"
+      ]
+    }
+  ],
+  "graders": null
+}
