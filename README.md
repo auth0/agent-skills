@@ -138,6 +138,7 @@ per-framework skill.
 | **Express** | [`express-openid-connect`](https://github.com/auth0/express-openid-connect) | Express.js |
 | **Flask** | [`auth0-server-python`](https://github.com/auth0/auth0-server-python) | Flask |
 | **Fastify** | [`@auth0/auth0-fastify`](https://github.com/auth0/auth0-fastify) | Fastify |
+| **Hono** | [`@auth0/auth0-hono`](https://github.com/auth0/auth0-hono) | Hono (Node.js, Cloudflare Workers, Deno, Bun) |
 | **Java Servlet** | [`mvc-auth-commons`](https://github.com/auth0/auth0-java-mvc-common) | Java Servlet |
 | **Express API** | [`express-oauth2-jwt-bearer`](https://github.com/auth0/node-oauth2-jwt-bearer) | Node.js/Express APIs |
 | **Fastify API** | [`@auth0/auth0-fastify`](https://github.com/auth0/auth0-fastify) | Fastify APIs |

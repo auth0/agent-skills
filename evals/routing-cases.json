@@ -248,6 +248,13 @@
       "framework": null,
       "tooling": "cli",
       "expect_refs": ["feature-healthcheck/index.md", "feature-audit/index.md", "feature-audit-pricing/index.md", "feature-audit-remediation/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-hono",
+      "intent": "integrate",
+      "framework": "hono",
+      "tooling": "cli",
+      "expect_refs": ["framework-hono/index.md", "framework-hono/integrate.md", "tooling-cli/index.md"]
     }
   ]
 }
