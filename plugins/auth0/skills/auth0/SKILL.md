@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use when adding, fixing, or improving Auth0 authentication or tenant configuration — login, MFA, passkeys, Organizations, Universal Portals, custom domains, ACUL, API protection, debugging, health checks, audits, or provider migration. Use even if Auth0 is not named.
+description: Use when adding, fixing, or improving authentication in any app — login, logout, signup, route protection, JWT/access token validation, refresh token rotation, MFA, passkeys, step-up auth, SSO, RBAC, Organizations for B2B SaaS, Universal Portals for hosted account and organization self-service, custom login domains, ACUL, or Universal Login branding. Use to audit a tenant (CheckMate), check tenant health and plan fit, or fix findings. Use even if Auth0 isn't mentioned — whenever a developer asks how to authenticate users, secure an API, debug a 401, CORS, callback mismatch, redirect loop, or 429, or migrate from Clerk, NextAuth.js, Firebase, Supabase, Cognito, or Passport.js. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android, Flutter, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and all Auth0 SDKs.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -30,10 +30,11 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 
 ## Step 1: Detect intent
 
-Match the request to the goal in **What the developer wants**; it uses plain
-language, not just Auth0 terms. The **Intent** is a lookup key: in **Step 4** it
-appears verbatim as a section heading (`### feature:mfa`) listing references to
-load.
+Match the request against the **What the developer wants** column — it describes
+the goal in plain language, not just the Auth0 term (someone who says *"make
+users confirm with a code from their phone"* lands on `feature:mfa`). The
+**Intent** you pick is a lookup key: in **Step 4** it appears verbatim as a
+section heading (`### feature:mfa`) listing which reference files to load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
