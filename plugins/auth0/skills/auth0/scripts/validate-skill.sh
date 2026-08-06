@@ -101,7 +101,7 @@ if [ "$ORG_LINES" -lt 80 ]; then
   exit 1
 fi
 
-for t in cli mcp terraform; do
+for t in cli mcp terraform vercel; do
   if [ ! -f "$REFS_DIR/tooling-$t/index.md" ]; then
     echo "FAIL: missing references/tooling-$t/index.md"
     exit 1
