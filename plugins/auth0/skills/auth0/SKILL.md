@@ -278,7 +278,8 @@ If multi-tenant architecture / B2B SaaS design question: also Read references/pa
 ```
 
 ### feature:universal-portals
-```
+
+```text
 Read: references/feature-universal-portals/index.md
 Read: references/tooling-{tooling}/index.md
 Universal Portals is beta and non-production only. Use the hosted portal and its Management API; do not build the portal UI with an application SDK.
