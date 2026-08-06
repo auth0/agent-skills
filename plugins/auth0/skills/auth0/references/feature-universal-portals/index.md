@@ -22,10 +22,9 @@ Universal Portals is a hosted surface, not an SDK integration. Do not add a Reac
 Before changing the tenant, establish:
 
 1. **Tenant and rollout boundary** — confirm that it is a non-production tenant with Universal Portals enabled.
-2. **Portal type** — consumer self-service, organization self-service, or both.
-3. **Portal name and unique slug** — use a URL-safe kebab-case slug such as `my-account`; the slug is unique within a tenant.
-4. **Sections and ownership** — choose Profile/forms, passkeys, MFA, organization details, organization domains, or informational content. Confirm which Auth0 Forms IDs already exist before adding form components.
-5. **Portal application** — use the Regular Web App created by setup, or identify an existing Regular Web App and obtain its client ID and secret through a secure path.
+2. **Portal name and unique slug** — use a URL-safe kebab-case slug such as `my-account`; the slug is unique within a tenant.
+3. **Components** — choose which components to include: Profile/forms, passkeys, and MFA for a consumer self-service experience; organization details and organization domains for a business self-service experience. Confirm which Auth0 Forms IDs already exist before adding form components.
+4. **Portal application** — use the Regular Web App created by setup, or identify an existing Regular Web App and obtain its client ID and secret through a secure path.
 
 If the developer asks to create Forms, use the available tenant tooling to create the Forms resource first, then insert the resulting ID in the portal payload. A `form_id` is not a label and cannot be fabricated.
 
