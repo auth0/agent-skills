@@ -80,6 +80,13 @@
       "expect_refs": ["feature-acul/index.md", "tooling-cli/index.md"]
     },
     {
+      "id": "feature-universal-portals",
+      "intent": "feature:universal-portals",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-universal-portals/index.md", "tooling-cli/index.md"]
+    },
+    {
       "id": "feature-dpop-spa-combo",
       "intent": "feature:dpop",
       "framework": "vue",

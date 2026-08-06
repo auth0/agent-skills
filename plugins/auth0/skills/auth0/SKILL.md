@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use when adding, fixing, or improving authentication in any app — login, logout, signup, route protection, JWT/access token validation, refresh token rotation, MFA, passkeys, step-up auth, SSO, RBAC, Organizations for B2B SaaS, custom login domains, ACUL, or Universal Login branding. Use to audit a tenant (CheckMate), check tenant health and plan fit, or fix findings. Use even if Auth0 isn't mentioned — whenever a developer asks how to authenticate users, secure an API, debug a 401, CORS, callback mismatch, redirect loop, or 429, or migrate from Clerk, NextAuth.js, Firebase, Supabase, Cognito, or Passport.js. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android, Flutter, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and all Auth0 SDKs.
+description: Use when adding, fixing, or improving Auth0 authentication or tenant configuration — login, MFA, passkeys, Organizations, Universal Portals, custom domains, ACUL, API protection, debugging, health checks, audits, or provider migration. Use even if Auth0 is not named.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -30,17 +30,17 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 
 ## Step 1: Detect intent
 
-Match the request against the **What the developer wants** column — it describes
-the goal in plain language, not just the Auth0 term (someone who says *"make
-users confirm with a code from their phone"* lands on `feature:mfa`). The
-**Intent** you pick is a lookup key: in **Step 4** it appears verbatim as a
-section heading (`### feature:mfa`) listing which reference files to load.
+Match the request to the goal in **What the developer wants**; it uses plain
+language, not just Auth0 terms. The **Intent** is a lookup key: in **Step 4** it
+appears verbatim as a section heading (`### feature:mfa`) listing references to
+load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
 | Add login, signup, sign-in, or "let users log in / create accounts" to an app | **integrate** |
 | Require a second step after the password — a one-time code, SMS or email code, authenticator app, passkey, fingerprint/face (biometric), or security key; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
 | Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
+| Deploy a hosted self-service account or organization portal — profile updates, passkeys, MFA enrollment, organization details, domains, or portal pages — instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
 | Serve the login page from your own web address (e.g. `login.example.com`, `auth.company.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
@@ -287,6 +287,13 @@ Read: references/feature-organizations/index.md
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 If multi-tenant architecture / B2B SaaS design question: also Read references/pattern-multi-tenant/index.md
+```
+
+### feature:universal-portals
+```
+Read: references/feature-universal-portals/index.md
+Read: references/tooling-{tooling}/index.md
+Universal Portals is beta and non-production only. Use the hosted portal and its Management API; do not build the portal UI with an application SDK.
 ```
 
 ### feature:custom-domains
