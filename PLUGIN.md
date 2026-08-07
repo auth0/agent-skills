@@ -58,13 +58,13 @@ rationale, routing flow, and the CI-enforced reachability invariant.
 
 ```
 auth0/agent-skills/
+├── .agents/
+│   └── plugins/
+│       └── marketplace.json      # OpenAI/Codex local marketplace
 ├── .claude-plugin/
 │   └── marketplace.json          # Marketplace metadata
 ├── .cursor-plugin/
 │   └── marketplace.json          # Cursor marketplace metadata
-├── .agents/
-│   └── plugins/
-│       └── marketplace.json      # OpenAI/Codex local marketplace
 ├── plugins/
 │   └── auth0/                    # Single unified plugin
 │       ├── .claude-plugin/
@@ -83,7 +83,8 @@ auth0/agent-skills/
 │               ├── assets/            # Templates (e.g. ACUL screens)
 │               └── scripts/           # validate-skill.sh, reachability check
 ├── docs/
-│   └── architecture.md               # Why one skill + routing details
+│   ├── architecture.md               # Why one skill + routing details
+│   └── openai-plugin.md              # OpenAI/Codex packaging + submission
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
@@ -127,36 +128,37 @@ requires submission and approval through the OpenAI plugin submission portal.
 
 ## Installation Methods
 
-### OpenAI / Codex
-
-For local testing, add `.agents/plugins/marketplace.json` to the ChatGPT
-desktop or Codex Plugins UI and install Auth0. Public distribution requires
-submission through https://platform.openai.com/plugins and OpenAI approval.
-See [`docs/openai-plugin.md`](docs/openai-plugin.md).
-
-### Method 1: Claude marketplace (Recommended)
+### Claude marketplace (Recommended)
 
 1. Open Claude Code
 2. Navigate to **Settings > Plugins**
 3. Search "Auth0"
 4. Install "Auth0 Agent Skills"
 
-### Method 2: CLI Installation
+### CLI Installation
 
 ```bash
 # Install the auth0 skill
 npx skills add auth0/agent-skills
 ```
 
-### Method 3: Manual Installation
+### Manual Installation
 
 ```bash
 git clone https://github.com/auth0/agent-skills.git
 cd agent-skills
 
 # Copy the auth0 skill
+mkdir -p ~/.claude/skills
 cp -r plugins/auth0/skills/auth0 ~/.claude/skills/
 ```
+
+### OpenAI / Codex
+
+For local testing, add `.agents/plugins/marketplace.json` to the ChatGPT
+desktop or Codex Plugins UI and install Auth0. Public distribution requires
+submission through https://platform.openai.com/plugins and OpenAI approval.
+See [`docs/openai-plugin.md`](docs/openai-plugin.md).
 
 ---
 

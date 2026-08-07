@@ -1,7 +1,7 @@
 {
   "name": "auth0",
   "version": "2.0.1",
-  "description": "Implement and troubleshoot Auth0 authentication across web, mobile, and API applications.",
+  "description": "Add Auth0 authentication to any app — login, MFA, SSO, Organizations, RBAC, ACUL, custom domains, and branding. Debug auth errors, validate JWTs, manage token lifecycles, and migrate from Clerk, Firebase, or Cognito. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, Spring Boot, Go, Swift, Android, Flutter, Laravel, PHP, ASP.NET Core, React Native, Expo, Ionic, .NET MAUI, and more.",
   "skills": "./skills/",
   "author": {
     "name": "Auth0",
@@ -14,7 +14,7 @@
   "interface": {
     "displayName": "Auth0",
     "shortDescription": "Add Auth0 authentication to your application",
-    "longDescription": "Implement and troubleshoot Auth0 authentication across web, mobile, and API applications.",
+    "longDescription": "Add Auth0 authentication to any app — login, MFA, SSO, Organizations, RBAC, ACUL, custom domains, and branding. Debug auth errors, validate JWTs, manage token lifecycles, and migrate from Clerk, Firebase, or Cognito. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, Spring Boot, Go, Swift, Android, Flutter, Laravel, PHP, ASP.NET Core, React Native, Expo, Ionic, .NET MAUI, and more.",
     "developerName": "Auth0",
     "category": "Developer tools",
     "websiteURL": "https://auth0.com",
