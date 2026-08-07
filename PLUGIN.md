@@ -32,21 +32,25 @@ pool**:
   loads the 2–3 matching reference files. Routing is file-based and
   deterministic (it reads `package.json`, `composer.json`, `go.mod`,
   `*.csproj`, `pubspec.yaml`, etc.), not a model guess.
-- `references/` is a flat pool of self-contained Markdown files:
-  - `feature-*.md` — a capability spanning frameworks (MFA, Organizations,
+- `references/` is a pool of on-demand Markdown docs. Every reference is a
+  directory `<stem>/` with an `index.md` — either the whole reference
+  (index-only) or, once a reference grows large, a hub `index.md` +
+  document-section leaves (leaf group):
+  - `feature-*/` — a capability spanning frameworks (MFA, Organizations,
     custom domains, ACUL, branding, migration, DPoP).
-  - `framework-*.md` — one SDK/framework integration (React, Next.js, Vue,
+  - `framework-*/` — one SDK/framework integration (React, Next.js, Vue,
     Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android,
     Flutter, Laravel, PHP, ASP.NET Core, React Native, Expo, Ionic, .NET MAUI,
     WinForms, WPF, and more).
-  - `tooling-*.md` — CLI / MCP / Terraform.
-  - `pattern-*.md` — cross-cutting guidance (security, token handling,
+  - `tooling-*/` — CLI / MCP / Terraform.
+  - `pattern-*/` — cross-cutting guidance (security, token handling,
     multi-tenant, rate limiting, common errors).
 
-One skill means one `description` competing for activation, and reference files
-never link to each other (the router loads them in one hop). See
-[`docs/architecture.md`](./docs/architecture.md) for the full rationale, routing
-flow, and the CI-enforced reachability invariant.
+One skill means one `description` competing for activation. Navigation is a
+depth-3 tree: an index-only `index.md` or a leaf-group leaf links to nothing, and
+the only second hop is a leaf-group's hub `index.md` dispatching to a leaf in its
+own directory. See [`docs/architecture.md`](./docs/architecture.md) for the full
+rationale, routing flow, and the CI-enforced reachability invariant.
 
 ---
 
@@ -70,8 +74,9 @@ auth0/agent-skills/
 │       └── skills/
 │           └── auth0/                 # The single unified skill
 │               ├── SKILL.md           # Router (intent → framework → tooling)
-│               ├── references/        # Flat pool: feature-*, framework-*,
-│               │                      #   tooling-*, pattern-* .md files
+│               ├── references/        # feature-*/, framework-*/, tooling-*/,
+│               │                      #   pattern-*/ — every <stem>/ has index.md
+│               │                      #   (index-only or hub + leaves)
 │               ├── assets/            # Templates (e.g. ACUL screens)
 │               └── scripts/           # validate-skill.sh, reachability check
 ├── docs/

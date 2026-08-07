@@ -17,6 +17,24 @@ Add authentication to React Native and Expo mobile applications using react-nati
 - **Non-React native apps** - Use platform-specific SDKs (Swift for iOS, Kotlin for Android)
 - **Backend APIs** - Use JWT validation libraries for your server language
 
+## Files to Change
+
+These are the files a bare React Native integration touches. Use the table as your starting scope: read
+these paths directly instead of searching the project from scratch, but confirm the real entry point and
+the actual iOS target directory name before editing — `ios/{YourApp}/` varies per project. You do not
+need to read anything under `node_modules/` to confirm the SDK's API.
+
+| File | Change |
+|------|--------|
+| `package.json` | add `react-native-auth0` |
+| `.env` | `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID` |
+| `App.tsx` (or your root component) | `Auth0Provider` + `useAuth0`, guarded by `isLoading` |
+| `android/app/build.gradle` | `manifestPlaceholders` (`auth0Domain`, `auth0Scheme`) |
+| `ios/{YourApp}/Info.plist` | `CFBundleURLTypes` entry |
+
+You do **not** need to touch `MainActivity`, `MainApplication`, `AndroidManifest.xml`, `AppDelegate`,
+or the Xcode project — the SDK's own manifest merge and autolinking handle those.
+
 ## Quick Start Workflow
 
 ### 1. Install SDK
@@ -45,7 +63,39 @@ AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 ```
 
+Read these with `react-native-dotenv`, which exposes them on `process.env` — the accessor every example
+below uses. (If you prefer `react-native-config`, note it exposes values on an imported `Config` object
+instead, so substitute `Config.AUTH0_CLIENT_ID` for `process.env.AUTH0_CLIENT_ID` throughout.)
+
+Never hardcode the Client ID into a `.ts`/`.tsx` file. That includes a config module holding the
+literal, and it includes fallbacks — write `process.env.AUTH0_CLIENT_ID!`, never
+`process.env.AUTH0_CLIENT_ID ?? 'your-client-id'`, because a default puts the literal straight back
+into source. Add `.env` to `.gitignore`.
+
+The `!` only silences the TypeScript error; it is erased at compile time and does not check anything at
+runtime. If the variable is unset the SDK receives `undefined` and login fails, so make sure `.env` is
+loaded — or add an explicit throw at startup if you want to fail fast.
+
+The Android `manifestPlaceholders` and iOS `Info.plist` values (step 3) are a separate matter — those
+are native build config, not source, and the domain there is not a secret.
+
 ### 3. Configure Native Platforms
+
+The callback URL scheme is derived from the bundle identifier / application id — you do not need to
+read the SDK's Swift, Kotlin, or TypeScript sources to work this out. For a bundle id of
+`com.example.app` and tenant `your-tenant.auth0.com`:
+
+| Platform | Scheme | Callback URL to register in the Auth0 Dashboard |
+|----------|--------|------------------------------------------------|
+| iOS | `com.example.app.auth0` | `com.example.app.auth0://your-tenant.auth0.com/ios/com.example.app/callback` |
+| Android | `com.example.app.auth0` | `com.example.app.auth0://your-tenant.auth0.com/android/com.example.app/callback` |
+
+Both platforms append `.auth0` to the bundle id / application id — the SDK defines that suffix
+internally (`APPLICATION_ID_SUFFIX = '.auth0'`), so `auth0Scheme` must be `${applicationId}.auth0`,
+not the bare `${applicationId}`. On iOS the equivalent is `$(PRODUCT_BUNDLE_IDENTIFIER).auth0`.
+
+All values are lowercase with no trailing slash. Pass a `customScheme` to `authorize()` /
+`clearSession()` only when you deliberately override these defaults.
 
 **iOS** - Update `ios/{YourApp}/Info.plist`:
 
@@ -65,7 +115,22 @@ AUTH0_CLIENT_ID=your-client-id
 </array>
 ```
 
-**Android** - Update `android/app/src/main/AndroidManifest.xml`:
+**Android** — add `manifestPlaceholders` to `android/app/build.gradle` inside
+`android { defaultConfig { ... } }`. This is the preferred route: the SDK ships its own
+`RedirectActivity` and merges it into your manifest, so these two values are all it needs.
+
+```groovy
+android {
+    defaultConfig {
+        manifestPlaceholders = [
+            auth0Domain: "YOUR_AUTH0_DOMAIN",
+            auth0Scheme: "${applicationId}.auth0"
+        ]
+    }
+}
+```
+
+Only declare the activity yourself if you need to override the merged one:
 
 ```xml
 <activity
@@ -78,7 +143,7 @@ AUTH0_CLIENT_ID=your-client-id
         <data
             android:host="YOUR_AUTH0_DOMAIN"
             android:pathPrefix="/android/${applicationId}/callback"
-            android:scheme="${applicationId}" />
+            android:scheme="${applicationId}.auth0" />
     </intent-filter>
 </activity>
 ```
@@ -168,19 +233,27 @@ export default function App() {
 }
 ```
 
-### 6. Test Authentication
+### 6. Verify
 
-**Expo:**
+Verification has two parts, because a typecheck proves nothing about native configuration.
+
+**Source** — run the cheapest check that proves the JavaScript compiles:
+
 ```bash
-npx expo start
+npm run typecheck   # or: npx tsc --noEmit
 ```
 
-**React Native:**
-```bash
-npx react-native run-ios
-# or
-npx react-native run-android
-```
+**Native configuration** — a typecheck never reads the native projects, so verify these by reading the
+files back:
+
+- `android/app/build.gradle` sets `auth0Domain` and `auth0Scheme` in `defaultConfig.manifestPlaceholders`
+- `auth0Scheme` is `${applicationId}.auth0`, matching the callback URL registered in the Dashboard
+- `ios/{YourApp}/Info.plist` has a `CFBundleURLTypes` entry with `$(PRODUCT_BUNDLE_IDENTIFIER).auth0`
+
+Launching a simulator (`npx react-native run-ios` / `run-android`) takes many minutes and needs a
+configured native toolchain, so only do it when the user asks to exercise the login flow on a device —
+it is the only way to prove the redirect actually resolves. See the Testing section below for the manual
+flow to walk through when you do.
 
 ## Common Mistakes
 
@@ -203,13 +276,17 @@ npx react-native run-android
 
 ## Quick Reference
 
-**Core Hook API:**
+**Core Hook API** (v5) — this is the complete surface for a login/logout integration. Treat it as
+authoritative: you do not need to read `.d.ts` files, the SDK README, or anything else under
+`node_modules/` to confirm these names.
+
 - `useAuth0()` - Main hook for authentication
 - `authorize()` - Initiate login
 - `clearSession()` - Logout
 - `user` - User profile object
+- `error` - Last authentication error, or `null`
 - `getCredentials()` - Get tokens for API calls
-- `isLoading` - Loading state
+- `isLoading` - Loading state; guard auth-dependent UI on this
 
 **Common Use Cases:**
 - Login/Logout → See Step 5 above
@@ -574,7 +651,22 @@ Update `ios/{YourApp}/Info.plist`:
 
 ### 4. Configure Android
 
-Update `android/app/src/main/AndroidManifest.xml`:
+Preferred — set `manifestPlaceholders` in `android/app/build.gradle` (the SDK merges in its own
+`RedirectActivity`, so this is all it needs):
+
+```groovy
+android {
+    defaultConfig {
+        manifestPlaceholders = [
+            auth0Domain: "YOUR_DOMAIN",
+            auth0Scheme: "${applicationId}.auth0"
+        ]
+    }
+}
+```
+
+Only declare the activity yourself in `android/app/src/main/AndroidManifest.xml` if you need to
+override the merged one:
 
 ```xml
 <activity android:name="com.auth0.android.provider.RedirectActivity" android:exported="true">
@@ -585,7 +677,7 @@ Update `android/app/src/main/AndroidManifest.xml`:
     <data
       android:host="YOUR_DOMAIN"
       android:pathPrefix="/android/${applicationId}/callback"
-      android:scheme="${applicationId}" />
+      android:scheme="${applicationId}.auth0" />
   </intent-filter>
 </activity>
 ```

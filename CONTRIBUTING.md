@@ -140,16 +140,25 @@ All Auth0 guidance ships in the single `auth0` skill
 for why. To add or change coverage:
 
 ### Pick the right reference prefix
-- `feature-<name>.md` — a capability spanning frameworks (e.g. mfa, dpop).
-- `framework-<name>.md` — a single SDK/framework integration.
-- `tooling-<name>.md` — a provisioning tool (cli, mcp, terraform).
-- `pattern-<name>.md` — cross-cutting guidance.
+Every reference is a directory `<name>/` with an `index.md` (see "Adding a
+reference"); pick the prefix that fits:
+- `feature-<name>/` — a capability spanning frameworks (e.g. mfa, dpop).
+- `framework-<name>/` — a single SDK/framework integration.
+- `tooling-<name>/` — a provisioning tool (cli, mcp, terraform).
+- `pattern-<name>/` — cross-cutting guidance.
 
 ### Make it routable (required — CI enforces this)
-Every file in `references/` MUST be reachable from `SKILL.md`, and no reference
-file may contain a link to any `.md` file (reference files are self-contained —
-inline the content instead of linking, since Claude Code follows only one hop
-from the router).
+Every reference in `references/` MUST be reachable from `SKILL.md`. Navigation is
+a **depth-3 tree**: every reference is a directory `<name>/` with an `index.md`.
+An **index-only** reference puts its whole content in `index.md` and has no
+leaves (one hop from the router). A large reference is a **leaf group** whose
+`index.md` is a hub plus document-section leaves (see "Adding a reference" below).
+An index-only `index.md` and any leaf inside a leaf group may contain **no** link
+to any `.md` file — they are sinks; inline the content instead of linking. The
+only second hop allowed is a leaf-group hub `index.md` dispatching to leaves **in
+its own directory**; cross-group links are forbidden. Claude Code follows the
+router to `index.md` (and, for a leaf group, on to one leaf) — nothing deeper is
+guaranteed.
 
 - **New feature:** add an intent row in Step 1 and a load block in Step 4 of
   `SKILL.md`.
@@ -158,12 +167,58 @@ from the router).
   keyword) — and, if it has a web-vs-API split, a row in "Variant
   disambiguation." The reachability checker derives routable slugs directly from
   these router tables (the backticked value column), so simply naming your
-  `<slug>` in a table makes `framework-<slug>.md` reachable — there is no
+  `<slug>` in a table makes `framework-<slug>/index.md` reachable — there is no
   separate list to update.
+
+### Adding a reference
+Every reference is a directory named after its stem, containing an `index.md`.
+Adding a new reference means creating `references/<name>/index.md`. Start
+index-only — the whole reference lives in `index.md` — and only split it into a
+**leaf group** once it grows large (roughly >1000 lines) so the router pulls just
+the slice a task needs instead of the whole file:
+
+```
+references/framework-<name>/
+├── index.md          # hub: shared prerequisites + intent→leaf dispatch table
+├── integrate.md      # document-section leaves (one per section, not per intent)
+├── api-reference.md
+├── patterns.md
+├── setup.md
+└── migration.md      # only if the SDK has a major-version migration
+```
+
+Rules for splitting a large reference into a leaf group:
+- **Leaves are document sections**, not intents (`integrate`, `api-reference`,
+  `patterns`, `setup`, `migration`, …). Feature references split by sub-topic
+  (`guide`, `api-reference`, `advanced`, `examples`).
+- **`index.md` is a lean hub:** shared setup every leaf needs, then a dispatch
+  table with one row per router intent, each an imperative
+  `` `Read: references/<stem>/<leaf>.md` `` pointing at that intent's primary
+  leaf. Intent strings must match Step 1 **exactly** (`feature:mfa`, not `mfa`).
+  A "Then, as needed" list of `Read:` bullets makes the secondary leaves
+  reachable. Every leaf must appear in at least one `Read:` line or it's an
+  orphan.
+- **Lossless + self-contained:** every line of the original file lands in exactly
+  one destination; leaves repeat any shared context inline rather than linking to
+  the hub or each other. If two sections cross-reference too heavily to separate,
+  merge them into one leaf rather than add a link.
+- **Add a routing case** in `evals/routing-cases.json` with the two-hop
+  `expect_refs` (`<name>/index.md` + the intent leaf [+ tooling]), and move the
+  slug from the index-only presence check in `validate-skill.sh` to its grouped
+  loop. For an index-only reference, the presence check is simply
+  `<name>/index.md`.
+
+The router always emits `Read: references/{framework}/index.md` (or
+`{feature}` / `{tooling}`) regardless of whether the target is index-only or a
+leaf group — a global note in Step 4 tells the agent to follow the `index.md`'s
+dispatch table to a leaf if it has one. The reachability and routing-eval
+checkers resolve a leaf-group slug automatically; you don't edit `SKILL.md`'s
+routing tables.
 
 ### Validate
 ```bash
 bash plugins/auth0/skills/auth0/scripts/validate-skill.sh
 python3 scripts/check_router_reachability.py plugins/auth0/skills/auth0
+python3 scripts/check_routing_evals.py plugins/auth0/skills/auth0
 uvx skillsaw --strict
 ```

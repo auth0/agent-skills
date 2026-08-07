@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, SSO, Organizations, RBAC, custom domains, or Universal Login branding. Also use when debugging why an auth flow fails or migrating from another auth provider. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
+description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, JWT/access token validation, refresh token rotation, MFA, passkeys, step-up auth, SSO, RBAC, Organizations for B2B SaaS, custom login domains, ACUL, or Universal Login branding. Use to audit a tenant (CheckMate), check tenant health and plan fit, or fix findings. Also use when debugging why an auth flow fails — a 401, CORS, callback URL mismatch, redirect loop, or 429 — or migrating from Clerk, NextAuth.js, Firebase, Supabase, Cognito, or Passport.js. Covers any web, mobile, or backend framework — React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android, Flutter, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic — and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -45,6 +45,8 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
 | Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
+| Audit a tenant for security/config issues, report, then optionally fix findings. *Auth0: tenant audit, CheckMate.* | **audit** |
+| Check if a tenant is healthy and on the right plan — two scores + a recommendation. *Auth0: health check.* | **healthcheck** |
 | Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
 | Hit an error: 401 Unauthorized, 403 Forbidden, CORS, callback URL mismatch, redirect loop. *Auth0: debugging.* | **debug** |
 | Hit rate limiting: 429 Too Many Requests, quota exceeded. *Auth0: rate limits.* | **debug:rate-limit** |
@@ -253,9 +255,9 @@ Read the project file tree. This is a project-context decision, not a product pr
 
 | Project has... | Load |
 |---|---|
-| `terraform/` directory OR any `*.tf` files | `tooling-terraform.md` |
-| Auth0 MCP server active in this agent session | `tooling-mcp.md` |
-| Anything else (default) | `tooling-cli.md` |
+| `terraform/` directory OR any `*.tf` files | `tooling-terraform/index.md` |
+| Auth0 MCP server active in this agent session | `tooling-mcp/index.md` |
+| Anything else (default) | `tooling-cli/index.md` |
 
 ---
 
@@ -266,90 +268,109 @@ Step 1, then read the reference files it lists.
 
 ### integrate
 ```
-Read: references/framework-{framework}.md
-Read: references/tooling-{tooling}.md
-Follow the integration workflow in framework-{framework}.md.
-Use tooling-{tooling}.md for all Auth0 tenant configuration steps.
+Read: references/framework-{framework}/index.md
+Read: references/tooling-{tooling}/index.md
+Follow the integration workflow in references/framework-{framework}/index.md.
+Use references/tooling-{tooling}/index.md for all Auth0 tenant configuration steps.
 ```
 
 ### feature:mfa
 ```
-Read: references/feature-mfa.md
-Read: references/tooling-{tooling}.md
-If framework detected: Read references/framework-{framework}.md (for SDK-side step-up trigger)
+Read: references/feature-mfa/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md (for SDK-side step-up trigger)
 ```
 
 ### feature:organizations
 ```
-Read: references/feature-organizations.md
-Read: references/tooling-{tooling}.md
-If framework detected: Read references/framework-{framework}.md
-If multi-tenant architecture / B2B SaaS design question: also Read references/pattern-multi-tenant.md
+Read: references/feature-organizations/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
+If multi-tenant architecture / B2B SaaS design question: also Read references/pattern-multi-tenant/index.md
 ```
 
 ### feature:custom-domains
 ```
-Read: references/feature-custom-domains.md
-Read: references/tooling-{tooling}.md
+Read: references/feature-custom-domains/index.md
+Read: references/tooling-{tooling}/index.md
 ```
 
 ### feature:acul
 ```
-Read: references/feature-acul.md
-Read: references/tooling-{tooling}.md
+Read: references/feature-acul/index.md
+Read: references/tooling-{tooling}/index.md
 ```
 
 ### feature:branding
 ```
-Read: references/feature-branding.md
-Read: references/tooling-{tooling}.md
+Read: references/feature-branding/index.md
+Read: references/tooling-{tooling}/index.md
 ```
 
 ### feature:dpop
 ```
-Read: references/feature-dpop.md
-Read: references/tooling-{tooling}.md
-If a SPA framework is detected (vue/react/angular/spa-js): Read references/framework-{framework}.md
-DPoP is SPA-only (no SSR: Next.js/Nuxt) — feature-dpop.md states the exclusion.
+Read: references/feature-dpop/index.md
+Read: references/tooling-{tooling}/index.md
+If a SPA framework is detected (vue/react/angular/spa-js): Read references/framework-{framework}/index.md
+DPoP is SPA-only (no SSR: Next.js/Nuxt) — feature-dpop/index.md states the exclusion.
 ```
 
 ### guidance
 ```
-Read: references/pattern-security.md
-If framework detected: Read references/framework-{framework}.md (for SDK-specific guidance — token storage, session handling, route protection)
-If token handling / JWT vs opaque / storage: Read references/pattern-token-handling.md
-If multi-tenant / B2B architecture: Read references/pattern-multi-tenant.md + references/feature-organizations.md
+Read: references/pattern-security/index.md
+If framework detected: Read references/framework-{framework}/index.md (for SDK-specific guidance — token storage, session handling, route protection)
+If token handling / JWT vs opaque / storage: Read references/pattern-token-handling/index.md
+If multi-tenant / B2B architecture: Read references/pattern-multi-tenant/index.md + references/feature-organizations/index.md
 ```
 
 ### debug
 ```
-Read: references/pattern-common-errors.md
-If framework detected: Read references/framework-{framework}.md
+Read: references/pattern-common-errors/index.md
+If framework detected: Read references/framework-{framework}/index.md
 ```
 
 ### debug:rate-limit
 ```
-Read: references/pattern-rate-limiting.md
+Read: references/pattern-rate-limiting/index.md
 ```
 
 ### migrate
 ```
-Read: references/feature-migration.md
-Read: references/tooling-{tooling}.md
-If framework detected: Read references/framework-{framework}.md
+Read: references/feature-migration/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
+```
+
+### audit
+```
+Read: references/feature-audit/index.md
+Read: references/feature-audit-pricing/index.md
+Read: references/feature-audit-remediation/index.md
+Read: references/tooling-{tooling}/index.md
+Apply findings only with per-command confirmation; verify each change by re-fetch.
+```
+
+### healthcheck
+```
+Read: references/feature-healthcheck/index.md
+Read: references/feature-audit/index.md
+Read: references/feature-audit-pricing/index.md
+Read: references/feature-audit-remediation/index.md
+Read: references/tooling-{tooling}/index.md
+If a scan can run, do the audit workflow first, then score and recommend a plan. If not, score capability fit and recommend anyway. Never quote Enterprise pricing.
 ```
 
 ### upgrade-sdk
 ```
-Read: references/framework-{framework}.md
+Read: references/framework-{framework}/index.md
 Follow its "Major Version Migration" section (e.g. Auth0.swift v3, Auth0.Android v4).
-This is an Auth0 SDK version bump — NOT a provider migration. Do not load feature-migration.md.
+This is an Auth0 SDK version bump — NOT a provider migration. Do not load feature-migration/index.md.
 If no framework is detected: ask which Auth0 SDK the developer is upgrading.
 ```
 
 ### tooling
 ```
-Read: references/tooling-{tooling}.md
+Read: references/tooling-{tooling}/index.md
 No framework file — this is a CLI/tooling-only task (create apps/APIs, script
 tenant setup, automate config in CI). If the developer then wants to integrate
 auth into an app, return to Step 1 with the integrate intent.

@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-"""Enforce the router's one-hop invariants for the consolidated skill:
+"""Enforce the router's uniform-folder invariants for the consolidated skill.
 
-  1. every references/*.md is routable from SKILL.md (no orphans);
-  2. no route in SKILL.md points at a reference file that doesn't exist
-     (broken route — the failure `present - routed` can't see);
-  3. no reference file takes a second hop to another reference — neither via
-     a .md link (any markdown/HTML form) NOR via the router's non-link dispatch
-     forms (a `references/x.md` prose/backtick path, a backticked bare `x.md`,
-     or a `Read: references/x.md` verb). Claude Code follows only one hop from
-     the router, so all of these are defects — including stale links left by
-     earlier consolidation."""
+Every reference is a DIRECTORY `<name>/` containing `index.md`. There are no
+flat `references/*.md` files — a stray one is a failure. The router always
+routes to a reference by NAME via `Read: references/<name>/index.md`; there is
+no flat-vs-group branch, so the resolved path is deterministic. A directory is
+either an index-only group (`index.md` is the whole reference, no leaves) or a
+leaf group (`index.md` is a hub: shared prerequisites + an intent->leaf dispatch
+table, plus document-section leaves). This module asserts:
+
+  1. `references/` contains only directories (any flat *.md is STRAY);
+  2. every group is routable from SKILL.md and every leaf is reachable from its
+     hub's dispatch (no orphans);
+  3. no route (from SKILL.md or a hub) points at a missing file (broken route);
+  4. the ONLY second hop allowed is a hub `index.md` dispatching to leaves in
+     its OWN directory. A leaf or an index-only hub takes NO second hop — via a
+     .md link (any form) NOR a prose/backtick path NOR a `Read:` verb. Two-level
+     `<group>/<leaf>.md` targets are caught by SIDEWAYS_TWO_LEVEL_RE."""
 import re, sys
 from pathlib import Path
 
@@ -27,8 +34,16 @@ from pathlib import Path
 SLUG_RE = re.compile(r"`([a-z0-9][a-z0-9-]*)`")
 # A markdown table row: optional leading whitespace, then a `|` cell delimiter.
 TABLE_ROW_RE = re.compile(r"^\s*\|")
-READ_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?\.md)")
-BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+\.md)`")
+# Router route to a reference. New uniform form: references/<name>/index.md
+# (name may carry a {placeholder}). The captured group is the reference NAME
+# (no extension), which is a directory under references/.
+READ_INDEX_RE = re.compile(r"references/([a-z0-9-]+(?:\{[a-z]+\})?)/index\.md")
+# Backticked reference targets in tables, e.g. Step 3's tooling table:
+# `tooling-cli/index.md` (uniform form) or legacy bare `tooling-cli.md`.
+# Both name a reference by its GROUP name — check_router normalizes both to
+# NAME (stripping `/index.md` or `.md`) so either spelling routes the group.
+BACKTICK_INDEX_RE = re.compile(r"`([a-z0-9-]+)/index\.md`")
+BACKTICK_MD_RE = re.compile(r"`([a-z0-9-]+)\.md`")
 # Markdown links whose target is a .md file — ANY path form (bare `x.md`,
 # `./references/x.md`, `../SKILL.md`), with an optional #anchor. External URLs
 # (http/https) are excluded so real doc links are not flagged; non-.md targets
@@ -63,6 +78,14 @@ SIDEWAYS_RES = [
     re.compile(r"`([a-z0-9-]+\.md)`"),                   # backticked bare filename
     re.compile(r"(?im)^\s*Read:\s*(?:references/)?([a-z0-9-]+\.md)"),  # dispatch verb
 ]
+# Two-level (group) sideways form: `references/<group>/<leaf>.md`, e.g. a hub
+# dispatching (or a leaf back-linking) to `framework-swift/integrate.md`. The
+# SIDEWAYS_RES character classes above deliberately exclude `/`, so none of
+# them can ever capture a two-level path; this dedicated pattern is the only
+# thing that sees a group-shaped target at all — whether it's the hub's own
+# (allowed) leaf or another group's (forbidden) leaf/index is decided by the
+# caller's `allowed_targets` set, not by this regex.
+SIDEWAYS_TWO_LEVEL_RE = re.compile(r"references/([a-z0-9-]+/[a-z0-9-]+\.md)")
 
 
 def _disambiguation_variant_slugs(skill_md: str) -> set:
@@ -96,13 +119,13 @@ def _disambiguation_variant_slugs(skill_md: str) -> set:
 def _variant_base_slugs(skill_md: str) -> set:
     """Slugs the router marks as an abstract variant base — a value cell whose
     text carries the `(variant below)` annotation (e.g. `aspnetcore`) — that
-    truly resolve to NO `framework-<slug>.md`. A base is only such an abstract
-    stand-in when it does NOT itself appear as a concrete variant slug in the
-    disambiguation table: `aspnetcore` splits into `aspnetcore-auth`/`-api` (so
-    `framework-aspnetcore.md` never exists and must be exempt), whereas
+    truly resolve to NO `framework-<slug>/` reference. A base is only such an
+    abstract stand-in when it does NOT itself appear as a concrete variant slug
+    in the disambiguation table: `aspnetcore` splits into `aspnetcore-auth`/`-api`
+    (so `framework-aspnetcore/` never exists and must be exempt), whereas
     `express`/`fastify`/`php`/`laravel` ARE their own web-app variant slug and
-    DO ship `framework-<base>.md` — those must stay in broken-route scope so a
-    later delete/rename of the real file is caught. Derived from the router's
+    DO ship `framework-<base>/` — those must stay in broken-route scope so a
+    later delete/rename of the real reference is caught. Derived from the router's
     own tables, not a hardcoded exception list, and not from file presence
     (which would circularly re-exempt a file the moment it goes missing)."""
     annotated: set = set()
@@ -169,69 +192,147 @@ def _strip_fences(text: str) -> str:
     return "\n".join(out)
 
 
+# A hub's own-group dispatch: `Read: references/<group>/<leaf>.md`. Only these
+# (leaf targets inside the hub's OWN directory) are the allowed second hop.
+def _hub_dispatch_targets(index_text: str, group: str) -> set:
+    pat = re.compile(
+        r"references/" + re.escape(group) + r"/([a-z0-9-]+\.md)"
+    )
+    return set(pat.findall(index_text))
+
+
+def _discover(refs_dir):
+    """Split references/ into top-level flat files and groups.
+
+    A group is any immediate subdirectory of references/. Its leaves are the
+    non-index *.md files inside it. Returns (flat_files, groups) where
+    groups maps name -> {"has_index": bool, "leaves": set()}.
+    """
+    flat_files = {p.name for p in refs_dir.glob("*.md")}
+    groups = {}
+    for sub in sorted(p for p in refs_dir.iterdir() if p.is_dir()):
+        leaves = {p.name for p in sub.glob("*.md") if p.name != "index.md"}
+        groups[sub.name] = {
+            "has_index": (sub / "index.md").exists(),
+            "leaves": leaves,
+        }
+    return flat_files, groups
+
+
 def check_router(skill_dir: Path):
     skill_md = (skill_dir / "SKILL.md").read_text()
     refs_dir = skill_dir / "references"
 
     slugs = _router_slugs(skill_md)
-    backticked_md = set(BACKTICK_MD_RE.findall(skill_md))
-    # Placeholder-keyed slug universes. `{framework}` expands over value-column
-    # slugs; `{tooling}` expands ONLY over the tooling slugs the router actually
-    # names as `tooling-<slug>.md` (Step 3), so a framework slug can never
-    # manufacture a phantom `tooling-<framework>.md` route.
+    # Backticked reference targets in tables (Step 3's tooling table): the
+    # uniform `` `tooling-cli/index.md` `` form and the legacy bare
+    # `` `tooling-cli.md` `` form. Both name a reference by its GROUP name;
+    # normalize both to NAME so either spelling routes the group. Exclude the
+    # bare word "index" — the router's own prose note ("Reference layout")
+    # says `` `index.md` `` on its own, with no group prefix; every real
+    # reference slug is namespaced (framework-/feature-/tooling-/pattern-), so
+    # a bare "index" match is always this prose, never a route.
+    backticked_names = set(BACKTICK_INDEX_RE.findall(skill_md))
+    backticked_names |= set(BACKTICK_MD_RE.findall(skill_md))
+    backticked_names.discard("index")
     tooling_slugs = {
-        n[len("tooling-"):-len(".md")]
-        for n in backticked_md
+        n[len("tooling-"):]
+        for n in backticked_names
         if n.startswith("tooling-")
     }
     universes = {"framework": slugs, "tooling": tooling_slugs}
 
     routed = set()
-    for m in READ_RE.finditer(skill_md):
+    for m in READ_INDEX_RE.finditer(skill_md):          # references/<name>/index.md
         for name in _expand(m.group(1), universes):
-            routed.add(name)
-    routed |= backticked_md
+            routed.add(name)                            # NAME, not filename
+    # Backticked table targets (either spelling) name a reference by its GROUP
+    # name directly — no expansion needed.
+    routed |= backticked_names
 
-    present = {p.name for p in refs_dir.glob("*.md")}
-    unreachable = sorted(present - routed)
+    flat_files, groups = _discover(refs_dir)
+    group_names = set(groups)
 
-    # Broken routes: the router names a reference file that does not exist.
-    # `present - routed` (unreachable) can't see this; only `routed - present`
-    # can. Restrict to real reference filenames (an unexpanded `{placeholder}`
-    # template survives expansion only when its universe is empty, which is
-    # itself a router bug worth surfacing, but a literal `{` is not a file).
-    # Exempt only the abstract variant bases that resolve to NO file
-    # (`framework-aspnetcore.md`): `_variant_base_slugs` already excludes bases
-    # like `express`/`fastify`/`php`/`laravel` that are their own web-app variant
-    # slug and DO ship `framework-<base>.md`, so those stay in broken-route scope
-    # and a later delete/rename of the real file is still caught.
+    # Uniform model: every reference is a directory. A routed NAME is satisfied
+    # only by a group directory of that name.
+    def _satisfied(name):
+        return name in group_names
+
     variant_bases = _variant_base_slugs(skill_md)
-    exempt = {f"framework-{b}.md" for b in variant_bases}
-    broken_routes = sorted(
-        r for r in routed - present
-        if "{" not in r and "}" not in r and r not in exempt
-    )
+    exempt = {f"framework-{b}" for b in variant_bases}
 
+    # STRAY flat files: the uniform model forbids any flat reference file.
+    stray = sorted(f"STRAY:{f}" for f in flat_files)
+
+    broken_routes = sorted(
+        f"{r}/index.md" for r in routed
+        if "{" not in r and "}" not in r and r not in exempt and not _satisfied(r)
+    )
+    unreachable = list(stray)
+
+    # Two-level checks for each group.
+    for gname, info in groups.items():
+        idx_path = f"{gname}/index.md"
+        if gname not in routed:
+            unreachable.append(idx_path)                # group never routed
+            continue
+        if not info["has_index"]:
+            broken_routes.append(idx_path)
+            dispatched = set()
+        else:
+            index_text = (refs_dir / gname / "index.md").read_text()
+            dispatched = _hub_dispatch_targets(index_text, gname)
+        # Leaves the hub never dispatches to -> orphans.
+        for leaf in sorted(info["leaves"] - dispatched):
+            unreachable.append(f"{gname}/{leaf}")
+        # Hub dispatch entries with no matching leaf file -> broken routes.
+        for leaf in sorted(dispatched - info["leaves"]):
+            broken_routes.append(f"{gname}/{leaf}")
+    unreachable = sorted(unreachable)
+    broken_routes = sorted(broken_routes)
+
+    # Link checks. Flat files and leaves are strict sinks (any .md ref is a
+    # defect). A hub index.md may Read:-dispatch to its OWN leaves only.
     bad_links = []
-    for ref in sorted(present):
-        text = (refs_dir / ref).read_text()
+
+    def _scan(rel_name, text, allowed_targets):
         seen = set()
         for link_re in LINK_RES:
             for lm in link_re.finditer(text):
                 target = lm.group(1)
                 if (lm.start(), target) not in seen:
                     seen.add((lm.start(), target))
-                    bad_links.append((ref, target))
-        # Non-link second-hop forms (prose/backtick path, backticked filename,
-        # `Read:` verb) — checked outside fenced code so illustrative examples
-        # don't trip the guard.
+                    if target not in allowed_targets:
+                        bad_links.append((rel_name, target))
         prose = _strip_fences(text)
         for sideways_re in SIDEWAYS_RES:
             for sm in sideways_re.finditer(prose):
                 target = sm.group(1)
                 if (sm.start(), target) not in seen:
                     seen.add((sm.start(), target))
-                    bad_links.append((ref, target))
+                    if target not in allowed_targets:
+                        bad_links.append((rel_name, target))
+        for tm in SIDEWAYS_TWO_LEVEL_RE.finditer(prose):
+            target = tm.group(1)
+            if (tm.start(), target) not in seen:
+                seen.add((tm.start(), target))
+                if target not in allowed_targets:
+                    bad_links.append((rel_name, target))
+
+    for ref in sorted(flat_files):
+        _scan(ref, (refs_dir / ref).read_text(), allowed_targets=set())
+    for gname, info in groups.items():
+        if info["has_index"]:
+            # A hub may reference its own leaves via bare `leaf.md` (SIDEWAYS_RES
+            # backtick/Read forms) and via the full `references/<group>/leaf.md`
+            # path (SIDEWAYS_TWO_LEVEL_RE) — allow both spellings.
+            allowed = set(info["leaves"]) | {f"{gname}/{leaf}" for leaf in info["leaves"]}
+            _scan(f"{gname}/index.md",
+                  (refs_dir / gname / "index.md").read_text(),
+                  allowed_targets=allowed)
+        for leaf in sorted(info["leaves"]):
+            _scan(f"{gname}/{leaf}", (refs_dir / gname / leaf).read_text(),
+                  allowed_targets=set())
 
     return unreachable, bad_links, broken_routes
 
@@ -246,7 +347,10 @@ def main() -> int:
         ok = False
         print("UNREACHABLE reference files (not routed from SKILL.md):")
         for f in unreachable:
-            print(f"  - references/{f}")
+            if f.startswith("STRAY:"):
+                print(f"  - STRAY: references/{f[len('STRAY:'):]}")
+            else:
+                print(f"  - references/{f}")
     if broken_routes:
         ok = False
         print("BROKEN routes (SKILL.md routes to a reference file that does not exist):")
