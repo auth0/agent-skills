@@ -1,0 +1,14 @@
+{
+  "name": "auth0-activation-evals",
+  "version": "1.0.0",
+  "description": "Skill-activation eval runner for the unified auth0 skill (tests the SKILL.md description)",
+  "type": "module",
+  "scripts": {
+    "eval": "node run-activation-evals.mjs",
+    "eval:dry-run": "node run-activation-evals.mjs --dry-run",
+    "eval:real": "node run-activation-evals.mjs --real"
+  },
+  "dependencies": {
+    "execa": "^9.0.0"
+  }
+}
