@@ -61,6 +61,10 @@ const opt = (n, d = null) => {
 }
 
 const TRIALS = parseInt(opt("--trials", "3"), 10)
+if (!Number.isInteger(TRIALS) || TRIALS < 1) {
+  console.error(`  --trials must be an integer >= 1 (got "${opt("--trials", "3")}").`)
+  process.exit(1)
+}
 const MODEL = opt("--model")
 const ONLY = opt("--only")
 const BASELINE = opt("--baseline", "git:HEAD")
@@ -237,6 +241,18 @@ async function realActivationOnce(pluginDir, userPrompt) {
   }
 }
 
+// Same majority-vote + instability semantics as classifyWithTrials, so a Stage B
+// REGRESSED/IMPROVED verdict isn't decided by one nondeterministic agent run.
+async function realActivationWithTrials(pluginDir, userPrompt) {
+  const votes = []
+  for (let t = 0; t < TRIALS; t++) {
+    votes.push(await realActivationOnce(pluginDir, userPrompt))
+  }
+  const yes = votes.filter((v) => v === true).length
+  const no = votes.filter((v) => v === false).length
+  return { verdict: yes > no, votes, unstable: yes > 0 && no > 0 }
+}
+
 // ---------------------------------------------------------------------------
 // Reporting
 // ---------------------------------------------------------------------------
@@ -271,7 +287,7 @@ async function main() {
   console.log(`  baseline  : ${base.label}  (${base.description.length} chars)`)
   console.log(`  candidate : ${cand.label}  (${cand.description.length} chars)`)
   console.log(`  cases     : ${cases.length}  (${cases.filter((c) => c.should_activate).length} positive, ${cases.filter((c) => !c.should_activate).length} negative)`)
-  console.log(`  stage     : ${REAL ? "B (real --plugin-dir activation)" : "A (classifier)"}   trials: ${REAL ? 1 : TRIALS}`)
+  console.log(`  stage     : ${REAL ? "B (real --plugin-dir activation)" : "A (classifier)"}   trials: ${TRIALS}`)
 
   if (base.description === cand.description) {
     console.log("\n  NOTE: baseline and candidate descriptions are IDENTICAL — this run measures only harness noise.")
@@ -324,15 +340,16 @@ async function main() {
     const candDir = buildPluginCopy(cand.description, "candidate")
     try {
       for (const c of spot) {
-        const b = await realActivationOnce(baseDir, c.prompt)
-        const n = await realActivationOnce(candDir, c.prompt)
-        results.set(c.id, { base: { verdict: b }, cand: { verdict: n } })
-        const bOk = b === c.should_activate
-        const nOk = n === c.should_activate
+        const b = await realActivationWithTrials(baseDir, c.prompt)
+        const n = await realActivationWithTrials(candDir, c.prompt)
+        results.set(c.id, { base: b, cand: n })
+        const mark = (r) => (r.verdict ? "FIRE" : "skip") + (r.unstable ? "?" : " ")
+        const bOk = b.verdict === c.should_activate
+        const nOk = n.verdict === c.should_activate
         let tag = "  "
         if (bOk && !nOk) tag = "REGRESSED"
         else if (!bOk && nOk) tag = "IMPROVED"
-        console.log(`  ${c.should_activate ? "+" : "-"} ${c.id.padEnd(26)} old=${b ? "FIRE" : "skip"} new=${n ? "FIRE" : "skip"}  ${tag}`)
+        console.log(`  ${c.should_activate ? "+" : "-"} ${c.id.padEnd(26)} old=${mark(b)} new=${mark(n)}  ${tag}`)
       }
       cases = spot
     } finally {
