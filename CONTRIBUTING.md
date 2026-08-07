@@ -149,13 +149,16 @@ Rules are configured in [`.skillsaw.yaml`](./.skillsaw.yaml), with repository-sp
 Test your skills work correctly with AI assistants:
 
 1. Install the plugin/skill locally:
+
    ```bash
    # Install entire plugin
    npx skills add ./plugins/auth0
 
    # Or copy the unified skill to Claude's local skills directory
+   mkdir -p ~/.claude/skills
    cp -r ./plugins/auth0/skills/auth0 ~/.claude/skills/
    ```
+
 2. Ask an AI assistant to use the skill
 3. Verify the generated code is correct
 
