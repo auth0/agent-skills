@@ -12,7 +12,7 @@ A portal is backed by a Regular Web Application. The portal server uses that app
 |---|---|
 | Get a test portal, resource servers, grants, and a Regular Web App quickly | `auth0-beta universal-portals setup` |
 | Configure a portal visually | Dashboard → **Portals** → create or open a portal → visual editor |
-| Script portal creation, reads, updates, or deletion | Management API `/api/v2/portals`, preferably through `auth0 api` |
+| Script portal creation, reads, updates, or deletion | Management API `portals` endpoints, preferably through `auth0 api` |
 | Build tenant configuration as Terraform | Use Terraform for the surrounding application and APIs, then use the Management API for the portal. Do not invent an `auth0_portal` resource. |
 
 Universal Portals is a hosted surface, not an SDK integration. Do not add a React, Next.js, or mobile SDK to render portal components. An application may link users to the hosted portal, but the portal's pages and navigation are configured in Auth0.

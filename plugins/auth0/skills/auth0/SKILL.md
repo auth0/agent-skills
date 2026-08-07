@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use for adding, fixing, or improving authentication — login, logout, signup, route protection, JWT/access-token validation, refresh-token rotation, MFA, passkeys, step-up auth, SSO, RBAC, Organizations for B2B SaaS, Universal Portals for hosted account and organization self-service, custom domains, ACUL, or Universal Login branding. Audit tenants (CheckMate), check health and plan fit, or fix findings. Use even if Auth0 isn't mentioned — authenticate users, secure an API, debug 401, CORS, callback mismatch, redirect loop, or 429, or migrate from Clerk, NextAuth.js, Firebase, Supabase, Cognito, or Passport.js. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android, Flutter, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and all Auth0 SDKs.
+description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, SSO, Organizations, RBAC, custom domains, Universal Portals for hosted account and organization self-service, or Universal Login branding. Also use to audit a tenant's health, security, and plan fit (CheckMate), to debug why an auth flow fails, or to migrate from another auth provider. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -59,16 +59,20 @@ section heading (`### feature:mfa`) listing which reference files to load.
 
 ## Step 2: Detect framework
 
-> **Skip this step for `tooling`.** Load tooling in Step 3; ask about a
-> framework only if the developer pivots to application integration.
+> **Skip this step for the `tooling` intent** — a CLI-first request has no
+> framework. Go to Step 3, load the tooling reference; only ask about a
+> framework if the developer later pivots to integrating auth into an app.
 
-Inspect project files and use the first matching tier and row.
+Work top-down. **Stop at the first tier that yields a framework.**
 
 ### Tier 1 — Auth0 SDK already installed (strongest signal)
 
+Read the project files. **Stop at the first match.**
+
 ### Node.js / JavaScript / TypeScript — check `package.json` → `dependencies`
 
-Check Capacitor rows before their base SDK rows.
+Rows are most-specific first — an Ionic/Capacitor project also carries
+`@auth0/auth0-angular` (etc.), so check the `@capacitor/browser` rows first.
 
 | Package | Framework |
 |---|---|
@@ -116,8 +120,9 @@ Check Capacitor rows before their base SDK rows.
 
 ### PHP — check `composer.json`
 
-`auth0/auth0-php` serves PHP web apps and APIs. Its `SdkConfiguration`
-`STRATEGY_API` row is more specific; check it first.
+`auth0/auth0-php` powers both PHP web apps and APIs; the mode is set via
+`SdkConfiguration`'s `strategy`. The `STRATEGY_API` row is more specific — check
+it first.
 
 | Package | Framework |
 |---|---|
@@ -126,8 +131,9 @@ Check Capacitor rows before their base SDK rows.
 | `auth0/login` (laravel, no `AuthorizationGuard`) | `laravel` |
 | `auth0/login` + `AuthorizationGuard` | `laravel-api` |
 
-> If no `SdkConfiguration` strategy is set, use `php-api` for an API-only
-> project; otherwise use `php`.
+> If `auth0/auth0-php` is installed but no `SdkConfiguration` strategy is set
+> yet (fresh project), fall through to variant disambiguation below (intent:
+> building/protecting an API → `php-api`, else `php`).
 
 ### Go — check `go.mod`
 
@@ -146,9 +152,11 @@ Check Capacitor rows before their base SDK rows.
 
 ### Tier 2 — Framework from non-Auth0 workspace dependencies
 
-If no Auth0 SDK matched, detect the framework from standard dependencies.
-Stop at the first match, resolve web/API variants below, and check Ionic before
-its base framework.
+If no Auth0 SDK matched, detect the framework from ordinary (non-Auth0)
+dependencies. **Stop at the first match.** For a web-vs-API split, the base is
+chosen here; the variant is resolved in "Variant disambiguation" below. Rows are
+most-specific first — an Ionic project also carries `@angular/core` / `vue` /
+`react`, so check the `@ionic/*` rows first (as in Tier 1).
 
 | Signal | Base framework |
 |---|---|
@@ -178,13 +186,14 @@ its base framework.
 | `*.csproj` (WPF) | `wpf` |
 | `*.csproj` ASP.NET (web app or API) | `aspnetcore` (variant below) |
 
-> **`react` note:** use `react` for a React SPA and `spa-js` for
-> framework-agnostic vanilla JavaScript. Ask if unclear.
+> **`react` note:** a plain React project maps to `react` for an SPA using the
+> React SDK, or `spa-js` if the app is framework-agnostic vanilla JS. If unclear,
+> ask before loading.
 
 ### Tier 3 — Framework from the prompt
 
-If workspace signals do not match, map the prompt's framework or language.
-Stop at the first match.
+If no workspace signal matched, read the developer's request for a framework or
+language name and map it here. **Stop at the first match.**
 
 | Developer mentions... | Framework |
 |---|---|
@@ -214,7 +223,8 @@ Stop at the first match.
 
 ### Variant disambiguation (web app vs API)
 
-For frameworks with web-app and API references, choose intent-first:
+Some frameworks have separate web-app and API references. When Tier 1 did not
+pin the variant, choose **intent-first**:
 
 | Base | Web-app variant | API variant | Choose API when… |
 |---|---|---|---|
@@ -224,8 +234,8 @@ For frameworks with web-app and API references, choose intent-first:
 | laravel | `laravel` | `laravel-api` | API-only (token guard), no Blade UI |
 | aspnetcore | `aspnetcore-auth` | `aspnetcore-api` | Web API / JWT bearer, no cookie login UI |
 
-If UI and API intent are both present or unclear, state the signal and ask
-whether the project is a web app or API.
+If intent is still ambiguous (both a UI and protected endpoints, or unclear),
+**state what you detected and ask the developer** web app vs API before loading.
 
 ### If nothing matched
 
@@ -233,14 +243,16 @@ Ask the developer what framework/language they are using. Do not guess.
 
 ### Conflicts
 
-If workspace and prompt signals conflict, state the conflict and ask. Use
-workspace signals when both are consistent.
+If Tier 2 (workspace) and Tier 3 (prompt) disagree materially (e.g. the prompt
+says "Next.js" but `package.json` has no `next`), **state the conflict and ask**
+rather than silently picking. Workspace signals outrank the prompt when both are
+present and consistent.
 
 ---
 
 ## Step 3: Detect tooling
 
-Inspect the project file tree.
+Read the project file tree. This is a project-context decision, not a product preference.
 
 | Project has... | Load |
 |---|---|
@@ -252,7 +264,8 @@ Inspect the project file tree.
 
 ## Step 4: Load reference files
 
-Read the references listed under the selected **Intent**.
+Find the section below whose heading matches the **Intent** you picked in
+Step 1, then read the reference files it lists.
 
 ### integrate
 ```
