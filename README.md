@@ -43,9 +43,9 @@ npx skills add auth0/agent-skills --agent github-copilot
 
 ### Codex / ChatGPT plugins
 
-The repository includes an OpenAI-compatible skills-only plugin. For local
-Codex or ChatGPT desktop testing, add this repository's marketplace from
-`.agents/plugins/marketplace.json`, then install **Auth0** from the Plugins UI.
+The repository includes an OpenAI-compatible skills-only plugin. Add this
+repository's marketplace from `.agents/plugins/marketplace.json`, then install
+**Auth0** from the Plugins UI. It tracks the published `main` snapshot.
 
 For public availability, Auth0 must submit the plugin through the
 [OpenAI plugin submission portal](https://platform.openai.com/plugins). Approval

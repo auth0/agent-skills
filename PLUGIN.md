@@ -60,7 +60,7 @@ rationale, routing flow, and the CI-enforced reachability invariant.
 auth0/agent-skills/
 ├── .agents/
 │   └── plugins/
-│       └── marketplace.json      # OpenAI/Codex local marketplace
+│       └── marketplace.json      # OpenAI/Codex repo marketplace
 ├── .claude-plugin/
 │   └── marketplace.json          # Marketplace metadata
 ├── .cursor-plugin/
@@ -99,10 +99,12 @@ auth0/agent-skills/
 
 ### .agents/plugins/marketplace.json
 
-**Purpose**: OpenAI/Codex local marketplace metadata.
+**Purpose**: OpenAI/Codex marketplace metadata for this repository.
 
-Use it to test the plugin locally in ChatGPT desktop or Codex. Public listing
-requires submission and approval through the OpenAI plugin submission portal.
+Use it to install the plugin in ChatGPT desktop or Codex ahead of a public
+listing. The entry tracks the published `main` snapshot, so it does not pick up
+uncommitted local edits. Public listing requires submission and approval through
+the OpenAI plugin submission portal.
 
 ### .claude-plugin/marketplace.json
 
@@ -155,10 +157,10 @@ cp -r plugins/auth0/skills/auth0 ~/.claude/skills/
 
 ### OpenAI / Codex
 
-For local testing, add `.agents/plugins/marketplace.json` to the ChatGPT
-desktop or Codex Plugins UI and install Auth0. Public distribution requires
-submission through https://platform.openai.com/plugins and OpenAI approval.
-See [`docs/openai-plugin.md`](docs/openai-plugin.md).
+Add `.agents/plugins/marketplace.json` to the ChatGPT desktop or Codex Plugins
+UI to install Auth0 from the published `main` snapshot. Public distribution
+requires submission through https://platform.openai.com/plugins and OpenAI
+approval. See [`docs/openai-plugin.md`](docs/openai-plugin.md).
 
 ---
 

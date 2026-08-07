@@ -17,7 +17,7 @@ plugins/auth0/
 The canonical skill content is shared with the Claude and Cursor packages; do
 not create a Codex-specific copy of the skill.
 
-## Local testing
+## Testing before submission
 
 The repository includes an OpenAI-compatible marketplace at:
 
@@ -30,6 +30,10 @@ restart the host if necessary, and test in a new conversation. Test direct and
 indirect authentication requests, framework routing, reference loading, and
 negative requests that should not activate the skill.
 
+The entry resolves `plugins/auth0` from the published `main` branch, so push
+your changes before reinstalling — an uncommitted working tree is not what gets
+installed.
+
 For Codex CLI, inspect configured marketplaces with:
 
 ```bash
@@ -39,7 +43,7 @@ codex plugin marketplace upgrade
 
 ## Public publication
 
-A manifest and local marketplace do not publish the plugin. To list Auth0 in
+A manifest and repository marketplace do not publish the plugin. To list Auth0 in
 the universal ChatGPT and Codex directory:
 
 1. Open the [OpenAI plugin submission portal](https://platform.openai.com/plugins).

@@ -47,7 +47,7 @@ Key top-level docs:
 - [`docs/architecture.md`](./docs/architecture.md) — why one skill, and how the
   router resolves a request to reference files.
 - [`docs/openai-plugin.md`](./docs/openai-plugin.md) — OpenAI/Codex plugin
-  packaging, local testing, and public submission.
+  packaging, pre-submission testing, and public submission.
 
 ## Before you change a skill
 
