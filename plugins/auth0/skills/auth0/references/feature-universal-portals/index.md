@@ -76,11 +76,11 @@ The portal endpoints are part of Management API v2. Prefer `auth0 api` when it i
 
 | Operation | Command | Success |
 |---|---|---|
-| Create | `auth0 api post /api/v2/portals --data '<payload>'` | 201 |
-| List | `auth0 api get /api/v2/portals` | 200 |
-| Read | `auth0 api get /api/v2/portals/{id}` | 200 |
-| Update | `auth0 api patch /api/v2/portals/{id} --data '<payload>'` | 200 |
-| Delete | `auth0 api delete /api/v2/portals/{id}` | 204 |
+| Create | `auth0 api post portals --data '<payload>'` | 201 |
+| List | `auth0 api get portals` | 200 |
+| Read | `auth0 api get portals/{id}` | 200 |
+| Update | `auth0 api patch portals/{id} --data '<payload>'` | 200 |
+| Delete | `auth0 api delete portals/{id}` | 204 |
 
 The list endpoint returns at most 50 `PortalSummary` objects: `id`, `name`, `slug`, `created_at`, and `updated_at`. Create, read, and update return a full Portal object containing those fields plus `client`, `navigation`, and `pages`. The client secret is write-only and is never returned.
 
@@ -89,7 +89,7 @@ The list endpoint returns at most 50 `PortalSummary` objects: `id`, `name`, `slu
 Use `client_secret_post` exactly as shown. The portal API currently supports no other token endpoint authentication method.
 
 ```bash
-auth0 api post /api/v2/portals --data '{
+auth0 api post portals --data '{
   "slug": "my-account",
   "name": "My Account",
   "client": {
@@ -121,13 +121,13 @@ A duplicate slug returns `409 Conflict`. Read the portal list, choose a differen
 Read the portal before a change and re-read it after the change:
 
 ```bash
-auth0 api get /api/v2/portals/PORTAL_ID
+auth0 api get portals/PORTAL_ID
 
-auth0 api patch /api/v2/portals/PORTAL_ID --data '{
+auth0 api patch portals/PORTAL_ID --data '{
   "name": "Customer Account"
 }'
 
-auth0 api get /api/v2/portals/PORTAL_ID
+auth0 api get portals/PORTAL_ID
 ```
 
 PATCH has true patch semantics:
@@ -275,7 +275,7 @@ For a business portal, add a page whose section children include `page:component
 
 ## Validate the portal
 
-1. Read the portal through `auth0 api get /api/v2/portals/PORTAL_ID` and check the stored name, slug, sidebar targets, default page, and component types.
+1. Read the portal through `auth0 api get portals/PORTAL_ID` and check the stored name, slug, sidebar targets, default page, and component types.
 2. Open the portal URL in a private browser session with a test user.
 3. Test each included capability: form submission, passkey management, MFA management, and organization editing or domain viewing as applicable.
 4. Confirm logout returns to the configured logout URL and that the callback completes.
