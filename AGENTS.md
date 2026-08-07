@@ -28,6 +28,9 @@ plugins/auth0/skills/auth0/
 
 evals/                  # Repo-root eval harness (NOT inside the skill dir):
 ├── routing-cases.json  #   deterministic routing cases (scripts/check_routing_evals.py)
+├── activation/         #   activation evals — does the SKILL.md `description` fire on the
+│                       #   right prompts and stay quiet on the wrong ones? The only layer
+│                       #   that tests frontmatter; run it after any description edit.
 └── behavioral/         #   behavioral evals — run-evals.mjs drives a live agent via the
                         #   claude CLI + execa. Kept out of the skill dir on purpose so
                         #   this dev-only harness isn't in per-skill security-scan scope.
@@ -36,8 +39,9 @@ evals/                  # Repo-root eval harness (NOT inside the skill dir):
 Key top-level docs:
 
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — **authoritative** rules for adding or
-  editing a skill: required frontmatter, directory structure, naming, and the
-  validation command. Read this before changing any skill.
+  editing Auth0 guidance: reference structure, router wiring, naming, and the
+  validation gate. Read this before changing the skill. Frontmatter requirements
+  are below.
 - [`PLUGIN.md`](./PLUGIN.md) — plugin/marketplace architecture.
 - [`README.md`](./README.md) — user-facing install and skill catalog.
 
@@ -75,8 +79,8 @@ The `requires`, `os`, and `install` fields under `metadata.openclaw` are
 [ClawHub](https://clawhub.ai) metadata used when a skill is installed via
 `npx clawhub install`. If a skill's workflow invokes `auth0` CLI commands,
 declare `requires.bins: [auth0]` (and the matching `install` block) so ClawHub
-can prompt the user to install the CLI. See `CONTRIBUTING.md` for the full
-example.
+can prompt the user to install the CLI. The frontmatter of
+`plugins/auth0/skills/auth0/SKILL.md` is a working example of all three fields.
 
 ## Validating your changes
 
@@ -136,3 +140,18 @@ description: >
 
 When in doubt, ask: *"Would an agent reading only this description know exactly
 when to reach for this skill — and when not to?"*
+
+**Don't answer that from intuition — measure it.** After editing a
+`description`, run the activation evals, which score the old and new wording
+over the same matrix of prompts and report exactly which cases regressed:
+
+```bash
+cd evals/activation && npm install
+node run-activation-evals.mjs              # compares git:HEAD against your working tree
+node run-activation-evals.mjs --real --only <flagged-ids>   # confirm on the real activation path
+```
+
+This is the only eval layer that reads frontmatter — `check_routing_evals.py`
+and `evals/behavioral/` both stay green no matter how badly a description is
+broken. See [`evals/activation/README.md`](./evals/activation/README.md), and add
+cases there when you add a trigger the matrix doesn't cover.

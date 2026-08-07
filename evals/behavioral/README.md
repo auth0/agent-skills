@@ -30,8 +30,8 @@ behavioral/
 └── cases/
     ├── flask.json        # { slug, origin_skill, evals[], graders[] }
     ├── express-jwt.json
-    └── ...               # 18 cases; 13 have machine graders,
-                          # 5 (branding, custom-domains, cli, acul, audit) are
+    └── ...               # 19 cases; 13 have machine graders, 6 (branding,
+                          # custom-domains, cli, acul, audit, healthcheck) are
                           # expectations-only → manual transcript review
 ```
 
@@ -101,19 +101,22 @@ and rots on every release. Match "a version is present" only if you must.
 
 ### Why the tenant-workflow cases have no machine graders
 
-The `audit` case is expectations-only because it **can't run unattended**: it needs
-`auth0 login` against a real tenant plus a live CheckMate scan, so it mutates real
-infrastructure and consumes Management API rate limit rather than working in a temp
-dir. Grade it by reading the transcript against the `assertions` list.
+`audit` and `healthcheck` are expectations-only because they **can't run
+unattended**: both need `auth0 login` against a real tenant plus a live CheckMate
+scan, so they mutate real infrastructure and consume Management API rate limit
+rather than working in a temp dir. Grade them by reading the transcript against the
+`assertions` list.
 
-The pre-migration `auth0-checkmate` skill did carry a `tests/graders.json`, but it
-was never executable: that skill shipped no `run-evals.mjs` (only 5 of the ~44
-skills did), and no `prompt.md` / `benchmark-config.json`, which the old runner
-required. Its grader set also had no `judge` grader, which that runner's own
-validation gate demanded. So nothing was regressed by not porting it — there was
-no passing baseline to preserve.
+The pre-migration `auth0-checkmate` and `auth0-healthcheck-all-plans` skills each
+carried a `tests/graders.json`, but neither was ever executable: those skills
+shipped no `run-evals.mjs` (only 5 of the ~44 skills did), and no `prompt.md` /
+`benchmark-config.json`, which the old runner required. Their grader sets also
+failed that runner's own validation gate, which demanded `contains`,
+`not_contains` and `judge` graders — checkmate had no `judge`, and every one of
+healthcheck's eight was a bare `matches`. So nothing was regressed by not porting
+them; there was no passing baseline to preserve.
 
-Two things to fix first if you do port it:
+Two things to fix first if you do port them:
 
 - The workspace scan won't see the deliverable by default. Reports land in
   `$HOME/Documents/auth0_checkmate_reports` and state in `~/.auth0-checkmate/state/`,
@@ -122,7 +125,7 @@ Two things to fix first if you do port it:
   passing, the empty-workspace guard then demotes every `not_contains` to FAIL.
   Either have the eval prompt write the report into the cwd (grading the `.html`
   copy works today) or teach the engine about the artifact directory and `.md`.
-- Two of the original eight graders fail a *spec-correct* run. `not_contains:
+- Two of the original audit graders fail a *spec-correct* run. `not_contains:
   "fit score"` false-positives on the legitimate `a4aa_fit_score` and "Capability
   Fit Score" the report is supposed to contain — use `not_matches` on
   `sales fit score|firmographic` instead. And `matches: "<tenant_domain>|..."` is

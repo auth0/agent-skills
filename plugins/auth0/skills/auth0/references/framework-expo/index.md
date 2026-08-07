@@ -24,6 +24,22 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 | Native Android (Kotlin/Java) | the Auth0 integration workflow for Android |
 | Backend API (JWT validation) | the Auth0 integration workflow for Fastify or Express.js |
 
+## Files to Change
+
+These are the files an Expo integration touches. Use the table as your starting scope: read these paths
+directly instead of searching the project from scratch, but confirm the real entry point before editing
+— an expo-router project roots the provider in `app/_layout.tsx`, not `App.tsx`. You do not need to
+read anything under `node_modules/` to confirm the SDK's API.
+
+| File | Change |
+|------|--------|
+| `package.json` | add `react-native-auth0` (and `expo-dev-client` if missing) |
+| `.env` | `EXPO_PUBLIC_AUTH0_DOMAIN`, `EXPO_PUBLIC_AUTH0_CLIENT_ID` |
+| `app.json` | `react-native-auth0` plugin with `domain` + `customScheme`; `ios.bundleIdentifier`, `android.package` |
+| `App.tsx` (or your root component) | `Auth0Provider` + `useAuth0`, guarded by `isLoading` |
+
+Do **not** hand-edit `ios/` or `android/` native files — the config plugin generates them at prebuild.
+
 ## Quick Start Workflow
 
 ### 1. Configure Auth0
@@ -56,6 +72,23 @@ Add authentication to Expo (React Native) applications using `react-native-auth0
 ```bash
 npx expo install react-native-auth0
 ```
+
+Create `.env` for the values your JavaScript reads. Expo inlines `EXPO_PUBLIC_*` variables at build
+time, so no extra config is needed:
+
+```bash
+EXPO_PUBLIC_AUTH0_DOMAIN=your-tenant.auth0.com
+EXPO_PUBLIC_AUTH0_CLIENT_ID=your-client-id
+```
+
+Never hardcode the Client ID into a `.tsx`/`.ts` source file — read it from `process.env` (see step 6),
+and add `.env` to `.gitignore`. That includes fallbacks: write
+`process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!`, never
+`process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID ?? 'barkbook_client_abc123xyz'` — a default puts the literal
+straight back into source.
+
+The `domain` and `customScheme` in `app.json` (step 4) stay as literal values: they are not secrets,
+and the config plugin is read at prebuild time rather than runtime.
 
 ### 4. Configure Expo Config Plugin
 
@@ -145,8 +178,8 @@ function HomeScreen() {
 export default function App() {
   return (
     <Auth0Provider
-      domain="YOUR_AUTH0_DOMAIN"
-      clientId="YOUR_AUTH0_CLIENT_ID"
+      domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
+      clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
     >
       <HomeScreen />
     </Auth0Provider>
@@ -154,28 +187,38 @@ export default function App() {
 }
 ```
 
-### 7. Build & Verify
+### 7. Verify
 
-> **Agent instruction:** After completing the integration, build the project to verify it compiles:
-> ```bash
-> npx expo prebuild --clean
-> npx expo run:ios
-> # or
-> npx expo run:android
-> ```
-> If the build fails, analyze the error output. Common integration build failures include:
-> - **"Invariant Violation: Native module cannot be null"**: Using Expo Go instead of a development build — run `npx expo run:ios` or `npx expo run:android` instead of `npx expo start`
-> - **Plugin not applied**: Missing `react-native-auth0` in app.json plugins array — verify the plugin configuration
-> - **Pod install fails (iOS)**: Run `npx expo prebuild --clean` to regenerate native projects
-> - **Manifest merge failure (Android)**: Conflicting auth0Domain placeholder — ensure only the config plugin sets the domain
->
-> Re-run the build after each fix. Track the number of build-fix iterations.
->
-> **Failcheck:** If the build still fails after 5–6 fix attempts, stop and ask the user using `AskUserQuestion`:
-> _"The build is still failing after several fix attempts. How would you like to proceed?"_
-> - **Let the skill continue fixing iteratively**
-> - **Fix it manually** — show the remaining errors
-> - **Skip build verification** — proceed without a successful build
+Verification has two parts, because a typecheck proves nothing about native configuration.
+
+**Source** — run the cheapest check that proves the JavaScript compiles:
+
+```bash
+npm run typecheck   # or: npx tsc --noEmit
+```
+
+**Native configuration** — a typecheck cannot see whether the config plugin applied, so verify these by
+reading the files back:
+
+- `app.json` registers `react-native-auth0` in `plugins` with `domain` and `customScheme`
+- `ios.bundleIdentifier` and `android.package` are set
+- `authorize()` / `clearSession()` pass the same `customScheme` declared in `app.json`
+
+> **Agent instruction:** If you need to confirm the plugin actually writes the native projects, run
+> `npx expo prebuild --no-install` and check that `ios/{AppName}/Info.plist` contains the URL scheme and
+> `android/app/build.gradle` contains the `auth0Domain` / `auth0Scheme` placeholders. A full
+> `expo run:ios` / `run:android` cycle takes many minutes and needs a configured native toolchain — run
+> it only when the user asks for a device or simulator run. Do not loop on native build failures by
+> default.
+
+Common build failures, when you do run a native build:
+
+| Failure | Cause and fix |
+|---------|---------------|
+| `Invariant Violation: Native module cannot be null` | Using Expo Go instead of a development build — run `npx expo run:ios` / `run:android`, not `npx expo start` |
+| Plugin not applied | `react-native-auth0` missing from the `app.json` plugins array |
+| Pod install fails (iOS) | Run `npx expo prebuild --clean` to regenerate native projects |
+| Manifest merge failure (Android) | Conflicting `auth0Domain` placeholder — only the config plugin should set the domain |
 
 ## Detailed Documentation
 
@@ -226,6 +269,20 @@ export default function App() {
 - [Security Considerations](#security-considerations) — PKCE, secure storage, custom scheme, tokens, network
 
 ## Configuration Reference
+
+This reference is authoritative for `react-native-auth0` v5. Treat it as complete: you do not need to
+read `.d.ts` files, the SDK README, or anything else under `node_modules/` to confirm these names.
+
+### useAuth0() Hook
+
+| Value | Description |
+|-------|-------------|
+| `authorize(params?, options?)` | Initiate login |
+| `clearSession(options?)` | Logout |
+| `user` | User profile object, or `null` when unauthenticated |
+| `isLoading` | Loading state; guard auth-dependent UI on this |
+| `error` | Last authentication error, or `null` |
+| `getCredentials()` | Get tokens for API calls |
 
 ### Auth0Provider Props
 
@@ -471,8 +528,8 @@ function LoginScreen() {
 import Auth0 from 'react-native-auth0';
 
 const auth0 = new Auth0({
-  domain: 'YOUR_AUTH0_DOMAIN',
-  clientId: 'YOUR_AUTH0_CLIENT_ID',
+  domain: process.env.EXPO_PUBLIC_AUTH0_DOMAIN!,
+  clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!,
 });
 
 const credentials = await auth0.webAuth.authorize(
@@ -622,8 +679,8 @@ import {
 export default function App() {
   return (
     <Auth0Provider
-      domain="YOUR_AUTH0_DOMAIN"
-      clientId="YOUR_AUTH0_CLIENT_ID"
+      domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
+      clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
       localAuthenticationOptions={{
         title: 'Authenticate to access credentials',
         subtitle: 'Please verify your identity',
@@ -661,8 +718,8 @@ import Auth0, {
 } from 'react-native-auth0';
 
 const auth0 = new Auth0({
-  domain: 'YOUR_AUTH0_DOMAIN',
-  clientId: 'YOUR_AUTH0_CLIENT_ID',
+  domain: process.env.EXPO_PUBLIC_AUTH0_DOMAIN!,
+  clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!,
   localAuthenticationOptions: {
     title: 'Authenticate to access credentials',
     evaluationPolicy: LocalAuthenticationStrategy.deviceOwnerWithBiometrics,
@@ -682,8 +739,8 @@ DPoP is enabled by default in react-native-auth0:
 
 ```typescript
 <Auth0Provider
-  domain="YOUR_AUTH0_DOMAIN"
-  clientId="YOUR_AUTH0_CLIENT_ID"
+  domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
+  clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
   // DPoP is enabled by default (useDPoP: true)
 >
   <App />
@@ -887,8 +944,8 @@ For unstable network conditions, configure automatic retry for credential renewa
 
 ```typescript
 <Auth0Provider
-  domain="YOUR_AUTH0_DOMAIN"
-  clientId="YOUR_AUTH0_CLIENT_ID"
+  domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
+  clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
   maxRetries={2}
 >
   <App />
@@ -903,8 +960,8 @@ If using refresh token rotation, configure a token overlap period of at least **
 
 ```typescript
 <Auth0Provider
-  domain="YOUR_AUTH0_DOMAIN"
-  clientId="YOUR_AUTH0_CLIENT_ID"
+  domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
+  clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
   headers={{
     'Accept-Language': 'fr-CA',
     'X-App-Version': '1.0.0',
@@ -1171,7 +1228,31 @@ Expo / React Native mobile apps do **not** use a Client Secret. The Auth0 Native
 - Never include Client Secret in mobile apps
 - Never commit sensitive tokens to source control
 
-For environment-specific configuration, use `app.config.js` (dynamic config):
+**Never write a literal credential as a fallback in a `.ts`/`.tsx` file.** A default like
+`process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID ?? 'your-client-id'` puts the real value back into source —
+it defeats the point of reading from the environment. Read the variable with no fallback and let it
+fail loudly if unset:
+
+```typescript
+// Do this
+clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!,
+
+// Not this — the literal is now committed source
+clientId: process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID ?? 'your-client-id',
+```
+
+The `!` only silences the TypeScript error; it is erased at compile time and checks nothing at runtime.
+If the variable is unset, `Auth0Provider` receives `undefined` and login fails, so confirm `.env` is
+loaded — or throw explicitly at startup if you want to fail fast:
+
+```typescript
+const clientId = process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID;
+if (!clientId) throw new Error('EXPO_PUBLIC_AUTH0_CLIENT_ID is not set');
+```
+
+For environment-specific configuration, use `app.config.js` (dynamic config). The `domain` and
+`customScheme` here are plugin values, not secrets, so literal defaults are acceptable in this one
+place:
 
 ```javascript
 export default ({ config }) => ({
