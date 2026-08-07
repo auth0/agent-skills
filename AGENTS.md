@@ -39,8 +39,9 @@ evals/                  # Repo-root eval harness (NOT inside the skill dir):
 Key top-level docs:
 
 - [`CONTRIBUTING.md`](./CONTRIBUTING.md) — **authoritative** rules for adding or
-  editing a skill: required frontmatter, directory structure, naming, and the
-  validation command. Read this before changing any skill.
+  editing Auth0 guidance: reference structure, router wiring, naming, and the
+  validation gate. Read this before changing the skill. Frontmatter requirements
+  are below.
 - [`PLUGIN.md`](./PLUGIN.md) — plugin/marketplace architecture.
 - [`README.md`](./README.md) — user-facing install and skill catalog.
 
@@ -78,8 +79,8 @@ The `requires`, `os`, and `install` fields under `metadata.openclaw` are
 [ClawHub](https://clawhub.ai) metadata used when a skill is installed via
 `npx clawhub install`. If a skill's workflow invokes `auth0` CLI commands,
 declare `requires.bins: [auth0]` (and the matching `install` block) so ClawHub
-can prompt the user to install the CLI. See `CONTRIBUTING.md` for the full
-example.
+can prompt the user to install the CLI. The frontmatter of
+`plugins/auth0/skills/auth0/SKILL.md` is a working example of all three fields.
 
 ## Validating your changes
 
