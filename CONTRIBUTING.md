@@ -41,50 +41,6 @@ working without Claude Code should follow that section directly.
 - Follow Auth0 coding conventions.
 - Test code examples before submitting.
 
-## Local Development
-
-### Validating Skills
-
-This repository uses [skillsaw](https://github.com/stbenjam/skillsaw) to enforce frontmatter and structure conventions. The same check runs in CI (`.github/workflows/skillsaw.yml`) and **must pass before a PR can merge**, so run it locally first:
-
-```bash
-# Validate the whole repository in strict mode (matches CI)
-uvx skillsaw --strict
-```
-
-Rules are configured in [`.skillsaw.yaml`](./.skillsaw.yaml), with repository-specific custom rules in [`.skillsaw/rules.py`](./.skillsaw/rules.py).
-
-### Testing with AI Assistants
-
-Test your skills work correctly with AI assistants:
-
-1. Install the plugin/skill locally:
-   ```bash
-   # Install entire plugin
-   npx skills add ./plugins/auth0
-
-   # Or copy the unified skill to Claude's local skills directory
-   cp -r ./plugins/auth0/skills/auth0 ~/.claude/skills/
-   ```
-2. Ask an AI assistant to use the skill
-3. Verify the generated code is correct
-
-## Pull Request Process
-
-1. Ensure your changes follow the contribution guidelines
-2. Update documentation as needed
-3. Add your changes to CHANGELOG.md (if applicable)
-4. Request review from maintainers
-5. Address any feedback
-
-## Code of Conduct
-
-Please follow [Auth0's Code of Conduct](https://github.com/auth0/open-source-template/blob/master/CODE-OF-CONDUCT.md).
-
-## Questions?
-
-If you have questions about contributing, please [open an issue](https://github.com/auth0/agent-skills/issues/new) with the "question" label.
-
 ## Adding a Capability to the Unified Skill
 
 All Auth0 guidance ships in the single `auth0` skill
@@ -174,3 +130,47 @@ python3 scripts/check_router_reachability.py plugins/auth0/skills/auth0
 python3 scripts/check_routing_evals.py plugins/auth0/skills/auth0
 uvx skillsaw --strict
 ```
+
+## Local Development
+
+### Validating Skills
+
+This repository uses [skillsaw](https://github.com/stbenjam/skillsaw) to enforce frontmatter and structure conventions. The same check runs in CI (`.github/workflows/skillsaw.yml`) and **must pass before a PR can merge**, so run it locally first:
+
+```bash
+# Validate the whole repository in strict mode (matches CI)
+uvx skillsaw --strict
+```
+
+Rules are configured in [`.skillsaw.yaml`](./.skillsaw.yaml), with repository-specific custom rules in [`.skillsaw/rules.py`](./.skillsaw/rules.py).
+
+### Testing with AI Assistants
+
+Test your skills work correctly with AI assistants:
+
+1. Install the plugin/skill locally:
+   ```bash
+   # Install entire plugin
+   npx skills add ./plugins/auth0
+
+   # Or copy the unified skill to Claude's local skills directory
+   cp -r ./plugins/auth0/skills/auth0 ~/.claude/skills/
+   ```
+2. Ask an AI assistant to use the skill
+3. Verify the generated code is correct
+
+## Pull Request Process
+
+1. Ensure your changes follow the contribution guidelines
+2. Update documentation as needed
+3. Add your changes to CHANGELOG.md (if applicable)
+4. Request review from maintainers
+5. Address any feedback
+
+## Code of Conduct
+
+Please follow [Auth0's Code of Conduct](https://github.com/auth0/open-source-template/blob/master/CODE-OF-CONDUCT.md).
+
+## Questions?
+
+If you have questions about contributing, please [open an issue](https://github.com/auth0/agent-skills/issues/new) with the "question" label.
