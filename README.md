@@ -4,14 +4,14 @@
 
 [![License](https://img.shields.io/:license-apache-blue.svg?style=flat)](https://opensource.org/licenses/Apache-2.0)
 
-AI agent skills that help coding assistants implement Auth0 authentication correctly. Works with [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com), [GitHub Copilot](https://github.com/features/copilot), and [40+ other agents](https://agentskills.io/clients) that support the [Agent Skills](https://agentskills.io) format.
+AI agent skills that help coding assistants implement Auth0 authentication correctly. Works with [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com), [Codex](https://openai.com/codex/), [GitHub Copilot](https://github.com/features/copilot), and [40+ other agents](https://agentskills.io/clients) that support the [Agent Skills](https://agentskills.io) format.
 
 [Documentation](https://auth0.com/docs/quickstart/agent-skills) · [Getting Started](#prerequisites) · [Feedback](#feedback)
 
 ## Prerequisites
 
 - An [Auth0 account](https://auth0.com/signup) (free)
-- An AI coding assistant (Claude Code, Cursor, GitHub Copilot, or any [Agent Skills-compatible](https://agentskills.io/clients) tool)
+- An AI coding assistant (Claude Code, Cursor, Codex, GitHub Copilot, or any [Agent Skills-compatible](https://agentskills.io/clients) tool)
 
 ## Install
 
@@ -40,6 +40,16 @@ You can also install via `Cursor Settings → Rules → Add Rule → Remote Rule
 ```bash
 npx skills add auth0/agent-skills --agent github-copilot
 ```
+
+### Codex / ChatGPT plugins
+
+The repository includes an OpenAI-compatible skills-only plugin. Add this
+repository's marketplace from `.agents/plugins/marketplace.json`, then install
+**Auth0** from the Plugins UI. It tracks the published `main` snapshot.
+
+For public availability, Auth0 must submit the plugin through the
+[OpenAI plugin submission portal](https://platform.openai.com/plugins). Approval
+is required before it appears in the universal ChatGPT and Codex directory.
 
 ### Any Agent (Skills CLI)
 

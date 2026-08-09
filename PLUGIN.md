@@ -1,6 +1,6 @@
-# Claude Code Plugin Architecture
+# Agent Plugin Architecture
 
-This repository provides a **single Claude Code plugin** managed by a marketplace.json file.
+This repository provides one canonical Auth0 skill distributed through Claude Code, Cursor, and OpenAI/Codex plugin packaging. The OpenAI package is also usable by ChatGPT desktop through the universal plugin directory.
 
 ## Architecture Overview
 
@@ -58,6 +58,9 @@ rationale, routing flow, and the CI-enforced reachability invariant.
 
 ```
 auth0/agent-skills/
+├── .agents/
+│   └── plugins/
+│       └── marketplace.json      # OpenAI/Codex repo marketplace
 ├── .claude-plugin/
 │   └── marketplace.json          # Marketplace metadata
 ├── .cursor-plugin/
@@ -80,7 +83,8 @@ auth0/agent-skills/
 │               ├── assets/            # Templates (e.g. ACUL screens)
 │               └── scripts/           # validate-skill.sh, reachability check
 ├── docs/
-│   └── architecture.md               # Why one skill + routing details
+│   ├── architecture.md               # Why one skill + routing details
+│   └── openai-plugin.md              # OpenAI/Codex packaging + submission
 ├── .gitignore
 ├── CODE_OF_CONDUCT.md
 ├── CONTRIBUTING.md
@@ -92,6 +96,15 @@ auth0/agent-skills/
 ---
 
 ## File Purposes
+
+### .agents/plugins/marketplace.json
+
+**Purpose**: OpenAI/Codex marketplace metadata for this repository.
+
+Use it to install the plugin in ChatGPT desktop or Codex ahead of a public
+listing. The entry tracks the published `main` snapshot, so it does not pick up
+uncommitted local edits. Public listing requires submission and approval through
+the OpenAI plugin submission portal.
 
 ### .claude-plugin/marketplace.json
 
@@ -117,29 +130,37 @@ auth0/agent-skills/
 
 ## Installation Methods
 
-### Method 1: Marketplace (Recommended)
+### Claude marketplace (Recommended)
 
 1. Open Claude Code
 2. Navigate to **Settings > Plugins**
 3. Search "Auth0"
 4. Install "Auth0 Agent Skills"
 
-### Method 2: CLI Installation
+### CLI Installation
 
 ```bash
 # Install the auth0 skill
 npx skills add auth0/agent-skills
 ```
 
-### Method 3: Manual Installation
+### Manual Installation
 
 ```bash
 git clone https://github.com/auth0/agent-skills.git
 cd agent-skills
 
 # Copy the auth0 skill
+mkdir -p ~/.claude/skills
 cp -r plugins/auth0/skills/auth0 ~/.claude/skills/
 ```
+
+### OpenAI / Codex
+
+Add `.agents/plugins/marketplace.json` to the ChatGPT desktop or Codex Plugins
+UI to install Auth0 from the published `main` snapshot. Public distribution
+requires submission through https://platform.openai.com/plugins and OpenAI
+approval. See [`docs/openai-plugin.md`](docs/openai-plugin.md).
 
 ---
 
@@ -156,7 +177,8 @@ no per-framework skill to pick.
 
 ### Update Version
 
-Edit `.claude-plugin/marketplace.json` and `plugins/auth0/.claude-plugin/plugin.json`.
+Edit the relevant marketplace and plugin manifests. For OpenAI/Codex, update
+`.agents/plugins/marketplace.json` and `plugins/auth0/.codex-plugin/plugin.json`.
 
 ### Create Release
 

@@ -44,6 +44,10 @@ Key top-level docs:
   are below.
 - [`PLUGIN.md`](./PLUGIN.md) — plugin/marketplace architecture.
 - [`README.md`](./README.md) — user-facing install and skill catalog.
+- [`docs/architecture.md`](./docs/architecture.md) — why one skill, and how the
+  router resolves a request to reference files.
+- [`docs/openai-plugin.md`](./docs/openai-plugin.md) — OpenAI/Codex plugin
+  packaging, pre-submission testing, and public submission.
 
 ## Before you change a skill
 
