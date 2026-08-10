@@ -1,0 +1,271 @@
+{
+  "_comment": "Skill-ACTIVATION evals for the unified auth0 skill. These test the SKILL.md `description` frontmatter ONLY — the single signal an agent uses to decide whether to load the skill at all. Complements the two existing layers: routing-cases.json tests the SKILL.md body's Step 4 table, and behavioral/ tests the code the loaded skill produces. Neither reads the description, so a description edit is otherwise untested. Run with run-activation-evals.mjs.",
+  "_ground_truth": "should_activate is the ANSWER, not a prediction of any variant. A positive is a request a developer could plausibly make where loading the Auth0 skill is the right move. A negative is a request where loading it would waste context or hijack the task. Near-miss negatives deliberately reuse vocabulary from the old description (RBAC, 429, CORS, rotate, session) — a description that keyword-matches those is over-triggering, and only a matrix containing them can detect that.",
+  "_omitted_on_purpose": "Prompts with no defensible ground truth are excluded rather than scored: e.g. 'hash passwords with bcrypt in my hand-rolled auth' (Auth0 is a reasonable suggestion AND respecting the user's stated choice is reasonable), 'is OAuth2 or SAML better' (pure concept question). Scoring these would measure taste, not activation.",
+
+  "cases": [
+    {
+      "id": "kw-redirect-loop",
+      "prompt": "My app gets stuck in an infinite redirect loop after the user signs in. How do I fix it?",
+      "should_activate": true,
+      "why": "Classic Auth0 callback/session misconfiguration. Matched the OLD description only via the literal phrase 'redirect loop'.",
+      "tags": ["keyword-loss", "debug"],
+      "spot_check": true
+    },
+    {
+      "id": "kw-callback-mismatch",
+      "prompt": "I'm getting a callback URL mismatch error when logging in. What's wrong?",
+      "should_activate": true,
+      "why": "Allowed-callback-URL config error. Matched the OLD description only via the literal phrase 'callback URL mismatch'.",
+      "tags": ["keyword-loss", "debug"],
+      "spot_check": true
+    },
+    {
+      "id": "kw-429-auth",
+      "prompt": "My login requests are suddenly coming back with 429 responses in production.",
+      "should_activate": true,
+      "why": "Auth0 tenant rate limiting. Matched the OLD description only via '429 rate limit'. Contrast with neg-429-api-ratelimit, which is the same status code with nothing to do with auth.",
+      "tags": ["keyword-loss", "debug"]
+    },
+    {
+      "id": "kw-401-api",
+      "prompt": "My API keeps returning 401 Unauthorized even though I'm sending a bearer token.",
+      "should_activate": true,
+      "why": "Access-token validation / audience mismatch. Matched the OLD description only via 'debug a 401'.",
+      "tags": ["keyword-loss", "debug"],
+      "spot_check": true
+    },
+    {
+      "id": "kw-passkeys",
+      "prompt": "I want users to be able to sign in with passkeys instead of a password.",
+      "should_activate": true,
+      "why": "Auth0 passwordless/passkeys feature. The word 'passkeys' was in the OLD description and is NOT in the new one — a direct test of the keyword-vs-generalization trade.",
+      "tags": ["keyword-loss", "feature"],
+      "spot_check": true
+    },
+    {
+      "id": "kw-step-up",
+      "prompt": "Before a user can transfer money I want to force them to re-verify with a second factor.",
+      "should_activate": true,
+      "why": "Step-up authentication. 'step-up auth' was explicit in the OLD description; the new one covers it only via 'MFA'.",
+      "tags": ["keyword-loss", "feature"]
+    },
+    {
+      "id": "kw-acul",
+      "prompt": "I need to fully customize the login screen with my own React components instead of using the hosted page.",
+      "should_activate": true,
+      "why": "Advanced Customizations for Universal Login (ACUL). The acronym was in the OLD description; the new one covers it via 'configuring the login experience' / 'Universal Login branding'.",
+      "tags": ["keyword-loss", "feature"],
+      "spot_check": true
+    },
+    {
+      "id": "kw-refresh-rotation",
+      "prompt": "How should I handle refresh token rotation so users don't get logged out every hour?",
+      "should_activate": true,
+      "why": "Token lifecycle. 'refresh token rotation' was explicit in the OLD description; the new one covers it via 'sessions and tokens'.",
+      "tags": ["keyword-loss", "feature"]
+    },
+    {
+      "id": "kw-migrate-clerk",
+      "prompt": "We're moving off Clerk. Can you help me swap out the auth in this Next.js app?",
+      "should_activate": true,
+      "why": "Named competitor migration. 'Clerk' was listed in the OLD description; the new one says 'migrating from another auth provider'.",
+      "tags": ["keyword-loss", "migration"],
+      "spot_check": true
+    },
+    {
+      "id": "kw-migrate-nextauth",
+      "prompt": "Replace NextAuth.js in this project with something I don't have to self-host.",
+      "should_activate": true,
+      "why": "Named competitor migration. 'NextAuth.js' was listed in the OLD description.",
+      "tags": ["keyword-loss", "migration"]
+    },
+    {
+      "id": "kw-migrate-firebase",
+      "prompt": "We want to migrate our users off Firebase Auth without forcing everyone to reset their password.",
+      "should_activate": true,
+      "why": "Named competitor migration + user import. 'Firebase Auth' was listed in the OLD description.",
+      "tags": ["keyword-loss", "migration"]
+    },
+
+    {
+      "id": "fw-flutter",
+      "prompt": "Add login and logout to my Flutter app.",
+      "should_activate": true,
+      "why": "Framework-only signal. 'Flutter' was in the OLD description's framework list, which the new one replaces with 'any web, mobile, or backend framework'.",
+      "tags": ["framework-loss"],
+      "spot_check": true
+    },
+    {
+      "id": "fw-fastapi",
+      "prompt": "I need to protect these FastAPI endpoints so only authenticated callers can reach them.",
+      "should_activate": true,
+      "why": "Framework-only signal; 'FastAPI' was in the OLD list.",
+      "tags": ["framework-loss"]
+    },
+    {
+      "id": "fw-spring-boot",
+      "prompt": "Secure my Spring Boot REST API with token validation.",
+      "should_activate": true,
+      "why": "Framework-only signal; 'Spring Boot' was in the OLD list.",
+      "tags": ["framework-loss"]
+    },
+    {
+      "id": "fw-laravel",
+      "prompt": "Set up user login in my Laravel project.",
+      "should_activate": true,
+      "why": "Framework-only signal; 'Laravel' was in the OLD list.",
+      "tags": ["framework-loss"]
+    },
+    {
+      "id": "fw-aspnet",
+      "prompt": "How do I add sign-in to an ASP.NET Core web app?",
+      "should_activate": true,
+      "why": "Framework-only signal; 'ASP.NET Core' was in the OLD list.",
+      "tags": ["framework-loss"]
+    },
+    {
+      "id": "fw-expo",
+      "prompt": "Add a sign in screen to my Expo app.",
+      "should_activate": true,
+      "why": "Framework-only signal; 'Expo' was in the OLD list.",
+      "tags": ["framework-loss"]
+    },
+    {
+      "id": "fw-swift",
+      "prompt": "I'm building an iOS app in Swift and need users to log in with their existing accounts.",
+      "should_activate": true,
+      "why": "Framework-only signal; 'Swift' was in the OLD list.",
+      "tags": ["framework-loss"]
+    },
+
+    {
+      "id": "indirect-node-api",
+      "prompt": "Add auth to my Node API.",
+      "should_activate": true,
+      "why": "The canonical indirect case called out in AGENTS.md's description-writing guide. No Auth0, no feature name.",
+      "tags": ["indirect"],
+      "spot_check": true
+    },
+    {
+      "id": "indirect-google-signin",
+      "prompt": "I want users to be able to sign in with their Google account.",
+      "should_activate": true,
+      "why": "Social connection. Phrased as a product goal with no auth vocabulary at all.",
+      "tags": ["indirect"]
+    },
+    {
+      "id": "indirect-protect-routes",
+      "prompt": "Only logged-in users should be able to reach the /dashboard and /settings pages.",
+      "should_activate": true,
+      "why": "Route protection expressed as a requirement, not a feature request.",
+      "tags": ["indirect"],
+      "spot_check": true
+    },
+    {
+      "id": "indirect-b2b-tenants",
+      "prompt": "Each customer company needs their own workspace with their own admins and their own users, and some want to use their corporate IdP.",
+      "should_activate": true,
+      "why": "Organizations + enterprise connections for B2B SaaS, described purely as a product requirement.",
+      "tags": ["indirect", "feature"]
+    },
+    {
+      "id": "indirect-signup-flow",
+      "prompt": "New users need to create an account and verify their email before they can use the app.",
+      "should_activate": true,
+      "why": "Signup + email verification, no auth jargon.",
+      "tags": ["indirect"]
+    },
+
+    {
+      "id": "feat-mfa",
+      "prompt": "Turn on multi-factor authentication for all users in my Auth0 tenant.",
+      "should_activate": true,
+      "why": "Direct feature configuration — the 'using or configuring any Auth0 feature' axis the new description adds.",
+      "tags": ["configure", "feature"]
+    },
+    {
+      "id": "feat-custom-domain",
+      "prompt": "I want the login page served from auth.mycompany.com instead of the default Auth0 domain.",
+      "should_activate": true,
+      "why": "Custom domain configuration — a tenant-config task with no application code involved.",
+      "tags": ["configure", "feature"],
+      "spot_check": true
+    },
+    {
+      "id": "feat-rbac-roles",
+      "prompt": "I need admin and editor roles so different users see different parts of the app.",
+      "should_activate": true,
+      "why": "Auth0 RBAC / roles-and-permissions. Contrast with neg-k8s-rbac, which uses the same acronym for a different system.",
+      "tags": ["configure", "feature"]
+    },
+
+    {
+      "id": "neg-k8s-rbac",
+      "prompt": "Set up RBAC in my Kubernetes cluster so the CI service account can only deploy to staging.",
+      "should_activate": false,
+      "why": "NEAR-MISS. 'RBAC' appears in both descriptions but this is Kubernetes cluster authorization — no identity provider involved. A description that fires here is keyword-matching, not intent-matching.",
+      "tags": ["negative", "near-miss"],
+      "spot_check": true
+    },
+    {
+      "id": "neg-429-api-ratelimit",
+      "prompt": "Add rate limiting to my public REST API so abusive clients get a 429 back.",
+      "should_activate": false,
+      "why": "NEAR-MISS. The OLD description literally listed '429 rate limit'. This is application-level throttling, entirely unrelated to Auth0 tenant limits.",
+      "tags": ["negative", "near-miss"],
+      "spot_check": true
+    },
+    {
+      "id": "neg-cors-headers",
+      "prompt": "My browser fetch to my Express server fails with a CORS error. Add the right CORS headers.",
+      "should_activate": false,
+      "why": "NEAR-MISS. The OLD description listed 'CORS error' AND 'Express'. This is plain cross-origin config with no auth in the request. The strongest single test of over-triggering.",
+      "tags": ["negative", "near-miss"],
+      "spot_check": true
+    },
+    {
+      "id": "neg-rotate-aws-keys",
+      "prompt": "Rotate our AWS IAM access keys and update the GitHub Actions secrets.",
+      "should_activate": false,
+      "why": "NEAR-MISS. 'rotate' + credentials vocabulary, but this is cloud IAM secret hygiene, not end-user authentication.",
+      "tags": ["negative", "near-miss"]
+    },
+    {
+      "id": "neg-express-session-store",
+      "prompt": "Move my express-session store from memory to Redis so sessions survive a restart.",
+      "should_activate": false,
+      "why": "NEAR-MISS. Both descriptions mention sessions; the new one says 'sessions and tokens'. This is a session persistence/infra change with no identity provider in play.",
+      "tags": ["negative", "near-miss"],
+      "spot_check": true
+    },
+    {
+      "id": "neg-stripe-billing",
+      "prompt": "Add Stripe subscription billing with a monthly and annual plan.",
+      "should_activate": false,
+      "why": "CLEAN NEGATIVE. A different third-party SaaS integration — checks the skill doesn't claim all vendor integration work.",
+      "tags": ["negative"]
+    },
+    {
+      "id": "neg-bar-chart",
+      "prompt": "Build me a bar chart of monthly signups.",
+      "should_activate": false,
+      "why": "CLEAN NEGATIVE. Mentions 'signups' — a word adjacent to the auth domain — but is a data-visualization task.",
+      "tags": ["negative"]
+    },
+    {
+      "id": "neg-slow-query",
+      "prompt": "This Postgres query on the users table takes 12 seconds. Help me speed it up.",
+      "should_activate": false,
+      "why": "CLEAN NEGATIVE. Mentions a users table; it's a query performance problem.",
+      "tags": ["negative"]
+    },
+    {
+      "id": "neg-unit-tests",
+      "prompt": "Write unit tests for this date formatting utility.",
+      "should_activate": false,
+      "why": "CLEAN NEGATIVE. Baseline sanity check — if this activates, the description is broken in an obvious way.",
+      "tags": ["negative"]
+    }
+  ]
+}

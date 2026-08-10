@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use when adding, fixing, or improving authentication in any app — login, logout, signup, route protection, JWT/access token validation, refresh token rotation, MFA, passkeys, step-up auth, SSO, RBAC, Organizations for B2B SaaS, custom login domains, ACUL, or Universal Login branding. Use to audit a tenant (CheckMate), check tenant health and plan fit, or fix findings. Use even if Auth0 isn't mentioned — whenever a developer asks how to authenticate users, secure an API, debug a 401, CORS, callback mismatch, redirect loop, or 429, or migrate from Clerk, NextAuth.js, Firebase, Supabase, Cognito, or Passport.js. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, FastAPI, Spring Boot, Go, Swift, Android, Flutter, PHP, Laravel, ASP.NET Core, React Native, Expo, Ionic, and all Auth0 SDKs.
+description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, SSO, Organizations, RBAC, custom domains, Universal Portals for hosted account and organization self-service, or Universal Login branding. Also use to audit a tenant's health, security, and plan fit (CheckMate), to debug why an auth flow fails, to migrate from another auth provider, or to set up the Vercel native integration. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -41,6 +41,7 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | Add login, signup, sign-in, or "let users log in / create accounts" to an app | **integrate** |
 | Require a second step after the password — a one-time code, SMS or email code, authenticator app, passkey, fingerprint/face (biometric), or security key; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
 | Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
+| Deploy a hosted self-service portal for profile, passkeys, MFA, or organization details instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
 | Serve the login page from your own web address (e.g. `login.example.com`, `auth.company.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
@@ -67,12 +68,10 @@ Work top-down. **Stop at the first tier that yields a framework.**
 
 ### Tier 1 — Auth0 SDK already installed (strongest signal)
 
-Read the project files. **Stop at the first match.**
-
 ### Node.js / JavaScript / TypeScript — check `package.json` → `dependencies`
 
-Rows are most-specific first — an Ionic/Capacitor project also carries
-`@auth0/auth0-angular` (etc.), so check the `@capacitor/browser` rows first.
+Rows are most-specific first: an Ionic/Capacitor project also carries the base
+SDK, so check the `@capacitor/browser` rows before it.
 
 | Package | Framework |
 |---|---|
@@ -120,9 +119,8 @@ Rows are most-specific first — an Ionic/Capacitor project also carries
 
 ### PHP — check `composer.json`
 
-`auth0/auth0-php` powers both PHP web apps and APIs; the mode is set via
-`SdkConfiguration`'s `strategy`. The `STRATEGY_API` row is more specific — check
-it first.
+`auth0/auth0-php` powers both PHP web apps and APIs via `SdkConfiguration`'s
+`strategy`. The `STRATEGY_API` row is more specific — check it first.
 
 | Package | Framework |
 |---|---|
@@ -132,8 +130,7 @@ it first.
 | `auth0/login` + `AuthorizationGuard` | `laravel-api` |
 
 > If `auth0/auth0-php` is installed but no `SdkConfiguration` strategy is set
-> yet (fresh project), fall through to variant disambiguation below (intent:
-> building/protecting an API → `php-api`, else `php`).
+> yet (fresh project), fall through to variant disambiguation below.
 
 ### Go — check `go.mod`
 
@@ -153,10 +150,9 @@ it first.
 ### Tier 2 — Framework from non-Auth0 workspace dependencies
 
 If no Auth0 SDK matched, detect the framework from ordinary (non-Auth0)
-dependencies. **Stop at the first match.** For a web-vs-API split, the base is
-chosen here; the variant is resolved in "Variant disambiguation" below. Rows are
-most-specific first — an Ionic project also carries `@angular/core` / `vue` /
-`react`, so check the `@ionic/*` rows first (as in Tier 1).
+dependencies. **Stop at the first match.** This picks the base; any web-vs-API
+variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
+`@ionic/*` rows before their base framework.
 
 | Signal | Base framework |
 |---|---|
@@ -192,8 +188,8 @@ most-specific first — an Ionic project also carries `@angular/core` / `vue` /
 
 ### Tier 3 — Framework from the prompt
 
-If no workspace signal matched, read the developer's request for a framework or
-language name and map it here. **Stop at the first match.**
+If no workspace signal matched, map the framework or language named in the
+request. **Stop at the first match.**
 
 | Developer mentions... | Framework |
 |---|---|
@@ -252,7 +248,7 @@ present and consistent.
 
 ## Step 3: Detect tooling
 
-Read the project file tree and the request. This is a project-context decision, not a product preference.
+Read the project file tree and the request — a project-context decision, not a product preference.
 
 | Project has... | Load |
 |---|---|
@@ -289,6 +285,12 @@ Read: references/feature-organizations/index.md
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 If multi-tenant architecture / B2B SaaS design question: also Read references/pattern-multi-tenant/index.md
+```
+
+### feature:universal-portals
+```
+Read: references/feature-universal-portals/index.md
+Read: references/tooling-{tooling}/index.md
 ```
 
 ### feature:custom-domains

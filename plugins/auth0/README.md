@@ -4,6 +4,13 @@ Auth0 skills for setting up authentication, migrating from other providers, impl
 
 ## Installation
 
+**Via Codex / ChatGPT desktop:**
+
+Add the repository marketplace from `.agents/plugins/marketplace.json` to the
+Plugins UI, then install **Auth0**. It tracks the published `main` snapshot. The
+public plugin directory requires submission and approval through the
+[OpenAI plugin submission portal](https://platform.openai.com/plugins).
+
 **Via Claude Code:**
 
 First, add the Auth0 marketplace if you haven't already:
@@ -28,7 +35,7 @@ npx skills add auth0/agent-skills/plugins/auth0
 
 | Skill | Description | Documentation |
 |-------|-------------|---------------|
-| [auth0](skills/auth0) | Adds Auth0 authentication to any app. Covers 35+ frameworks (React, Next.js, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Flutter, Laravel, Go, PHP, .NET MAUI, ASP.NET Core, React Native, Expo, Ionic, and more), MFA, Organizations, Vercel native integration, custom domains, ACUL screen generation, branding, debugging auth errors, security best practices, running a tenant security & configuration audit (CheckMate), a plan-aware tenant health check, and migration from other providers. | [SKILL.md](skills/auth0/SKILL.md) |
+| [auth0](skills/auth0) | Adds Auth0 authentication to any app. Covers 35+ frameworks (React, Next.js, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Flutter, Laravel, Go, PHP, .NET MAUI, ASP.NET Core, React Native, Expo, Ionic, and more), MFA, Organizations, Universal Portals for hosted account and organization self-service, Vercel native integration, custom domains, ACUL screen generation, branding, debugging auth errors, security best practices, running a tenant security & configuration audit (CheckMate), a plan-aware tenant health check, and migration from other providers. | [SKILL.md](skills/auth0/SKILL.md) |
 
 ## Forcing the skill with `/auth0`
 

@@ -1,0 +1,22 @@
+{
+  "name": "auth0-agent-skills",
+  "interface": {
+    "displayName": "Auth0"
+  },
+  "plugins": [
+    {
+      "name": "auth0",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/auth0/agent-skills.git",
+        "path": "./plugins/auth0",
+        "ref": "main"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Developer tools"
+    }
+  ]
+}
