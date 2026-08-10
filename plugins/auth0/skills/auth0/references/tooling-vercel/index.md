@@ -58,10 +58,13 @@ variable conventions with a marketplace-specific variant.
 5. Open the integration's **Getting Started** page and follow its generated
    quickstart.
 
-The Vercel CLI can start the same provisioning flow from the project directory:
+The Vercel CLI can start the same provisioning flow from the project directory.
+Pass `--no-env-pull` so the CLI does not run `vercel env pull` automatically
+after provisioning — pulling secrets is a separate, deliberate step below, run
+only after confirming `.env.local` is ignored:
 
 ```bash
-vc i auth0
+vc i auth0 --no-env-pull
 ```
 
 Do not treat `vc i auth0` as read-only. It provisions a resource, so run it
@@ -81,12 +84,17 @@ Prefer connecting with no prefix. If a prefix is required, map the prefixed
 values back to the standard names in your app before constructing `Auth0Client`
 (or pass them explicitly to the constructor).
 
-First confirm `.env.local` is ignored by Git so the pull cannot write real
-client secrets into a tracked file. Then link the checkout and pull the values:
+First confirm `.env.local` is both untracked and git-ignored so the pull cannot
+write real client secrets into a tracked file. Stop if either check fails. Then
+link the checkout and pull the values:
 
 ```bash
-# Confirm .env.local is git-ignored BEFORE pulling any secrets.
-git check-ignore .env.local
+# BEFORE pulling any secrets: fail if .env.local is tracked or not ignored.
+if git ls-files --error-unmatch -- .env.local >/dev/null 2>&1 \
+   || ! git check-ignore --no-index --quiet -- .env.local; then
+  echo ".env.local must be untracked and git-ignored before pulling secrets"
+  exit 1
+fi
 
 # Link the local checkout to the intended Vercel project, then pull local-only values.
 vercel link
@@ -116,8 +124,9 @@ or scope variables before testing those environments.
    changes.
 3. Deploy to the selected Vercel Production environment and complete login,
    callback, session, protected-route, and logout checks on the deployed URL.
-4. Enable iframe embedding in the Auth0 tenant after installation. If login
-   fails in Vercel's embedded experience, check this setting before changing
+4. If login fails in Vercel's embedded experience, enable iframe embedding in
+   the Auth0 tenant — but first restrict the allowed iframe origins to the
+   intended Vercel URLs, then enable the setting. Check this before changing
    callback URLs or SDK code.
 
 ## Manage the integration
