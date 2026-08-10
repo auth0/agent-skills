@@ -256,9 +256,9 @@ Read the project file tree and the request. This is a project-context decision, 
 
 | Project has... | Load |
 |---|---|
-| `vercel.json`, `.vercel/`, or a request for the Auth0 Vercel Marketplace/native integration | `tooling-vercel/index.md` |
 | `terraform/` directory OR any `*.tf` files | `tooling-terraform/index.md` |
 | Auth0 MCP server active in this agent session | `tooling-mcp/index.md` |
+| A request for the Auth0 Vercel Marketplace/native integration, or to connect Auth0 to a Vercel project | `tooling-vercel/index.md` |
 | Anything else (default) | `tooling-cli/index.md` |
 
 ---

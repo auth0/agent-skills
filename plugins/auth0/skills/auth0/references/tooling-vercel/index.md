@@ -19,10 +19,14 @@ Before installing, state what will happen and get confirmation:
   print, commit, or copy their values into source control.
 - Removing the integration removes the connected Auth0 account and downgrades
   the installation to Vercel's Free plan.
+- An installation plan is selected during setup. Paid plans are billed through
+  Vercel via the integration's Settings page; state the selected plan and its
+  billing impact.
 
-Confirm the Vercel team, project, environments, application name, and optional
-environment-variable prefix. If the developer wants an existing Auth0 tenant,
-stop this workflow and use the normal tenant/application configuration path.
+Confirm the Vercel team, project, environments, application name, selected
+installation plan, and optional environment-variable prefix. If the developer
+wants an existing Auth0 tenant, stop this workflow and use the normal
+tenant/application configuration path.
 
 ## Prerequisites
 
@@ -31,7 +35,9 @@ stop this workflow and use the normal tenant/application configuration path.
 - Permission to install integrations for the intended Vercel team and create
   the connected Auth0 account.
 - Iframe embedding enabled after installation, so Universal Login or Classic
-  Login can load in the iframe required by Vercel.
+  Login can load in the iframe required by Vercel. This relaxes the default
+  framing protection for Universal Login, so enable it only for this
+  integration and confirm the developer accepts the tradeoff.
 
 The router co-loads the Next.js reference for the SDK implementation. Do not
 replace its Auth0 routes, middleware/proxy, session handling, or environment
@@ -68,15 +74,32 @@ quickstart exposes values such as `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`,
 `AUTH0_DOMAIN`, and `AUTH0_SECRET`; retrieve them through Vercel rather than
 copying secrets from a dashboard or committing a `.env.local` file.
 
+If you set a variable prefix when connecting the project, Vercel names the
+managed values `[prefix]_AUTH0_DOMAIN`, `[prefix]_AUTH0_CLIENT_ID`, and so on,
+but the `@auth0/nextjs-auth0` SDK only reads the unprefixed default names.
+Prefer connecting with no prefix. If a prefix is required, map the prefixed
+values back to the standard names in your app before constructing `Auth0Client`
+(or pass them explicitly to the constructor).
+
+First confirm `.env.local` is ignored by Git so the pull cannot write real
+client secrets into a tracked file. Then link the checkout and pull the values:
+
 ```bash
+# Confirm .env.local is git-ignored BEFORE pulling any secrets.
+git check-ignore .env.local
+
 # Link the local checkout to the intended Vercel project, then pull local-only values.
 vercel link
-vercel env pull .env.local
+# The native integration stores credentials in Production; pull that environment
+# explicitly (env pull defaults to Development, which has no credentials).
+vercel env pull .env.local --environment=production
 ```
 
-Verify `.env.local` is ignored by Git. The current Next.js SDK also needs
-`APP_BASE_URL`; set it to the canonical production URL if it is not populated
-by the integration. Do not derive it from an untrusted request header.
+For local development the current Next.js SDK also needs `APP_BASE_URL`; set it
+to your local URL (e.g. `http://localhost:3000`) in `.env.local`, and keep the
+canonical production URL configured for the deployed environment. The SDK can
+infer `APP_BASE_URL` from the request on Vercel previews, but do not derive it
+from an untrusted request header in code.
 
 The native-integration quickstart only configures Auth0 environment variables
 for the Production environment. Do not assume Preview or Development deployments
