@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, SSO, Organizations, RBAC, custom domains, Universal Portals for hosted account and organization self-service, or Universal Login branding. Also use to audit a tenant's health, security, and plan fit (CheckMate), to debug why an auth flow fails, or to migrate from another auth provider. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
+description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, SSO, Organizations, RBAC, custom domains, Universal Portals for hosted account and organization self-service, or Universal Login branding. Also use to audit a tenant's health, security, and plan fit (CheckMate), to debug why an auth flow fails, to migrate from another auth provider, or to set up the Vercel native integration. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -53,6 +53,7 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | Hit rate limiting: 429 Too Many Requests, quota exceeded. *Auth0: rate limits.* | **debug:rate-limit** |
 | Move an existing app off Clerk, NextAuth.js, Firebase, Cognito, Okta, Supabase, Passport.js, or another auth provider. *Auth0: provider migration.* | **migrate** |
 | Upgrade the Auth0 SDK itself to a new major version (e.g. Auth0.swift v2→v3, Auth0.Android v3→v4) — breaking changes, deprecated APIs, "update to the latest SDK". *Auth0: SDK major-version upgrade.* | **upgrade-sdk** |
+| Install Auth0's Vercel Marketplace integration, connect Auth0 to a Vercel project, or sync Auth0 configuration into a Vercel-hosted Next.js app. *Auth0: Vercel native integration.* | **integrate** |
 | Use the Auth0 CLI directly — "create an app/API with the `auth0` CLI", script tenant setup, or automate Auth0 config in CI — with no application framework in play. *Auth0: CLI / tooling-only.* | **tooling** |
 
 ---
@@ -247,12 +248,13 @@ present and consistent.
 
 ## Step 3: Detect tooling
 
-Read the project file tree — a project-context decision, not a product preference.
+Read the project file tree and the request — a project-context decision, not a product preference.
 
 | Project has... | Load |
 |---|---|
 | `terraform/` directory OR any `*.tf` files | `tooling-terraform/index.md` |
 | Auth0 MCP server active in this agent session | `tooling-mcp/index.md` |
+| A request for the Auth0 Vercel Marketplace/native integration, or to connect Auth0 to a Vercel project | `tooling-vercel/index.md` |
 | Anything else (default) | `tooling-cli/index.md` |
 
 ---

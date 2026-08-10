@@ -16,6 +16,20 @@
       "expect_refs": ["framework-nextjs/index.md", "tooling-cli/index.md"]
     },
     {
+      "id": "integrate-nextjs-vercel",
+      "intent": "integrate",
+      "framework": "nextjs",
+      "tooling": "vercel",
+      "expect_refs": ["framework-nextjs/index.md", "tooling-vercel/index.md"]
+    },
+    {
+      "id": "tooling-vercel-native-integration",
+      "intent": "tooling",
+      "framework": null,
+      "tooling": "vercel",
+      "expect_refs": ["tooling-vercel/index.md"]
+    },
+    {
       "id": "integrate-express-api",
       "intent": "integrate",
       "framework": "express-jwt",
