@@ -4,6 +4,11 @@ set -uo pipefail
 # Framework Hono TEST-PLAN verification script (Phase 10)
 # Implements the critical structural, reachability, SDK fact, and security tests
 # Exit 0 if all pass; exit 1 if any fail.
+#
+# Test set = TEST-PLAN T-F1..T-F21 (now incl. T-F8 routes + T-F13 scope/perm guards,
+# previously dropped) + T-R1..T-R8 dist-verified regression guards locking the CP3
+# remediation fixes (I1-I9, D2). These are static greps; they enforce presence/absence
+# of dist-sourced signatures, NOT runtime behavior.
 
 # Resolve repo root from script location
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -481,6 +486,145 @@ test_f21_no_commonjs() {
   return 0
 }
 
+# T-F8: Default routes /login, /logout, /callback documented
+test_f8_routes_present() {
+  local hono_dir="plugins/auth0/skills/auth0/references/framework-hono"
+
+  for route in "/login" "/logout" "/callback"; do
+    grep -rq -- "$route" "$hono_dir" || { echo " (route $route not documented)"; return 1; }
+  done
+
+  return 0
+}
+
+# T-F13: NO requiresScopes / requiresPermissions (banned non-exports)
+test_f13_no_scope_perm_guards() {
+  local hono_dir="plugins/auth0/skills/auth0/references/framework-hono"
+
+  if grep -rE "requiresScopes|requiresPermissions" "$hono_dir"/*.md 2>/dev/null | grep -q .; then
+    echo " (requiresScopes/requiresPermissions found — not exported by SDK)"
+    return 1
+  fi
+
+  return 0
+}
+
+# ============================================================================
+# REGRESSION GUARDS (T-Rxx) — lock CP3 dist-verified defect fixes (I1-I9, D2)
+# Each MUST-ABSENT guard re-fails if a defect is reintroduced.
+# ============================================================================
+
+# T-R1 (I1): NO honoEnv import (dist lib/honoEnv.js body = `export {};`, exports nothing)
+test_r1_no_hono_env() {
+  local hono_dir="plugins/auth0/skills/auth0/references/framework-hono"
+
+  if grep -rn "honoEnv" "$hono_dir"/*.md 2>/dev/null | grep -q .; then
+    echo " (honoEnv reference found — dead runtime export)"
+    return 1
+  fi
+
+  return 0
+}
+
+# T-R2 (I2): NO env(c) usage (module-scope crash; SDK auto-reads bindings)
+test_r2_no_env_c() {
+  local hono_dir="plugins/auth0/skills/auth0/references/framework-hono"
+
+  if grep -rnF "env(c)" "$hono_dir"/*.md 2>/dev/null | grep -q .; then
+    echo " (env(c) found — module-scope ReferenceError)"
+    return 1
+  fi
+
+  return 0
+}
+
+# T-R3 (I3): NO snake_case access_token; camelCase accessToken IS the dist field
+test_r3_access_token_camel() {
+  local hono_dir="plugins/auth0/skills/auth0/references/framework-hono"
+
+  if grep -rn "access_token" "$hono_dir"/*.md 2>/dev/null | grep -q .; then
+    echo " (access_token snake_case found — dist field is accessToken)"
+    return 1
+  fi
+  # Positive: accessToken must be present
+  grep -rq "accessToken" "$hono_dir"/*.md || { echo " (accessToken not present)"; return 1; }
+
+  return 0
+}
+
+# T-R4 (I4): NO cancelSilentLogin(c) code call (dist = zero-arg middleware factory)
+test_r4_cancel_silent_login_arity() {
+  local hono_dir="plugins/auth0/skills/auth0/references/framework-hono"
+
+  # Code call has trailing semicolon; prose warning does not.
+  if grep -rnF "cancelSilentLogin(c);" "$hono_dir"/*.md 2>/dev/null | grep -q .; then
+    echo " (cancelSilentLogin(c); code call — wrong arity)"
+    return 1
+  fi
+
+  return 0
+}
+
+# T-R5 (I5): updateSession must be awaited (async persist; fire-and-forget loses writes)
+test_r5_update_session_awaited() {
+  local hono_dir="plugins/auth0/skills/auth0/references/framework-hono"
+
+  # Fail on a statement-position updateSession( call not prefixed by await.
+  if grep -rnE "^[[:space:]]*updateSession\(" "$hono_dir"/*.md 2>/dev/null | grep -q .; then
+    echo " (un-awaited updateSession() call found)"
+    return 1
+  fi
+  # Positive: at least one awaited call present
+  grep -rq "await updateSession(" "$hono_dir"/*.md || { echo " (no awaited updateSession)"; return 1; }
+
+  return 0
+}
+
+# T-R6 (I7): SessionStore uses StateData contract (not SessionData) + required deleteByLogoutToken
+test_r6_session_store_shape() {
+  local patterns="plugins/auth0/skills/auth0/references/framework-hono/patterns.md"
+  [[ -f "$patterns" ]] || { echo " (patterns.md missing)"; return 1; }
+
+  grep -q "StateData" "$patterns" || { echo " (StateData not used in store contract)"; return 1; }
+  grep -q "deleteByLogoutToken(claims" "$patterns" || { echo " (deleteByLogoutToken(claims) sig missing)"; return 1; }
+  # NO null return in store get() — dist returns StateData | undefined
+  if grep -nE "return (data \? [^;]*: null|null)" "$patterns" 2>/dev/null | grep -q .; then
+    echo " (store returns null; dist contract is undefined)"
+    return 1
+  fi
+
+  return 0
+}
+
+# T-R7 (I8): standalone handleLogin takes NO client config (domain/clientID) — only flow params
+test_r7_handle_login_no_client_config() {
+  local patterns="plugins/auth0/skills/auth0/references/framework-hono/patterns.md"
+  [[ -f "$patterns" ]] || { echo " (patterns.md missing)"; return 1; }
+
+  # handleLogin({ ... domain ... }) is the fabricated per-tenant form.
+  if grep -nE "handleLogin\(\{" "$patterns" 2>/dev/null | grep -q .; then
+    # Allow only if it does not contain client-config keys nearby
+    if grep -A3 "handleLogin({" "$patterns" 2>/dev/null | grep -qE "domain:|clientID:|baseURL:"; then
+      echo " (handleLogin passed client config — not accepted by SDK)"
+      return 1
+    fi
+  fi
+
+  return 0
+}
+
+# T-R8 (D2): NO "Vercel Edge" runtime claim (not in dist/pkg/REQ)
+test_r8_no_vercel_edge() {
+  local hono_dir="plugins/auth0/skills/auth0/references/framework-hono"
+
+  if grep -rn "Vercel" "$hono_dir"/*.md 2>/dev/null | grep -q .; then
+    echo " (Vercel runtime claim found — unsourced)"
+    return 1
+  fi
+
+  return 0
+}
+
 # ============================================================================
 # SECURITY & PII TESTS (T-Pxx)
 # ============================================================================
@@ -547,6 +691,8 @@ run_test "T-N3" "Hub dispatch table has integrate row" "test_n3_hub_dispatch"
 run_test "T-N4" "Hub 'As needed' section lists setup, api-reference, patterns" "test_n4_as_needed"
 run_test "T-N5" "Leaf files are sinks (no .md links)" "test_n5_leaves_no_links"
 
+run_test "T-F8" "Default routes /login /logout /callback documented" "test_f8_routes_present"
+run_test "T-F13" "NO requiresScopes/requiresPermissions (non-exports)" "test_f13_no_scope_perm_guards"
 run_test "T-F1" "authRequired default = true" "test_f1_auth_required"
 run_test "T-F2" "idpLogout default = false" "test_f2_idp_logout"
 run_test "T-F3" "Cookie name = appSession" "test_f3_app_session"
@@ -566,6 +712,15 @@ run_test "T-F18" "Node 18+ documented" "test_f18_node_18"
 run_test "T-F19" "NO Node 20 LTS claim" "test_f19_no_node_20_lts"
 run_test "T-F20" "ESM imports present" "test_f20_esm_imports"
 run_test "T-F21" "NO CommonJS require()" "test_f21_no_commonjs"
+
+run_test "T-R1" "REGRESSION I1: NO honoEnv (dead export)" "test_r1_no_hono_env"
+run_test "T-R2" "REGRESSION I2: NO env(c) module-scope call" "test_r2_no_env_c"
+run_test "T-R3" "REGRESSION I3: accessToken camelCase (NO access_token)" "test_r3_access_token_camel"
+run_test "T-R4" "REGRESSION I4: NO cancelSilentLogin(c) wrong arity" "test_r4_cancel_silent_login_arity"
+run_test "T-R5" "REGRESSION I5: updateSession awaited" "test_r5_update_session_awaited"
+run_test "T-R6" "REGRESSION I7: SessionStore StateData contract" "test_r6_session_store_shape"
+run_test "T-R7" "REGRESSION I8: handleLogin no client config" "test_r7_handle_login_no_client_config"
+run_test "T-R8" "REGRESSION D2: NO Vercel Edge runtime claim" "test_r8_no_vercel_edge"
 
 run_test "T-P1" "NO tenant domain leaked" "test_p1_no_tenant_domain"
 run_test "T-P2" "NO client ID leaked (exact)" "test_p2_no_client_id_leaked"

@@ -204,14 +204,16 @@ The session object contains:
 
 Enrich the session with custom data using `updateSession()`:
 
+`updateSession()` is async and persists to the session store — always `await` it inside an `async` handler:
+
 ```typescript
 import { updateSession } from '@auth0/auth0-hono';
 
-app.post('/preferences', requiresAuth(), (c) => {
-  updateSession(c, {
+app.post('/preferences', requiresAuth(), async (c) => {
+  await updateSession(c, {
     preferences: { theme: 'dark', language: 'en' },
   });
-  
+
   return c.json({ ok: true });
 });
 ```
@@ -222,21 +224,27 @@ app.post('/preferences', requiresAuth(), (c) => {
 
 Fetch access tokens on-demand to call protected APIs:
 
+`getAccessToken()` never returns null — on failure it throws an `Auth0Error` subclass (`InvalidGrantError`, `TokenRefreshError`). Wrap the call in try/catch:
+
 ```typescript
-import { getAccessToken } from '@auth0/auth0-hono';
+import { getAccessToken, InvalidGrantError, TokenRefreshError } from '@auth0/auth0-hono';
 
 app.get('/api-data', requiresAuth(), async (c) => {
-  const token = await getAccessToken(c);
-  
-  if (!token) {
-    return c.json({ error: 'No access token' }, { status: 401 });
+  let token;
+  try {
+    token = await getAccessToken(c);
+  } catch (err) {
+    if (err instanceof InvalidGrantError || err instanceof TokenRefreshError) {
+      return c.json({ error: 'Could not obtain access token' }, { status: 401 });
+    }
+    throw err;
   }
-  
+
   // Call your API
   const response = await fetch('https://api.example.com/data', {
-    headers: { Authorization: `Bearer ${token.access_token}` },
+    headers: { Authorization: `Bearer ${token.accessToken}` },
   });
-  
+
   return c.json(await response.json());
 });
 ```
@@ -245,8 +253,8 @@ The returned token object has:
 
 ```typescript
 {
-  access_token: string,
-  expiresAt: number,  // Milliseconds since epoch
+  accessToken: string,
+  expiresAt: number,  // Unix timestamp
   ...
 }
 ```
@@ -274,10 +282,10 @@ import { getAccessTokenForConnection } from '@auth0/auth0-hono';
 app.get('/connection-token', requiresAuth(), async (c) => {
   const token = await getAccessTokenForConnection(c, {
     connection: 'google-oauth2',
-    audience: 'https://www.googleapis.com',
+    loginHint: 'user@gmail.com', // optional
   });
-  
-  return c.json(token);
+
+  return c.json({ accessToken: token.accessToken });
 });
 ```
 
@@ -302,16 +310,17 @@ If the SSO cookie exists and is valid, the session is restored automatically. Ot
 
 ### Cancel Silent Login
 
-To cancel (clear the SSO cookie), use `cancelSilentLogin()`:
+To cancel silent login (set the skip cookie), use `cancelSilentLogin()`. It is a **zero-argument factory** that returns a middleware — mount it in the route chain, then let the next handler produce the response:
 
 ```typescript
 import { cancelSilentLogin } from '@auth0/auth0-hono';
 
-app.get('/cancel-sso', (c) => {
-  cancelSilentLogin(c);
+app.get('/cancel-sso', cancelSilentLogin(), (c) => {
   return c.redirect('/');
 });
 ```
+
+**Do NOT** call `cancelSilentLogin(c)` directly inside a response-returning handler. It takes no arguments, and its internal `next()` call can dispatch to Hono's 404 handler, which finalizes the context and silently discards a subsequent `c.redirect()`. Always use it as composable middleware as shown above.
 
 **Note:** `pauseSilentLogin()` is deprecated; use `cancelSilentLogin()` instead.
 
@@ -322,7 +331,8 @@ The `onCallback` hook runs after Auth0 redirects back with the authentication re
 ### Hook Signature
 
 ```typescript
-onCallback?: (c: Context, error: Error | null, session: Auth0Session | null) => Response | SessionData | void
+onCallback?: (c: Context, error: Auth0Error | null, session: SessionData | null) =>
+  SessionData | Response | void | Promise<SessionData | Response | void>
 ```
 
 ### On Success (error is null)

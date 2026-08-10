@@ -111,12 +111,11 @@ The `auth0()` middleware automatically creates three routes:
 
 ## Cloudflare Workers Setup
 
-For Cloudflare Workers, use the `honoEnv` helper to inject environment bindings:
+On Cloudflare Workers, do NOT pass explicit config to `auth0()`. Call it with no arguments — the middleware reads its configuration from the Worker's per-request environment bindings automatically (via `hono/adapter`), so there is no module-scope environment to inject:
 
 ```typescript
 import { Hono } from 'hono';
 import { auth0 } from '@auth0/auth0-hono';
-import { env } from '@auth0/auth0-hono/lib/honoEnv';
 
 type Bindings = {
   AUTH0_DOMAIN: string;
@@ -128,18 +127,13 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.use('*', auth0({
-  domain: env(c).AUTH0_DOMAIN,
-  clientID: env(c).AUTH0_CLIENT_ID,
-  clientSecret: env(c).AUTH0_CLIENT_SECRET,
-  baseURL: env(c).APP_BASE_URL,
-  session: {
-    secret: env(c).AUTH0_SESSION_ENCRYPTION_KEY,
-  },
-}));
+// auth0() reads AUTH0_* + APP_BASE_URL bindings per-request; no explicit config needed.
+app.use('*', auth0());
 
 export default app;
 ```
+
+The binding names the SDK reads are the same `AUTH0_DOMAIN`, `AUTH0_CLIENT_ID`, `AUTH0_CLIENT_SECRET`, `APP_BASE_URL`, and `AUTH0_SESSION_ENCRYPTION_KEY` you configure below. To override a value explicitly, pass it inside a request-scoped handler rather than at module scope.
 
 In `wrangler.toml`, configure environment variables:
 

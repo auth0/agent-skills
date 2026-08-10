@@ -139,14 +139,13 @@ app.post('/org/:orgId/members',
 
 ## Cloudflare Workers Deployment
 
-Deploy Hono with Auth0 on Cloudflare Workers using the `honoEnv` helper.
+Deploy Hono with Auth0 on Cloudflare Workers. Call `auth0()` with no arguments — the middleware reads the Worker's per-request bindings automatically (via `hono/adapter`). Do not build a config object at module scope; there is no request context there.
 
 ### Basic Setup
 
 ```typescript
 import { Hono } from 'hono';
 import { auth0 } from '@auth0/auth0-hono';
-import { env } from '@auth0/auth0-hono/lib/honoEnv';
 
 type Bindings = {
   AUTH0_DOMAIN: string;
@@ -158,15 +157,8 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>();
 
-app.use('*', auth0({
-  domain: env(c).AUTH0_DOMAIN,
-  clientID: env(c).AUTH0_CLIENT_ID,
-  clientSecret: env(c).AUTH0_CLIENT_SECRET,
-  baseURL: env(c).APP_BASE_URL,
-  session: {
-    secret: env(c).AUTH0_SESSION_ENCRYPTION_KEY,
-  },
-}));
+// auth0() reads AUTH0_* + APP_BASE_URL bindings per-request; no explicit config needed.
+app.use('*', auth0());
 
 export default app;
 ```
@@ -257,18 +249,21 @@ Start: `bun run server.ts`
 
 Replace the default in-memory session store with a custom backend (Redis, database, etc.).
 
-### SessionStore Interface
+### SessionStore Contract
 
-Implement the `SessionStore` interface:
+`SessionStore` is an **abstract class** exported by the SDK — extend it and implement all four methods. Persisted values are typed `StateData` (from `@auth0/auth0-server-js`), `get()` returns `StateData | undefined` (never `null`), and `deleteByLogoutToken` is **required** and takes `LogoutTokenClaims` (not a raw token string):
 
 ```typescript
 import { SessionStore } from '@auth0/auth0-hono';
+import type { StateData, LogoutTokenClaims } from '@auth0/auth0-server-js';
+import type { Context } from 'hono';
 
-interface SessionStore {
-  set(id: string, data: SessionData): Promise<void>;
-  get(id: string): Promise<SessionData | null>;
-  delete(id: string): Promise<void>;
-  deleteByLogoutToken?(logoutToken: string): Promise<void>;
+// Abstract-class contract you must implement:
+abstract class SessionStore {
+  abstract set(identifier: string, stateData: StateData): Promise<void>;
+  abstract get(identifier: string): Promise<StateData | undefined>;
+  abstract delete(identifier: string): Promise<void>;
+  abstract deleteByLogoutToken(claims: LogoutTokenClaims, c?: Context): Promise<void>;
 }
 ```
 
@@ -277,33 +272,36 @@ interface SessionStore {
 ```typescript
 import Redis from 'ioredis';
 import { SessionStore } from '@auth0/auth0-hono';
+import type { StateData, LogoutTokenClaims } from '@auth0/auth0-server-js';
 
 const redis = new Redis();
 
-const redisStore: SessionStore = {
-  async set(id: string, data: any) {
-    await redis.set(id, JSON.stringify(data), 'EX', 86400); // 1-day TTL
-  },
-  
-  async get(id: string) {
+class RedisStore extends SessionStore {
+  async set(id: string, stateData: StateData): Promise<void> {
+    await redis.set(id, JSON.stringify(stateData), 'EX', 86400); // 1-day TTL
+  }
+
+  async get(id: string): Promise<StateData | undefined> {
     const data = await redis.get(id);
-    return data ? JSON.parse(data) : null;
-  },
-  
-  async delete(id: string) {
+    return data ? (JSON.parse(data) as StateData) : undefined;
+  }
+
+  async delete(id: string): Promise<void> {
     await redis.del(id);
-  },
-  
-  async deleteByLogoutToken(logoutToken: string) {
-    // Optional: implement backchannel logout
-    // Search for session by logout token and delete
-  },
-};
+  }
+
+  async deleteByLogoutToken(claims: LogoutTokenClaims): Promise<void> {
+    // Backchannel logout: locate session by claims.sid / claims.sub and delete.
+    if (claims.sid) {
+      await redis.del(claims.sid);
+    }
+  }
+}
 
 app.use('*', auth0({
   // ... other config
   session: {
-    store: redisStore,
+    store: new RedisStore(),
     secret: process.env.AUTH0_SESSION_ENCRYPTION_KEY,
   },
 }));
@@ -314,42 +312,50 @@ app.use('*', auth0({
 ```typescript
 import { createClient } from '@supabase/supabase-js';
 import { SessionStore } from '@auth0/auth0-hono';
+import type { StateData, LogoutTokenClaims } from '@auth0/auth0-server-js';
 
 const supabase = createClient(url, key);
 
-const supabaseStore: SessionStore = {
-  async set(id: string, data: any) {
+class SupabaseStore extends SessionStore {
+  async set(id: string, stateData: StateData): Promise<void> {
     const { error } = await supabase
       .from('sessions')
       .upsert({
         id,
-        data: JSON.stringify(data),
+        data: JSON.stringify(stateData),
         expires_at: new Date(Date.now() + 86400000), // 1 day
       });
-    
+
     if (error) throw error;
-  },
-  
-  async get(id: string) {
+  }
+
+  async get(id: string): Promise<StateData | undefined> {
     const { data, error } = await supabase
       .from('sessions')
       .select('data')
       .eq('id', id)
       .single();
-    
-    if (error || !data) return null;
-    return JSON.parse(data.data);
-  },
-  
-  async delete(id: string) {
+
+    if (error || !data) return undefined;
+    return JSON.parse(data.data) as StateData;
+  }
+
+  async delete(id: string): Promise<void> {
     await supabase.from('sessions').delete().eq('id', id);
-  },
-};
+  }
+
+  async deleteByLogoutToken(claims: LogoutTokenClaims): Promise<void> {
+    // Backchannel logout: delete rows matching the logout token's session id.
+    if (claims.sid) {
+      await supabase.from('sessions').delete().eq('id', claims.sid);
+    }
+  }
+}
 
 app.use('*', auth0({
   // ... other config
   session: {
-    store: supabaseStore,
+    store: new SupabaseStore(),
     secret: process.env.AUTH0_SESSION_ENCRYPTION_KEY,
   },
 }));
@@ -413,38 +419,35 @@ app.onError((err, c) => {
 
 ## Standalone Route Handlers
 
-For advanced scenarios (multi-tenant, custom flows), use standalone handler functions instead of middleware.
+When you disable the default mounted routes (`mountRoutes: false`, or opt out of individual routes via `customRoutes`), define the auth routes yourself using the standalone handlers. Each handler auto-initializes the OIDC client from the environment, so you do **not** pass client credentials (domain/clientID/baseURL) to them — those come from `auth0()` config or environment bindings.
 
 ### Available Handlers
 
-- `handleLogin(params?)` — Initiate login
-- `handleCallback()` — Handle OAuth callback
-- `handleLogout()` — Clear session and logout
+- `handleLogin(params?: LoginParams)` — Initiate login
+- `handleCallback(params?: CallbackParams)` — Handle OAuth callback
+- `handleLogout(params?: LogoutParams)` — Clear session and logout
 - `handleBackchannelLogout()` — Handle backchannel logout (OpenID Connect RP-Initiated Logout)
 
-### Example: Per-Request Configuration
+The `params` are **flow options**, not client configuration:
+- `LoginParams`: `{ redirectAfterLogin?, silent?, authorizationParams?, forwardAuthorizationParams? }`
+- `CallbackParams`: `{ redirectAfterLogin?, onCallback? }`
+- `LogoutParams`: `{ redirectAfterLogout? }`
+
+### Example: Custom Route Paths
 
 ```typescript
-import { handleLogin, handleCallback, handleLogout } from '@auth0/auth0-hono';
+import { auth0, handleLogin, handleCallback, handleLogout } from '@auth0/auth0-hono';
 
-app.post('/auth/login-custom', async (c) => {
-  // Dynamic config per request
-  const tenant = c.req.query('tenant'); // e.g., ?tenant=us
-  
-  const handler = handleLogin({
-    domain: tenantConfig[tenant].domain,
-    clientID: tenantConfig[tenant].clientID,
-    baseURL: process.env.APP_BASE_URL,
-  });
-  
-  return handler(c);
-});
+// Disable the default /login, /logout, /callback routes...
+app.use('*', auth0({ mountRoutes: false }));
 
-app.get('/auth/callback-custom', async (c) => {
-  const handler = handleCallback({ /* config */ });
-  return handler(c);
-});
+// ...and mount your own at custom paths.
+app.get('/auth/start', handleLogin({ redirectAfterLogin: '/dashboard' }));
+app.get('/auth/return', handleCallback());
+app.get('/auth/end', handleLogout({ redirectAfterLogout: '/goodbye' }));
 ```
+
+For per-tenant deployments, run separate instances configured via environment bindings (see Cloudflare Workers above) rather than passing per-request client config — the SDK does not accept credentials on the standalone handlers.
 
 ## Session Enrichment
 
@@ -458,8 +461,8 @@ app.post('/preferences',
   async (c) => {
     const body = await c.req.json();
     
-    // Merge custom data into session
-    updateSession(c, {
+    // Merge custom data into session (async — must await)
+    await updateSession(c, {
       theme: body.theme,
       language: body.language,
       notifications_enabled: body.notificationsEnabled,

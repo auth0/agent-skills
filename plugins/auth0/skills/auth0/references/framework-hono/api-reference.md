@@ -11,7 +11,7 @@ Complete configuration options, environment variables, error types, and frequent
 - Protected routes and authentication guards
 - Role-Based Access Control (RBAC) via claim guards
 - Organizations for multi-tenant applications
-- Runtimes: Node.js, Cloudflare Workers, Deno, Bun, Vercel Edge
+- Runtimes: Node.js, Cloudflare Workers, Deno, Bun
 
 **Not in beta (coming in future releases):**
 - JWT verifier and `/api` subpath for stateless API authentication
@@ -265,12 +265,12 @@ Before deploying to production, verify:
 
 **Q: Why does session not have an `expiresAt` field?**
 
-Session data doesn't track token expiration directly. To check session age, use `session.internal.createdAt`. To check access token expiration, call `getAccessToken()` which returns `{ access_token, expiresAt, ... }`.
+Session data doesn't track token expiration directly. To check session age, use `session.internal.createdAt`. To check access token expiration, call `getAccessToken()` which returns `{ accessToken, expiresAt, ... }`.
 
 **Q: How do I read tokens from the context?**
 
 The context shape is `{ user, session, org }` — there is NO `tokens` field. Fetch tokens on-demand:
-- Access token: `await getAccessToken(c)` → `{ access_token, expiresAt, ... }`
+- Access token: `await getAccessToken(c)` → `{ accessToken, expiresAt, ... }`
 - Connection-specific token: `await getAccessTokenForConnection(c, opts)`
 - ID token: `c.var.auth0.session.idToken` (if offline_access scope)
 
