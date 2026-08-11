@@ -1,0 +1,23 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "auth0",
+  "version": "2.1.0",
+  "description": "A unified Auth0 skill that routes developers to the right guidance for adding, securing, debugging, or migrating authentication in any app.",
+  "author": {
+    "name": "Auth0",
+    "email": "support@auth0.com",
+    "url": "https://auth0.com"
+  },
+  "homepage": "https://auth0.com/docs/quickstart/agent-skills",
+  "repository": "https://github.com/auth0/agent-skills",
+  "license": "Apache-2.0",
+  "keywords": [
+    "auth0",
+    "authentication",
+    "authorization",
+    "oauth",
+    "oidc",
+    "mfa",
+    "sdk"
+  ]
+}

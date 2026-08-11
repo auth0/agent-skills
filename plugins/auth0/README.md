@@ -31,6 +31,12 @@ Then install the plugin:
 npx skills add auth0/agent-skills/plugins/auth0
 ```
 
+**Via an Agent Plugins-compatible client:**
+
+Load the `plugins/auth0` directory using the client's plugin install flow.
+[Agent Plugins](https://agent-plugins.org/) defines the portable package format,
+not a universal install command.
+
 ## Skills
 
 | Skill | Description | Documentation |
