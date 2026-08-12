@@ -1,6 +1,6 @@
 # Agent Plugin Architecture
 
-This repository provides one canonical Auth0 skill distributed through Claude Code, Cursor, and OpenAI/Codex plugin packaging. The OpenAI package is also usable by ChatGPT desktop through the universal plugin directory.
+This repository provides one canonical Auth0 skill distributed through Claude Code, Cursor, OpenAI/Codex, and the portable Agent Plugins package format. The OpenAI package is also usable by ChatGPT desktop through the universal plugin directory.
 
 ## Architecture Overview
 
@@ -67,6 +67,7 @@ auth0/agent-skills/
 │   └── marketplace.json          # Cursor marketplace metadata
 ├── plugins/
 │   └── auth0/                    # Single unified plugin
+│       ├── plugin.json            # Agent Plugins v1 portable manifest
 │       ├── .claude-plugin/
 │       │   └── plugin.json       # Claude plugin config
 │       ├── .cursor-plugin/
@@ -117,9 +118,16 @@ the OpenAI plugin submission portal.
 - Plugin configuration with source path
 - Skills are auto-discovered from the `skills/` directory within the plugin
 
+### plugins/auth0/plugin.json
+
+**Purpose**: Portable [Agent Plugins](https://agent-plugins.org/) v1 manifest.
+
+Agent Plugins clients discover `auth0` from `skills/auth0/SKILL.md`. This
+package does not include `mcp.json` because it does not bundle an MCP server.
+
 ### plugins/auth0/.claude-plugin/plugin.json
 
-**Purpose**: Plugin-specific configuration
+**Purpose**: Claude-specific plugin configuration.
 
 **Contains**:
 - Plugin name, display name, and version
@@ -162,6 +170,12 @@ UI to install Auth0 from the published `main` snapshot. Public distribution
 requires submission through https://platform.openai.com/plugins and OpenAI
 approval. See [`docs/openai-plugin.md`](docs/openai-plugin.md).
 
+### Agent Plugins-compatible clients
+
+Load `plugins/auth0` as a plugin directory using the client's install flow.
+Agent Plugins defines the portable package format, not a universal install
+command.
+
 ---
 
 ## Use Cases
@@ -179,6 +193,7 @@ no per-framework skill to pick.
 
 Edit the relevant marketplace and plugin manifests. For OpenAI/Codex, update
 `.agents/plugins/marketplace.json` and `plugins/auth0/.codex-plugin/plugin.json`.
+For Agent Plugins, update `plugins/auth0/plugin.json`.
 
 ### Create Release
 
