@@ -108,9 +108,20 @@ acr_values=http://schemas.openid.net/pape/policies/2007/06/multi-factor
 
 The general pattern for all frameworks:
 
-1. Check if user has already completed MFA (inspect `amr` claim)
-2. If not, request MFA via `acr_values` parameter
-3. Proceed with sensitive action once MFA is verified
+1. Check whether the user has already completed MFA by inspecting the `amr` claim
+2. If `amr` does not include `mfa`, request MFA via the `acr_values` parameter with `max_age: 0`
+3. Re-read the `amr` claim after step-up and gate the sensitive action on `mfa` being present
+
+Both bookends are required. Requesting `acr_values` starts the step-up; reading
+`amr` afterward is what proves it happened. Per Auth0's step-up documentation,
+"if `amr` does not exist in the payload or does not contain the value `mfa`, the
+user did not log in with MFA" — so gate the sensitive action on that check, not
+on the step-up call merely resolving.
+
+`interactiveErrorHandler: 'popup'` (configured on `Auth0Provider`) is a valid way
+to surface the MFA prompt when a silent token request hits an `mfa_required`
+error, but it only handles the prompt. Confirm `amr` includes `mfa` before
+running the sensitive action even when you rely on it.
 
 **For complete framework-specific examples, see the sections below:**
 - React (basic and custom hook)
@@ -326,6 +337,7 @@ auth0 api get "guardian/policies"
 ## Security Considerations
 
 - **Always validate MFA on the backend** - Never trust frontend-only checks
+- **Re-check `amr` after step-up** - Confirm `amr` includes `mfa` before running the sensitive action; a resolved step-up call alone does not prove MFA occurred
 - **Use `max_age=0`** for sensitive operations to force fresh authentication
 - **Prefer TOTP/WebAuthn** over SMS (SIM swapping risk)
 - **Enable recovery codes** so users don't get locked out
@@ -627,21 +639,27 @@ function SensitiveAction() {
   const { getAccessTokenSilently, getIdTokenClaims } = useAuth0();
 
   const requireMFA = async () => {
-    // Check if user already completed MFA
+    // Check whether the user already completed MFA
     const claims = await getIdTokenClaims();
-    const amr = claims?.amr || [];
 
-    if (!amr.includes('mfa')) {
+    if (!claims?.amr?.includes('mfa')) {
       // Request MFA via step-up authentication
       await getAccessTokenSilently({
         authorizationParams: {
           acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
           max_age: 0, // Force re-authentication
         },
+        cacheMode: 'off', // Bypass the token cache so the new claims are fetched
       });
+
+      // Re-read the refreshed claims and confirm MFA actually happened
+      const updated = await getIdTokenClaims();
+      if (!updated?.amr?.includes('mfa')) {
+        throw new Error('MFA was not completed');
+      }
     }
 
-    // User has completed MFA, proceed with sensitive action
+    // MFA is verified, proceed with the sensitive action
     return performSensitiveAction();
   };
 
@@ -698,6 +716,10 @@ export function useStepUpAuth() {
           });
           return false;
         }
+
+        // Re-check the refreshed claims — a resolved token call alone does not
+        // prove MFA occurred. Only report success when amr now includes 'mfa'.
+        return hasMFA();
       }
 
       return true;
