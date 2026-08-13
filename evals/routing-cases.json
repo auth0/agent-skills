@@ -94,6 +94,21 @@
       "expect_refs": ["feature-acul/index.md", "tooling-cli/index.md"]
     },
     {
+      "id": "feature-my-organization-nextjs",
+      "intent": "feature:my-organization",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["feature-my-organization/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
+    },
+    {
+      "id": "feature-my-organization-b2b-combo",
+      "intent": "feature:my-organization",
+      "framework": "react",
+      "tooling": "cli",
+      "multi_tenant": true,
+      "expect_refs": ["feature-my-organization/index.md", "tooling-cli/index.md", "framework-react/index.md", "pattern-multi-tenant/index.md"]
+    },
+    {
       "id": "feature-universal-portals",
       "intent": "feature:universal-portals",
       "framework": null,
