@@ -5,6 +5,9 @@ license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
   version: '1.0.0'
+  openclaw:
+    emoji: "\U0001F510"
+    homepage: https://github.com/auth0/agent-skills
 ---
 
 # Migrating from node-auth0 to auth0-auth-js / auth0-server-js
@@ -80,7 +83,7 @@ Before touching any code, verify the environment is safe for an in-place rewrite
    - `@auth0/auth0-auth-js` >= v1.12.0
    - `@auth0/auth0-server-js` >= v1.10.0
    
-   If per-request options (`signal`, `headers`, per-call `customFetch` in `RequestOptions`) are required, note that these features are **unreleased** as of auth-js v1.12.0 (added by PR #230, pending merge and release). If the customer needs these features, gate the migration until the release lands or provide instructions for installing from a pre-release branch.
+   Per-request options (`signal`, `headers`, per-call `customFetch` in `RequestOptions`) are **unreleased** as of auth-js v1.12.0 (added by PR #230, pending merge and release). If the customer needs these features, gate the migration until the release lands or provide instructions for installing from a pre-release branch.
 
 4. **Verify source SDK:** Confirm that node-auth0 v5 is present in the project's dependencies and is the source SDK being migrated.
 

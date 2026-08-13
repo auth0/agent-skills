@@ -42,6 +42,7 @@ not a universal install command.
 | Skill | Description | Documentation |
 |-------|-------------|---------------|
 | [auth0](skills/auth0) | Adds Auth0 authentication to any app. Covers 35+ frameworks (React, Next.js, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Flutter, Laravel, Go, PHP, .NET MAUI, ASP.NET Core, React Native, Expo, Ionic, and more), MFA, Organizations, Universal Portals for hosted account and organization self-service, Vercel native integration, custom domains, ACUL screen generation, branding, debugging auth errors, security best practices, running a tenant security & configuration audit (CheckMate), a plan-aware tenant health check, and migration from other providers. | [SKILL.md](skills/auth0/SKILL.md) |
+| [migrating-node-auth0-to-auth0-server-js](skills/migrating-node-auth0-to-auth0-server-js) | Migrates Auth0 authentication code off the node-auth0 v5 SDK (`auth0` package, `AuthenticationClient`, `UserInfoClient`) to `@auth0/auth0-auth-js` (stateless token grants) or `@auth0/auth0-server-js` (server-managed sessions). Surgically rewrites only the authentication layer, leaving `ManagementClient` and application code untouched. | [SKILL.md](skills/migrating-node-auth0-to-auth0-server-js/SKILL.md) |
 
 ## Forcing the skill with `/auth0`
 
