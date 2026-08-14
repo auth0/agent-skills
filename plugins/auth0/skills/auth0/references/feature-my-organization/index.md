@@ -17,10 +17,17 @@ The My Organization API is an **organization-scoped, user-called** API covering
 identity providers, organization profile and branding, verified domains, members,
 roles, and invitations. It is the API behind embedded delegated administration.
 
-An organization admin calls it with their **own** user access token. That is what
-distinguishes it from the Management API: no machine-to-machine credential, no
-backend proxy holding a tenant-wide secret, and no way for one organization's
-admin to reach another organization's data.
+In the **delegated flow** this reference is built around, an organization admin
+calls it with their **own** user access token. That is what distinguishes it from
+the Management API: the caller's `org_id` scopes every call, so no tenant-wide
+secret sits in the request path and no organization's admin can reach another
+organization's data.
+
+A trusted server-side job can also call this API, on a separate and deliberately
+configured path — an explicit machine-to-machine grant plus an `organization`
+value pinning the token to one organization. See "Server-side jobs
+(machine-to-machine)". Everything else in this reference describes the delegated
+flow unless it says otherwise.
 
 Integrating it is the same three moves in every stack: get the caller a user
 access token for the `my-org/` audience, call the endpoints with it, and render
@@ -42,7 +49,7 @@ scopes, the endpoints, and the tenant configuration they require.
 - **Per-user profile, password, passkey, or MFA self-service** — use the My Account API, audience `https://YOUR_AUTH0_DOMAIN/me/`.
 - **A hosted UI you don't want to own** — Universal Portals renders the pages at an Auth0 URL; ask for Universal Portals (`feature:universal-portals`).
 - **Changing `organization_access_level` on a connection** — readable and writable only through the Management API.
-- **Unattended machine-to-machine automation** — this API's default M2M policy is deny-all. Use the Management API unless the developer explicitly grants client-credentials access to `my-org/`.
+- **Unattended automation, unless it is set up on purpose** — the default machine-to-machine policy is deny-all, so a client-credentials token is refused until the tenant grants this API to that client. When a background job genuinely needs organization-scoped access, follow "Server-side jobs (machine-to-machine)"; for anything tenant-wide, use the Management API.
 
 ### Pick the right surface
 
@@ -78,9 +85,15 @@ scopes, the endpoints, and the tenant configuration they require.
   slash. Tokens minted for `/api/v2/` (Management API) or `/me/` (My Account API)
   are rejected. Use the **same** domain — canonical or custom — for the token
   request, the `audience` value, and the API call.
-- **The token MUST be a user access token** from Authorization Code or
-  Authorization Code with PKCE, carrying the caller's `org_id`. Client-credentials
-  tokens are denied by the API's default machine-to-machine policy.
+- **The token MUST carry exactly one organization's context**, and how it does so
+  depends on the flow. In a **delegated (user-facing)** flow it MUST be a user
+  access token from Authorization Code or Authorization Code with PKCE, carrying
+  the caller's `org_id`; a client-credentials token is refused there, so when a
+  delegated call fails, fix the login until the token carries `org_id` rather than
+  switching credentials. A **server-side job** instead needs an explicit
+  machine-to-machine grant of this API plus a required `organization` value that
+  pins the token to one organization — see "Server-side jobs
+  (machine-to-machine)".
 - **Access tokens live 600 seconds (10 minutes)** by design and the lifetime is not
   configurable. Request `offline_access` and refresh on demand so a long admin
   session keeps working; for a sensitive operation, trigger step-up MFA rather than
@@ -232,9 +245,15 @@ export const auth0 = new Auth0Client({
   authorizationParameters: {
     audience: `https://${process.env.AUTH0_DOMAIN}/my-org/`,
     scope: MY_ORG_SCOPES,
+    // Single-org app: pin the token to one organization so it carries `org_id`.
+    organization: process.env.AUTH0_ORGANIZATION!,
   },
 })
 ```
+
+For a multi-organization app, pass the selected organization's ID dynamically at
+login (from an organization picker) rather than a fixed `AUTH0_ORGANIZATION`, so
+the token carries the `org_id` of the organization the admin chose.
 
 Then retrieve the token where you need it. `scope` is a **space-delimited
 string**, not an array:
@@ -257,6 +276,7 @@ both audiences instead of overloading a single token.
 const auth0 = new Auth0Client({
   domain: 'YOUR_AUTH0_DOMAIN',
   clientId: 'YOUR_CLIENT_ID',
+  useRefreshTokens: true,
   authorizationParams: {
     organization: 'org_xxxxx',
     audience: 'https://YOUR_AUTH0_DOMAIN/my-org/',
@@ -271,6 +291,13 @@ const token = await auth0.getAccessTokenSilently({
   },
 })
 ```
+
+`useRefreshTokens: true` is what lets `getAccessTokenSilently()` renew the
+600-second `my-org/` token — without it the SDK falls back to hidden-iframe silent
+auth, which browser third-party-cookie restrictions routinely break. Enable
+**Refresh Token rotation** on the application for it to work. In this offline mode
+the SDK adds `offline_access` to the request itself, so it does **not** need to be
+listed in `scope`.
 
 **Server-rendered web app — Express (`express-openid-connect`):**
 
@@ -326,8 +353,13 @@ the new role and unassigning the old one.
 
 ## Step 4: Endpoint surface
 
-Every path is relative to `https://YOUR_AUTH0_DOMAIN/my-org/`. The organization is
-taken from the token's `org_id`, so no organization ID appears in any path.
+Requests go to `https://YOUR_AUTH0_DOMAIN/my-org/v1/` — the `v1` API-version segment
+is part of the request path. The **token audience** stays
+`https://YOUR_AUTH0_DOMAIN/my-org/` without it: the audience is what you request at
+login (Step 3), the versioned path is where you send the call. Every path below is
+relative to the `/my-org/v1/` base. The organization is taken from the token's
+`org_id`, so no organization ID appears in any path. (The TypeScript SDK adds `/v1`
+for you, so SDK method calls never spell it out.)
 
 | Area | Method and path |
 |---|---|
@@ -353,7 +385,7 @@ Any stack can use the API over plain HTTP: a bearer header and JSON. There is no
 organization ID to supply.
 
 ```bash
-curl -sS "https://YOUR_AUTH0_DOMAIN/my-org/details" \
+curl -sS "https://YOUR_AUTH0_DOMAIN/my-org/v1/details" \
   -H "Authorization: Bearer $MY_ORG_TOKEN" \
   -H 'Content-Type: application/json'
 ```
@@ -404,7 +436,7 @@ cp .env.local.user.example .env.local.user
 
 Fill in `.env.local.user`:
 
-```
+```bash
 APP_BASE_URL=http://localhost:3000
 NEXT_PUBLIC_AUTH0_DOMAIN=your-tenant.us.auth0.com
 SESSION_ENCRYPTION_SECRET=<openssl rand -hex 32>
@@ -498,11 +530,62 @@ Per-call options include `headers`, `queryParams`, `maxRetries` (default `2`),
 `timeoutInSeconds` (default `60`), and `abortSignal`. Use `.withRawResponse()`
 when you need response headers alongside the parsed body.
 
-For a server-side job acting on one organization, build the client from
-`@auth0/myorganization-js/server` with
-`createMyOrganizationClientWithClientCredentials(config, credentials)` or
-`ClientCredentialsTokenProvider` — and note that the API's default
-machine-to-machine policy is deny-all, so this needs an explicit grant.
+### Retries and non-idempotent writes
+
+The default `maxRetries: 2` retries `408`, `429`, and `5xx` — and it does so for
+`POST` creates (identity providers, domains, invitations, member roles) just as it
+does for reads. A retry after an **ambiguous** response — a timeout or `5xx` on a
+request the server may already have committed — can create a duplicate. For a
+non-idempotent call, either pass `maxRetries: 0` and handle the failure yourself, or
+make the operation reconcilable: before retrying, check whether the resource already
+exists (list identity providers, look up the invitation) and skip the create if it
+does.
+
+```typescript
+await myOrgClient.organization.identityProviders.create(input, { maxRetries: 0 })
+```
+
+### Server-side jobs (machine-to-machine)
+
+A background job — nightly membership reconciliation, a provisioning worker — has
+no signed-in admin, so there is no `org_id` to scope the call. Two things are
+required, and neither is a default:
+
+1. **An explicit grant of this API to the machine-to-machine client.** The default
+   policy is deny-all, so a client-credentials token is refused until the tenant
+   authorizes that client for `https://YOUR_AUTH0_DOMAIN/my-org/`.
+2. **An `organization` value on the credentials** — typed `organization: string`,
+   required, documented in the SDK as "Organization ID or name". It replaces
+   `org_id` as the scoping mechanism, so a job covering several organizations
+   builds one client per organization rather than one client for the tenant.
+
+```typescript
+// Server environments only — never ship a client secret or private key to a browser.
+import { createMyOrganizationClientWithClientCredentials } from '@auth0/myorganization-js/server'
+
+// Two arguments: `domain` goes in the client options, and the credentials object
+// omits it (its type is Omit<ClientCredentialsOptions, 'domain'>).
+const client = createMyOrganizationClientWithClientCredentials(
+  { domain: process.env.AUTH0_DOMAIN! },
+  {
+    clientId: process.env.MY_ORG_M2M_CLIENT_ID!,
+    clientSecret: process.env.MY_ORG_M2M_CLIENT_SECRET!,
+    organization: orgId, // required — scopes the token to this one organization
+  },
+)
+```
+
+To authenticate with a private key JWT instead, swap `clientSecret` for
+`privateKey` (a `string` or `CryptoKey`) and optionally set
+`clientAssertionSigningAlg`. To own token acquisition yourself, construct a
+`ClientCredentialsTokenProvider` — it takes a single flat object that **does**
+include `domain`, alongside `clientId`, the secret or key, and `organization` —
+then pass it as `new MyOrganizationClient({ domain, tokenProvider })`. Both paths
+also accept optional `audience`, `useMtls`, and `customFetch`.
+
+Keep this path out of user-facing screens: a delegated flow that switches to
+client credentials loses the per-admin confinement that is the reason to use this
+API instead of the Management API.
 
 Auth0 also ships My Organization SDKs for Java, .NET, Go, and Python; the audience
 and scope rules above are identical in each.
@@ -716,18 +799,32 @@ the access level further.
 
 ## Error Handling
 
-With the TypeScript SDK, every failure surfaces as `MyOrganizationError`, carrying
-`statusCode`, `message`, `body`, and `rawResponse`. The SDK already retries `408`,
-`429`, and `5xx` twice; add your own handling for the 4xx cases that need a
-message in the UI:
+With the TypeScript SDK, failures come in two classes and the catch block has to
+tell them apart:
+
+- **`MyOrganizationError`** — the API answered with a status code, *or* the response
+  was unusable (empty/unparseable body, or a network/fetch failure that never
+  reached a status). It carries `statusCode` (**absent** on those non-status cases,
+  so don't assume it is a number), `message`, `body`, and `rawResponse`. Branch on
+  it for `403` and the other HTTP cases that need a message in the UI.
+- **`MyOrganizationTimeoutError`** — the request exceeded `timeoutInSeconds`. It
+  carries a `message` and the original `cause` but **no** `statusCode` or `body`, so
+  a handler that reads `err.statusCode` sees `undefined`. Treat it as transient.
+
+The SDK already retries `408`, `429`, and `5xx` twice; add your own handling for the
+timeout and 4xx cases:
 
 ```typescript
-import { MyOrganizationError } from '@auth0/myorganization-js'
+import { MyOrganizationError, MyOrganizationTimeoutError } from '@auth0/myorganization-js'
 
 try {
   await myOrgClient.organization.identityProviders.create(input)
 } catch (err) {
-  if (err instanceof MyOrganizationError) {
+  if (err instanceof MyOrganizationTimeoutError) {
+    // No statusCode/body — the request timed out. For an idempotent read, retry;
+    // for a non-idempotent create, reconcile (check whether it already exists)
+    // before re-sending — see "Retries and non-idempotent writes".
+  } else if (err instanceof MyOrganizationError) {
     if (err.statusCode === 403) {
       // Missing scope, missing RBAC permission, or the API is not activated
     }

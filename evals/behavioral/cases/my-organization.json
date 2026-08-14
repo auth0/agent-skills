@@ -2,14 +2,14 @@
   "slug": "my-organization",
   "origin_skill": null,
   "skill_name": "auth0",
-  "notes": "Authored with the feature-my-organization reference rather than ported from a pre-consolidation skill, so origin_skill is null. The graders deliberately pin the facts an earlier draft of this guidance got wrong: getAccessToken takes a space-delimited `scope` string (not a `scopes` array), Universal Components are imported from the package root while `/rwa` exports only the provider, the invitation scope is `create:my_org:member_invitations`, and the audience is `https://DOMAIN/my-org/` with its trailing slash. The negative graders are the point of the case — a plausible-looking hallucination in any of those four places is exactly the regression this layer exists to catch. The prompt carries a trailing harness note forbidding `npm install`: the first real run of this case spent all 600 seconds of runAgent's timeout installing 435 MB of node_modules and was killed before writing a single source file, and because `.json` is a graded source extension the surviving package.json still satisfied the SDK-package grader — so `anyPositivePassed` was true, the empty-workspace guard never fired, and a run with zero code scored as if it had passed. Keep the note. Exactly one eval on purpose: run-evals.mjs grades `evals[0]` only, so a second prompt in a graded case would never execute — the Management-API-migration scenario belongs in its own case file with its own scaffold and graders.",
+  "notes": "Authored with the feature-my-organization reference rather than ported from a pre-consolidation skill, so origin_skill is null. The graders deliberately pin the facts an earlier draft of this guidance got wrong: getAccessToken takes a space-delimited `scope` string (not a `scopes` array), Universal Components are imported from the package root while `/rwa` exports only the provider, the invitation scope is `create:my_org:member_invitations`, and the audience is `https://DOMAIN/my-org/` with its trailing slash and NO `/v1` (the `/v1` version segment belongs only in request paths — the SDK's `environments.ts` base is `.../my-org/v1` — so a token requested for a `/my-org/v1/` audience is rejected; the negative grader pins that, since the loose `.../my-org/` audience matcher passes for both). The negative graders are the point of the case — a plausible-looking hallucination in any of those four places is exactly the regression this layer exists to catch. The prompt carries a trailing harness note forbidding `npm install`: the first real run of this case spent all 600 seconds of runAgent's timeout installing 435 MB of node_modules and was killed before writing a single source file, and because `.json` is a graded source extension the surviving package.json still satisfied the SDK-package grader — so `anyPositivePassed` was true, the empty-workspace guard never fired, and a run with zero code scored as if it had passed. Keep the note. Exactly one eval on purpose: run-evals.mjs grades `evals[0]` only, so a second prompt in a graded case would never execute — the Management-API-migration scenario belongs in its own case file with its own scaffold and graders.",
   "evals": [
     {
       "id": 1,
       "prompt": "In our Next.js B2B app, each customer's own admin should be able to edit their organization's profile and connect their own SAML or OIDC identity provider from a settings page. Set that up.\n\n**Auth0 Credentials:**\n- Domain: `dev-example.auth0.com`\n- Client ID: `abc123def456ghi789jkl012`\n- Client Secret: `YOUR_AUTH0_CLIENT_SECRET`\n\n---\nHarness note: this run is time-boxed and is graded by reading the source files you write. Declare any new dependencies in `package.json`, but do NOT run `npm install`, `npm ci`, or any package installation, and do not build or start a dev server. Spend the time writing code.",
       "expected_output": "A Next.js app whose admin screens call the My Organization API with the signed-in admin's own org-scoped user token: Auth0Client configured for the https://dev-example.auth0.com/my-org/ audience with my_org:* scopes and offline_access, either @auth0/myorganization-js or @auth0/universal-components-react wired up, and org_id plus role enforced server-side. No Management API machine-to-machine credential in the request path, and no local database mirroring organizations, members, or roles.",
       "expectations": [
-        "Uses the My Organization API audience https://dev-example.auth0.com/my-org/ including the trailing slash",
+        "Uses the My Organization API audience https://dev-example.auth0.com/my-org/ including the trailing slash, and without a /v1 version segment (the SDK adds /v1 to request paths itself)",
         "Configures @auth0/nextjs-auth0 Auth0Client with the my-org audience and my_org:* scopes",
         "Requests offline_access so the 600-second access token can be refreshed",
         "Passes scope to getAccessToken as a space-delimited string, not an array",
@@ -52,6 +52,11 @@
       "type": "not_matches",
       "pattern": "scopes\\s*:\\s*\\[",
       "description": "Does not pass scope as an array — getAccessToken takes a space-delimited scope string"
+    },
+    {
+      "type": "not_matches",
+      "pattern": "audience\\s*:\\s*`?[^,\\n]*my-org/v1",
+      "description": "Does not put the /v1 version segment in the token audience — the audience is https://DOMAIN/my-org/ (version-less); /v1 belongs only in request paths, and the SDK adds it itself"
     },
     {
       "type": "not_matches",
