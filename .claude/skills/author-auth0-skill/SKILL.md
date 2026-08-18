@@ -9,6 +9,7 @@ description: >
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
+  internal: true
 ---
 
 # Authoring an Auth0 skill reference
