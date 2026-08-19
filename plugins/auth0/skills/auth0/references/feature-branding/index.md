@@ -1017,21 +1017,23 @@ active tenant untouched. Both tenants must already appear in
 `auth0 tenants list`, otherwise the CLI fails with `Failed to find tenant`.
 
 ```bash
+set -euo pipefail
+
 SOURCE_TENANT=source-tenant.auth0.com
 TARGET_TENANT=target-tenant.auth0.com
 
 # Export from source tenant
 BRANDING=$(auth0 api get "branding" --tenant "$SOURCE_TENANT")
-THEME=$(auth0 api get "branding/themes/default" --tenant "$SOURCE_TENANT" 2>/dev/null)
-TEMPLATE=$(auth0 api get "branding/templates/universal-login" --tenant "$SOURCE_TENANT" 2>/dev/null)
-LOGIN_TEXT=$(auth0 api get "prompts/login/custom-text/en" --tenant "$SOURCE_TENANT" 2>/dev/null)
+THEME=$(auth0 api get "branding/themes/default" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
+TEMPLATE=$(auth0 api get "branding/templates/universal-login" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
+LOGIN_TEXT=$(auth0 api get "prompts/login/custom-text/en" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
 
 # Import to target tenant
 printf '%s' "$BRANDING" | auth0 api patch "branding" --tenant "$TARGET_TENANT"
 
 if [ -n "$THEME" ]; then
   THEME_BODY=$(printf '%s' "$THEME" | jq 'del(.themeId)')
-  TARGET_THEME_ID=$(auth0 api get "branding/themes/default" --tenant "$TARGET_TENANT" 2>/dev/null | jq -r '.themeId // empty')
+  TARGET_THEME_ID=$(auth0 api get "branding/themes/default" --tenant "$TARGET_TENANT" 2>/dev/null | jq -r '.themeId // empty' || true)
   if [ -n "$TARGET_THEME_ID" ]; then
     printf '%s' "$THEME_BODY" | auth0 api patch "branding/themes/$TARGET_THEME_ID" --tenant "$TARGET_TENANT"
   else
