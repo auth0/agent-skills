@@ -11,6 +11,7 @@ Install with: `brew install auth0`
 
 ```bash
 auth0 login                          # interactive device-code login
+auth0 login --no-input               # headless: prints the URL and code, no browser
 auth0 login --scopes "read:stats"  # request extra scopes if 403
 auth0 login --domain <tenant>.auth0.com --client-id <id> --client-secret "$AUTH0_CLIENT_SECRET"  # CI/CD
 ```
@@ -67,7 +68,7 @@ optional resource that may not exist.
 Agent mode disables prompts, so instead of silently deleting, destructive
 commands **refuse to run** without `--force`:
 
-```
+```text
 This is a destructive command; re-run with --force to proceed without a confirmation prompt.
 ```
 
@@ -166,7 +167,7 @@ auth0 apps update --help | jq -r '.[0].flags[].name'
 |-------------------|---------------|
 | Discovering which command to run | `auth0 commands --flat` |
 | Checking a command's flags | `auth0 <command> --help` |
-| Setting up a new project | `auth0 apps create --type spa\|regular\|m2m\|native` |
+| Setting up a new project | `auth0 apps create --type spa` (see App types below) |
 | Need a client ID or secret | `auth0 apps show <id> -r` |
 | Registering a backend API | `auth0 apis create --identifier "https://..."` |
 | Authorizing an M2M app for an API | `auth0 client-grants create` |
@@ -188,7 +189,7 @@ auth0 apps update --help | jq -r '.[0].flags[].name'
 | Token exchange / custom auth profiles | `auth0 token-exchange create` |
 | Anything with no dedicated command | `auth0 api get <path>` |
 | Security hardening | `auth0 protection brute-force-protection update --enabled true` |
-| Routing logs externally | `auth0 logs streams create datadog\|http\|splunk` |
+| Routing logs externally | `auth0 logs streams create datadog` (one subcommand per provider) |
 | Bulk importing users | `auth0 users import --connection-name ...` |
 
 ---
@@ -472,7 +473,8 @@ Method defaults to `GET` without data and `POST` with data. If a call returns
 
 ## Piping to `jq`
 
-Agent mode already emits JSON on stdout, so redirect stderr and pipe:
+Agent mode already emits JSON on stdout and keeps its banners on stderr, so
+leave stderr alone and pipe stdout:
 
 ```bash
 auth0 apps list | jq '.[] | {client_id, name}'

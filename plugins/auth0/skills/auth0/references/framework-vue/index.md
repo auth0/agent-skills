@@ -1053,7 +1053,7 @@ VITE_AUTH0_CLIENT_ID=<your-client-id>
 
 **Browser doesn't open:**
 ```bash
-auth0 login --domain "$AUTH0_DOMAIN" --client-id "$AUTH0_CLIENT_ID" --client-secret "$AUTH0_CLIENT_SECRET"
+auth0 login --no-input   # prints the URL and code instead of opening a browser
 ```
 
 **"Not logged in" error:**
