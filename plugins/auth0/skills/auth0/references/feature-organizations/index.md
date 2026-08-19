@@ -89,35 +89,57 @@ app.get('/api/data', checkJwt, (req, res) => {
 
 See your tooling reference file for the full command syntax. The Auth0 MCP server
 exposes **no** organizations tool, so for an MCP-only session fall back to the CLI
-or Terraform. The operations are:
+or Terraform.
 
-**Create an organization:**
-- CLI: `auth0 orgs create`
-- Terraform: `auth0_organization` resource
+| Operation | CLI | Terraform |
+|---|---|---|
+| Create an organization | `auth0 orgs create --name <slug> --display "<Name>"` | `auth0_organization` |
+| List / show / update / delete | `auth0 orgs list` / `show` / `update` / `delete` | `auth0_organization` |
+| Add a member | `auth0 api post "organizations/<org-id>/members" --data '{"members":["<user-id>"]}'` | `auth0_organization_member` |
+| Enable a connection | `auth0 api post "organizations/<org-id>/enabled_connections" --data '{"connection_id":"<con-id>","assign_membership_on_login":true}'` | `auth0_organization_connections` |
+| Assign an org-scoped role | `auth0 api post "organizations/<org-id>/members/<user-id>/roles" --data '{"roles":["<role-id>"]}'` | `auth0_organization_member_roles` |
+| Create an invitation | `auth0 orgs invitations create` (see below) | not covered |
 
-**Add a member:**
-- CLI: `auth0 orgs members add`
-- Terraform: `auth0_organization_member` resource
+Check `auth0 commands orgs --detailed` for the current subcommand surface before
+falling back to `auth0 api`, and read flag names off `--help` rather than
+inferring them from the field they set.
 
-**Enable a connection for an org:**
-- CLI: `auth0 orgs connections add`
-- Terraform: `auth0_organization_connections` resource
-
-**Assign a role within an org:**
-- CLI: `auth0 orgs roles assign`
-- Management API: `POST /api/v2/organizations/{id}/members/{user_id}/roles`
+Reading connections back returns a **bare array**, so use `jq '.[]'`, not
+`jq '.enabled_connections[]'`.
 
 ---
 
 ## Invitation flow
 
+An invitation lets you add a user who has no Auth0 account yet. The invitee gets
+a link, authenticates, and becomes a member.
+
+**Two prerequisites, each a hard 400.** Do both before the first
+`invitations create` call:
+
 ```bash
-# Create an invitation (user doesn't need an Auth0 account yet)
-auth0 api post /api/v2/organizations/{org_id}/invitations \
-  --data '{"invitee":{"email":"user@company.com"},"inviter":{"name":"Admin"},"client_id":"YOUR_CLIENT_ID"}'
+# 1. Without this: "The specified client_id (...) does not allow organizations."
+auth0 api patch "clients/<client-id>" \
+  --data '{"organization_usage":"allow","organization_require_behavior":"no_prompt"}'
+
+# 2. Without this: "A default login route is required to generate the invitation url."
+auth0 api patch "tenants/settings" \
+  --data '{"default_redirection_uri":"https://app.example.com/callback"}'
 ```
 
-The invitee receives an email. When they click the link, they authenticate and are added as a member.
+The tenant setting is `default_redirection_uri`, validated as
+`absolute-https-uri-or-empty`: it must be https, and `localhost` is rejected on
+either scheme, so a local-dev URL will not satisfy it.
+
+```bash
+auth0 orgs invitations create --org-id "<org-id>" \
+  --invitee-email "user@company.com" --inviter-name "Admin" \
+  --client-id "<client-id>" --roles "<role-id>" --send-email=false
+```
+
+`--send-email` **defaults to `true`**, and it needs the `=` form, since
+`--send-email false` reads `false` as a positional argument. Verify with
+`auth0 orgs invitations list --org-id <org-id>`.
 
 ---
 
@@ -129,7 +151,11 @@ The invitee receives an email. When they click the link, they authenticate and a
 | Using `org_id` from ID token on backend | Validate from the access token, not ID token |
 | Mixing up org `id` (org_xxx) and `name` (slug) | `id` for API calls, `name` for display |
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
-| Not enabling a connection for the org | Dashboard → Organization → Connections → enable the connection |
+| Not enabling a connection for the org | `auth0 api post "organizations/<org-id>/enabled_connections"`, or Dashboard → Organization → Connections |
+| Guessing a `auth0 orgs` subcommand for membership, roles, or connections | Verify with `auth0 commands orgs --detailed`, and use `auth0 api post organizations/...` for whatever has no dedicated subcommand |
+| Prefixing `auth0 api` paths with `/api/v2/` | Paths are relative to the API root. `/api/v2/organizations/...` returns 404 |
+| Inviting before setting `organization_usage` on the app and `default_redirection_uri` on the tenant | Both are hard 400s. Configure them first (see Invitation flow) |
+| Letting `auth0 orgs invitations create` send a live email | `--send-email` defaults to `true`. Pass `--send-email=false` |
 
 ---
 

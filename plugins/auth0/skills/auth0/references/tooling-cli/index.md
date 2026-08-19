@@ -121,6 +121,24 @@ auth0 apps create --help --json           # same JSON when agent mode is off
 
 ---
 
+## Value Syntax Rules
+
+**List values are comma-joined in one argument.** Space-separating them makes the
+extras look like positional args (`Accepts at most 1 arg(s), received 3`):
+
+```bash
+auth0 roles permissions add <role-id> --api-id <api-id> --permissions "read:data,write:data"
+auth0 apis create --name "My API" --identifier "https://api.example.com" --scopes "read:data,write:data"
+```
+
+**Boolean flags need the `=` form.** `--send-email false` reads `false` as a
+positional arg, so a default-`true` flag silently stays on. Use `--send-email=false`.
+
+**Don't guess flag names.** `auth0 orgs create` takes `--display`, not
+`--display-name`. On `Unknown flag:`, read the real name off `--help`.
+
+---
+
 ## Command Discovery — `auth0 commands`
 
 `auth0 commands` prints the entire CLI surface in one place, so the right
@@ -310,10 +328,31 @@ Manage organizations for B2B SaaS scenarios. Alias: `auth0 orgs`.
 ```bash
 auth0 orgs create --name "acme-corp" --display "Acme Corporation" \
   --logo "https://acme.com/logo.png" --accent "#FF6600"
+auth0 orgs list
 auth0 orgs members list <org-id>
+auth0 orgs roles list <org-id>
 auth0 orgs invitations create --org-id <org-id> --invitee-email "new@acme.com" \
-  --inviter-name "Admin" --client-id <id>
+  --inviter-name "Admin" --client-id <id> --roles <role-id> --send-email=false
+auth0 orgs invitations list --org-id <org-id>
 ```
+
+Adding members, assigning org-scoped roles, and enabling a connection on an org
+go through `auth0 api`:
+
+```bash
+auth0 api post "organizations/<org-id>/members" --data '{"members":["<user-id>"]}'
+auth0 api post "organizations/<org-id>/members/<user-id>/roles" --data '{"roles":["<role-id>"]}'
+auth0 api post "organizations/<org-id>/enabled_connections" \
+  --data '{"connection_id":"<con-id>","assign_membership_on_login":true}'
+```
+
+Confirm the current surface with `auth0 commands orgs --detailed` before reaching
+for `auth0 api`, since a dedicated subcommand may exist by now. Note that
+`--help` on an unrecognized subcommand falls back to the parent command's help
+rather than erroring, so `auth0 commands` is the more reliable probe.
+
+Invitations need two prerequisites that each 400; see the organizations feature
+reference.
 
 ### Actions — Serverless Auth Pipeline
 
@@ -469,6 +508,22 @@ cat data.json | auth0 api post clients      # data can be piped instead of using
 Method defaults to `GET` without data and `POST` with data. If a call returns
 403, re-run `auth0 login --scopes "<needed:scope>"`.
 
+**Paths are relative to the API root.** Write `connections`, not
+`/api/v2/connections`. The prefixed form returns a flat `404: Not Found` that
+reads like a missing resource.
+
+**A 404 on a path you believe exists usually means the wrong verb.** Verbs are
+forwarded unvalidated, so an endpoint that doesn't accept the one you sent answers
+404 rather than 405. Check the verb and whether the resource is addressable
+individually or only as a collection, before assuming a permissions problem. The
+[Management API OpenAPI spec](https://auth0.com/docs/oas/management/v2/management-api-oas.json)
+is the authoritative answer for which methods a path accepts and what body it
+expects.
+
+**Response shapes vary.** Some endpoints return a bare array where the docs show
+a wrapper, such as `organizations/<id>/enabled_connections`. On
+`jq: Cannot index array with string`, print the raw body before editing the filter.
+
 ---
 
 ## Piping to `jq`
@@ -482,6 +537,12 @@ auth0 users show <user-id> | jq '{id: .user_id, email: .email}'
 auth0 roles list | jq '.[].name'
 ```
 
+**Never `2>&1` into `jq`.** It folds the agent-mode notice and the
+`=== <tenant> applications (3)` header into the JSON stream, and every filter
+dies with `parse error: Invalid numeric literal at line 1, column 5`. The error
+is about the banner, not the data, so rewriting the filter won't fix it. If a
+whole verification block starts returning parse errors, look for `2>&1` first.
+
 Outside an agent session, add the flag explicitly on commands that define it:
 
 ```bash
@@ -494,4 +555,8 @@ auth0 apps list --json-compact | jq '.[] | {client_id, name}'
 
 - [Auth0 CLI Documentation](https://auth0.github.io/auth0-cli/)
 - [Auth0 Management API v2](https://auth0.com/docs/api/management/v2)
+- [Management API OpenAPI spec](https://auth0.com/docs/oas/management/v2/management-api-oas.json) —
+  machine-readable source of truth for `auth0 api` paths, accepted methods, and
+  request/response shapes. Use it to confirm a verb or payload instead of
+  inferring one from a 404.
 - [Auth0 Documentation](https://auth0.com/docs)
