@@ -63,6 +63,10 @@ Key top-level docs:
    Enforced by `scripts/check_router_reachability.py`. See CONTRIBUTING.md →
    "Adding a reference" before splitting a large one (>1000 lines) into a leaf
    group.
+3. For the step-by-step authoring procedure (which router tables to edit, in
+   what order, and how to validate), use the `author-auth0-skill` skill in
+   Claude Code. It walks through adding a framework, feature, tooling, or
+   pattern reference so the change passes CI the first time.
 
 ## Required SKILL.md frontmatter
 
