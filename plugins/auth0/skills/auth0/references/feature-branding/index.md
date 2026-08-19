@@ -77,7 +77,7 @@ If **no**: end with the summary of what was written.
 Notes:
 - This applies to Capability 1 (Brand my tenant), Capability 2 (Change specific settings), Capability 3 (Match my brand voice), and Capability 4 (Rollback to Auth0 defaults). In the rollback case, the browser page should render Auth0's built-in defaults — that's the verification.
 - Capability 5 (Check my setup) is read-only; skip this step.
-- If the user has a preferred client they test against, they'll mention it; `auth0 test login --client-id <id>` targets a specific app. Otherwise use the default.
+- If the user has a preferred client they test against, they'll mention it; `auth0 test login <id>` targets a specific app. Otherwise use the default.
 
 ## Key Concepts
 
@@ -253,7 +253,7 @@ auth0 ul update --accent "#0059DB" --background "#FFFFFF" \
 auth0 ul templates show
 
 # Update page template from file
-auth0 ul templates update --file login.liquid
+cat login.liquid | auth0 ul templates update
 
 # Update page template (interactive)
 auth0 ul templates update
@@ -288,7 +288,7 @@ auth0 ul switch
 auth0 test login
 
 # Test with specific client
-auth0 test login --client-id "{appClientId}"
+auth0 test login "{appClientId}"
 
 # Test with organization context
 auth0 test login --organization org_abc123
@@ -981,10 +981,10 @@ auth0 ul update \
   --favicon "https://cdn.example.com/favicon.ico" \
   --no-input
 
-auth0 ul templates update --file ./branding/login-template.liquid --no-input
+cat ./branding/login-template.liquid | auth0 ul templates update
 
-auth0 api put "prompts/login/custom-text/en" --data @./branding/text-login-en.json
-auth0 api put "prompts/signup/custom-text/en" --data @./branding/text-signup-en.json
+cat ./branding/text-login-en.json | auth0 ul prompts update login --language en
+cat ./branding/text-signup-en.json | auth0 ul prompts update signup --language en
 ```
 
 ### Multi-environment layout
@@ -1014,26 +1014,26 @@ branding/
 # Export from source tenant
 AUTH0_TENANT=source-tenant.auth0.com
 
-BRANDING=$(auth0 api get "branding" --json)
-THEME=$(auth0 api get "branding/themes/default" --json 2>/dev/null)
-TEMPLATE=$(auth0 api get "branding/templates/universal-login" --json 2>/dev/null)
-LOGIN_TEXT=$(auth0 api get "prompts/login/custom-text/en" --json 2>/dev/null)
+BRANDING=$(auth0 api get "branding")
+THEME=$(auth0 api get "branding/themes/default" 2>/dev/null)
+TEMPLATE=$(auth0 api get "branding/templates/universal-login" 2>/dev/null)
+LOGIN_TEXT=$(auth0 api get "prompts/login/custom-text/en" 2>/dev/null)
 
 # Import to target tenant
 AUTH0_TENANT=target-tenant.auth0.com
 
-echo "$BRANDING" | auth0 api patch "branding" --data @-
+printf '%s' "$BRANDING" | auth0 api patch "branding"
 
 if [ -n "$THEME" ]; then
-  echo "$THEME" | auth0 api post "branding/themes" --data @-
+  printf '%s' "$THEME" | auth0 api post "branding/themes"
 fi
 
 if [ -n "$TEMPLATE" ]; then
-  echo "$TEMPLATE" | auth0 api put "branding/templates/universal-login" --data @-
+  printf '%s' "$TEMPLATE" | auth0 api put "branding/templates/universal-login"
 fi
 
 if [ -n "$LOGIN_TEXT" ]; then
-  echo "$LOGIN_TEXT" | auth0 api put "prompts/login/custom-text/en" --data @-
+  printf '%s' "$LOGIN_TEXT" | auth0 api put "prompts/login/custom-text/en"
 fi
 ```
 
@@ -1044,15 +1044,15 @@ fi
 auth0 test login
 
 # Test with a specific application
-auth0 test login --client-id "{yourAppClientId}"
+auth0 test login "{yourAppClientId}"
 
 # Test with organization context (for B2B branding)
 auth0 test login --organization org_abc123
 
 # Verify via API
-auth0 api get "branding" --json | jq '.colors'
-auth0 api get "branding/themes/default" --json | jq '.colors.primary_button'
-auth0 api get "branding/templates/universal-login" --json | jq '.template' | head -1
+auth0 api get "branding" | jq '.colors'
+auth0 api get "branding/themes/default" | jq '.colors.primary_button'
+auth0 api get "branding/templates/universal-login" | jq '.template' | head -1
 ```
 
 ---

@@ -21,7 +21,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 - **Xcode** 16.x
 - **Swift** 6.0+
 - Auth0 account — [Sign up free](https://auth0.com/signup)
-- Auth0 CLI — `brew install auth0/auth0-cli/auth0` (for automated setup)
+- Auth0 CLI — `brew install auth0` (for automated setup)
 
 ## Quick Start Workflow
 
@@ -971,7 +971,7 @@ func fetchData() async throws -> [Item] {
 > ```bash
 > umask 077
 > OUT=$(mktemp -t auth0-output)
-> auth0 <command> --json --no-input > "$OUT" 2>&1
+> auth0 <command> --no-input > "$OUT" 2>&1
 > echo "$OUT"   # note the path; do NOT print the file contents
 > ```
 >
@@ -979,7 +979,7 @@ func fetchData() async throws -> [Item] {
 >
 > **Pre-flight checks:**
 >
-> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
+> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0`.
 > 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input > /tmp/auth0-tenants.txt 2>&1`. Read the file to check the result. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.

@@ -1092,7 +1092,7 @@ SCHEME="demo"
 
 # Install Auth0 CLI
 if ! command -v auth0 &> /dev/null; then
-  [[ "$OSTYPE" == "darwin"* ]] && brew install auth0/auth0-cli/auth0 || \
+  [[ "$OSTYPE" == "darwin"* ]] && brew install auth0 || \
   curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
 fi
 

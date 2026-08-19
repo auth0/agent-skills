@@ -12,7 +12,7 @@ Add authentication to an Ionic Angular application using the `@auth0/auth0-angul
 - Node.js 20+ and npm 10+
 - Ionic CLI (`npm install -g @ionic/cli`)
 - Capacitor 5+ configured in the project
-- Auth0 CLI (for automatic setup): `brew install auth0/auth0-cli/auth0`
+- Auth0 CLI (for automatic setup): `brew install auth0`
 - An Auth0 account (free tier works)
 
 ## When NOT to Use
@@ -1034,7 +1034,7 @@ auth0 tenants list --csv --no-input
 If the Auth0 CLI is not installed, instruct the user:
 ```bash
 # macOS
-brew install auth0/auth0-cli/auth0
+brew install auth0
 
 # Linux
 curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh

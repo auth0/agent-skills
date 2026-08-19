@@ -1288,7 +1288,7 @@ Setup instructions for Go API applications.
 > ---
 > **INITIAL SETUP (steps 1–6) — always run during automated setup:**
 >
-> 1. **Check Auth0 CLI**: Run `command -v auth0`. If missing, ask user to install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
+> 1. **Check Auth0 CLI**: Run `command -v auth0`. If missing, ask user to install (`brew install auth0`) or switch to manual setup.
 > 2. **Check Auth0 login**: Run `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for the user to confirm, then re-run the check to verify.
@@ -1406,7 +1406,7 @@ Below uses the Auth0 CLI to create an Auth0 API resource and retrieve your crede
 
 ```bash
 # Install Auth0 CLI (macOS)
-brew install auth0/auth0-cli/auth0
+brew install auth0
 
 # Login (opens browser for authentication)
 auth0 login
