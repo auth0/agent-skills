@@ -52,13 +52,18 @@ Multi-Factor Authentication (MFA) requires users to provide two or more verifica
 
 ### Via Auth0 CLI
 
-Enforcing MFA takes **two calls, both required, in this order**:
-`PUT guardian/factors/<factor>` makes a factor available, then
-`PUT guardian/policies` makes MFA required. A factor alone never prompts anyone;
-a policy alone leaves users with no usable factor.
+Enforcing MFA takes **two independent calls**: `PUT guardian/factors/<factor>`
+makes a factor available, and `PUT guardian/policies` makes MFA required.
+Configure the factor first — not because the API requires that order, but
+because a policy set before any factor is available leaves users with no way
+to complete MFA. A factor alone never prompts anyone.
 
-Enforcement is the Guardian policy, not a post-login Action calling
-`api.multifactor.enable()`. Actions are for adaptive rules layered on top.
+The Guardian policy provides tenant-wide baseline enforcement. A post-login
+Action calling `api.multifactor.enable()` is a second, independent
+enforcement path — it can require MFA conditionally (based on risk, client,
+scopes, etc.) and can override the global policy for that login. Actions
+aren't limited to adaptive rules layered on top of the policy; they're a
+full alternative way to enforce MFA.
 
 ```bash
 # View current MFA configuration (read factors from the collection path)

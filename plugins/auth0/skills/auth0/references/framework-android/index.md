@@ -1151,7 +1151,11 @@ for c in data:
 if [ -z "$CONNECTION_ID" ]; then
   CONNECTION_ID=$(auth0 api post connections \
     --data "{\"strategy\":\"auth0\",\"name\":\"Username-Password-Authentication\"}" \
-    --no-input | grep -o '"id":"con_[^"]*' | head -1 | cut -d'"' -f4)
+    --no-input | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])" 2>/dev/null)
+fi
+if [ -z "$CONNECTION_ID" ]; then
+  echo "Failed to find or create the Username-Password-Authentication connection." >&2
+  exit 1
 fi
 
 # Enable the connection for this app. Only the client_id sent changes, so re-running

@@ -1298,7 +1298,9 @@ Setup instructions for Go API applications.
 > 4. **Create the Auth0 API resource**: Ask for the API name, identifier, and scopes (see SKILL.md checkpoints 4–5 for exact prompts).
 >    **Before creating**, check if an API with the same identifier already exists:
 >    ```bash
->    auth0 apis list | jq -r '.[].identifier' | grep -cx "<INTENDED_IDENTIFIER>"
+>    auth0 apis list --json-compact |
+>      jq -r --arg id "<INTENDED_IDENTIFIER>" \
+>        '[.[] | select(.identifier == $id)] | length'
 >    ```
 >    If it already exists, ask the user: _"An API with identifier `<ID>` already exists. Would you like to reuse it, or should I create a new one with a different identifier?"_
 >    If creating new:

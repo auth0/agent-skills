@@ -1084,13 +1084,16 @@ auth0 api get connections
 
 Parse the JSON array to find the connection with `"name": "Username-Password-Authentication"`.
 
-- **If it doesn't exist**, create it:
+- **If it doesn't exist**, create it and parse `id` from the response as `CONNECTION_ID`:
+
   ```bash
   auth0 api post connections --data '{"strategy":"auth0","name":"Username-Password-Authentication"}'
   ```
 
-- Then enable it for the new client. Running this when the client is already enabled is
-  a no-op, so it needs no check first:
+- Then enable it for the new client, using the `CONNECTION_ID` found above (existing) or
+  just created. Running this when the client is already enabled is a no-op, so it needs
+  no check first:
+
   ```bash
   auth0 api patch "connections/CONNECTION_ID/clients" --data '[{"client_id":"NEW_CLIENT_ID","status":true}]'
   ```

@@ -980,10 +980,10 @@ func fetchData() async throws -> [Item] {
 > **Pre-flight checks:**
 >
 > 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0`.
-> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input > /tmp/auth0-tenants.txt`. Read the file to check the result. If it fails or returns empty:
+> 2. **Check Auth0 login**: redirect to a private temp file the same way (`OUT=$(mktemp -t auth0-tenants); auth0 tenants list --csv --no-input > "$OUT"`). Read `$OUT` to check the result, then `rm -f "$OUT"`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
-> 3. **Confirm active tenant**: Redirect tenant list output to a file and read it. Parse the `→` line to extract the domain. Tell the user using a masked format: _"Your active Auth0 tenant is: `your-te****.us.auth0.com`. Is this correct? (Recommend using a development/test tenant rather than production.)"_ — mask all but the first 7 characters of the subdomain.
+> 3. **Confirm active tenant**: Parse the `→` line from step 2's output to extract the domain. Tell the user using a masked format: _"Your active Auth0 tenant is: `your-te****.us.auth0.com`. Is this correct? (Recommend using a development/test tenant rather than production.)"_ — mask all but the first 7 characters of the subdomain.
 >    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 2.
 >
 > **Detect project settings:**
@@ -993,8 +993,10 @@ func fetchData() async throws -> [Item] {
 >
 > **Create the Auth0 application:**
 >
-> 6. **Create a Native application** with both HTTPS and custom scheme callback URLs:
+> 6. **Create a Native application** with both HTTPS and custom scheme callback URLs (use a fresh `mktemp` for `$OUT`, the same way as step 2):
+>
 >    ```bash
+>    OUT=$(mktemp -t auth0-app-created)
 >    auth0 apps create \
 >      --name "BUNDLE_ID-ios" \
 >      --type native \
@@ -1002,22 +1004,32 @@ func fetchData() async throws -> [Item] {
 >      --callbacks "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
 >      --logout-urls "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
 >      --json \
->      --no-input > /tmp/auth0-app-created.json
+>      --no-input > "$OUT"
 >    ```
->    Read `/tmp/auth0-app-created.json` to extract `client_id`. Do not display the file contents in the terminal.
 >
-> 7. **Set up database connection**: Check whether `Username-Password-Authentication` already exists:
+>    Read `$OUT` to extract `client_id`, then `rm -f "$OUT"`. Do not display the file contents in the terminal.
+>
+> 7. **Set up database connection**: check whether `Username-Password-Authentication` already exists (reuse the same `$OUT` pattern):
+>
 >    ```bash
->    auth0 api get connections --no-input > /tmp/auth0-connections.json
+>    OUT=$(mktemp -t auth0-connections)
+>    auth0 api get connections --no-input > "$OUT"
 >    ```
->    Read `/tmp/auth0-connections.json` to check existing connections.
->    - If the connection does not exist, create it:
+>
+>    Read `$OUT` to check existing connections, then `rm -f "$OUT"`.
+>    - If the connection exists, set `CONNECTION_ID` to its `id` from that file.
+>    - If it does not exist, create it and set `CONNECTION_ID` to the `id` in the response — it is never assigned otherwise:
+>
 >      ```bash
+>      OUT=$(mktemp -t auth0-connection-created)
 >      auth0 api post connections \
 >        --data '{"strategy":"auth0","name":"Username-Password-Authentication"}' \
->        --no-input > /dev/null 2>&1
+>        --no-input > "$OUT"
 >      ```
+>
+>      Read `$OUT` to extract `id` as `CONNECTION_ID`, then `rm -f "$OUT"`.
 >    - Then enable it for the client, whether or not the connection already existed:
+>
 >      ```bash
 >      auth0 api patch connections/CONNECTION_ID/clients \
 >        --data '[{"client_id":"CLIENT_ID","status":true}]' \

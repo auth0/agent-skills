@@ -114,12 +114,17 @@ Reuse an existing database connection when the tenant has one, and only create
 one when it does not:
 
 ```bash
-# Reuse: first database connection in the tenant, if any.
-auth0 api get "connections?strategy=auth0" | jq -r '.[0].id // empty'
+# List database connections in the tenant and pick one explicitly by name —
+# the API defines no ordering, so `.[0]` silently grabs an arbitrary connection.
+auth0 api get "connections?strategy=auth0" | jq -r '.[] | select(.name=="<connection-name>") | .id'
 
-# Create one only if there is none. `name` must match
+# Create one only if there is none matching. `name` must match
 # ^[a-zA-Z0-9](-[a-zA-Z0-9]|[a-zA-Z0-9])*$, max 128 chars.
 auth0 api post connections --data '{"name":"<connection-name>","strategy":"auth0"}'
+
+# Enable it for the organization — without this, org members have no way to log in.
+auth0 api post "organizations/<org-id>/enabled_connections" \
+  --data '{"connection_id":"<con-id>","assign_membership_on_login":true}'
 
 # Enable it for each app that will use it — status false disables. Max 50 per call.
 auth0 api patch "connections/<con-id>/clients" \
@@ -131,6 +136,15 @@ auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
 
 The read is checkpoint-paginated: `take` defaults to 50 (max 1000), and a `next`
 token comes back while more remain, so pass it as `from` until `next` is absent.
+If listing to find a match automatically rather than by a known name, page
+through all results and fail rather than guess unless exactly one connection
+matches.
+
+`connections/<con-id>/clients` only enables the connection for applications —
+it does not make the connection usable by the organization. An org whose
+connection is enabled for clients but never added to
+`organizations/<org-id>/enabled_connections` still has no way for members to
+log in.
 
 ---
 
@@ -148,6 +162,10 @@ auth0 api patch "clients/<client-id>" \
   --data '{"organization_usage":"allow","organization_require_behavior":"no_prompt"}'
 
 # 2. Without this: "A default login route is required to generate the invitation url."
+#    Read the current value FIRST — the setting is tenant-wide, and you may need
+#    to restore it. An empty response means it's currently unset.
+auth0 api get "tenants/settings" | jq -r '.default_redirection_uri // ""'
+
 auth0 api patch "tenants/settings" \
   --data '{"default_redirection_uri":"https://app.example.com/callback"}'
 ```
@@ -157,13 +175,10 @@ The tenant setting is `default_redirection_uri`, validated as
 either scheme, so a local-dev URL will not satisfy it.
 
 `default_redirection_uri` is **tenant-wide**, not per app or per organization, so
-setting it changes login behaviour for everything in the tenant. Read the current
-value before you write it, and put it back afterwards if the invitation was the
-only reason you set it:
-
-```bash
-auth0 api get "tenants/settings" | jq -r '.default_redirection_uri // "unset"'
-```
+setting it changes login behaviour for everything in the tenant. Put the
+captured value back afterwards if the invitation was the only reason you set
+it — restore it to an empty string (`{"default_redirection_uri":""}`), not the
+literal text `"unset"`, if it was empty before.
 
 If you keep the new value, say so in your summary. Silently repointing a shared
 tenant setting is the kind of change someone else has to debug.
