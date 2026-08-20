@@ -100,8 +100,8 @@ case check the flag exists first (see the next section).
 | Running as an agent | Nothing. Agent mode already emits JSON. |
 | `auth0 api ...` | Never pass `--json`. It returns JSON only and **rejects the flag** with `Unknown flag: --json`. |
 | Scripting outside an agent session | Add `--json`, but confirm the command defines it. |
-| Piping large output to `jq` | `--json-compact` (defined on 125 commands). |
-| Spreadsheet / tabular export | `--csv` (defined on 32 `list`/`search` commands). |
+| Piping large output to `jq` | `--json-compact` (defined on most `list`/`show` commands). |
+| Spreadsheet / tabular export | `--csv` (defined on many `list`/`search` commands). |
 | Any non-interactive run | `--no-input` so the CLI errors instead of prompting. |
 
 Roughly a third of runnable commands define **no** JSON flag at all. These are
