@@ -58,6 +58,10 @@ never enters a pipe:
 auth0 apps list | jq -r '.[0].client_id'
 ```
 
+Pipe stdout as it is. A failing command explains itself on stderr, so `2>&1`
+feeds that explanation to `jq` and you get `parse error: Invalid numeric
+literal` in place of the reason the command failed.
+
 Don't reflexively add `2>/dev/null`. It buys nothing here and throws away the
 error message when a command fails, leaving you with empty output and no reason
 why. Add it only to silence an error you actively expect, such as probing an

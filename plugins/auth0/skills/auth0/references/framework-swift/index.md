@@ -29,7 +29,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands that produce output containing these values, redirect output to a file and read it programmatically. For example:
 > ```bash
-> auth0 apps create ... --json --no-input > /tmp/auth0-output.json 2>&1
+> auth0 apps create ... --json --no-input > /tmp/auth0-output.json
 > ```
 > Then use the Read tool on `/tmp/auth0-output.json` to extract needed values and write them directly into `Auth0.plist` or other config files — never echo them in response text or terminal. When confirming the active tenant with the user, use a masked format (e.g., `your-te****.us.auth0.com`).
 
@@ -89,7 +89,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > First, retrieve existing callback and logout URLs to avoid overwriting them:
 > ```bash
-> auth0 apps show CLIENT_ID --json --no-input > /tmp/auth0-app-info.json 2>&1
+> auth0 apps show CLIENT_ID --json --no-input > /tmp/auth0-app-info.json
 > ```
 > Read `/tmp/auth0-app-info.json` to extract existing `callbacks` and `allowed_logout_urls` arrays.
 >
@@ -113,7 +113,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > First, retrieve existing callback and logout URLs to avoid overwriting them:
 > ```bash
-> auth0 apps show CLIENT_ID --json --no-input > /tmp/auth0-app-info.json 2>&1
+> auth0 apps show CLIENT_ID --json --no-input > /tmp/auth0-app-info.json
 > ```
 > Read `/tmp/auth0-app-info.json` to extract existing `callbacks` and `allowed_logout_urls` arrays.
 >
@@ -971,7 +971,7 @@ func fetchData() async throws -> [Item] {
 > ```bash
 > umask 077
 > OUT=$(mktemp -t auth0-output)
-> auth0 <command> --no-input > "$OUT" 2>&1
+> auth0 <command> --no-input > "$OUT"
 > echo "$OUT"   # note the path; do NOT print the file contents
 > ```
 >
@@ -980,7 +980,7 @@ func fetchData() async throws -> [Item] {
 > **Pre-flight checks:**
 >
 > 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0`.
-> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input > /tmp/auth0-tenants.txt 2>&1`. Read the file to check the result. If it fails or returns empty:
+> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input > /tmp/auth0-tenants.txt`. Read the file to check the result. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
 > 3. **Confirm active tenant**: Redirect tenant list output to a file and read it. Parse the `→` line to extract the domain. Tell the user using a masked format: _"Your active Auth0 tenant is: `your-te****.us.auth0.com`. Is this correct? (Recommend using a development/test tenant rather than production.)"_ — mask all but the first 7 characters of the subdomain.
@@ -1002,13 +1002,13 @@ func fetchData() async throws -> [Item] {
 >      --callbacks "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
 >      --logout-urls "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
 >      --json \
->      --no-input > /tmp/auth0-app-created.json 2>&1
+>      --no-input > /tmp/auth0-app-created.json
 >    ```
 >    Read `/tmp/auth0-app-created.json` to extract `client_id`. Do not display the file contents in the terminal.
 >
 > 7. **Set up database connection**: Check whether `Username-Password-Authentication` already exists:
 >    ```bash
->    auth0 api get connections --no-input > /tmp/auth0-connections.json 2>&1
+>    auth0 api get connections --no-input > /tmp/auth0-connections.json
 >    ```
 >    Read `/tmp/auth0-connections.json` to check existing connections.
 >    - If the connection does not exist, create it:

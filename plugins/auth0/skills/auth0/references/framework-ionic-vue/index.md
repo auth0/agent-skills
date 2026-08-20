@@ -1002,7 +1002,7 @@ npx cap open android  # Build and run on device from Android Studio
 > #### Step B — Verify Auth0 CLI login session
 >
 > ```bash
-> auth0 tenants list --csv --no-input 2>&1
+> auth0 tenants list --csv --no-input
 > ```
 >
 > - **If the command succeeds** and returns CSV output with tenant rows: proceed to Step C.

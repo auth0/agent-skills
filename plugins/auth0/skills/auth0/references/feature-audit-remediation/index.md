@@ -10,23 +10,23 @@ For each item, build the command. **Use a first-class subcommand when one exists
 
 | Category | First-class command (if available) | Fallback `auth0 api` path |
 |---|---|---|
-| Tenant settings | `auth0 tenants settings update` | `PATCH /api/v2/tenants/settings` |
+| Tenant settings | `auth0 tenant-settings update set` / `unset` (flags only) | `PATCH /api/v2/tenants/settings` |
 | Brute-force protection | `auth0 protection brute-force-protection update` | `PATCH /api/v2/attack-protection/brute-force-protection` |
 | Breached password detection | `auth0 protection breached-password-detection update` | `PATCH /api/v2/attack-protection/breached-password-detection` |
 | Suspicious IP throttling | `auth0 protection suspicious-ip-throttling update` | `PATCH /api/v2/attack-protection/suspicious-ip-throttling` |
-| Branding (universal login, colors, logo) | `auth0 branding update` / `auth0 universal-login update` | `PATCH /api/v2/branding` |
+| Branding (universal login, colors, logo) | `auth0 universal-login update` (alias `auth0 ul update`) | `PATCH /api/v2/branding` |
 | Custom domains | `auth0 domains create` / `update` | `POST/PATCH /api/v2/custom-domains` |
-| Connections (DB, social, enterprise) | `auth0 connections update <id>` | `PATCH /api/v2/connections/{id}` (full options blob) |
+| Connections (DB, social, enterprise) | (none) | `PATCH /api/v2/connections/{id}` (full options blob) |
 | APIs / resource servers | `auth0 apis update` | `PATCH /api/v2/resource-servers/{id}` |
 | Apps / clients (callbacks, origins, grant types, refresh tokens) | `auth0 apps update` | `PATCH /api/v2/clients/{id}` |
 | Roles | `auth0 roles update` | `PATCH /api/v2/roles/{id}` |
 | Actions | `auth0 actions create/update/deploy` | `POST/PATCH /api/v2/actions/actions` |
-| Log streams | `auth0 logs streams create/update` | `POST/PATCH /api/v2/log-streams` |
+| Log streams | `auth0 logs streams create <provider>` / `update <provider>` (provider is required: `eventbridge`, `eventgrid`, `http`, `datadog`, `splunk`, or `sumo`) | `POST/PATCH /api/v2/log-streams` |
 | Email provider/templates | `auth0 email provider update` / `auth0 email templates update` | `PATCH /api/v2/emails/provider` / `/api/v2/email-templates/{name}` |
 | MFA factor toggles | (none) | `PUT /api/v2/guardian/factors/{factor}` |
 | MFA policies | (none) | `PUT /api/v2/mfa/policies` |
-| Prompts customization | (none) | `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` |
-| Network ACLs | (none) | `POST/PATCH /api/v2/network-acls` |
+| Prompts customization | `auth0 universal-login prompts update <prompt>` (alias `auth0 ul prompts update`) | `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` |
+| Network ACLs | `auth0 network-acl create` / `update <id>` | `POST/PATCH /api/v2/network-acls` |
 | Auth0 Organizations | `auth0 orgs create/update` | `POST/PATCH /api/v2/organizations` |
 
 The fallback is `auth0 api <method> <path> --data '<json>'` — pick the method from the
@@ -102,7 +102,7 @@ Even in Express mode, these commands are blocked unless the user explicitly type
 - `auth0 logout`
 - `auth0 tenants delete`
 - `auth0 apps delete` (any app, especially the CheckMate app)
-- `auth0 connections delete`
+- `auth0 api delete "connections/<id>"` (no first-class delete command exists for connections)
 - `auth0 api delete <anything>`
 
 ## Closing the run
