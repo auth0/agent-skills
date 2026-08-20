@@ -1148,31 +1148,17 @@ for c in data:
         print(c['id'])
         break
 " 2>/dev/null)
-ENABLED_CLIENTS=$(echo "$CONNECTIONS_JSON" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-for c in data:
-    if c.get('name') == 'Username-Password-Authentication':
-        print(json.dumps(c.get('enabled_clients', [])))
-        break
-" 2>/dev/null)
-
 if [ -z "$CONNECTION_ID" ]; then
-  auth0 api post connections \
-    --data "{\"strategy\":\"auth0\",\"name\":\"Username-Password-Authentication\",\"enabled_clients\":[\"$CLIENT_ID\"]}" \
-    --no-input > /dev/null
-else
-  UPDATED_CLIENTS=$(echo "$ENABLED_CLIENTS" | python3 -c "
-import sys, json
-clients = json.load(sys.stdin)
-if '$CLIENT_ID' not in clients:
-    clients.append('$CLIENT_ID')
-print(json.dumps(clients))
-")
-  auth0 api patch "connections/$CONNECTION_ID" \
-    --data "{\"enabled_clients\":$UPDATED_CLIENTS}" \
-    --no-input > /dev/null
+  CONNECTION_ID=$(auth0 api post connections \
+    --data "{\"strategy\":\"auth0\",\"name\":\"Username-Password-Authentication\"}" \
+    --no-input | grep -o '"id":"con_[^"]*' | head -1 | cut -d'"' -f4)
 fi
+
+# Enable the connection for this app. Only the client_id sent changes, so re-running
+# this is safe.
+auth0 api patch "connections/$CONNECTION_ID/clients" \
+  --data "[{\"client_id\":\"$CLIENT_ID\",\"status\":true}]" \
+  --no-input > /dev/null
 
 # Write / update strings.xml
 STRINGS_FILE="$PROJECT_PATH/app/src/main/res/values/strings.xml"

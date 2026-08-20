@@ -107,6 +107,31 @@ inferring them from the field they set.
 Reading connections back returns a **bare array**, so use `jq '.[]'`, not
 `jq '.enabled_connections[]'`.
 
+### Finding or creating a login connection
+
+An organization with no enabled connection has no way for its members to log in.
+Reuse an existing database connection when the tenant has one, and only create
+one when it does not:
+
+```bash
+# Reuse: first database connection in the tenant, if any.
+auth0 api get "connections?strategy=auth0" | jq -r '.[0].id // empty'
+
+# Create one only if there is none. `name` must match
+# ^[a-zA-Z0-9](-[a-zA-Z0-9]|[a-zA-Z0-9])*$, max 128 chars.
+auth0 api post connections --data '{"name":"<connection-name>","strategy":"auth0"}'
+
+# Enable it for each app that will use it — status false disables. Max 50 per call.
+auth0 api patch "connections/<con-id>/clients" \
+  --data '[{"client_id":"<client-id>","status":true}]'
+
+# Read back which apps are enabled.
+auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
+```
+
+The read is checkpoint-paginated: `take` defaults to 50 (max 1000), and a `next`
+token comes back while more remain, so pass it as `from` until `next` is absent.
+
 ---
 
 ## Invitation flow
@@ -131,6 +156,18 @@ The tenant setting is `default_redirection_uri`, validated as
 `absolute-https-uri-or-empty`: it must be https, and `localhost` is rejected on
 either scheme, so a local-dev URL will not satisfy it.
 
+`default_redirection_uri` is **tenant-wide**, not per app or per organization, so
+setting it changes login behaviour for everything in the tenant. Read the current
+value before you write it, and put it back afterwards if the invitation was the
+only reason you set it:
+
+```bash
+auth0 api get "tenants/settings" | jq -r '.default_redirection_uri // "unset"'
+```
+
+If you keep the new value, say so in your summary. Silently repointing a shared
+tenant setting is the kind of change someone else has to debug.
+
 ```bash
 auth0 orgs invitations create --org-id "<org-id>" \
   --invitee-email "user@company.com" --inviter-name "Admin" \
@@ -152,6 +189,10 @@ auth0 orgs invitations create --org-id "<org-id>" \
 | Mixing up org `id` (org_xxx) and `name` (slug) | `id` for API calls, `name` for display |
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
 | Not enabling a connection for the org | `auth0 api post "organizations/<org-id>/enabled_connections"`, or Dashboard → Organization → Connections |
+| A space or underscore in a new connection's `name` | Alphanumerics and hyphens only, starting and ending alphanumeric. Anything else is a 400 |
+| Creating a connection and enabling it for no app | Nothing can use it. `auth0 api patch "connections/<con-id>/clients" --data '[{"client_id":"<client-id>","status":true}]'` |
+| Reading or writing `enabled_clients` on the connection object | "NOT RECOMMENDED" on write, deprecated on read. Use `GET`/`PATCH connections/<con-id>/clients` |
+| Overwriting `default_redirection_uri` without reading it first | It is tenant-wide. Capture the old value, and restore or disclose it |
 | Guessing a `auth0 orgs` subcommand for membership, roles, or connections | Verify with `auth0 commands orgs --detailed`, and use `auth0 api post organizations/...` for whatever has no dedicated subcommand |
 | Prefixing `auth0 api` paths with `/api/v2/` | Paths are relative to the API root. `/api/v2/organizations/...` returns 404 |
 | Inviting before setting `organization_usage` on the app and `default_redirection_uri` on the tenant | Both are hard 400s. Configure them first (see Invitation flow) |

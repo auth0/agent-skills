@@ -1006,7 +1006,7 @@ func fetchData() async throws -> [Item] {
 >    ```
 >    Read `/tmp/auth0-app-created.json` to extract `client_id`. Do not display the file contents in the terminal.
 >
-> 7. **Set up database connection**: Check if `Username-Password-Authentication` already exists and has the new client enabled:
+> 7. **Set up database connection**: Check whether `Username-Password-Authentication` already exists:
 >    ```bash
 >    auth0 api get connections --no-input > /tmp/auth0-connections.json 2>&1
 >    ```
@@ -1014,16 +1014,15 @@ func fetchData() async throws -> [Item] {
 >    - If the connection does not exist, create it:
 >      ```bash
 >      auth0 api post connections \
->        --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}' \
+>        --data '{"strategy":"auth0","name":"Username-Password-Authentication"}' \
 >        --no-input > /dev/null 2>&1
 >      ```
->    - If it exists but the client is not in `enabled_clients`, update it:
+>    - Then enable it for the client, whether or not the connection already existed:
 >      ```bash
->      auth0 api patch connections/CONNECTION_ID \
->        --data '{"enabled_clients":["EXISTING_CLIENT_1","EXISTING_CLIENT_2","CLIENT_ID"]}' \
+>      auth0 api patch connections/CONNECTION_ID/clients \
+>        --data '[{"client_id":"CLIENT_ID","status":true}]' \
 >        --no-input > /dev/null 2>&1
 >      ```
->    - If it exists and already includes the client, skip this step.
 >
 > 8. **Configure Device Settings** (for Universal Links — Auth0 hosts `apple-app-site-association`):
 >    If Team ID was detected in step 5:
