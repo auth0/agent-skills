@@ -39,7 +39,7 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
 | Add login, signup, sign-in, or "let users log in / create accounts" to an app | **integrate** |
-| Require a second step after the password — a one-time code, SMS or email code, authenticator app, passkey, fingerprint/face (biometric), or security key; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
+| Require a second step after the password — a one-time code, SMS or email code, authenticator app, passkey, fingerprint/face (biometric), or security key; or re-confirm identity before a sensitive action; or build your own QR-code setup and code-entry screens because the app signs users in from its own backend instead of a hosted login page. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication, MFA API, `mfa_required`.* | **feature:mfa** |
 | Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
 | Deploy a hosted self-service portal for profile, passkeys, MFA, or organization details instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
 | Serve the login page from your own web address (e.g. `login.example.com`, `auth.company.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
@@ -277,6 +277,7 @@ Use references/tooling-{tooling}/index.md for all Auth0 tenant configuration ste
 Read: references/feature-mfa/index.md
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md (for SDK-side step-up trigger)
+If the app exchanges credentials for tokens itself rather than redirecting to a hosted login page: follow "Building Your Own MFA Screens (MFA API)" in references/feature-mfa/index.md.
 ```
 
 ### feature:organizations
