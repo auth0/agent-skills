@@ -837,7 +837,7 @@ Run this script to automatically set up everything:
 if ! command -v auth0 &> /dev/null; then
   echo "Installing Auth0 CLI..."
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    brew install auth0/auth0-cli/auth0
+    brew install auth0
   elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # Download and review the install script before executing
     curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh
@@ -983,7 +983,7 @@ npm install @auth0/auth0-vue
 
 **macOS:**
 ```bash
-brew install auth0/auth0-cli/auth0
+brew install auth0
 ```
 
 **Linux (review script before executing):**
@@ -1053,12 +1053,13 @@ VITE_AUTH0_CLIENT_ID=<your-client-id>
 
 **Browser doesn't open:**
 ```bash
-auth0 login --no-browser
+auth0 login --no-input   # prints the URL and code instead of opening a browser
 ```
 
 **"Not logged in" error:**
 ```bash
-auth0 login --force
+auth0 logout
+auth0 login
 ```
 
 ### CORS Errors

@@ -903,7 +903,7 @@ Then ask the user for explicit confirmation before proceeding — do not continu
 if ! command -v auth0 &> /dev/null; then
   echo "Installing Auth0 CLI..."
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    brew install auth0/auth0-cli/auth0
+    brew install auth0
   elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin
   else
@@ -1060,7 +1060,7 @@ npm install @auth0/auth0-spa-js
 
 **macOS:**
 ```bash
-brew install auth0/auth0-cli/auth0
+brew install auth0
 ```
 
 **Linux:**
@@ -1160,12 +1160,13 @@ Still, follow these practices:
 
 **Browser doesn't open for login:**
 ```bash
-auth0 login --no-browser
+auth0 login --no-input   # prints the URL and code instead of opening a browser
 ```
 
 **"Not logged in" error:**
 ```bash
-auth0 login --force
+auth0 logout
+auth0 login
 ```
 
 ---

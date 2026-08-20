@@ -11,7 +11,7 @@ Add Auth0 authentication to Ionic React applications using Capacitor. This skill
 - Auth0 account and tenant
 - For iOS: Xcode 14+ and CocoaPods
 - For Android: Android Studio with API level 21+
-- Auth0 CLI — `brew install auth0/auth0-cli/auth0`
+- Auth0 CLI — `brew install auth0`
 
 ## When NOT to Use
 
@@ -862,8 +862,8 @@ npx cap open android  # Build and run on device from Android Studio
 
 > **Agent instruction:** Run these pre-flight checks before creating the Auth0 application. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
-> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
-> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
+> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0`.
+> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
 > 3. **Confirm active tenant**: Parse the `→` line from the CSV output. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_

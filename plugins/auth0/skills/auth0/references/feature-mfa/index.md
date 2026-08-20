@@ -52,8 +52,21 @@ Multi-Factor Authentication (MFA) requires users to provide two or more verifica
 
 ### Via Auth0 CLI
 
+Enforcing MFA takes **two independent calls**: `PUT guardian/factors/<factor>`
+makes a factor available, and `PUT guardian/policies` makes MFA required.
+Configure the factor first — not because the API requires that order, but
+because a policy set before any factor is available leaves users with no way
+to complete MFA. A factor alone never prompts anyone.
+
+The Guardian policy provides tenant-wide baseline enforcement. A post-login
+Action calling `api.multifactor.enable()` is a second, independent
+enforcement path — it can require MFA conditionally (based on risk, client,
+scopes, etc.) and can override the global policy for that login. Actions
+aren't limited to adaptive rules layered on top of the policy; they're a
+full alternative way to enforce MFA.
+
 ```bash
-# View current MFA configuration
+# View current MFA configuration (read factors from the collection path)
 auth0 api get "guardian/factors"
 
 # Enable TOTP (One-time Password)
@@ -77,9 +90,18 @@ auth0 api put "guardian/factors/email" --data '{"enabled": true}'
 
 ### Configure MFA Policy
 
+Use **`put`** with a bare JSON array. This endpoint replaces the whole policy
+list, so a wrong verb here answers with a 404 that reads like a path or
+permissions problem.
+
 ```bash
 # Set MFA policy: "all-applications" or "confidence-score"
-auth0 api patch "guardian/policies" --data '["all-applications"]'
+auth0 api put "guardian/policies" --data '["all-applications"]'
+auth0 api put "guardian/policies" --data '[]'    # unenforce
+
+# Verify both halves: enabled factor(s) AND a non-empty policy
+auth0 api get "guardian/factors" | jq -c '[.[] | select(.enabled == true)]'
+auth0 api get "guardian/policies"
 ```
 
 ### Same configuration in Terraform
@@ -87,7 +109,7 @@ auth0 api patch "guardian/policies" --data '["all-applications"]'
 The CLI commands above are one way to enable factors and set the policy. If the
 project is infrastructure-as-code, the loaded tooling reference gives the
 equivalent:
-- CLI: `auth0 api put guardian/factors/...` + `auth0 api patch guardian/policies`
+- CLI: `auth0 api put guardian/factors/...` + `auth0 api put guardian/policies`
 - Terraform: `auth0_guardian` resource (`policy` + per-factor blocks)
 - MCP: not available — the Auth0 MCP server exposes no Guardian/MFA tool; use the CLI or Terraform.
 
@@ -311,13 +333,13 @@ The `amr` (Authentication Methods Reference) claim indicates how the user authen
 ### Test Commands
 
 ```bash
-# Check if MFA is enabled
+# Check which factors are available
 auth0 api get "guardian/factors"
 
 # List user's enrollments
 auth0 api get "users/USER_ID/authenticators"
 
-# Check MFA policy
+# Check whether MFA is actually enforced. `[]` means available but not required.
 auth0 api get "guardian/policies"
 ```
 

@@ -1379,7 +1379,7 @@ Then determine the target file using this precedence: `.env.local` (if present),
 # Install Auth0 CLI
 if ! command -v auth0 &> /dev/null; then
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    brew install auth0/auth0-cli/auth0
+    brew install auth0
   else
     curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh
     echo "Review the install script at /tmp/auth0-install.sh before running"

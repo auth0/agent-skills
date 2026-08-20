@@ -1399,7 +1399,7 @@ if ! command -v auth0 &> /dev/null; then
       echo "   https://github.com/auth0/auth0-cli#installation"
       exit 1
     fi
-    brew install auth0/auth0-cli/auth0
+    brew install auth0
   elif [[ "$OSTYPE" == "msys" || "$OSTYPE" == "cygwin" ]]; then
     echo "Please install Auth0 CLI: https://github.com/auth0/auth0-cli#installation"
     exit 1
@@ -1595,13 +1595,13 @@ npm install @auth0/auth0-react
 
 **macOS:**
 ```bash
-brew install auth0/auth0-cli/auth0
+brew install auth0
 ```
 
 **Linux (via Homebrew):**
 ```bash
 # Requires Homebrew on Linux: https://brew.sh
-brew install auth0/auth0-cli/auth0
+brew install auth0
 ```
 
 **Windows:**
@@ -1679,14 +1679,13 @@ iwr -useb get.scoop.sh | iex
 
 **Browser doesn't open:**
 ```bash
-# Use device code flow
-auth0 login --no-browser
+auth0 login --no-input   # prints the URL and code instead of opening a browser
 ```
 
 **"Not logged in" error:**
 ```bash
-# Force new login
-auth0 login --force
+auth0 logout
+auth0 login
 ```
 
 ### Environment Variable Issues

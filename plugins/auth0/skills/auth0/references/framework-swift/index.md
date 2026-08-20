@@ -21,7 +21,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 - **Xcode** 16.x
 - **Swift** 6.0+
 - Auth0 account — [Sign up free](https://auth0.com/signup)
-- Auth0 CLI — `brew install auth0/auth0-cli/auth0` (for automated setup)
+- Auth0 CLI — `brew install auth0` (for automated setup)
 
 ## Quick Start Workflow
 
@@ -29,7 +29,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > **IMPORTANT — Credential privacy:** Never echo Auth0 credentials (domain, client ID, client secret) in your response text or terminal output. Write them directly into config files using the Write or Edit tool. When running Auth0 CLI commands that produce output containing these values, redirect output to a file and read it programmatically. For example:
 > ```bash
-> auth0 apps create ... --json --no-input > /tmp/auth0-output.json 2>&1
+> auth0 apps create ... --json --no-input > /tmp/auth0-output.json
 > ```
 > Then use the Read tool on `/tmp/auth0-output.json` to extract needed values and write them directly into `Auth0.plist` or other config files — never echo them in response text or terminal. When confirming the active tenant with the user, use a masked format (e.g., `your-te****.us.auth0.com`).
 
@@ -89,7 +89,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > First, retrieve existing callback and logout URLs to avoid overwriting them:
 > ```bash
-> auth0 apps show CLIENT_ID --json --no-input > /tmp/auth0-app-info.json 2>&1
+> auth0 apps show CLIENT_ID --json --no-input > /tmp/auth0-app-info.json
 > ```
 > Read `/tmp/auth0-app-info.json` to extract existing `callbacks` and `allowed_logout_urls` arrays.
 >
@@ -113,7 +113,7 @@ Auth0.swift is the official Auth0 SDK for Apple platforms (iOS, macOS, tvOS, wat
 >
 > First, retrieve existing callback and logout URLs to avoid overwriting them:
 > ```bash
-> auth0 apps show CLIENT_ID --json --no-input > /tmp/auth0-app-info.json 2>&1
+> auth0 apps show CLIENT_ID --json --no-input > /tmp/auth0-app-info.json
 > ```
 > Read `/tmp/auth0-app-info.json` to extract existing `callbacks` and `allowed_logout_urls` arrays.
 >
@@ -971,7 +971,7 @@ func fetchData() async throws -> [Item] {
 > ```bash
 > umask 077
 > OUT=$(mktemp -t auth0-output)
-> auth0 <command> --json --no-input > "$OUT" 2>&1
+> auth0 <command> --no-input > "$OUT"
 > echo "$OUT"   # note the path; do NOT print the file contents
 > ```
 >
@@ -979,11 +979,11 @@ func fetchData() async throws -> [Item] {
 >
 > **Pre-flight checks:**
 >
-> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0/auth0-cli/auth0`.
-> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input > /tmp/auth0-tenants.txt 2>&1`. Read the file to check the result. If it fails or returns empty:
+> 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0`.
+> 2. **Check Auth0 login**: redirect to a private temp file the same way (`OUT=$(mktemp -t auth0-tenants); auth0 tenants list --csv --no-input > "$OUT"`). Read `$OUT` to check the result, then `rm -f "$OUT"`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
-> 3. **Confirm active tenant**: Redirect tenant list output to a file and read it. Parse the `→` line to extract the domain. Tell the user using a masked format: _"Your active Auth0 tenant is: `your-te****.us.auth0.com`. Is this correct? (Recommend using a development/test tenant rather than production.)"_ — mask all but the first 7 characters of the subdomain.
+> 3. **Confirm active tenant**: Parse the `→` line from step 2's output to extract the domain. Tell the user using a masked format: _"Your active Auth0 tenant is: `your-te****.us.auth0.com`. Is this correct? (Recommend using a development/test tenant rather than production.)"_ — mask all but the first 7 characters of the subdomain.
 >    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 2.
 >
 > **Detect project settings:**
@@ -993,8 +993,10 @@ func fetchData() async throws -> [Item] {
 >
 > **Create the Auth0 application:**
 >
-> 6. **Create a Native application** with both HTTPS and custom scheme callback URLs:
+> 6. **Create a Native application** with both HTTPS and custom scheme callback URLs (use a fresh `mktemp` for `$OUT`, the same way as step 2):
+>
 >    ```bash
+>    OUT=$(mktemp -t auth0-app-created)
 >    auth0 apps create \
 >      --name "BUNDLE_ID-ios" \
 >      --type native \
@@ -1002,28 +1004,37 @@ func fetchData() async throws -> [Item] {
 >      --callbacks "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
 >      --logout-urls "https://DOMAIN/ios/BUNDLE_ID/callback,BUNDLE_ID://DOMAIN/ios/BUNDLE_ID/callback" \
 >      --json \
->      --no-input > /tmp/auth0-app-created.json 2>&1
+>      --no-input > "$OUT"
 >    ```
->    Read `/tmp/auth0-app-created.json` to extract `client_id`. Do not display the file contents in the terminal.
 >
-> 7. **Set up database connection**: Check if `Username-Password-Authentication` already exists and has the new client enabled:
+>    Read `$OUT` to extract `client_id`, then `rm -f "$OUT"`. Do not display the file contents in the terminal.
+>
+> 7. **Set up database connection**: check whether `Username-Password-Authentication` already exists (reuse the same `$OUT` pattern):
+>
 >    ```bash
->    auth0 api get connections --no-input > /tmp/auth0-connections.json 2>&1
+>    OUT=$(mktemp -t auth0-connections)
+>    auth0 api get connections --no-input > "$OUT"
 >    ```
->    Read `/tmp/auth0-connections.json` to check existing connections.
->    - If the connection does not exist, create it:
+>
+>    Read `$OUT` to check existing connections, then `rm -f "$OUT"`.
+>    - If the connection exists, set `CONNECTION_ID` to its `id` from that file.
+>    - If it does not exist, create it and set `CONNECTION_ID` to the `id` in the response — it is never assigned otherwise:
+>
 >      ```bash
+>      OUT=$(mktemp -t auth0-connection-created)
 >      auth0 api post connections \
->        --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}' \
->        --no-input > /dev/null 2>&1
+>        --data '{"strategy":"auth0","name":"Username-Password-Authentication"}' \
+>        --no-input > "$OUT"
 >      ```
->    - If it exists but the client is not in `enabled_clients`, update it:
+>
+>      Read `$OUT` to extract `id` as `CONNECTION_ID`, then `rm -f "$OUT"`.
+>    - Then enable it for the client, whether or not the connection already existed:
+>
 >      ```bash
->      auth0 api patch connections/CONNECTION_ID \
->        --data '{"enabled_clients":["EXISTING_CLIENT_1","EXISTING_CLIENT_2","CLIENT_ID"]}' \
+>      auth0 api patch connections/CONNECTION_ID/clients \
+>        --data '[{"client_id":"CLIENT_ID","status":true}]' \
 >        --no-input > /dev/null 2>&1
 >      ```
->    - If it exists and already includes the client, skip this step.
 >
 > 8. **Configure Device Settings** (for Universal Links — Auth0 hosts `apple-app-site-association`):
 >    If Team ID was detected in step 5:

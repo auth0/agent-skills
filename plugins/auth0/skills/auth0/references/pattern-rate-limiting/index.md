@@ -46,7 +46,8 @@ The `retry-after` header tells you exactly how many seconds to wait.
 Use the bulk import API instead of individual user creation calls:
 
 ```bash
-auth0 api post /api/v2/jobs/users-imports \
+# Paths are relative to the Management API root — no /api/v2/ prefix.
+auth0 api post "jobs/users-imports" \
   --data '{"users": [...], "connection_id": "con_xxx", "upsert": true}'
 ```
 

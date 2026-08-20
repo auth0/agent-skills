@@ -67,7 +67,8 @@ function requireOrg(orgId) {
 Each Organization can have dedicated enterprise connections (Okta SAML, Azure AD, Google Workspace):
 
 ```bash
-auth0 orgs connections add --org-id org_xxx --connection-id con_xxx
+auth0 api post "organizations/org_xxx/enabled_connections" \
+  --data '{"connection_id":"con_xxx","assign_membership_on_login":true}'
 ```
 
 Users in that org authenticate through their company's IdP automatically.

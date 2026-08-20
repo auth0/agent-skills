@@ -101,7 +101,7 @@ auth0 tenants list --json    # session active? returns tenants array
 ```
 
 If `--version` fails, install per platform:
-- macOS — `brew tap auth0/auth0-cli && brew install auth0`
+- macOS — `brew install auth0`
 - Linux / macOS (curl) — download the binary with `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b .` (it lands in `./auth0`; move it onto `$PATH` with `sudo mv ./auth0 /usr/local/bin` if you want to run it from any directory)
 - Windows — `scoop bucket add auth0 https://github.com/auth0/scoop-auth0-cli.git && scoop install auth0`, or via PowerShell: fetch the latest release tag from the GitHub releases API, download `auth0-cli_<version>_Windows_x86_64.zip`, expand it, and add it to `$PATH`
 - Any platform with Go ≥ 1.21 — `go install github.com/auth0/auth0-cli/cmd/auth0@latest` (ensure `$GOPATH/bin` is on `$PATH`)

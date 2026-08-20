@@ -723,7 +723,7 @@ Then ask the user for explicit confirmation before proceeding — do not continu
 # Install Auth0 CLI
 if ! command -v auth0 &> /dev/null; then
   if [[ "$OSTYPE" == "darwin"* ]]; then
-    brew install auth0/auth0-cli/auth0
+    brew install auth0
   else
     # Download and review the install script before executing
     curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh -o /tmp/auth0-install.sh

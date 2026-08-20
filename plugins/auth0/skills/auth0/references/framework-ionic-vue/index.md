@@ -15,7 +15,7 @@ Add Auth0 authentication to Ionic Vue applications using Capacitor. This skill c
 - Auth0 account and tenant
 - For iOS: Xcode 14+ and CocoaPods
 - For Android: Android Studio with API level 21+
-- Auth0 CLI — `brew install auth0/auth0-cli/auth0`
+- Auth0 CLI — `brew install auth0`
 
 ## When NOT to Use
 
@@ -993,7 +993,7 @@ npx cap open android  # Build and run on device from Android Studio
 >
 > If missing, install it:
 > ```bash
-> brew install auth0/auth0-cli/auth0
+> brew install auth0
 > ```
 > On Linux: `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh`
 >
@@ -1002,7 +1002,7 @@ npx cap open android  # Build and run on device from Android Studio
 > #### Step B — Verify Auth0 CLI login session
 >
 > ```bash
-> auth0 tenants list --csv --no-input 2>&1
+> auth0 tenants list --csv --no-input
 > ```
 >
 > - **If the command succeeds** and returns CSV output with tenant rows: proceed to Step C.
