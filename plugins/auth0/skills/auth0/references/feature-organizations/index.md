@@ -193,6 +193,21 @@ auth0 orgs invitations create --org-id "<org-id>" \
 `--send-email false` reads `false` as a positional argument. Verify with
 `auth0 orgs invitations list --org-id <org-id>`.
 
+### Accepting an invitation (app side)
+
+The invite link lands on your app carrying **both** an `invitation` and an `organization` parameter:
+
+```
+https://your-app.com/login?invitation={ticket_id}&organization={org_id}
+```
+
+Your app must read **both** params from the URL and forward **both** to the `/authorize` request (the SDK's login call). This is protocol-level behavior — it holds for SPA, mobile, and Regular Web App SDKs alike; only *where* you wire it differs:
+
+- **SPA / mobile** (public client): read from the browser URL, pass in `authorizationParams` on the login call.
+- **Regular Web App** (confidential client): read from the server request, pass through the OIDC middleware / challenge params.
+
+**Forward the invitation's own `organization` — do not substitute your app's configured default org.** The invite is scoped to the org it was issued for, which may differ from your default.
+
 ---
 
 ## Common mistakes
@@ -200,6 +215,8 @@ auth0 orgs invitations create --org-id "<org-id>" \
 | Mistake | Fix |
 |---|---|
 | Forgetting `organization` in `authorizationParams` | Always pass the org identifier at login time |
+| Not forwarding the `invitation` param when accepting an invite | Read `invitation` + `organization` from the callback URL and forward both to `/authorize` |
+| Using your default org for an invitation link | Forward the invite's own `organization` param — it may differ from your configured default |
 | Using `org_id` from ID token on backend | Validate from the access token, not ID token |
 | Mixing up org `id` (org_xxx) and `name` (slug) | `id` for API calls, `name` for display |
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
