@@ -61,13 +61,18 @@ app.get('/login/:orgId', (req, res) => {
 });
 ```
 
-### Read org from access token
+### Reading the organization back
 
-After login, the access token includes `org_id` and `org_name` claims:
+`org_id` (and `org_name`, when your tenant uses organization names) is present in
+**both** the ID token and the access token after an organization login. Which one
+you read depends on *why* you need it:
 
-```javascript
-const { org_id, org_name } = tokenPayload;
-```
+- **To display which org the user is in (client / web app):** read `org_id` /
+  `org_name` from the **ID token**. Auth0's guidance is that web applications
+  validate `org_id` from the ID token. Use the SDK's own claim accessor rather
+  than hand-decoding a token.
+- **To authorize an API request (server side):** validate `org_id` from the
+  **access token** the API receives (see below).
 
 ### Validate org on the backend
 
@@ -218,6 +223,8 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | Not forwarding the `invitation` param when accepting an invite | Read `invitation` + `organization` from the callback URL and forward both to `/authorize` |
 | Using your default org for an invitation link | Forward the invite's own `organization` param — it may differ from your configured default |
 | Using `org_id` from ID token on backend | Validate from the access token, not ID token |
+| Reading the display `org_id` from the access token in a client app | Web apps read `org_id` from the ID token; reserve the access token's `org_id` for API validation |
+| Hand-decoding a token to read `org_id` | Use the SDK's claim accessor (`getUser()` / `getIdTokenClaims()` / session user) — the claim is already exposed |
 | Mixing up org `id` (org_xxx) and `name` (slug) | `id` for API calls, `name` for display |
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
 | Not enabling a connection for the org | `auth0 api post "organizations/<org-id>/enabled_connections"`, or Dashboard → Organization → Connections |
