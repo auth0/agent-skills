@@ -141,6 +141,143 @@ The general pattern for all frameworks:
 - Angular
 
 
+## Choosing a path: Universal Login or the MFA API
+
+Three different things get called "MFA" and they are not interchangeable:
+
+| Path | Use when | Covered in |
+|---|---|---|
+| **Universal Login / step-up** | Auth0 renders the MFA prompt. The app only asks for a stronger authentication via `acr_values` and reads `amr`. | Step 2 above, and the framework examples |
+| **MFA API** | The app collects the user's credentials itself and must render its own enrollment and challenge screens — no hosted prompt is shown. | This section |
+| **Factor administration** | An admin or account-settings screen listing or removing a user's factors outside a login attempt, using a Management API token. | Step 5 below |
+
+Prefer Universal Login. Reach for the MFA API only when the application already
+owns the credential exchange and therefore has to drive the second factor
+itself; it puts the enrollment and challenge UX, and the handling of a
+bearer-equivalent token, into application code.
+
+
+## MFA API: driving MFA from the application
+
+Available in `@auth0/auth0-auth-js` and `@auth0/auth0-server-js`. Both expose
+the flow as an `mfa` sub-client on the client the application already
+constructs — there is no separate MFA client to instantiate, and no reason for
+application code to name an Auth0 URL.
+
+### Prerequisites
+
+- The factor and the policy must already be enabled on the tenant — Step 1 above.
+- The client must be configured with a **static domain**. A dynamically
+  discovered or per-request domain makes the MFA sub-client unusable, and the
+  failure surfaces as a configuration error rather than an MFA error.
+- In `@auth0/auth0-server-js`, MFA support is Early Access.
+
+### The sequence
+
+1. The sign-in attempt fails with an `mfa_required` error rather than returning
+   tokens. Detect it with the SDK's type guard — do not string-match the error
+   message.
+2. Read the MFA token from the error's `cause`. It arrives in its wire form
+   (`mfa_token`) and needs no decoding or re-encryption; it is passed onward as
+   the SDK's own camelCase option.
+3. List the user's enrolled authenticators, passing that token. An empty list
+   means the user must enroll; a non-empty list means the user must be
+   challenged. The error's cause may also carry the requirements directly —
+   branching on either is correct.
+4. **Enrolling.** Request enrollment for the factor types the app supports. An
+   authenticator-app enrollment returns an `otpauth://` URI to render as a QR
+   code plus the same secret in text form for manual entry. An out-of-band
+   enrollment (SMS, voice, email) returns the identifiers the verify step needs.
+5. **Challenging.** An out-of-band factor must be challenged first — that is
+   what sends the message — and the challenge returns the code the verify step
+   has to quote back, plus a binding method indicating whether the user types a
+   code. An authenticator-app factor needs **no** challenge: prompt for the code
+   and verify directly.
+6. **Verifying.** One verify call covers every factor, discriminated by a factor
+   type: the app supplies the typed code for an authenticator app, the
+   challenge's identifier plus the received code for an out-of-band factor, or
+   the recovery code. Success returns the tokens the sign-in would have
+   returned.
+7. A first enrollment returns a **recovery code exactly once**. Signing in with
+   a recovery code consumes it and issues a replacement, which must be shown the
+   same way.
+
+The sequence is the same in both SDKs. What differs is where the resulting
+tokens go — see the table below.
+
+### Per-SDK surface
+
+Both packages use the same names, so the table is one column plus the
+language-neutral floor. Names only — see the example sources below for usage.
+
+| Step in the sequence | Symbol in both TypeScript SDKs |
+|---|---|
+| Detect the MFA requirement | `isMfaRequiredError` type guard; the token is `mfa_token` on the error's `cause` |
+| Carry the token onward | `mfaToken` option |
+| List enrolled authenticators | `listAuthenticators` |
+| Enroll | `enrollAuthenticator`, with `authenticatorTypes`; an authenticator-app enrollment returns `barcodeUri` and `secret`, and a first enrollment returns `recoveryCode` |
+| Challenge an out-of-band factor | `challengeAuthenticator`, with `challengeType`; returns `oobCode` and a binding method |
+| Verify | `verify`, discriminated by `factorType`, with the typed code, or `oobCode` plus `bindingCode`, or `recoveryCode` |
+| Remove an authenticator | `deleteAuthenticator` — **`@auth0/auth0-auth-js` only** |
+| Raw HTTP floor | [MFA API](https://auth0.com/docs/secure/multi-factor-authentication/manage-mfa-auth0-apis) |
+
+Where the two diverge:
+
+| | `@auth0/auth0-auth-js` | `@auth0/auth0-server-js` |
+|---|---|---|
+| Where MFA lives | `mfa` sub-client on the auth client | `mfa` sub-client on the server client |
+| List / enroll / challenge | single options argument | single options argument |
+| Verify | single options argument; returns the token set for the app to handle | takes the store options as a **second** argument and persists the token set to the configured session store, so the session becomes signed in |
+| Remove an authenticator | available | **not available** — use factor administration (Step 5) |
+
+Deliberately no endpoint paths or grant-type identifiers here: with either SDK
+present, application code that names them is a defect, not a fallback. The raw
+API is documented for the case where no SDK exists for the platform at all.
+
+### Usage examples
+
+| SDK | Example source |
+|---|---|
+| `@auth0/auth0-auth-js` | [`packages/auth0-auth-js/EXAMPLES.md` → "Using Multi-Factor Authentication (MFA)"](https://github.com/auth0/auth0-auth-js/blob/main/packages/auth0-auth-js/EXAMPLES.md) |
+| `@auth0/auth0-server-js` | [`packages/auth0-server-js/MFA.md`](https://github.com/auth0/auth0-auth-js/blob/main/packages/auth0-server-js/MFA.md) |
+
+Those files are the source of truth for calling shapes and are versioned with
+the SDK. Read them for usage rather than reconstructing calls from this page.
+`@auth0/auth0-api-js` has no MFA surface — it validates tokens and does not
+authenticate users.
+
+### Security invariants
+
+- The MFA token is bearer-equivalent and short-lived. Send it in a request body
+  or header, never in a URL or query string, and hold it only for the length of
+  the flow.
+- Never log the MFA token, the OTP secret, the enrollment URI, or a recovery
+  code. Rendering the QR code and showing the recovery code once are the point;
+  writing them to a log or a database is not.
+- Let the SDK persist the tokens from a successful verify. In
+  `@auth0/auth0-server-js` that is automatic once the store options are passed.
+- Do not generate or verify one-time codes in application code. Auth0 owns the
+  secret and the verification; a second implementation is both wrong and a
+  liability.
+- Prefer an authenticator app or WebAuthn over SMS, and enable recovery codes so
+  a lost device is not a lockout.
+
+### Common mistakes
+
+| Mistake | Why it's wrong |
+|---|---|
+| Calling the MFA HTTP endpoints, or assembling an MFA grant against the token endpoint, by hand | The SDK's `mfa` sub-client covers the whole flow. Hand-written calls skip its validation and error types, and drift from the API. |
+| Inventing an operation the SDK does not have | The surface is list, enroll, challenge, verify, and — in `@auth0/auth0-auth-js` only — remove. Anything else does not exist. |
+| Using a Management API call to inspect or remove factors during a sign-in attempt | Factor administration needs an admin token and is a separate concern (Step 5). Mid-sign-in the only credential available is the MFA token. |
+| Passing wire-level snake_case names as SDK options | The wire uses snake_case; the SDKs take camelCase (`mfaToken`, `authenticatorTypes`, `challengeType`, `bindingCode`, `barcodeUri`). Only the value read off the error cause keeps its wire spelling. |
+| Reaching past the `mfa` sub-client into an inner client to find the methods | The sub-client on the client already constructed is the supported entry point. |
+| Mixing the two SDKs — pulling in the other package to get at MFA | Each exposes the full flow. Adding the sibling means two clients, two configurations, and a session the app must then wire by hand. |
+| Expecting an authenticator-app factor to need a challenge | Only out-of-band factors do. An unnecessary challenge is a wasted round trip and, for some factors, an error. |
+| Adding a server-side TOTP library to generate or check codes | Auth0 issues the secret and verifies the code. See the invariants above. |
+| Using the legacy browser SDK for this | It is deprecated and has no MFA API support. Use the packages named above. |
+| Treating a recovery code as an authenticator-app code | It has its own factor type at verify. Verifying it as an OTP fails. |
+
+
 ## Additional Resources
 
 This skill is split into multiple files for better organization:
