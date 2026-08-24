@@ -54,12 +54,22 @@ end at the same place: an ID/access token whose `amr` reflects that MFA occurred
 
 **Verify completion.** After the flow, confirm the `amr` (Authentication Methods
 Reference) claim contains `mfa` (and, if a specific factor is required, the factor's
-`amr` value). This is the only trustworthy signal that MFA happened.
+`amr` value). This is the only trustworthy signal that MFA happened. **Read `amr`
+through the SDK's own accessor** - the current-user / session object it returns, or the
+result of completing the login - because the SDK has already validated that token, so
+its claims are trustworthy as-is. **Never re-decode or re-verify the token by hand**
+(`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS lookups): it duplicates
+validation the SDK already did and reliably ships *weaker* than the SDK - hand-rolled
+decodes routinely disable `exp`/`iss`/audience checks to "make it work". The concrete
+accessor name is SDK-specific; see the loaded `framework-*` reference.
 
-**Enforce server-side.** A frontend `amr` check is UX, not security. Any API guarding
-a sensitive action must independently validate the token's `amr` claim and reject when
-`mfa` is absent. This is an ordinary claim check on top of standard JWT validation - see
-"Related capabilities"; it is not MFA-specific SDK surface.
+**Enforce server-side.** A frontend `amr` check is UX, not security. Any endpoint
+guarding a sensitive action must independently confirm `mfa` is in `amr` and reject when
+it is absent. In a session-managing SDK (a web-app SDK that holds the tokens for you),
+that is the claim read off the SDK session described above - no token parsing. In a
+resource API that receives a raw bearer token, it is an ordinary claim check layered on
+the framework's *existing* JWT-validation middleware - see "Related capabilities". In
+neither case is it hand-rolled token decoding, and it is not MFA-specific SDK surface.
 
 **Adaptive / conditional MFA** is enforced in a post-login Action that calls
 `api.multifactor.enable(...)`, which is a full alternative enforcement path to the
@@ -172,6 +182,7 @@ For a custom enrollment experience, use the Management API (endpoints, not examp
 | Treating an enabled factor as enforcement | A factor with no policy never challenges anyone | Enforce with a policy or a post-login Action |
 | Reading `guardian/policies` as `[]` and assuming MFA is on | `[]` means available but not required | Confirm a non-empty policy (or an Action that enables MFA) |
 | Trusting a frontend `amr` check | The client can be bypassed entirely | Validate `amr` server-side on every protected API call |
+| Hand-decoding the token to read `amr` (`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS) | Reinvents validation the SDK already performed, and usually disables `exp`/`iss`/audience checks in the process | Read `amr` from the SDK's session/current-user accessor; its claims are already verified |
 | Omitting `max_age=0` on step-up | A still-valid session satisfies the request with no fresh challenge | Send `max_age=0` (or the SDK's fresh-auth option) for step-up |
 | Ignoring `mfa_required` from a silent token call | The step-up silently fails and the action proceeds unverified | Catch it and re-authenticate interactively |
 | Preferring SMS by default | SMS is vulnerable to SIM-swap | Prefer TOTP or WebAuthn; treat SMS as a fallback |
