@@ -32,48 +32,56 @@ Do not restate them here.
 
 ## SDK integration
 
-MFA has to be enforced in two independent places, and getting either wrong ships a bypass:
+MFA has to be enforced in two independent places, and getting either wrong ships a bypass.
+
+**Done only when BOTH are true:**
+
+1. The tenant/login flow challenges the user (Guardian policy or Action) - see "Tenant configuration".
+2. The app verifies `amr` contains `mfa` AND re-checks it server-side on the protected action.
+
+The two places, in detail:
 
 1. **Tenant / login flow** - the tenant decides MFA is required (Guardian policy) or an Action requires it conditionally. This is what actually challenges the user. See "Tenant configuration".
 2. **Application** - the app *triggers* a step-up and *verifies* the result. Triggering alone never enforces anything; verification is what closes the bypass.
 
 ### The mechanic (language-neutral)
 
-**Trigger a step-up.** Request MFA at the authorization endpoint with the OIDC PAPE
-multi-factor `acr_values`, and force a fresh authentication with `max_age=0` so a
-still-valid session does not silently satisfy the request without a real challenge:
+Do these in order:
 
-```
-GET /authorize?...&acr_values=http://schemas.openid.net/pape/policies/2007/06/multi-factor&max_age=0
-```
+1. **Trigger a step-up.** Request MFA at the authorization endpoint with the OIDC PAPE
+   multi-factor `acr_values`, and force a fresh authentication with `max_age=0` so a
+   still-valid session does not silently satisfy the request without a real challenge:
 
-This one HTTP shape is the language-neutral floor; every SDK wraps it. On a silent
-token request, an SDK may instead surface an `mfa_required` error (the SDK-native
-step-up path) that the app handles by re-authenticating interactively. Both routes
-end at the same place: an ID/access token whose `amr` reflects that MFA occurred.
+   ```
+   GET /authorize?...&acr_values=http://schemas.openid.net/pape/policies/2007/06/multi-factor&max_age=0
+   ```
 
-**Verify completion.** After the flow, confirm the `amr` (Authentication Methods
-Reference) claim contains `mfa` (and, if a specific factor is required, the factor's
-`amr` value). This is the only trustworthy signal that MFA happened. **Read `amr`
-through the SDK's own accessor** - the current-user / session object it returns, or the
-result of completing the login - because the SDK has already validated that token, so
-its claims are trustworthy as-is. **Never re-decode or re-verify the token by hand**
-(`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS lookups): it duplicates
-validation the SDK already did and reliably ships *weaker* than the SDK - hand-rolled
-decodes routinely disable `exp`/`iss`/audience checks to "make it work". The concrete
-accessor name is SDK-specific; see the loaded `framework-*` reference.
+   This one HTTP shape is the language-neutral floor; every SDK wraps it. On a silent
+   token request, an SDK may instead surface an `mfa_required` error (the SDK-native
+   step-up path) that the app handles by re-authenticating interactively. Both routes
+   end at the same place: an ID/access token whose `amr` reflects that MFA occurred.
 
-**Enforce server-side.** A frontend `amr` check is UX, not security. Any endpoint
-guarding a sensitive action must independently confirm `mfa` is in `amr` and reject when
-it is absent. In a session-managing SDK (a web-app SDK that holds the tokens for you),
-that is the claim read off the SDK session described above - no token parsing. In a
-resource API that receives a raw bearer token, it is an ordinary claim check layered on
-the framework's *existing* JWT-validation middleware - see "Related capabilities". In
-neither case is it hand-rolled token decoding, and it is not MFA-specific SDK surface.
+2. **Verify completion.** After the flow, confirm the `amr` (Authentication Methods
+   Reference) claim contains `mfa` (and, if a specific factor is required, the factor's
+   `amr` value). This is the only trustworthy signal that MFA happened. Read `amr`
+   according to the context you are in - and **never re-decode or re-verify the token by
+   hand** (`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS lookups): it
+   duplicates validation the SDK already did and reliably ships *weaker* than the SDK -
+   hand-rolled decodes routinely disable `exp`/`iss`/audience checks to "make it work".
 
-**Adaptive / conditional MFA** is enforced in a post-login Action that calls
-`api.multifactor.enable(...)`, which is a full alternative enforcement path to the
-Guardian policy, not merely a layer on top of it. See "Tenant configuration".
+   | Your context | How to read / enforce `amr` | Never |
+   |---|---|---|
+   | Session-managing SDK (web app holds the tokens for you) | Read the claim off the SDK's own session / current-user accessor - the object it returns, or the result of completing the login - because the SDK already validated that token, so its claims are trustworthy as-is. The accessor name is SDK-specific; see the loaded `framework-*` reference. | Re-decode or re-verify the token by hand |
+   | Resource API (receives a raw bearer token) | Ordinary claim check layered on the framework's *existing* JWT-validation middleware - see "Related capabilities". Not MFA-specific SDK surface. | Hand-roll token decoding, or add MFA-specific SDK surface |
+   | Frontend | Treat the `amr` check as UX, not security | Rely on it to enforce anything |
+
+3. **Enforce server-side.** A frontend `amr` check is UX, not security. Any endpoint
+   guarding a sensitive action must independently confirm `mfa` is in `amr` and reject
+   when it is absent, using the row above that matches your context.
+
+4. **Adaptive / conditional MFA** is enforced in a post-login Action that calls
+   `api.multifactor.enable(...)`, which is a full alternative enforcement path to the
+   Guardian policy, not merely a layer on top of it. See "Tenant configuration".
 
 ### Feature-level symbols
 
