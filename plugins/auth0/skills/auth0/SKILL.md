@@ -277,7 +277,7 @@ Use references/tooling-{tooling}/index.md for all Auth0 tenant configuration ste
 Read: references/feature-mfa/index.md
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md (for SDK-side step-up trigger)
-If the app exchanges credentials itself and renders its own MFA screens: follow the MFA API section of references/feature-mfa/index.md rather than the step-up sections
+If the app makes the token request itself — password, passwordless, passkey, refresh token, or token exchange — and renders its own MFA screens: follow the MFA API section of references/feature-mfa/index.md rather than the step-up sections
 ```
 
 ### feature:organizations
