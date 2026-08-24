@@ -145,15 +145,43 @@ new AuthClient({
 | `idTokenSigningAlg` | — (internal) | ID-token validation is internal; read `TokenResponse.claims`. |
 | `clockTolerance` | — (internal) | Handled internally during validation. |
 
-> **Per-request options.** The new SDK's methods accept a trailing `RequestOptions`
-> (`{ signal, headers, customFetch }`), so anything node-auth0 configured globally (custom headers,
-> timeout, agent) is now set per call. If the customer set a global header on the
-> `AuthenticationClient`, apply it via `RequestOptions.headers` on the calls that need it, or wrap
-> `customFetch` once to inject it everywhere.
->
-> **Note:** Per-request `RequestOptions` support is not yet published as of auth0-auth-js v1.12.0.
-> Check the release notes or GitHub for the version that ships this feature before relying on
-> `signal`, `headers`, or per-call `customFetch`.
+### Migrating global config to per-request options
+
+node-auth0's global constructor options for `headers`, `timeoutDuration`, `agent`, `retry`, and
+`middleware` do not have direct constructor equivalents in auth0-auth-js. Instead, the new SDK's
+methods accept a trailing `RequestOptions` parameter:
+
+```ts
+import type { RequestOptions } from '@auth0/auth0-server-js'; // or '@auth0/auth0-auth-js'
+
+const tokens = await authClient.getTokenByClientCredentials(
+  { audience: 'https://api.example.com' },
+  {
+    headers: { 'X-Custom': 'value' },
+    signal: AbortSignal.timeout(5000), // timeout in ms
+  } satisfies RequestOptions
+);
+```
+
+**Type import:** `@auth0/auth0-server-js` re-exports `RequestOptions` from `@auth0/auth0-auth-js`,
+so you can import it from either package. Note that server-js does **not** re-export `ApiResponse`
+or `FullResponseOption`; those types are defined separately in each package.
+
+**Arity rule:** MFA methods (`authClient.mfa.*`) take `requestOptions` as the 2nd argument;
+store-first methods (session-owning methods on `serverClient`) take it as the 3rd argument after the
+store context; cache hits ignore it entirely.
+
+**Common patterns:**
+
+- **Global headers:** If the customer set a global header on the `AuthenticationClient`, either
+  apply it via `RequestOptions.headers` on each call that needs it, or wrap `customFetch` once to
+  inject it everywhere.
+- **Timeout:** Replace `timeoutDuration: 10000` with `signal: AbortSignal.timeout(10000)` on the
+  call.
+- **Agent (Node.js dispatcher):** Wrap `customFetch` to inject the agent into the underlying HTTP
+  transport.
+- **Retry / middleware:** Compose behavior in a `customFetch` wrapper passed either at construction
+  or per request.
 
 ### → `@auth0/auth0-server-js` `ServerClient` options
 

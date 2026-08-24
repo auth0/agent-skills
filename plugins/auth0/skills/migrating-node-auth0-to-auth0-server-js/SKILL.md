@@ -80,10 +80,10 @@ Before touching any code, verify the environment is safe for an in-place rewrite
 
 3. **Verify SDK versions:** Check that the target SDKs are installed and meet the minimum version requirements:
    
-   - `@auth0/auth0-auth-js` >= v1.12.0
-   - `@auth0/auth0-server-js` >= v1.10.0
+   - `@auth0/auth0-auth-js` >= v1.12.1
+   - `@auth0/auth0-server-js` >= v1.12.1
    
-   Per-request options (`signal`, `headers`, per-call `customFetch` in `RequestOptions`) are **unreleased** as of auth-js v1.12.0 (added by PR #230, pending merge and release). If the customer needs these features, gate the migration until the release lands or provide instructions for installing from a pre-release branch.
+   Per-request options (`signal`, `headers`, per-call `customFetch` in `RequestOptions`) and the `fullResponse` envelope are **shipped** in v1.12.1 of both SDKs. These versions are unreleased on npm as of this writing; until a public release cuts, install via the local-tarball / pre-release path (see the migration fixture README).
 
 4. **Verify source SDK:** Confirm that node-auth0 v5 is present in the project's dependencies and is the source SDK being migrated.
 
@@ -186,9 +186,7 @@ that skill here to ensure consistency with the repo's own quality gates.
 ## SDK versions this skill targets
 
 - **Source:** `auth0` (node-auth0) v5.x — `AuthenticationClient`, `UserInfoClient`
-- **Target:** `@auth0/auth0-auth-js` >= v1.12.0 (token layer), `@auth0/auth0-server-js` >= v1.10.0 (session layer)
+- **Target:** `@auth0/auth0-auth-js` >= v1.12.1 (token layer), `@auth0/auth0-server-js` >= v1.12.1 (session layer)
 
-**Important:** Per-request `RequestOptions` (`signal`, `headers`, per-call `customFetch`) are
-**unreleased** as of `@auth0/auth0-auth-js` v1.12.0. These features were added by PR #230 and are
-pending merge and release. If the migration requires these options, you must either wait for the
-release or install from a pre-release branch.
+**Important:** Per-request `RequestOptions` (`signal`, `headers`, per-call `customFetch`) and the
+`fullResponse` envelope are **shipped** in v1.12.1 of both SDKs. These versions are unreleased on npm as of this writing; until a public release cuts, install via the local-tarball / pre-release path (see the migration fixture README).

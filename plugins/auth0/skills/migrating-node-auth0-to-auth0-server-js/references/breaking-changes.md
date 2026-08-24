@@ -34,8 +34,9 @@ The new SDKs **drop the envelope** and return the domain object directly:
 - `sendEmail` / `sendSms` / `revokeToken` return `void`.
 
 HTTP metadata (status code, response headers such as `x-request-id`, `retry-after`, rate-limit
-headers) is available through the per-operation error objects and, where relevant, through
-`RequestOptions` — you do not read it off the success value's envelope anymore.
+headers) is available through the per-operation error objects on failure paths. On **success paths**,
+metadata is available via the opt-in `fullResponse` envelope (see "Reading HTTP response metadata"
+below). It is no longer on the bare success value by default.
 
 ### The rewrite
 
@@ -62,17 +63,74 @@ const message = await authClient.database.changePassword({ email, connection });
 console.log(message);
 ```
 
+### Reading HTTP response metadata (fullResponse)
+
+When your node-auth0 code reads HTTP response metadata (status, headers) on a **success path**, migrate to the opt-in envelope rather than dropping the read. This is most common when customers track rate limits, log request IDs, or check retry-after headers for dashboard telemetry.
+
+```ts
+// before (node-auth0): metadata on the success envelope
+const resp = await auth0.oauth.clientCredentialsGrant({ audience });
+const remaining = resp.headers.get('x-ratelimit-remaining');
+const token = resp.data.access_token;
+
+// after: opt in to the envelope, read the native Response
+const { data, response } = await authClient.getTokenByClientCredentials(
+  { audience, fullResponse: true });
+const remaining = response.headers.get('x-ratelimit-remaining');
+const token = data.accessToken;
+```
+
+The same opt-in covers the non-token Authentication API methods that node-auth0 wrapped in a
+`JSONApiResponse` / `TextApiResponse` / `VoidApiResponse`. Their envelope pairs the raw `Response`
+with the value they otherwise return directly:
+
+| Method | Bare return | `fullResponse: true` return |
+|---|---|---|
+| `database.signUp` | `SignUpResult` | `ApiResponse<SignUpResult>` |
+| `database.changePassword` | `string` | `ApiResponse<string>` |
+| `passwordless.sendEmail` | `void` | `ApiResponse<void>` (`data` is `undefined`) |
+| `passwordless.sendSms` | `void` | `ApiResponse<void>` (`data` is `undefined`) |
+
+```ts
+// before (node-auth0): read the request id off the signup envelope
+const resp = await auth0.database.signUp({ email, password, connection });
+const reqId = resp.headers.get('x-request-id');
+
+// after: opt in to the envelope
+const { data, response } = await authClient.database.signUp(
+  { email, password, connection, fullResponse: true });
+const reqId = response.headers.get('x-request-id');
+
+// void-returning methods expose the Response with an undefined `data`
+const { response: sendResp } = await authClient.passwordless.sendEmail(
+  { email, fullResponse: true });
+const rateLimit = sendResp.headers.get('x-ratelimit-remaining');
+```
+
+**Caveats:**
+
+- Pass `fullResponse: true` as a literal, not a variable. Using spread — `{ ...opts, fullResponse: true }` — widens `true` to `boolean`, causing TypeScript overload resolution to fall back to the bare return type. Fix: pass `{ ...opts, fullResponse: true as const }` or include `fullResponse` as an inline literal in the options object.
+- Performance consideration: When `fullResponse: true` is requested on a **token** method and a cached token is still valid, the cache is bypassed to force a token-endpoint round-trip. The HTTP Response can only come from a live network call, so repeated calls with this flag on a hot cache will trigger repeated exchanges. The non-token methods (`signUp`, `changePassword`, `sendEmail`, `sendSms`) hit the network on every call regardless, so `fullResponse` does not change their cost.
+- Reserved headers: A caller `Authorization` header is ignored and the telemetry `Auth0-Client` header always wins; `RequestOptions.headers` cannot override them.
+- Per-request `customFetch` replaces the base transport for that call but does not inherit mTLS; if you rely on mTLS the supplied fetch must itself be mTLS-capable.
+
+**Decision guidance:** Default to the bare return type. Reach for `fullResponse` only where the customer actually consumed response metadata on success — rate-limit dashboards, request-id logging for support investigations, or retry-after handling. `MissingCapturedResponseError` is an internal-bug sentinel; customers don't normally catch it.
+
 ### Gotchas
 
 - **Void methods.** Code that did `const r = await auth0.passwordless.sendEmail(...)` and then
-  checked `r.status === 200` must drop that check — the method now returns `void` and throws on
-  failure. Rely on the thrown error instead (see §4).
-- **Header reads.** Any code reading `resp.headers.get('x-ratelimit-remaining')` on a *success*
-  path needs to move that read to where the SDK surfaces it (per-request options / error cause),
-  not the success value. Search the customer's code for `.headers` on response values.
-- **Do not "helpfully" re-wrap.** Resist reintroducing a `{ data, status }` shape to minimize
-  downstream diff. Let the domain object flow through; it keeps the migration honest and avoids a
-  compatibility shim you would have to maintain.
+  checked `r.status === 200` must drop that check — by default the method returns `void` and throws
+  on failure. Rely on the thrown error instead (see §4). If the success status or headers are
+  genuinely needed, opt into `fullResponse: true` to get an `ApiResponse<void>` whose `response`
+  carries the status/headers (see "Reading HTTP response metadata" above).
+- **Header reads.** Any code reading `resp.headers.get('x-ratelimit-remaining')` on a **success**
+  path needs the opt-in `fullResponse` envelope (see "Reading HTTP response metadata" above). Error
+  paths still surface metadata on the typed error. Search the customer's code for `.headers` on
+  response values.
+- **Do not hand-roll a compatibility shim.** Resist reintroducing a custom `{ data, status }` shape
+  to minimize downstream diff. Let the domain object flow through; it keeps the migration honest and
+  avoids a compatibility shim you would have to maintain. The SDK's own opt-in `fullResponse`
+  envelope is the sanctioned channel when you genuinely need the HTTP Response.
 
 ---
 

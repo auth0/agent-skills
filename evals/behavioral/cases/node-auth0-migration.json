@@ -1,236 +1,343 @@
 {
   "slug": "node-auth0-migration",
   "origin_skill": "migrating-node-auth0-to-auth0-server-js",
-  "_pending_upstream_note": "Cases 'routing-session-vs-stateless' and 'server-js-session-traps' depend on unreleased @auth0/auth0-server-js per-request options (PR #230 / #244). They will fail until those PRs are released and the SDK version is updated in the skill references.",
   "evals": [
     {
       "id": "expires-at-absolute",
-      "prompt": "This Node.js code uses the node-auth0 SDK to refresh a token and store its expiry. Migrate the auth0 usage to @auth0/auth0-auth-js.\n\n```ts\nimport { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nasync function refresh(rt) {\n  const resp = await auth0.oauth.refreshTokenGrant({ refresh_token: rt });\n  const expiresAtMs = Date.now() + resp.data.expires_in * 1000;\n  return { accessToken: resp.data.access_token, expiresAtMs };\n}\n```",
-      "expected_output": "Uses AuthClient.getTokenByRefreshToken({ refreshToken: rt }), reads tokens.accessToken, and computes the stored deadline as tokens.expiresAt * 1000 WITHOUT adding Date.now() (expiresAt is already an absolute Unix timestamp)."
+      "prompt": "Migrate the file src/refresh.ts in place. It uses the node-auth0 SDK to refresh a token and store its expiry; migrate the auth0 usage to @auth0/auth0-auth-js.",
+      "scaffold": {
+        "src/refresh.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nasync function refresh(rt) {\n  const resp = await auth0.oauth.refreshTokenGrant({ refresh_token: rt });\n  const expiresAtMs = Date.now() + resp.data.expires_in * 1000;\n  return { accessToken: resp.data.access_token, expiresAtMs };\n}\n"
+      },
+      "expected_output": "Uses AuthClient.getTokenByRefreshToken({ refreshToken: rt }), reads tokens.accessToken, and computes the stored deadline as tokens.expiresAt * 1000 WITHOUT adding Date.now() (expiresAt is already an absolute Unix timestamp).",
+      "graders": [
+        {
+          "type": "contains",
+          "value": "getTokenByRefreshToken",
+          "description": "Uses getTokenByRefreshToken for refresh grant"
+        },
+        {
+          "type": "contains",
+          "value": "tokens.accessToken",
+          "description": "Reads tokens.accessToken directly"
+        },
+        {
+          "type": "not_matches",
+          "pattern": "Date\\.now\\(\\)\\s*\\+.*expiresAt",
+          "description": "Does not add Date.now() to expiresAt (expiresAt is already absolute)"
+        },
+        {
+          "type": "not_contains",
+          "value": "expires_in",
+          "description": "No remaining reference to expires_in"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data.",
+          "description": "Does not read resp.data envelope"
+        }
+      ]
     },
     {
       "id": "return-shape-and-casing",
-      "prompt": "Migrate this node-auth0 client-credentials M2M call to the modern SDK.\n\n```ts\nimport { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nconst resp = await auth0.oauth.clientCredentialsGrant({ audience: 'https://api.example.com' });\nconst token = resp.data.access_token;\n```",
-      "expected_output": "Migrates to @auth0/auth0-auth-js AuthClient.getTokenByClientCredentials({ audience }); reads tokens.accessToken directly (no .data envelope)."
+      "prompt": "Migrate the file src/client-credentials.ts in place. It performs a node-auth0 client-credentials M2M call; migrate it to the modern SDK.",
+      "scaffold": {
+        "src/client-credentials.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nconst resp = await auth0.oauth.clientCredentialsGrant({ audience: 'https://api.example.com' });\nconst token = resp.data.access_token;\n"
+      },
+      "expected_output": "Migrates to @auth0/auth0-auth-js AuthClient.getTokenByClientCredentials({ audience }); reads tokens.accessToken directly (no .data envelope).",
+      "graders": [
+        {
+          "type": "contains",
+          "value": "getTokenByClientCredentials",
+          "description": "Uses getTokenByClientCredentials for M2M"
+        },
+        {
+          "type": "contains",
+          "value": "tokens.accessToken",
+          "description": "Reads tokens.accessToken directly"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data.",
+          "description": "Does not read resp.data envelope"
+        },
+        {
+          "type": "judge",
+          "question": "Does the return-shape-and-casing solution choose @auth0/auth0-auth-js (NOT auth0-server-js) for the M2M client-credentials grant, use camelCase parameters ({ audience }), and call getTokenByClientCredentials?",
+          "examples": "PASS: Imports AuthClient from '@auth0/auth0-auth-js', calls getTokenByClientCredentials({ audience: 'https://api.example.com' }), reads tokens.accessToken.\nFAIL: Uses @auth0/auth0-server-js ServerClient for a stateless M2M grant that has no session.\nFAIL: Uses snake_case client_credentials_grant or leaves the old node-auth0 method name.",
+          "description": "Judge confirms auth-js choice, camelCase params, and correct method"
+        }
+      ]
     },
     {
       "id": "mfa-required-guard",
-      "prompt": "Migrate this password-grant login with MFA detection to @auth0/auth0-auth-js.\n\n```ts\nimport { AuthenticationClient, AuthApiError } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\ntry {\n  const resp = await auth0.oauth.passwordGrant({ username, password });\n  return resp.data.access_token;\n} catch (e) {\n  if (e instanceof AuthApiError && e.error === 'mfa_required') startMfa(e);\n  throw e;\n}\n```",
-      "expected_output": "Uses getTokenByPassword, reads tokens.accessToken, and detects MFA with isMfaRequiredError(e) instead of AuthApiError + string comparison."
+      "prompt": "Migrate the file src/password-login.ts in place. It performs a password-grant login with MFA detection; migrate it to @auth0/auth0-auth-js.",
+      "scaffold": {
+        "src/password-login.ts": "import { AuthenticationClient, AuthApiError } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\ntry {\n  const resp = await auth0.oauth.passwordGrant({ username, password });\n  return resp.data.access_token;\n} catch (e) {\n  if (e instanceof AuthApiError && e.error === 'mfa_required') startMfa(e);\n  throw e;\n}\n"
+      },
+      "expected_output": "Uses getTokenByPassword, reads tokens.accessToken, and detects MFA with isMfaRequiredError(e) instead of AuthApiError + string comparison.",
+      "graders": [
+        {
+          "type": "contains",
+          "value": "getTokenByPassword",
+          "description": "Uses getTokenByPassword for password grant"
+        },
+        {
+          "type": "contains",
+          "value": "isMfaRequiredError",
+          "description": "Detects MFA via isMfaRequiredError helper"
+        },
+        {
+          "type": "not_contains",
+          "value": "AuthApiError",
+          "description": "Does not use old AuthApiError type"
+        },
+        {
+          "type": "not_matches",
+          "pattern": "e\\.error\\s*===\\s*['\"]mfa_required['\"]",
+          "description": "Does not use string comparison e.error === 'mfa_required'"
+        },
+        {
+          "type": "contains",
+          "value": "tokens.accessToken",
+          "description": "Reads tokens.accessToken directly"
+        }
+      ]
     },
     {
       "id": "authorization-code-url",
-      "prompt": "Migrate this Express callback handler off node-auth0. The app manages its own session and just needs the tokens.\n\n```ts\nimport { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\napp.get('/callback', async (req, res) => {\n  const resp = await auth0.oauth.authorizationCodeGrant({ code: req.query.code, redirect_uri: 'https://app.example.com/callback' });\n  req.session.tokens = resp.data;\n  res.redirect('/');\n});\n```",
-      "expected_output": "Uses AuthClient.getTokenByCode(url, ...) passing the full callback URL (not req.query.code), and stores the returned TokenResponse fields; keeps the app's own session as-is (auth-js, not server-js)."
+      "prompt": "Migrate the file src/callback-handler.ts in place. It is an Express callback handler using node-auth0; the app manages its own session and just needs the tokens. Migrate off node-auth0.",
+      "scaffold": {
+        "src/callback-handler.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\napp.get('/callback', async (req, res) => {\n  const resp = await auth0.oauth.authorizationCodeGrant({ code: req.query.code, redirect_uri: 'https://app.example.com/callback' });\n  req.session.tokens = resp.data;\n  res.redirect('/');\n});\n"
+      },
+      "expected_output": "Uses AuthClient.getTokenByCode(url, ...) passing the full callback URL (not req.query.code), and stores the returned TokenResponse fields; keeps the app's own session as-is (auth-js, not server-js).",
+      "graders": [
+        {
+          "type": "contains",
+          "value": "getTokenByCode",
+          "description": "Uses getTokenByCode for code exchange"
+        },
+        {
+          "type": "not_contains",
+          "value": "req.query.code",
+          "description": "Passes full URL, not req.query.code string"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data.",
+          "description": "Does not read resp.data envelope"
+        },
+        {
+          "type": "judge",
+          "question": "Does the authorization-code-url solution use @auth0/auth0-auth-js (NOT auth0-server-js) because the app manages its own session, and pass the full callback URL (not req.query.code) to getTokenByCode?",
+          "examples": "PASS: Imports AuthClient from '@auth0/auth0-auth-js', builds a URL from req.url and redirectUri, passes it to getTokenByCode, stores the returned TokenResponse in req.session.\nFAIL: Uses @auth0/auth0-server-js ServerClient when the app is explicitly managing its own session.\nFAIL: Passes req.query.code as a string instead of constructing a URL object.",
+          "description": "Judge confirms auth-js choice and URL (not code string) parameter"
+        }
+      ]
     },
     {
       "id": "leave-management-client",
-      "prompt": "This file uses node-auth0 for both an M2M token grant AND the Management API. Migrate only the authentication part.\n\n```ts\nimport { AuthenticationClient, ManagementClient } from 'auth0';\nconst auth = new AuthenticationClient({ domain, clientId, clientSecret });\nconst mgmt = new ManagementClient({ domain, clientId, clientSecret });\nexport async function getApiToken() {\n  const resp = await auth.oauth.clientCredentialsGrant({ audience });\n  return resp.data.access_token;\n}\nexport async function getUsers() {\n  return (await mgmt.users.getAll()).data;\n}\n```",
-      "expected_output": "Migrates only the AuthenticationClient usage to @auth0/auth0-auth-js; keeps the ManagementClient import and usage from 'auth0' untouched."
+      "prompt": "Migrate the file src/api-client.ts in place. It uses node-auth0 for both an M2M token grant AND the Management API. Migrate only the authentication part.",
+      "scaffold": {
+        "src/api-client.ts": "import { AuthenticationClient, ManagementClient } from 'auth0';\nconst auth = new AuthenticationClient({ domain, clientId, clientSecret });\nconst mgmt = new ManagementClient({ domain, clientId, clientSecret });\nexport async function getApiToken() {\n  const resp = await auth.oauth.clientCredentialsGrant({ audience });\n  return resp.data.access_token;\n}\nexport async function getUsers() {\n  return (await mgmt.users.getAll()).data;\n}\n"
+      },
+      "expected_output": "Migrates only the AuthenticationClient usage to @auth0/auth0-auth-js; keeps the ManagementClient import and usage from 'auth0' untouched.",
+      "graders": [
+        {
+          "type": "contains",
+          "value": "AuthClient",
+          "description": "Migrates to AuthClient from auth-js"
+        },
+        {
+          "type": "contains",
+          "value": "getTokenByClientCredentials",
+          "description": "Uses getTokenByClientCredentials for M2M token"
+        },
+        {
+          "type": "contains",
+          "value": "ManagementClient",
+          "description": "Keeps ManagementClient from 'auth0'"
+        },
+        {
+          "type": "matches",
+          "pattern": "from\\s+['\"]auth0['\"].*ManagementClient",
+          "description": "ManagementClient still imported from 'auth0' (not migrated)"
+        },
+        {
+          "type": "judge",
+          "question": "Does the leave-management-client solution migrate ONLY the AuthenticationClient usage to @auth0/auth0-auth-js, leaving the ManagementClient import and usage from 'auth0' completely untouched?",
+          "examples": "PASS: Changes AuthenticationClient to AuthClient from '@auth0/auth0-auth-js', leaves ManagementClient imported from 'auth0', getUsers() function unchanged.\nFAIL: Tries to migrate or change ManagementClient usage when it should be left alone.\nFAIL: Removes the 'auth0' import entirely when ManagementClient still needs it.",
+          "description": "Judge confirms only AuthenticationClient migrated, ManagementClient untouched"
+        }
+      ]
     },
     {
       "id": "routing-session-vs-stateless",
-      "prompt": "This Express app uses node-auth0 for a browser-based redirect login, stores the session across requests, and refreshes tokens on expiry. Decide which SDK to migrate to and rewrite the session handling.\n\n```ts\nimport { AuthenticationClient } from 'auth0';\nconst auth = new AuthenticationClient({ domain, clientId, clientSecret });\napp.get('/login', (req, res) => {\n  const authUrl = `https://${domain}/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid profile email offline_access`;\n  res.redirect(authUrl);\n});\napp.get('/callback', async (req, res) => {\n  const resp = await auth.oauth.authorizationCodeGrant({ code: req.query.code, redirect_uri: redirectUri });\n  req.session.tokens = { accessToken: resp.data.access_token, refreshToken: resp.data.refresh_token, expiresAt: Date.now() + resp.data.expires_in * 1000 };\n  res.redirect('/');\n});\napp.get('/api/data', async (req, res) => {\n  if (Date.now() > req.session.tokens.expiresAt) {\n    const resp = await auth.oauth.refreshTokenGrant({ refresh_token: req.session.tokens.refreshToken });\n    req.session.tokens.accessToken = resp.data.access_token;\n    req.session.tokens.expiresAt = Date.now() + resp.data.expires_in * 1000;\n  }\n  res.json({ data: 'protected' });\n});\n```",
+      "prompt": "Migrate the file src/express-app.ts in place. This Express app uses node-auth0 for a browser-based redirect login, stores the session across requests, and refreshes tokens on expiry. Decide which SDK to migrate to and rewrite the session handling.",
+      "scaffold": {
+        "src/express-app.ts": "import { AuthenticationClient } from 'auth0';\nconst auth = new AuthenticationClient({ domain, clientId, clientSecret });\napp.get('/login', (req, res) => {\n  const authUrl = `https://${domain}/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid profile email offline_access`;\n  res.redirect(authUrl);\n});\napp.get('/callback', async (req, res) => {\n  const resp = await auth.oauth.authorizationCodeGrant({ code: req.query.code, redirect_uri: redirectUri });\n  req.session.tokens = { accessToken: resp.data.access_token, refreshToken: resp.data.refresh_token, expiresAt: Date.now() + resp.data.expires_in * 1000 };\n  res.redirect('/');\n});\napp.get('/api/data', async (req, res) => {\n  if (Date.now() > req.session.tokens.expiresAt) {\n    const resp = await auth.oauth.refreshTokenGrant({ refresh_token: req.session.tokens.refreshToken });\n    req.session.tokens.accessToken = resp.data.access_token;\n    req.session.tokens.expiresAt = Date.now() + resp.data.expires_in * 1000;\n  }\n  res.json({ data: 'protected' });\n});\n"
+      },
       "expected_output": "Routes to @auth0/auth0-server-js (NOT auth-js) because the app has a redirect login flow, manages a session across requests, and refreshes tokens. Replaces the hand-rolled session/refresh logic with ServerClient: startInteractiveLogin for /login, completeInteractiveLogin for /callback (which persists the session), and getAccessToken for /api/data (which auto-refreshes). No manual expiresAt arithmetic or .data access remains.",
-      "_pending": "Requires unreleased per-request options from auth0-server-js PR #230/#244"
+      "graders": [
+        {
+          "type": "contains",
+          "value": "@auth0/auth0-server-js",
+          "description": "Chooses server-js for redirect+session+refresh"
+        },
+        {
+          "type": "contains",
+          "value": "startInteractiveLogin",
+          "description": "Uses startInteractiveLogin for /login"
+        },
+        {
+          "type": "contains",
+          "value": "completeInteractiveLogin",
+          "description": "Uses completeInteractiveLogin for /callback"
+        },
+        {
+          "type": "contains",
+          "value": "getAccessToken",
+          "description": "Uses getAccessToken for protected route (auto-refresh)"
+        },
+        {
+          "type": "not_matches",
+          "pattern": "Date\\.now\\(\\)\\s*\\+.*expires",
+          "description": "No manual expiresAt arithmetic with Date.now()"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data.",
+          "description": "Does not read resp.data envelope"
+        },
+        {
+          "type": "judge",
+          "question": "Does the routing-session-vs-stateless solution choose @auth0/auth0-server-js (NOT auth-js) for the redirect login flow with session state and auto-refresh, replacing hand-rolled session logic with ServerClient methods (startInteractiveLogin, completeInteractiveLogin, getAccessToken)?",
+          "examples": "PASS: Imports ServerClient from '@auth0/auth0-server-js', constructs it with transactionStore and stateStore, /login calls startInteractiveLogin, /callback calls completeInteractiveLogin, /api/data calls getAccessToken (which auto-refreshes), no manual Date.now() + expires_in arithmetic.\nFAIL: Uses @auth0/auth0-auth-js when the app clearly needs session management and auto-refresh.\nFAIL: Still manually checks expiresAt and calls refreshTokenGrant instead of using getAccessToken.",
+          "description": "Judge confirms server-js choice and SDK-owned session"
+        }
+      ]
     },
     {
       "id": "server-js-session-traps",
-      "prompt": "Migrate this Express callback handler to @auth0/auth0-server-js. The app wants the SDK to own the session.\n\n```ts\nimport { AuthenticationClient } from 'auth0';\nconst auth = new AuthenticationClient({ domain, clientId, clientSecret });\napp.get('/callback', async (req, res) => {\n  const resp = await auth.oauth.authorizationCodeGrant({ code: req.query.code, redirect_uri: redirectUri });\n  const expiresAtMs = Date.now() + resp.data.expires_in * 1000;\n  req.session.user = { sub: resp.data.id_token_claims.sub, accessToken: resp.data.access_token, expiresAtMs };\n  res.redirect('/');\n});\n```",
+      "prompt": "Migrate the file src/callback.ts in place to @auth0/auth0-server-js. The app wants the SDK to own the session.",
+      "scaffold": {
+        "src/callback.ts": "import { AuthenticationClient } from 'auth0';\nconst auth = new AuthenticationClient({ domain, clientId, clientSecret });\napp.get('/callback', async (req, res) => {\n  const resp = await auth.oauth.authorizationCodeGrant({ code: req.query.code, redirect_uri: redirectUri });\n  const expiresAtMs = Date.now() + resp.data.expires_in * 1000;\n  req.session.user = { sub: resp.data.id_token_claims.sub, accessToken: resp.data.access_token, expiresAtMs };\n  res.redirect('/');\n});\n"
+      },
       "expected_output": "Uses ServerClient.completeInteractiveLogin(callbackUrl, storeOptions) to exchange the code, validate the ID token, and persist the session to the state store in one call. The session is written by the SDK, not manually assigned to req.session. No .data envelope, no manual expiresAt arithmetic (the SDK stores expiresAt as an absolute Unix timestamp internally), and no hand-rolled session object construction.",
-      "_pending": "Requires unreleased per-request options from auth0-server-js PR #230/#244"
-    }
-  ],
-  "graders": [
-    {
-      "type": "contains",
-      "value": "getTokenByRefreshToken",
-      "description": "expires-at-absolute: Uses getTokenByRefreshToken for refresh grant"
+      "graders": [
+        {
+          "type": "contains",
+          "value": "completeInteractiveLogin",
+          "description": "Uses completeInteractiveLogin for callback"
+        },
+        {
+          "type": "not_contains",
+          "value": "req.session.user =",
+          "description": "Does not manually assign req.session.user (SDK owns session)"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data.",
+          "description": "Does not read resp.data envelope"
+        },
+        {
+          "type": "not_matches",
+          "pattern": "Date\\.now\\(\\)\\s*\\+.*expires",
+          "description": "No manual expiresAt arithmetic with Date.now()"
+        },
+        {
+          "type": "not_matches",
+          "pattern": "Date\\.now\\(\\)\\s*\\+.*expiresAt",
+          "description": "Does not double-count expiry by adding Date.now() to expiresAt"
+        },
+        {
+          "type": "not_contains",
+          "value": "req.query.code",
+          "description": "Passes full URL, not req.query.code string"
+        },
+        {
+          "type": "judge",
+          "question": "Does the server-js-session-traps solution call completeInteractiveLogin with the full callback URL (not req.query.code), let the SDK persist the session (no manual req.session writes), avoid reading resp.data, avoid manual expiresAt arithmetic (no Date.now() + expires_in or Date.now() + expiresAt), and pass { req, res } for state store access?",
+          "examples": "PASS: Builds callbackUrl from req.url, calls serverClient.completeInteractiveLogin(callbackUrl, { req, res }), no req.session assignment, no resp.data access, no Date.now() math.\nFAIL: Still manually assigns req.session.user after calling completeInteractiveLogin.\nFAIL: Reads resp.data.access_token when completeInteractiveLogin returns { appState }.\nFAIL: Computes expiresAtMs = Date.now() + expires_in when the SDK already stores expiresAt as absolute.",
+          "description": "Judge confirms SDK-owned session, no manual writes, no Date.now() arithmetic, URL not code"
+        }
+      ]
     },
     {
-      "type": "contains",
-      "value": "tokens.accessToken",
-      "description": "expires-at-absolute: Reads tokens.accessToken directly"
+      "id": "fullresponse-success-headers",
+      "prompt": "Migrate the file src/m2m-with-headers.ts in place. This node-auth0 M2M call reads rate-limit headers off the success response to feed a dashboard. Migrate it to @auth0/auth0-auth-js while preserving the header read.",
+      "scaffold": {
+        "src/m2m-with-headers.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nasync function getToken() {\n  const resp = await auth0.oauth.clientCredentialsGrant({ audience: 'https://api.example.com' });\n  const remaining = resp.headers.get('x-ratelimit-remaining');\n  recordRateLimit(remaining);\n  return resp.data.access_token;\n}\n"
+      },
+      "expected_output": "Uses getTokenByClientCredentials with fullResponse: true passed as a literal inside the options object, destructures { data, response }, reads the rate-limit header off response.headers (the native Response), and reads the token off data.accessToken. Does NOT read headers off the bare token object and does NOT drop the header read.",
+      "graders": [
+        {
+          "type": "contains",
+          "value": "fullResponse",
+          "description": "Opts into the fullResponse envelope"
+        },
+        {
+          "type": "contains",
+          "value": "response.headers",
+          "description": "Reads headers off the native Response"
+        },
+        {
+          "type": "matches",
+          "pattern": "fullResponse:\\s*true",
+          "description": "Passes fullResponse: true as a literal"
+        },
+        {
+          "type": "not_matches",
+          "pattern": "(tokens|data)\\.headers",
+          "description": "Does not read headers off the bare token/data object"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data.",
+          "description": "Does not read resp.data envelope"
+        },
+        {
+          "type": "judge",
+          "question": "Does the fullresponse-success-headers solution call getTokenByClientCredentials with fullResponse: true as a literal inside the options object, destructure { data, response }, read the rate-limit header off response.headers, and read the token off data.accessToken — while preserving (not dropping) the header read?",
+          "examples": "PASS: const { data, response } = await authClient.getTokenByClientCredentials({ audience, fullResponse: true }); const remaining = response.headers.get('x-ratelimit-remaining'); recordRateLimit(remaining); return data.accessToken.\nFAIL: Drops the rate-limit header read entirely.\nFAIL: Reads remaining off the bare tokens object (tokens.headers) instead of the native Response.\nFAIL: Spreads fullResponse from a variable so the return type widens to the bare TokenResponse.",
+          "description": "Judge confirms literal fullResponse, envelope destructure, and preserved header read"
+        }
+      ]
     },
     {
-      "type": "not_matches",
-      "pattern": "Date\\.now\\(\\)\\s*\\+.*expiresAt",
-      "description": "expires-at-absolute: Does not add Date.now() to expiresAt (expiresAt is already absolute)"
-    },
-    {
-      "type": "not_contains",
-      "value": "expires_in",
-      "description": "expires-at-absolute: No remaining reference to expires_in"
-    },
-    {
-      "type": "not_contains",
-      "value": "resp.data.",
-      "description": "expires-at-absolute: Does not read resp.data envelope"
-    },
-    {
-      "type": "contains",
-      "value": "getTokenByClientCredentials",
-      "description": "return-shape-and-casing: Uses getTokenByClientCredentials for M2M"
-    },
-    {
-      "type": "contains",
-      "value": "tokens.accessToken",
-      "description": "return-shape-and-casing: Reads tokens.accessToken directly"
-    },
-    {
-      "type": "not_contains",
-      "value": "resp.data.",
-      "description": "return-shape-and-casing: Does not read resp.data envelope"
-    },
-    {
-      "type": "judge",
-      "question": "Does the return-shape-and-casing solution choose @auth0/auth0-auth-js (NOT auth0-server-js) for the M2M client-credentials grant, use camelCase parameters ({ audience }), and call getTokenByClientCredentials?",
-      "examples": "PASS: Imports AuthClient from '@auth0/auth0-auth-js', calls getTokenByClientCredentials({ audience: 'https://api.example.com' }), reads tokens.accessToken.\nFAIL: Uses @auth0/auth0-server-js ServerClient for a stateless M2M grant that has no session.\nFAIL: Uses snake_case client_credentials_grant or leaves the old node-auth0 method name.",
-      "description": "return-shape-and-casing: Judge confirms auth-js choice, camelCase params, and correct method"
-    },
-    {
-      "type": "contains",
-      "value": "getTokenByPassword",
-      "description": "mfa-required-guard: Uses getTokenByPassword for password grant"
-    },
-    {
-      "type": "contains",
-      "value": "isMfaRequiredError",
-      "description": "mfa-required-guard: Detects MFA via isMfaRequiredError helper"
-    },
-    {
-      "type": "not_contains",
-      "value": "AuthApiError",
-      "description": "mfa-required-guard: Does not use old AuthApiError type"
-    },
-    {
-      "type": "not_matches",
-      "pattern": "e\\.error\\s*===\\s*['\"]mfa_required['\"]",
-      "description": "mfa-required-guard: Does not use string comparison e.error === 'mfa_required'"
-    },
-    {
-      "type": "contains",
-      "value": "tokens.accessToken",
-      "description": "mfa-required-guard: Reads tokens.accessToken directly"
-    },
-    {
-      "type": "contains",
-      "value": "getTokenByCode",
-      "description": "authorization-code-url: Uses getTokenByCode for code exchange"
-    },
-    {
-      "type": "not_contains",
-      "value": "req.query.code",
-      "description": "authorization-code-url: Passes full URL, not req.query.code string"
-    },
-    {
-      "type": "not_contains",
-      "value": "resp.data.",
-      "description": "authorization-code-url: Does not read resp.data envelope"
-    },
-    {
-      "type": "judge",
-      "question": "Does the authorization-code-url solution use @auth0/auth0-auth-js (NOT auth0-server-js) because the app manages its own session, and pass the full callback URL (not req.query.code) to getTokenByCode?",
-      "examples": "PASS: Imports AuthClient from '@auth0/auth0-auth-js', builds a URL from req.url and redirectUri, passes it to getTokenByCode, stores the returned TokenResponse in req.session.\nFAIL: Uses @auth0/auth0-server-js ServerClient when the app is explicitly managing its own session.\nFAIL: Passes req.query.code as a string instead of constructing a URL object.",
-      "description": "authorization-code-url: Judge confirms auth-js choice and URL (not code string) parameter"
-    },
-    {
-      "type": "contains",
-      "value": "AuthClient",
-      "description": "leave-management-client: Migrates to AuthClient from auth-js"
-    },
-    {
-      "type": "contains",
-      "value": "getTokenByClientCredentials",
-      "description": "leave-management-client: Uses getTokenByClientCredentials for M2M token"
-    },
-    {
-      "type": "contains",
-      "value": "ManagementClient",
-      "description": "leave-management-client: Keeps ManagementClient from 'auth0'"
-    },
-    {
-      "type": "matches",
-      "pattern": "from\\s+['\"]auth0['\"].*ManagementClient",
-      "description": "leave-management-client: ManagementClient still imported from 'auth0' (not migrated)"
-    },
-    {
-      "type": "judge",
-      "question": "Does the leave-management-client solution migrate ONLY the AuthenticationClient usage to @auth0/auth0-auth-js, leaving the ManagementClient import and usage from 'auth0' completely untouched?",
-      "examples": "PASS: Changes AuthenticationClient to AuthClient from '@auth0/auth0-auth-js', leaves ManagementClient imported from 'auth0', getUsers() function unchanged.\nFAIL: Tries to migrate or change ManagementClient usage when it should be left alone.\nFAIL: Removes the 'auth0' import entirely when ManagementClient still needs it.",
-      "description": "leave-management-client: Judge confirms only AuthenticationClient migrated, ManagementClient untouched"
-    },
-    {
-      "type": "contains",
-      "value": "@auth0/auth0-server-js",
-      "description": "routing-session-vs-stateless: Chooses server-js for redirect+session+refresh"
-    },
-    {
-      "type": "contains",
-      "value": "startInteractiveLogin",
-      "description": "routing-session-vs-stateless: Uses startInteractiveLogin for /login"
-    },
-    {
-      "type": "contains",
-      "value": "completeInteractiveLogin",
-      "description": "routing-session-vs-stateless: Uses completeInteractiveLogin for /callback"
-    },
-    {
-      "type": "contains",
-      "value": "getAccessToken",
-      "description": "routing-session-vs-stateless: Uses getAccessToken for protected route (auto-refresh)"
-    },
-    {
-      "type": "not_matches",
-      "pattern": "Date\\.now\\(\\)\\s*\\+.*expires",
-      "description": "routing-session-vs-stateless: No manual expiresAt arithmetic with Date.now()"
-    },
-    {
-      "type": "not_contains",
-      "value": "resp.data.",
-      "description": "routing-session-vs-stateless: Does not read resp.data envelope"
-    },
-    {
-      "type": "judge",
-      "question": "Does the routing-session-vs-stateless solution choose @auth0/auth0-server-js (NOT auth-js) for the redirect login flow with session state and auto-refresh, replacing hand-rolled session logic with ServerClient methods (startInteractiveLogin, completeInteractiveLogin, getAccessToken)?",
-      "examples": "PASS: Imports ServerClient from '@auth0/auth0-server-js', constructs it with transactionStore and stateStore, /login calls startInteractiveLogin, /callback calls completeInteractiveLogin, /api/data calls getAccessToken (which auto-refreshes), no manual Date.now() + expires_in arithmetic.\nFAIL: Uses @auth0/auth0-auth-js when the app clearly needs session management and auto-refresh.\nFAIL: Still manually checks expiresAt and calls refreshTokenGrant instead of using getAccessToken.",
-      "description": "routing-session-vs-stateless: Judge confirms server-js choice and SDK-owned session"
-    },
-    {
-      "type": "contains",
-      "value": "completeInteractiveLogin",
-      "description": "server-js-session-traps: Uses completeInteractiveLogin for callback"
-    },
-    {
-      "type": "not_contains",
-      "value": "req.session.user =",
-      "description": "server-js-session-traps: Does not manually assign req.session.user (SDK owns session)"
-    },
-    {
-      "type": "not_contains",
-      "value": "resp.data.",
-      "description": "server-js-session-traps: Does not read resp.data envelope"
-    },
-    {
-      "type": "not_matches",
-      "pattern": "Date\\.now\\(\\)\\s*\\+.*expires",
-      "description": "server-js-session-traps: No manual expiresAt arithmetic with Date.now()"
-    },
-    {
-      "type": "not_matches",
-      "pattern": "Date\\.now\\(\\)\\s*\\+.*expiresAt",
-      "description": "server-js-session-traps: Does not double-count expiry by adding Date.now() to expiresAt"
-    },
-    {
-      "type": "not_contains",
-      "value": "req.query.code",
-      "description": "server-js-session-traps: Passes full URL, not req.query.code string"
-    },
-    {
-      "type": "judge",
-      "question": "Does the server-js-session-traps solution call completeInteractiveLogin with the full callback URL (not req.query.code), let the SDK persist the session (no manual req.session writes), avoid reading resp.data, avoid manual expiresAt arithmetic (no Date.now() + expires_in or Date.now() + expiresAt), and pass { req, res } for state store access?",
-      "examples": "PASS: Builds callbackUrl from req.url, calls serverClient.completeInteractiveLogin(callbackUrl, { req, res }), no req.session assignment, no resp.data access, no Date.now() math.\nFAIL: Still manually assigns req.session.user after calling completeInteractiveLogin.\nFAIL: Reads resp.data.access_token when completeInteractiveLogin returns { appState }.\nFAIL: Computes expiresAtMs = Date.now() + expires_in when the SDK already stores expiresAt as absolute.",
-      "description": "server-js-session-traps: Judge confirms SDK-owned session, no manual writes, no Date.now() arithmetic, URL not code"
+      "id": "per-request-options-signal-headers",
+      "prompt": "Migrate the file src/auth-client.ts in place. This node-auth0 setup configures a global request timeout and a global custom header on the AuthenticationClient. Migrate it to @auth0/auth0-auth-js, preserving the per-call timeout and header.",
+      "scaffold": {
+        "src/auth-client.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({\n  domain, clientId, clientSecret,\n  headers: { 'X-Correlation-Id': correlationId },\n  timeoutDuration: 5000,\n});\nasync function getToken() {\n  const resp = await auth0.oauth.clientCredentialsGrant({ audience: 'https://api.example.com' });\n  return resp.data.access_token;\n}\n"
+      },
+      "expected_output": "Threads the per-call concerns through the RequestOptions second argument to getTokenByClientCredentials: headers: { 'X-Correlation-Id': correlationId } and signal: AbortSignal.timeout(5000). Does NOT reintroduce a global headers/timeoutDuration option on the AuthClient constructor.",
+      "graders": [
+        {
+          "type": "contains",
+          "value": "RequestOptions",
+          "description": "References RequestOptions for per-call config"
+        },
+        {
+          "type": "matches",
+          "pattern": "AbortSignal\\.timeout\\(\\s*5000\\s*\\)",
+          "description": "Maps timeoutDuration to AbortSignal.timeout(5000)"
+        },
+        {
+          "type": "contains",
+          "value": "X-Correlation-Id",
+          "description": "Preserves the custom header on the call"
+        },
+        {
+          "type": "not_matches",
+          "pattern": "timeoutDuration",
+          "description": "Does not reintroduce a global timeoutDuration option"
+        },
+        {
+          "type": "judge",
+          "question": "Does the per-request-options-signal-headers solution thread the header and timeout through the RequestOptions second argument to getTokenByClientCredentials (headers: { 'X-Correlation-Id': ... } and signal: AbortSignal.timeout(5000)), rather than reintroducing a global headers/timeoutDuration option on the AuthClient constructor?",
+          "examples": "PASS: await authClient.getTokenByClientCredentials({ audience }, { headers: { 'X-Correlation-Id': correlationId }, signal: AbortSignal.timeout(5000) }).\nFAIL: Passes headers/timeoutDuration to the AuthClient constructor as global config.\nFAIL: Drops the timeout or the correlation header during migration.",
+          "description": "Judge confirms per-call RequestOptions, no global config mutation"
+        }
+      ]
     }
   ]
 }

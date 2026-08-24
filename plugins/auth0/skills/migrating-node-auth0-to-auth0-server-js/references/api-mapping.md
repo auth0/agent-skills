@@ -49,6 +49,7 @@ const resp = await auth0.oauth.authorizationCodeGrant({
 });
 const accessToken = resp.data.access_token;
 const expiresIn = resp.data.expires_in; // relative seconds
+const reqId = resp.headers.get('x-request-id'); // metadata on success
 ```
 
 **auth0-auth-js** — you pass the **entire callback `URL`**. The SDK extracts `code` and validates
@@ -71,7 +72,10 @@ const expiresAt = tokens.expiresAt; // absolute Unix seconds
 
 > **Gotcha:** if the customer's code manually parses `req.query.code`, that parsing is now the
 > SDK's job. Delete it and hand the SDK the full URL. If they were tracking `state` in a cookie,
-> pass it via the options so the SDK can validate it.
+> pass it via the options so the SDK can validate it. **Header reads on success:** if the node-auth0
+> code read `resp.headers.get(...)` on success (for rate-limit telemetry or request-id logging), see
+> [breaking-changes.md → Reading HTTP response metadata (fullResponse)](breaking-changes.md#reading-http-response-metadata-fullresponse)
+> for the opt-in envelope. Error-path metadata remains accessible on the typed error.
 
 ### `oauth.authorizationCodeGrantWithPKCE` → `getTokenByCode` (with verifier)
 
@@ -237,6 +241,10 @@ const userId = result.id;
 > **ID normalization is preserved.** node-auth0 mapped the server's `_id | user_id | id` onto a
 > single `id`. The new SDK does the same, so `result.id` is always present. Do not add your own
 > `_id` fallback.
+>
+> **Header reads on success:** node-auth0's `resp.headers`/`resp.status` on the signup envelope
+> map to `fullResponse: true`, which returns `ApiResponse<SignUpResult>` (`{ data, response }`).
+> See [breaking-changes.md → Reading HTTP response metadata (fullResponse)](breaking-changes.md#reading-http-response-metadata-fullresponse).
 
 ### `database.changePassword` → `authClient.database.changePassword`
 
@@ -250,6 +258,9 @@ const message = resp.data; // plain-text confirmation
 // auth0-auth-js
 const message = await authClient.database.changePassword({ email, connection: 'Username-Password-Authentication' });
 ```
+
+> **Header reads on success:** If the node-auth0 code read response headers on the success path, see
+> [breaking-changes.md → Reading HTTP response metadata (fullResponse)](breaking-changes.md#reading-http-response-metadata-fullresponse).
 
 ---
 
@@ -282,6 +293,11 @@ await auth0.passwordless.sendSMS({ phone_number: '+15551234567' });
 // auth0-auth-js
 await authClient.passwordless.sendSms({ phoneNumber: '+15551234567' });
 ```
+
+> **Header reads on success:** `sendEmail` and `sendSms` return `void` by default. If the node-auth0
+> code read `resp.headers`/`resp.status` off the `VoidApiResponse`, opt into `fullResponse: true` to
+> get an `ApiResponse<void>` (`data` is `undefined`; `response` carries status/headers). See
+> [breaking-changes.md → Reading HTTP response metadata (fullResponse)](breaking-changes.md#reading-http-response-metadata-fullresponse).
 
 ### `passwordless.loginWithEmail` → `getTokenByPasswordlessEmail`
 
