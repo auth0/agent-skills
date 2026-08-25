@@ -39,6 +39,9 @@ MFA has to be enforced in two independent places, and getting either wrong ships
 1. The tenant/login flow challenges the user (Guardian policy or Action) - see "Tenant configuration".
 2. The app verifies `amr` contains `mfa` AND re-checks it server-side on the protected action.
 
+Before writing any code, you MUST fetch the detected SDK's example with `WebFetch` -
+see "Example code snippets". Do not write MFA code from memory.
+
 The two places, in detail:
 
 1. **Tenant / login flow** - the tenant decides MFA is required (Guardian policy) or an Action requires it conditionally. This is what actually challenges the user. See "Tenant configuration".
@@ -129,19 +132,26 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 | `too_many_attempts` | Repeated failures | Back off; the account may be temporarily blocked |
 | `unsupported_challenge_type` | Requested factor is not enabled on the tenant | Enable the factor (see "Tenant configuration") |
 
-### Examples
+### Example code snippets
 
-Per-SDK link table to each SDK's maintained, versioned example. This reference states
-the mechanic; the linked file is the source of truth for idiomatic usage. Rows exist
-only for SDKs whose example source was verified to cover step-up/MFA.
+**STOP - do this before writing any MFA code.** You MUST fetch the example for the
+detected SDK from the table below using `WebFetch`. The fetched file is the only correct source of idiomatic usage.
+
+Do not fetch the whole table - fetch **only the one row** whose SDK matches the
+`framework-*` reference already detected for this task. It is a lookup, not a judgment
+call.
+
+**Not done until:** you have fetched that one row's URL with `WebFetch`.
 
 | SDK | Example |
 |---|---|
-| `@auth0/auth0-react` | [Step-Up Authentication](https://github.com/auth0/auth0-react/blob/main/EXAMPLES.md#step-up-authentication) |
-| `@auth0/auth0-vue` | [Step-Up Authentication](https://github.com/auth0/auth0-vue/blob/main/EXAMPLES.md#step-up-authentication) |
-| `@auth0/auth0-angular` | [Step-Up Authentication](https://github.com/auth0/auth0-angular/blob/main/EXAMPLES.md#step-up-authentication) |
-| `@auth0/auth0-spa-js` | [Step-Up Authentication](https://github.com/auth0/auth0-spa-js/blob/main/EXAMPLES.md#step-up-authentication) |
-| `@auth0/nextjs-auth0` | [Multi-Factor Authentication (MFA)](https://github.com/auth0/nextjs-auth0/blob/main/EXAMPLES.md#multi-factor-authentication-mfa) |
+| `@auth0/auth0-react` | https://github.com/auth0/auth0-react/blob/main/EXAMPLES.md#step-up-authentication |
+| `@auth0/auth0-vue` | https://github.com/auth0/auth0-vue/blob/main/EXAMPLES.md#step-up-authentication |
+| `@auth0/auth0-angular` | https://github.com/auth0/auth0-angular/blob/main/EXAMPLES.md#step-up-authentication |
+| `@auth0/auth0-spa-js` | https://github.com/auth0/auth0-spa-js/blob/main/EXAMPLES.md#step-up-authentication |
+| `@auth0/nextjs-auth0` | https://github.com/auth0/nextjs-auth0/blob/main/EXAMPLES.md#multi-factor-authentication-mfa |
+| `@auth0/auth0-auth-js` | https://github.com/auth0/auth0-auth-js/blob/main/packages/auth0-auth-js/EXAMPLES.md#using-multi-factor-authentication-mfa |
+| `@auth0/auth0-server-js` | https://github.com/auth0/auth0-auth-js/blob/main/packages/auth0-server-js/MFA.md |
 
 Backend `amr` enforcement has no MFA-specific example in the Auth0 API SDKs today
 (they ship generic claim-check middleware); apply their standard claim-check to the
