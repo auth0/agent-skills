@@ -39,8 +39,9 @@ MFA has to be enforced in two independent places, and getting either wrong ships
 1. The tenant/login flow challenges the user (Guardian policy or Action) - see "Tenant configuration".
 2. The app verifies `amr` contains `mfa` AND re-checks it server-side on the protected action.
 
-Before writing any code, you MUST fetch the detected SDK's example with `WebFetch` -
-see "Example code snippets". Do not write MFA code from memory.
+Before writing any code, you MUST read the detected SDK's example - see "Example code
+snippets" for the URL and how to retrieve it (use any URL-reading tool you have; do not
+substitute a topic web search). Do not write MFA code from memory.
 
 The two places, in detail:
 
@@ -134,24 +135,31 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 
 ### Example code snippets
 
-**STOP - do this before writing any MFA code.** You MUST fetch the example for the
-detected SDK from the table below using `WebFetch`. The fetched file is the only correct source of idiomatic usage.
+**STOP - before writing any MFA code, run this procedure in order:**
 
-Do not fetch the whole table - fetch **only the one row** whose SDK matches the
-`framework-*` reference already detected for this task. It is a lookup, not a judgment
-call.
+1. **Find your row.** In the table below, pick the one row whose SDK matches the `framework-*`
+   reference detected for this task. It is a lookup, not a judgment call - not the whole table.
+2. **No matching row?** (For example a backend SDK such as `auth0-server-python`.) Skip to the
+   language-neutral mechanic above. Stop here.
+3. **Open that row's URL and read the section named in "Find section"** - it is the source of
+   idiomatic usage. The URLs are raw markdown, so any tool that can read a URL works: `WebFetch`,
+   `curl`/HTTP from your shell, or your web/docs-fetch tool.
+4. **Can't read the URL** (no such tool, or the fetch fails)? Fall back to the language-neutral
+   mechanic above. Stop here.
+5. **Never** substitute a general web search for "how to do MFA", and **never** write MFA code
+   from memory.
 
-**Not done until:** you have fetched that one row's URL with `WebFetch`.
+**Not done until** you have read the matching row's URL, or confirmed a skip case (step 2 or 4).
 
-| SDK | Example |
-|---|---|
-| `@auth0/auth0-react` | https://github.com/auth0/auth0-react/blob/main/EXAMPLES.md#step-up-authentication |
-| `@auth0/auth0-vue` | https://github.com/auth0/auth0-vue/blob/main/EXAMPLES.md#step-up-authentication |
-| `@auth0/auth0-angular` | https://github.com/auth0/auth0-angular/blob/main/EXAMPLES.md#step-up-authentication |
-| `@auth0/auth0-spa-js` | https://github.com/auth0/auth0-spa-js/blob/main/EXAMPLES.md#step-up-authentication |
-| `@auth0/nextjs-auth0` | https://github.com/auth0/nextjs-auth0/blob/main/EXAMPLES.md#multi-factor-authentication-mfa |
-| `@auth0/auth0-auth-js` | https://github.com/auth0/auth0-auth-js/blob/main/packages/auth0-auth-js/EXAMPLES.md#using-multi-factor-authentication-mfa |
-| `@auth0/auth0-server-js` | https://github.com/auth0/auth0-auth-js/blob/main/packages/auth0-server-js/MFA.md |
+| SDK | Raw example file (markdown) | Find section |
+|---|---|---|
+| `@auth0/auth0-react` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-spa-js` | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/EXAMPLES.md | `## Using Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
 
 Backend `amr` enforcement has no MFA-specific example in the Auth0 API SDKs today
 (they ship generic claim-check middleware); apply their standard claim-check to the
