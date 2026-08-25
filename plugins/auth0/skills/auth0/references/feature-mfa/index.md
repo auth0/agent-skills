@@ -34,10 +34,8 @@ Do not restate them here.
 
 MFA has to be enforced in two independent places, and getting either wrong ships a bypass.
 
-**Done only when BOTH are true:**
-
 1. The tenant/login flow challenges the user (Guardian policy or Action) - see "Tenant configuration".
-2. The app verifies `amr` contains `mfa` AND re-checks it server-side on the protected action.
+2. The app confirms MFA occurred and re-checks it server-side on the protected action, using the signal that matches the audience: a web app reads `amr` from its validated session/ID token; a resource API enforces the high-value **scope** on the access token (access tokens carry no `amr` by default).
 
 Before writing any code, you MUST read the detected SDK's example - see "Example code
 snippets" for the URL and how to retrieve it (use any URL-reading tool you have; do not
@@ -63,25 +61,27 @@ Do these in order:
    This one HTTP shape is the language-neutral floor; every SDK wraps it. On a silent
    token request, an SDK may instead surface an `mfa_required` error (the SDK-native
    step-up path) that the app handles by re-authenticating interactively. Both routes
-   end at the same place: an ID/access token whose `amr` reflects that MFA occurred.
+   satisfy the challenge, but the resulting signal differs by audience: a web app
+   receives an ID token whose `amr` reflects that MFA occurred, while an API-audience
+   request receives an access token carrying the high-value scope the challenge gated.
 
-2. **Verify completion.** After the flow, confirm the `amr` (Authentication Methods
-   Reference) claim contains `mfa` (and, if a specific factor is required, the factor's
-   `amr` value). This is the only trustworthy signal that MFA happened. Read `amr`
-   according to the context you are in - and **never re-decode or re-verify the token by
-   hand** (`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS lookups): it
-   duplicates validation the SDK already did and reliably ships *weaker* than the SDK -
-   hand-rolled decodes routinely disable `exp`/`iss`/audience checks to "make it work".
+2. **Verify completion.** After the flow, confirm MFA actually happened using the signal
+   that matches your audience (see the table below) - and **never re-decode or re-verify
+   the token by hand** (`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS
+   lookups): it duplicates validation the SDK already did and reliably ships *weaker*
+   than the SDK - hand-rolled decodes routinely disable `exp`/`iss`/audience checks to
+   "make it work".
 
-   | Your context | How to read / enforce `amr` | Never |
+   | Your context | How to verify MFA | Never |
    |---|---|---|
-   | Session-managing SDK (web app holds the tokens for you) | Read the claim off the SDK's own session / current-user accessor - the object it returns, or the result of completing the login - because the SDK already validated that token, so its claims are trustworthy as-is. The accessor name is SDK-specific; see the loaded `framework-*` reference. | Re-decode or re-verify the token by hand |
-   | Resource API (receives a raw bearer token) | Ordinary claim check layered on the framework's *existing* JWT-validation middleware - see "Related capabilities". Not MFA-specific SDK surface. | Hand-roll token decoding, or add MFA-specific SDK surface |
+   | Session-managing SDK (web app holds the tokens for you) | Read the `amr` claim (it contains `mfa`, plus the factor's own value if a specific factor is required) off the SDK's own session / current-user accessor - the object it returns, or the result of completing the login - because the SDK already validated that token, so its claims are trustworthy as-is. The accessor name is SDK-specific; see the loaded `framework-*` reference. | Re-decode or re-verify the token by hand |
+   | Resource API (receives a raw bearer token) | Enforce the high-value **scope** (e.g. `transfer:funds`) on the access token in your *existing* JWT/scope-check middleware - see "Related capabilities". Access tokens carry **no `amr`** by default; only check `amr` here if the tenant adds it and this API validates it as a custom claim. Not MFA-specific SDK surface. | Check `amr` on an access token that has none (rejecting valid stepped-up callers); hand-roll token decoding; add MFA-specific SDK surface |
    | Frontend | Treat the `amr` check as UX, not security | Rely on it to enforce anything |
 
-3. **Enforce server-side.** A frontend `amr` check is UX, not security. Any endpoint
-   guarding a sensitive action must independently confirm `mfa` is in `amr` and reject
-   when it is absent, using the row above that matches your context.
+3. **Enforce server-side.** A frontend check is UX, not security. Any endpoint guarding a
+   sensitive action must independently confirm MFA using the row above that matches its
+   audience - a web/session backend on `amr`, a resource API on the required scope - and
+   reject when that signal is absent.
 
 4. **Adaptive / conditional MFA** is enforced in a post-login Action that calls
    `api.multifactor.enable(...)`, which is a full alternative enforcement path to the
@@ -97,8 +97,9 @@ and what the app must get right:
 | `acr_values` | Authorization-request parameter used to request MFA |
 | `http://schemas.openid.net/pape/policies/2007/06/multi-factor` | The PAPE value that requests multi-factor |
 | `max_age=0` | Forces fresh authentication so a live session cannot satisfy the step-up silently |
-| `amr` | Claim listing the methods used; contains `mfa` when MFA completed |
+| `amr` | ID-token claim listing the methods used; contains `mfa` when MFA completed. Not present on access tokens by default |
 | `acr` | Claim echoing the satisfied authentication context |
+| high-value scope | An API scope (e.g. `transfer:funds`) whose request an Action gates behind MFA; its presence on the access token is the API-side proof of step-up |
 | `api.multifactor.enable(...)` | Post-login Action call that requires MFA for the current login |
 
 SDK-specific symbols (an SDK's own method or option name - e.g. the silent-token call,
@@ -128,10 +129,10 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 | Error | Cause | Handling |
 |---|---|---|
 | `mfa_required` | The session has not completed MFA | Re-authenticate interactively with the step-up parameters |
-| `mfa_registration_required` | No factor enrolled | Send the user through enrollment (self-service or enrollment ticket) |
+| `association_required` | The user has no authenticator enrolled | Send the user through enrollment (self-service or enrollment ticket), then challenge |
+| `unsupported_challenge_type` | The app supports none of the challenge types the user is enrolled with, or the user is not enrolled | Align the app's supported challenge types with the user's enrolled authenticators (or enroll the user) - do NOT change tenant config first |
 | `mfa_invalid_code` | Wrong OTP entered | Prompt to retry |
 | `too_many_attempts` | Repeated failures | Back off; the account may be temporarily blocked |
-| `unsupported_challenge_type` | Requested factor is not enabled on the tenant | Enable the factor (see "Tenant configuration") |
 
 ### Example code snippets
 
@@ -161,16 +162,26 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 | `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/EXAMPLES.md | `## Using Multi-Factor Authentication (MFA)` |
 | `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
 
-Backend `amr` enforcement has no MFA-specific example in the Auth0 API SDKs today
-(they ship generic claim-check middleware); apply their standard claim-check to the
-`amr` claim per "Related capabilities".
+Enforce the high-value **scope** on the
+access token with that standard middleware per "Related capabilities". Access tokens
+carry no `amr` by default, so only check `amr` on the backend if this API adds and
+validates it as a custom claim.
 
 ## Tenant configuration
 
-MFA is not enforced until a factor is enabled **and** a policy requires it. Enabling a
-factor without a policy never prompts anyone; setting a policy before any factor is
-enabled leaves users unable to complete MFA. Enable the factor first. This ordering is
-the mechanic, not an example - the minimal CLI anchor:
+A factor must be enabled before anything can challenge with it; enabling a factor alone
+never prompts anyone until an enforcement path requires it, and setting enforcement
+before any factor is enabled leaves users unable to complete MFA. So enable the factor
+first, then choose an enforcement path - the two are independent:
+
+- **Tenant-wide (Guardian policy)** - set `guardian/policies` to `["all-applications"]` to
+  require MFA for *every* application on every login. This is the only path the ordering
+  rule above is about, and the CLI anchor below shows it.
+- **Conditional (post-login Action)** - enable the factor and configure an Action that
+  calls `api.multifactor.enable(...)`; do **not** set the `all-applications` policy, or MFA
+  becomes mandatory for every application instead of the conditions the Action defines.
+
+The CLI anchor for the tenant-wide path (enable factor, then require the policy):
 
 ```bash
 # 1. Enable a factor (otp shown; others: sms, email, push-notification,
@@ -196,8 +207,8 @@ For a custom enrollment experience, use the Management API (endpoints, not examp
 
 | Operation | Endpoint |
 |---|---|
-| List a user's enrolled authenticators | `GET users/{id}/authenticators` |
-| Delete an enrollment | `DELETE users/{id}/authenticators/{authenticator_id}` |
+| List a user's authentication methods | `GET users/{id}/authentication-methods` |
+| Delete one authentication method | `DELETE users/{id}/authentication-methods/{authentication_method_id}` |
 | Send an enrollment ticket | `POST guardian/enrollments/ticket` |
 
 ## Common mistakes
@@ -207,7 +218,8 @@ For a custom enrollment experience, use the Management API (endpoints, not examp
 | Setting a Guardian policy before enabling any factor | Users are required to do MFA but have no factor to complete it with | Enable the factor first, then set the policy |
 | Treating an enabled factor as enforcement | A factor with no policy never challenges anyone | Enforce with a policy or a post-login Action |
 | Reading `guardian/policies` as `[]` and assuming MFA is on | `[]` means available but not required | Confirm a non-empty policy (or an Action that enables MFA) |
-| Trusting a frontend `amr` check | The client can be bypassed entirely | Validate `amr` server-side on every protected API call |
+| Trusting a frontend MFA check | The client can be bypassed entirely | Enforce server-side: `amr` on a web/session backend, the high-value scope on a resource API |
+| Checking `amr` on a resource API's access token | Access tokens carry no `amr` by default, so valid stepped-up callers are rejected | Gate the API on the high-value scope; add `amr` as a custom claim only if this API also validates it |
 | Hand-decoding the token to read `amr` (`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS) | Reinvents validation the SDK already performed, and usually disables `exp`/`iss`/audience checks in the process | Read `amr` from the SDK's session/current-user accessor; its claims are already verified |
 | Omitting `max_age=0` on step-up | A still-valid session satisfies the request with no fresh challenge | Send `max_age=0` (or the SDK's fresh-auth option) for step-up |
 | Ignoring `mfa_required` from a silent token call | The step-up silently fails and the action proceeds unverified | Catch it and re-authenticate interactively |
@@ -221,7 +233,9 @@ For a custom enrollment experience, use the Management API (endpoints, not examp
   factor/policy configuration and Action deployment (`auth0 actions ...`).
 - **SDK-side step-up trigger** - the detected `framework-*` reference owns the SDK's own
   step-up call, its `mfa_required` handling, and any refresh-token requirement.
-- **Server-side `amr` enforcement** - the API `framework-*` references (JWT validation)
-  own the claim-check middleware; apply it to the `amr` claim.
+- **Server-side MFA enforcement** - the API `framework-*` references (JWT validation) own
+  the scope/claim-check middleware; on a resource API gate the sensitive endpoint on the
+  high-value scope (access tokens carry no `amr` by default), and on a web/session backend
+  check the `amr` claim.
 - **First login** - if the app has no login yet, add it with the `framework-*` reference
   before layering MFA.
