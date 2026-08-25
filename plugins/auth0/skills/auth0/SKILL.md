@@ -53,6 +53,7 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | Hit rate limiting: 429 Too Many Requests, quota exceeded. *Auth0: rate limits.* | **debug:rate-limit** |
 | Move an existing app off Clerk, NextAuth.js, Firebase, Cognito, Okta, Supabase, Passport.js, or another auth provider. *Auth0: provider migration.* | **migrate** |
 | Upgrade the Auth0 SDK itself to a new major version (e.g. Auth0.swift v2→v3, Auth0.Android v3→v4) — breaking changes, deprecated APIs, "update to the latest SDK". *Auth0: SDK major-version upgrade.* | **upgrade-sdk** |
+| Migrate a Node.js app from the legacy `auth0` npm package to `auth0-server-js` / `auth0-ai-js` — API mapping, breaking changes, routing config differences, or "how do I replace X from the old SDK". *Auth0: node-auth0 migration.* | **migrate-node-auth0** |
 | Install Auth0's Vercel Marketplace integration, connect Auth0 to a Vercel project, or sync Auth0 configuration into a Vercel-hosted Next.js app. *Auth0: Vercel native integration.* | **integrate** |
 | Use the Auth0 CLI directly — "create an app/API with the `auth0` CLI", script tenant setup, or automate Auth0 config in CI — with no application framework in play. *Auth0: CLI / tooling-only.* | **tooling** |
 
@@ -370,6 +371,15 @@ Read: references/framework-{framework}/index.md
 Follow its "Major Version Migration" section (e.g. Auth0.swift v3, Auth0.Android v4).
 This is an Auth0 SDK version bump — NOT a provider migration. Do not load feature-migration/index.md.
 If no framework is detected: ask which Auth0 SDK the developer is upgrading.
+```
+
+### migrate-node-auth0
+```
+Invoke skill: migrating-node-auth0-to-auth0-server-js
+Read: (skill root)/references/api-mapping.md
+Read: (skill root)/references/breaking-changes.md
+Read: (skill root)/references/routing-and-config.md
+Follow the migration workflow in that skill. Do not load feature-migration/index.md — this is an SDK migration, not a provider migration.
 ```
 
 ### tooling

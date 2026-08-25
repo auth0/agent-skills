@@ -207,6 +207,43 @@ evals/behavioral/EVAL-EXECUTION-FINDINGS.md   (analysis, written earlier)
 evals/behavioral/ROAD-A-PROGRESS.md           (this file)
 ```
 
+## Phase 6 — Full with+without run (2026-08-25)
+
+**Result: 76/76 with-skill (100%). Skill delta: +20.**
+
+Model: `claude-sonnet-4-6` (session default). Run command:
+```
+node --experimental-vm-modules run-evals.mjs node-auth0-migration
+```
+
+Per-eval delta:
+
+| Eval | With | Without | Δ |
+|---|---|---|---|
+| expires-at-absolute | 5/5 | 4/5 | +1 |
+| return-shape-and-casing | 4/4 | 0/4 | +4 |
+| mfa-required-guard | 5/5 | 5/5 | +0 |
+| authorization-code-url | 4/4 | 4/4 | +0 |
+| leave-management-client | 5/5 | 5/5 | +0 |
+| routing-session-vs-stateless | 7/7 | 3/7 | +4 |
+| server-js-session-traps | 7/7 | 0/7 | +7 |
+| fullresponse-success-headers | 6/6 | 4/6 | +2 |
+| per-request-options-signal-headers | 5/5 | 4/5 | +1 |
+| database-signup-casing | 6/6 | 6/6 | +0 |
+| database-changepassword-return | 3/3 | 3/3 | +0 |
+| userinfo-claims | 4/4 | 4/4 | +0 |
+| pkce-code-verifier | 5/5 | 5/5 | +0 |
+| typed-errors-refresh | 5/5 | 5/5 | +0 |
+| passwordless-sms-topdown | 5/5 | 4/5 | +1 |
+| **TOTAL** | **76/76** | **56/76** | **+20** |
+
+Key findings:
+- Skill drives biggest lift on session-traps (+7) and return-shape-and-casing (+4) — complex multi-decision patterns where base model knowledge is weak.
+- 7 evals show zero delta — model knowledge already sufficient for those patterns; skill adds no harm.
+- Router gap fix (`migrate-node-auth0` intent) landed in same session; not independently measured.
+
+All Phase 6 acceptance criteria met.
+
 ## Road B (deferred)
 
 Port scenarios into the official `auth0/auth0-evals` framework
