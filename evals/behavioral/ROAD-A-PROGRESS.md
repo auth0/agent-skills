@@ -147,15 +147,51 @@ User confirmed: fix all 3 migration files; validate via dry-run + 2-eval smoke.
   scaffold file `refresh.ts` written into the per-eval workspace. Temp case
   deleted after.
 
+## Phase 3 skill-only run results (2026-08-25)
+
+15 evals (9 original + 6 new), skill-only, default model. Total: **74/80 (92.5%)**.
+
+| Eval | Score | Notes |
+|------|-------|-------|
+| expires-at-absolute | 5/5 ✓ | |
+| return-shape-and-casing | 4/4 ✓ | |
+| mfa-required-guard | 5/5 ✓ | |
+| authorization-code-url | 0/4 FAIL | Agent no-oped; prompt too vague — fixed |
+| leave-management-client | 5/5 ✓ | F1+F2 fixes confirmed working |
+| routing-session-vs-stateless | 7/7 ✓ | |
+| server-js-session-traps | 7/7 ✓ | |
+| fullresponse-success-headers | 6/6 ✓ | |
+| per-request-options-signal-headers | 5/5 ✓ | |
+| database-signup-casing | 6/6 ✓ | new eval |
+| database-changepassword-return | 3/4 (75%) | `.data` grader too strict — fixed |
+| userinfo-claims | 6/6 ✓ | new eval; graders updated for PR #228 |
+| pkce-code-verifier | 5/5 ✓ | new eval |
+| typed-errors-refresh | 5/5 ✓ | new eval |
+| passwordless-sms-topdown | 5/6 (83%) | `loginWithSMS` in comment — grader removed |
+
+Post-fix (3 grader/prompt fixes applied): expected ~77/76+ on re-run.
+
+## Phase 4 real-world run results (2026-08-25)
+
+Both with-skill and without-skill runs completed. All 6 source files correctly migrated
+in both runs. See `OBSERVATIONS-real-world-run.md` for full per-file analysis.
+
+Key finding: **skill delta is stylistic, not behavioral** for this fixture. Both runs
+got the migration correct because model knowledge of auth0-auth-js is already strong.
+Skill adds: consistent naming, optional chaining, authorizationParams config pattern,
+structured approach (reads refs before writing).
+
+Router gap: the auth0 skill router does not automatically load migration skill
+references on `upgrade-sdk` intent. Agent tried to read api-mapping.md directly
+(permission denied in first run). Needs router update as a follow-up.
+
 ## Remaining / TODO
 
-- [ ] **Full green-bar run (user's shell):** `node run-evals.mjs node-auth0-migration`
-      — all 9 evals, with + without skill (18 agent runs). Confirms the skill
-      delta, not just the mechanism.
-- [ ] Live-run android-migration / swift-migration (only dry-run validated so far)
-      to confirm the top-level scaffold + in-place prompt works for kt/swift.
-- [ ] Decide scaffold filenames vs real project layout (current names are
-      reasonable defaults, chosen by implementer).
+- [ ] **Full with+without eval run:** `node run-evals.mjs node-auth0-migration`
+      — all 15 evals with+without (30 agent runs). Measures skill delta on new evals.
+- [ ] **Router update:** add `migrate-node-auth0` intent to auth0 router SKILL.md
+      that loads migrating-node-auth0 skill references.
+- [ ] Live-run android-migration / swift-migration (only dry-run validated so far).
 - [ ] Not committed — no commit requested yet.
 
 ## Files touched

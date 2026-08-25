@@ -384,17 +384,19 @@ const tokens = await authClient.exchangeToken({
 
 ---
 
-## `UserInfoClient` → `TokenResponse.claims` or `serverClient.getUser()`
+## `UserInfoClient` → `TokenResponse.claims` or `authClient.userinfo.getUserInfo()` or `serverClient.getUser()`
 
-**There is no `authClient.userinfo` sub-client and no standalone `UserInfoClient` in the new SDK.**
-This is the one place where the migration is not a method rename. How you replace it depends on
-what the customer needs the profile for:
+The standalone `UserInfoClient` from node-auth0 does not exist in the new SDK. In `@auth0/auth0-auth-js`
+v1.12.1+ there **is** an `authClient.userinfo` sub-client (added in
+[auth0-auth-js PR #228](https://github.com/auth0/auth0-auth-js/pull/228)). Choose the replacement
+based on what the app needs:
 
 | Customer's intent | Replacement |
 |---|---|
-| Wanted user profile claims right after login | Read `TokenResponse.claims` from the grant result — the SDK already decodes the ID token. No extra `/userinfo` round-trip needed. |
+| Wanted user profile claims right after login | Read `TokenResponse.claims` from the grant result — the SDK already decodes the ID token. No extra `/userinfo` round-trip needed. Preferred. |
+| Wanted a live `/userinfo` response for an arbitrary access token (auth-js v1.12.1+) | `await authClient.userinfo.getUserInfo(accessToken)` — the new sub-client. |
 | Wanted the profile in a server-rendered app with a session | `await serverClient.getUser()` returns the stored user claims from the session. |
-| Genuinely needs a live `/userinfo` fetch with an arbitrary access token | Call the `/userinfo` endpoint directly with `fetch` (see below). The endpoint is in the tenant's server metadata (`getServerMetadata()`). |
+| Genuinely needs a raw `/userinfo` fetch on older SDK versions | Call the `/userinfo` endpoint directly with `fetch`. The endpoint is in the tenant's server metadata (`getServerMetadata()`). |
 
 **Before (node-auth0):**
 
@@ -412,7 +414,15 @@ const tokens = await authClient.getTokenByCode(callbackUrl, {});
 const profile = tokens.claims; // { sub, name, email, ... } decoded from the id_token
 ```
 
-**After — live fetch when you only have an access token:**
+**After — sub-client (auth0-auth-js v1.12.1+), when you only have an access token:**
+
+```ts
+// authClient.userinfo is available in @auth0/auth0-auth-js v1.12.1+
+const profile = await authClient.userinfo.getUserInfo(accessToken);
+// { sub, name, email, ... }
+```
+
+**After — raw fetch fallback (older SDK versions):**
 
 ```ts
 const metadata = await authClient.getServerMetadata();
@@ -422,7 +432,7 @@ const resp = await fetch(metadata.userinfo_endpoint, {
 const profile = await resp.json();
 ```
 
-> Prefer reading `claims` over a live `/userinfo` fetch: it avoids a network round-trip and the
+> Prefer reading `claims` over any `/userinfo` call: it avoids a network round-trip and the
 > claims are already validated by the SDK.
 
 ---
@@ -448,7 +458,7 @@ const profile = await resp.json();
 | `backchannel.authorize` | `authClient.initiateBackchannelAuthentication({ ... })` | auth-js |
 | `backchannel.backchannelGrant` | `authClient.backchannelAuthenticationGrant({ authReqId })` | auth-js |
 | `tokenExchange.exchangeToken` | `authClient.exchangeToken({ subjectTokenType, subjectToken, audience })` | auth-js |
-| `UserInfoClient.getUserInfo` | `TokenResponse.claims` / `serverClient.getUser()` / direct `/userinfo` fetch | auth-js / server-js |
+| `UserInfoClient.getUserInfo` | `TokenResponse.claims` (preferred) / `authClient.userinfo.getUserInfo()` (auth-js v1.12.1+) / `serverClient.getUser()` / raw `/userinfo` fetch | auth-js / server-js |
 | (no equivalent) — build `/authorize` URL | `authClient.buildAuthorizationUrl({ ... })` | auth-js |
 | (no equivalent) — build `/v2/logout` URL | `authClient.buildLogoutUrl({ returnTo })` | auth-js |
 | `ManagementClient.*` | **not migrated — stays on `auth0`** | — |

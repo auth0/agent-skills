@@ -114,7 +114,9 @@ Go sub-client by sub-client. For every node-auth0 method, apply the mapped repla
 
 → [references/api-mapping.md](references/api-mapping.md) — the complete method-by-method mapping
 with before/after code for `.oauth`, `.database`, `.passwordless`, `.backchannel`,
-`.tokenExchange`, and `UserInfoClient`.
+`.tokenExchange`, and `UserInfoClient`. Note: `UserInfoClient.getUserInfo` maps to
+`TokenResponse.claims` (preferred) or `authClient.userinfo.getUserInfo()` (auth0-auth-js v1.12.1+)
+— see the `UserInfoClient` section in that file.
 
 ### 4. Apply the three structural changes at every call site
 
@@ -123,6 +125,8 @@ of nearly all migration bugs — apply them deliberately, not mechanically:
 
 1. **Return shape** — node-auth0 wraps results in `JSONApiResponse<T>` (`.data`, `.status`,
    `.headers`). The new SDKs return the domain object directly. Read `resp.data.X` becomes `resp.X`.
+   If the code read status/headers off the old envelope on success, that metadata now comes from the
+   opt-in `fullResponse` envelope — see references/breaking-changes.md → "Reading HTTP response metadata".
 2. **Casing** — node-auth0 uses the snake_case wire shape (`client_id`, `access_token`,
    `expires_in`). The new SDKs use camelCase (`clientId`, `accessToken`, `expiresAt`).
 3. **Token expiry** — node-auth0's `expires_in` is a **relative** lifetime in seconds. The new

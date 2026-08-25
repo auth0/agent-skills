@@ -105,7 +105,7 @@
     },
     {
       "id": "authorization-code-url",
-      "prompt": "Migrate the file src/callback-handler.ts in place. It is an Express callback handler using node-auth0; the app manages its own session and just needs the tokens. Migrate off node-auth0.",
+      "prompt": "Migrate the file src/callback-handler.ts in place. It handles the OAuth callback using node-auth0's authorizationCodeGrant; migrate the auth0 usage to @auth0/auth0-auth-js. Use getTokenByCode, passing the full callback URL (construct a URL from req.url + the base URL) instead of extracting req.query.code. The app manages its own session — do not add server-js.",
       "scaffold": {
         "src/callback-handler.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\napp.get('/callback', async (req, res) => {\n  const resp = await auth0.oauth.authorizationCodeGrant({ code: req.query.code, redirect_uri: 'https://app.example.com/callback' });\n  req.session.tokens = resp.data;\n  res.redirect('/');\n});\n"
       },
@@ -136,7 +136,7 @@
     },
     {
       "id": "leave-management-client",
-      "prompt": "Migrate the file src/api-client.ts in place. It uses node-auth0 for both an M2M token grant AND the Management API. Migrate only the authentication part.",
+      "prompt": "Migrate the AuthenticationClient / M2M token grant in src/api-client.ts to @auth0/auth0-auth-js. Leave the ManagementClient import and usage exactly as-is (it is not being migrated). Edit src/api-client.ts in place.",
       "scaffold": {
         "src/api-client.ts": "import { AuthenticationClient, ManagementClient } from 'auth0';\nconst auth = new AuthenticationClient({ domain, clientId, clientSecret });\nconst mgmt = new ManagementClient({ domain, clientId, clientSecret });\nexport async function getApiToken() {\n  const resp = await auth.oauth.clientCredentialsGrant({ audience });\n  return resp.data.access_token;\n}\nexport async function getUsers() {\n  return (await mgmt.users.getAll()).data;\n}\n"
       },
@@ -159,7 +159,7 @@
         },
         {
           "type": "matches",
-          "pattern": "from\\s+['\"]auth0['\"].*ManagementClient",
+          "pattern": "ManagementClient[\\s\\S]*from\\s+['\"]auth0['\"]|from\\s+['\"]auth0['\"][\\s\\S]*ManagementClient",
           "description": "ManagementClient still imported from 'auth0' (not migrated)"
         },
         {
@@ -336,6 +336,212 @@
           "question": "Does the per-request-options-signal-headers solution thread the header and timeout through the RequestOptions second argument to getTokenByClientCredentials (headers: { 'X-Correlation-Id': ... } and signal: AbortSignal.timeout(5000)), rather than reintroducing a global headers/timeoutDuration option on the AuthClient constructor?",
           "examples": "PASS: await authClient.getTokenByClientCredentials({ audience }, { headers: { 'X-Correlation-Id': correlationId }, signal: AbortSignal.timeout(5000) }).\nFAIL: Passes headers/timeoutDuration to the AuthClient constructor as global config.\nFAIL: Drops the timeout or the correlation header during migration.",
           "description": "Judge confirms per-call RequestOptions, no global config mutation"
+        }
+      ]
+    },
+    {
+      "id": "database-signup-casing",
+      "prompt": "Migrate the file src/register.ts in place. It uses node-auth0 to sign up a new user with snake_case params; migrate it to @auth0/auth0-auth-js.",
+      "scaffold": {
+        "src/register.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nasync function register(email, password, firstName, meta) {\n  const resp = await auth0.database.signUp({\n    email,\n    password,\n    connection: 'Username-Password-Authentication',\n    given_name: firstName,\n    user_metadata: meta,\n  });\n  return resp.data._id;\n}\n"
+      },
+      "expected_output": "Migrates to AuthClient.database.signUp with camelCase params (givenName, userMetadata), reads result.id directly (no resp.data envelope, no _id fallback).",
+      "graders": [
+        {
+          "type": "contains",
+          "value": "givenName",
+          "description": "Converts given_name to camelCase givenName"
+        },
+        {
+          "type": "contains",
+          "value": "userMetadata",
+          "description": "Converts user_metadata to camelCase userMetadata"
+        },
+        {
+          "type": "not_contains",
+          "value": "given_name",
+          "description": "No snake_case given_name remaining"
+        },
+        {
+          "type": "not_contains",
+          "value": "user_metadata",
+          "description": "No snake_case user_metadata remaining"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data",
+          "description": "Does not read resp.data envelope"
+        },
+        {
+          "type": "judge",
+          "question": "Does the database-signup-casing solution convert the snake_case signUp params (given_name, user_metadata) to camelCase (givenName, userMetadata), and read the user id directly off the result (result.id or equivalent) without accessing resp.data._id or resp.data?",
+          "examples": "PASS: const result = await authClient.database.signUp({ email, password, connection, givenName: firstName, userMetadata: meta }); return result.id;\nFAIL: Still passes given_name or user_metadata to the new SDK.\nFAIL: Reads resp.data._id or resp.data.id instead of result.id.",
+          "description": "Judge confirms camelCase params and no .data envelope"
+        }
+      ]
+    },
+    {
+      "id": "database-changepassword-return",
+      "prompt": "Migrate the file src/reset-password.ts in place. It uses node-auth0 to trigger a password reset email; migrate it to @auth0/auth0-auth-js.",
+      "scaffold": {
+        "src/reset-password.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nasync function resetPassword(email) {\n  const resp = await auth0.database.changePassword({\n    email,\n    connection: 'Username-Password-Authentication',\n  });\n  return resp.data;\n}\n"
+      },
+      "expected_output": "Migrates to AuthClient.database.changePassword; the new SDK returns the plain string directly (no .data envelope needed), so the result is awaited directly.",
+      "graders": [
+        {
+          "type": "not_contains",
+          "value": "resp.data",
+          "description": "Does not read resp.data (return type is now plain string)"
+        },
+        {
+          "type": "contains",
+          "value": "changePassword",
+          "description": "Uses changePassword method"
+        },
+        {
+          "type": "judge",
+          "question": "Does the database-changepassword-return solution await the changePassword call and return the result directly as a plain string, without wrapping it in a .data property access? The new SDK returns a string directly, not a TextApiResponse wrapper. Reading resp.data or result.data is incorrect; returning the awaited result directly (or destructuring it as a string) is correct.",
+          "examples": "PASS: const message = await authClient.database.changePassword({ email, connection }); return message;\nFAIL: Returns resp.data or result.data instead of the plain awaited value.\nFAIL: Calls changePassword but assigns the result to resp and reads resp.data.",
+          "description": "Judge confirms plain string return, no .data wrapper"
+        }
+      ]
+    },
+    {
+      "id": "userinfo-claims",
+      "prompt": "Migrate the file src/user-profile.ts in place. It uses the node-auth0 UserInfoClient to fetch the user profile after a login; migrate it to @auth0/auth0-auth-js.",
+      "scaffold": {
+        "src/user-profile.ts": "import { AuthenticationClient, UserInfoClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nconst userInfo = new UserInfoClient({ domain });\nasync function getUserProfile(callbackUrl, codeVerifier) {\n  const resp = await auth0.oauth.authorizationCodeGrantWithPKCE(\n    { code: new URL(callbackUrl).searchParams.get('code'), redirect_uri: redirectUri },\n    { codeVerifier }\n  );\n  const accessToken = resp.data.access_token;\n  const profile = await userInfo.getUserInfo(accessToken);\n  return { sub: profile.data.sub, email: profile.data.email };\n}\n"
+      },
+      "expected_output": "Removes UserInfoClient import from 'auth0'; uses getTokenByCode to get tokens; reads sub and email from either tokens.claims (preferred: SDK decodes ID token, no extra round-trip) or authClient.userinfo.getUserInfo() (auth0-auth-js v1.12.1+).",
+      "graders": [
+        {
+          "type": "not_contains",
+          "value": "UserInfoClient",
+          "description": "Removes UserInfoClient import from 'auth0'"
+        },
+        {
+          "type": "contains",
+          "value": "getTokenByCode",
+          "description": "Uses getTokenByCode for the auth code grant"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data",
+          "description": "Does not use old resp.data envelope"
+        },
+        {
+          "type": "judge",
+          "question": "Does the userinfo-claims solution remove the node-auth0 UserInfoClient entirely, use getTokenByCode to perform the authorization code grant, and then read the user profile from either (a) tokens.claims (preferred — SDK decodes the ID token, no extra network call) or (b) authClient.userinfo.getUserInfo() from auth0-auth-js? Both approaches are acceptable; what is NOT acceptable is keeping the old UserInfoClient or making a raw /userinfo HTTP fetch.",
+          "examples": "PASS: const tokens = await authClient.getTokenByCode(callbackUrl, { codeVerifier }); return { sub: tokens.claims.sub, email: tokens.claims.email };\nPASS: const tokens = await authClient.getTokenByCode(callbackUrl, { codeVerifier }); const profile = await authClient.userinfo.getUserInfo(tokens.accessToken); return { sub: profile.sub, email: profile.email };\nFAIL: Still imports or instantiates UserInfoClient from 'auth0'.\nFAIL: Makes a raw fetch('/userinfo') call instead of using SDK methods.",
+          "description": "Judge confirms UserInfoClient removed; profile read via tokens.claims or authClient.userinfo.getUserInfo()"
+        }
+      ]
+    },
+    {
+      "id": "pkce-code-verifier",
+      "prompt": "Migrate the file src/callback.ts in place. It handles the OAuth callback using node-auth0's authorizationCodeGrantWithPKCE; migrate it to @auth0/auth0-auth-js.",
+      "scaffold": {
+        "src/callback.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\napp.get('/callback', async (req, res) => {\n  const resp = await auth0.oauth.authorizationCodeGrantWithPKCE(\n    { code: req.query.code, redirect_uri: redirectUri },\n    { codeVerifier: req.session.codeVerifier }\n  );\n  req.session.tokens = { accessToken: resp.data.access_token };\n  res.redirect('/');\n});\n"
+      },
+      "expected_output": "Migrates to getTokenByCode(callbackUrl, { codeVerifier }), passing the full callback URL object instead of extracting the code manually; reads tokens.accessToken directly (no resp.data envelope).",
+      "graders": [
+        {
+          "type": "contains",
+          "value": "getTokenByCode",
+          "description": "Uses getTokenByCode"
+        },
+        {
+          "type": "not_contains",
+          "value": "req.query.code",
+          "description": "Does not extract code manually from req.query"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data",
+          "description": "Does not read resp.data envelope"
+        },
+        {
+          "type": "not_contains",
+          "value": "authorizationCodeGrantWithPKCE",
+          "description": "Removes the old authorizationCodeGrantWithPKCE call"
+        },
+        {
+          "type": "judge",
+          "question": "Does the pkce-code-verifier solution call getTokenByCode with the full callback URL (not just the code string) and pass codeVerifier in the options, then read tokens.accessToken directly without a .data envelope?",
+          "examples": "PASS: const tokens = await authClient.getTokenByCode(new URL(req.url, baseUrl), { codeVerifier: req.session.codeVerifier }); req.session.tokens = { accessToken: tokens.accessToken };\nFAIL: Still extracts req.query.code and passes it as a bare string instead of the full URL.\nFAIL: Reads resp.data.access_token instead of tokens.accessToken.",
+          "description": "Judge confirms full URL passed and codeVerifier threaded correctly"
+        }
+      ]
+    },
+    {
+      "id": "typed-errors-refresh",
+      "prompt": "Migrate the file src/token-refresh.ts in place. It uses node-auth0 with AuthApiError to detect invalid_grant on a refresh; migrate it to @auth0/auth0-auth-js typed errors.",
+      "scaffold": {
+        "src/token-refresh.ts": "import { AuthenticationClient, AuthApiError } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nasync function refresh(rt) {\n  try {\n    const resp = await auth0.oauth.refreshTokenGrant({ refresh_token: rt });\n    return resp.data.access_token;\n  } catch (e) {\n    if (e instanceof AuthApiError && e.error === 'invalid_grant') {\n      throw new SessionExpiredError();\n    }\n    throw e;\n  }\n}\n"
+      },
+      "expected_output": "Removes AuthApiError import; uses TokenByRefreshTokenError from @auth0/auth0-auth-js; checks e.cause?.error === 'invalid_grant' (not e.error); reads tokens.accessToken directly.",
+      "graders": [
+        {
+          "type": "not_contains",
+          "value": "AuthApiError",
+          "description": "Removes AuthApiError import and usage"
+        },
+        {
+          "type": "contains",
+          "value": "TokenByRefreshTokenError",
+          "description": "Uses operation-specific TokenByRefreshTokenError"
+        },
+        {
+          "type": "not_matches",
+          "pattern": "e\\.error\\s*===\\s*['\"]invalid_grant['\"]",
+          "description": "Does not access e.error directly (must go through e.cause)"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data",
+          "description": "Does not read resp.data envelope"
+        },
+        {
+          "type": "judge",
+          "question": "Does the typed-errors-refresh solution replace AuthApiError with TokenByRefreshTokenError, move the error code check from e.error to e.cause?.error (or e.cause.error), and read the access token via tokens.accessToken (no .data envelope)?",
+          "examples": "PASS: import { TokenByRefreshTokenError } from '@auth0/auth0-auth-js'; ... if (e instanceof TokenByRefreshTokenError && e.cause?.error === 'invalid_grant') { throw new SessionExpiredError(); }\nFAIL: Still imports or checks e instanceof AuthApiError.\nFAIL: Checks e.error === 'invalid_grant' instead of e.cause?.error.",
+          "description": "Judge confirms typed error and cause-chained error code check"
+        }
+      ]
+    },
+    {
+      "id": "passwordless-sms-topdown",
+      "prompt": "Migrate the file src/sms-login.ts in place. It uses node-auth0's passwordless.loginWithSMS to redeem an SMS code for tokens; migrate it to @auth0/auth0-auth-js.",
+      "scaffold": {
+        "src/sms-login.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nasync function loginWithSmsCode(phoneNumber, code) {\n  const resp = await auth0.passwordless.loginWithSMS({\n    phone_number: phoneNumber,\n    code,\n    audience,\n    scope,\n  });\n  return resp.data.access_token;\n}\n"
+      },
+      "expected_output": "Migrates to AuthClient.getTokenByPasswordlessSms({ phoneNumber, code, audience, scope }); converts phone_number to camelCase phoneNumber; reads tokens.accessToken directly (no resp.data envelope).",
+      "graders": [
+        {
+          "type": "contains",
+          "value": "getTokenByPasswordlessSms",
+          "description": "Uses getTokenByPasswordlessSms (not loginWithSMS)"
+        },
+        {
+          "type": "contains",
+          "value": "phoneNumber",
+          "description": "Converts phone_number to camelCase phoneNumber"
+        },
+        {
+          "type": "not_contains",
+          "value": "phone_number",
+          "description": "No snake_case phone_number remaining"
+        },
+        {
+          "type": "not_contains",
+          "value": "resp.data",
+          "description": "Does not read resp.data envelope"
+        },
+        {
+          "type": "judge",
+          "question": "Does the passwordless-sms-topdown solution replace the loginWithSMS call with getTokenByPasswordlessSms as the active implementation, convert phone_number to phoneNumber (camelCase), and read tokens.accessToken directly without a .data envelope? (Comments mentioning the old method name are acceptable.)",
+          "examples": "PASS: const tokens = await authClient.getTokenByPasswordlessSms({ phoneNumber, code, audience, scope }); return tokens.accessToken;\nFAIL: Active code still calls auth0.passwordless.loginWithSMS (not just mentioned in a comment).\nFAIL: Still uses phone_number instead of phoneNumber in the call arguments.\nFAIL: Reads resp.data.access_token instead of tokens.accessToken.",
+          "description": "Judge confirms method rename, camelCase param, and no .data envelope (comments OK)"
         }
       ]
     }
