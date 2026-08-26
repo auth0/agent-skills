@@ -31,10 +31,23 @@ local tarballs so it can test the real shipped surface without waiting on the ne
 
 `SDK_SOURCE` (Docker build ARG) selects the target install path:
 
-- `local` (default) — installs the server-js tarball from `vendor/`. `before/package.json` and
-  `after/package.json` carry an `overrides` map pinning `@auth0/auth0-auth-js` to the vendored
-  auth-js tarball, so server-js's peer resolves to the local build, not the registry.
+- `local` (default) — installs the server-js tarball from `vendor/`. `before/package.json` carries
+  an `overrides` map pinning `@auth0/auth0-auth-js` to the vendored auth-js tarball, so server-js's
+  peer resolves to the local build, not the registry.
 - `published` — installs the pinned published versions. Flip to this once the per-request surface ships in a public release.
+
+`after/package.json` depends on the **published** `@auth0/auth0-auth-js@^1.12.1` so its manifest
+resolves without the vendored tarball (the SCA lockfile prescan installs every `package.json` in the
+repo and would otherwise fail on a `file:` ref to a gitignored tarball). The published 1.12.1 lacks
+the per-request `fullResponse` surface `after/src` exercises, so a Tier-2 compile must swap in the
+local build after the base install:
+
+```bash
+cd after
+npm install --ignore-scripts
+npm install --ignore-scripts ./vendor/auth0-auth0-auth-js-1.12.1.tgz  # overlay the shipped surface
+npx tsc --noEmit
+```
 
 ### Refreshing the tarballs
 
