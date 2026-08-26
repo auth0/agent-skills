@@ -15,8 +15,9 @@
 #   bash run-loop.sh
 #
 #   # Locally against before/ fixture
-#   APP_DIR=/Users/tushar.pandey/src/agent-skills/evals/behavioral/fixtures/node-auth0-migration/before \
-#   SKILL_SCRIPTS=/Users/tushar.pandey/src/agent-skills/plugins/auth0/skills/migrating-node-auth0-to-auth0-server-js/scripts \
+#   REPO=$(git rev-parse --show-toplevel) \
+#   APP_DIR="$REPO/evals/behavioral/fixtures/node-auth0-migration/before" \
+#   SKILL_SCRIPTS="$REPO/plugins/auth0/skills/migrating-node-auth0-to-auth0-server-js/scripts" \
 #   bash run-loop.sh
 #
 #   # With agent rewrite enabled (example)
@@ -108,8 +109,12 @@ echo "Preflight checks passed."
 
 banner "Stage 1: Usage Scan (Informational)"
 
-if ! bash "$SCAN_SCRIPT" "$APP_DIR"; then
-  error_banner "scan-usage.sh failed (exit code $?)"
+set +e
+bash "$SCAN_SCRIPT" "$APP_DIR"
+scan_exit=$?
+set -e
+if [ "$scan_exit" -ne 0 ]; then
+  error_banner "scan-usage.sh failed (exit code $scan_exit)"
   exit 1
 fi
 
@@ -172,7 +177,6 @@ for iter in $(seq 1 "$MAX_ITERS"); do
 
     # Otherwise, continue to next iteration
     echo "Continuing to next iteration..."
-    popd > /dev/null
     continue
   fi
   popd > /dev/null
@@ -197,7 +201,6 @@ for iter in $(seq 1 "$MAX_ITERS"); do
 
     # Otherwise, continue to next iteration
     echo "Continuing to next iteration..."
-    popd > /dev/null
     continue
   fi
   popd > /dev/null
