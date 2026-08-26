@@ -98,9 +98,14 @@ SDK, so check the `@capacitor/browser` rows before it.
 
 ### Python — check `requirements.txt` or `pyproject.toml`
 
+Rows are most-specific first: `auth0-server-python` is the framework-agnostic
+server core, so check for a co-installed web framework before falling back to the
+bare-SDK row.
+
 | Package | Framework |
 |---|---|
-| `auth0-server-python` | `flask` |
+| `auth0-server-python` + `flask` | `flask` |
+| `auth0-server-python` (no Flask web framework) | `server-python` |
 | `auth0-fastapi-api` | `fastapi-api` |
 
 ### Java / Kotlin — check `build.gradle` or `pom.xml`
@@ -214,6 +219,7 @@ request. **Stop at the first match.**
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
 | Flask | `flask` |
 | FastAPI | `fastapi-api` |
+| `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
 | Spring Boot | `springboot-api` |
 | Java MVC / servlet | `java-mvc` |
 | ASP.NET Core web app / API | `aspnetcore-auth` / `aspnetcore-api` |
