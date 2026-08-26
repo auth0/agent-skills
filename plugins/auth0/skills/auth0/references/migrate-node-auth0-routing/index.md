@@ -31,7 +31,7 @@ that responsibility to the SDK?**
 
 ### Decision procedure
 
-Run [scripts/scan-usage.sh](../scripts/scan-usage.sh) first, then answer:
+Run `${CLAUDE_SKILL_DIR}/scripts/scan-usage.sh <path-to-src>` first, then answer:
 
 ```
 Is the customer's node-auth0 usage purely stateless?
@@ -52,7 +52,7 @@ Is the customer's node-auth0 usage purely stateless?
         │
         └─ They want the SDK to own the session ──────────────► @auth0/auth0-server-js
                                                                  (rewrite the session layer;
-                                                                  see server-js-sessions.md)
+                                                                  see the sessions reference)
 ```
 
 ### Signals that point to auth0-auth-js
@@ -211,7 +211,7 @@ new ServerClient({
 ```
 
 The `transactionStore` and `stateStore` have **no node-auth0 counterpart** — they are the session
-substrate. See [server-js-sessions.md](server-js-sessions.md) for how to construct them (cookie
+substrate. See the co-loaded sessions reference for how to construct them (cookie
 stores for stateless deployments, stateful stores backed by your session DB, etc.).
 
 ---

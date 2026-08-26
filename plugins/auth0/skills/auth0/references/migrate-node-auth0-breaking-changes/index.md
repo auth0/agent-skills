@@ -1,6 +1,6 @@
 # Breaking Changes: the four cross-cutting rewrites
 
-Every call-site rewrite in [api-mapping.md](api-mapping.md) is subject to four changes that cut
+Every call-site rewrite in the co-loaded api-mapping reference is subject to four changes that cut
 across all methods. They cause the overwhelming majority of migration defects, and three of the
 four are *silent* — the code compiles and often runs, but produces wrong behavior at runtime.
 Apply each one deliberately.

@@ -142,7 +142,7 @@ const { accessToken } = await serverClient.getAccessToken({ req, res });
 ```
 
 This is where the `expires_in` → `expiresAt` hazard from
-[breaking-changes.md](breaking-changes.md#3-token-expiry) disappears entirely: the SDK owns expiry
+the co-loaded breaking-changes reference ("Token expiry") disappears entirely: the SDK owns expiry
 math. Delete the customer's `Date.now() + expires_in * 1000` bookkeeping.
 
 For a downstream federated connection token (Token Vault), use

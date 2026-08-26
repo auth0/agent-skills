@@ -1,6 +1,6 @@
 # node-auth0 Migration Test Harness
 
-A containerized evaluation environment for the `migrating-node-auth0-to-auth0-server-js` skill. It
+A containerized evaluation environment for the auth0 skill's `migrate-node-auth0` reference workflow. It
 runs an end-to-end migration workflow: scan → (optional agent-driven rewrite) → verify → type-check
 → tests, against the **shipped** auth0-auth-js / auth0-server-js 1.12.1 API.
 

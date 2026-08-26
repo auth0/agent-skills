@@ -38,8 +38,8 @@ RUN if [ "$SDK_SOURCE" = "local" ]; then \
     fi
 
 # Copy the migration skill scripts + the whole plugin (so the agent step can load it)
-COPY plugins/auth0/skills/migrating-node-auth0-to-auth0-server-js/scripts/scan-usage.sh /skill-scripts/scan-usage.sh
-COPY plugins/auth0/skills/migrating-node-auth0-to-auth0-server-js/scripts/verify-migration.sh /skill-scripts/verify-migration.sh
+COPY plugins/auth0/skills/auth0/scripts/scan-usage.sh /skill-scripts/scan-usage.sh
+COPY plugins/auth0/skills/auth0/scripts/verify-migration.sh /skill-scripts/verify-migration.sh
 COPY evals/behavioral/fixtures/node-auth0-migration/agent-rewrite.sh /skill-scripts/agent-rewrite.sh
 COPY evals/behavioral/fixtures/node-auth0-migration/run-loop.sh /skill-scripts/run-loop.sh
 COPY plugins/auth0/ /skill/plugins/auth0/

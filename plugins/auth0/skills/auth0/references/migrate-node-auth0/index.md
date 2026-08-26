@@ -1,15 +1,3 @@
----
-name: migrating-node-auth0-to-auth0-server-js
-description: Use when migrating Auth0 authentication code off the node-auth0 SDK (the `auth0` package, `AuthenticationClient`) to `@auth0/auth0-auth-js` (stateless token grants) or `@auth0/auth0-server-js` (server-managed sessions). Use when porting `AuthenticationClient` usage — `.oauth`, `.database`, `.passwordless`, `.backchannel`, `.tokenExchange`, `UserInfoClient` — off node-auth0 v5, when replacing the `auth0` package's Authentication API in a Node.js backend, or when planning a node-auth0 auth deprecation. Also use when asked to move an existing Node.js Auth0 authentication client to a newer Auth0 server SDK even if the `auth0` package is not named explicitly. Rewrites only the authentication layer, not the surrounding application.
-license: Apache-2.0
-metadata:
-  author: Auth0 <support@auth0.com>
-  version: '1.0.0'
-  openclaw:
-    emoji: "\U0001F510"
-    homepage: https://github.com/auth0/agent-skills
----
-
 # Migrating from node-auth0 to auth0-auth-js / auth0-server-js
 
 This skill guides a **surgical rewrite of the authentication layer only**. You replace the
@@ -49,8 +37,8 @@ and the right one depends on what the customer's code does around those calls.
 migration. Recommend **`@auth0/auth0-server-js`** only when the customer currently hand-rolls
 session/cookie/refresh logic around node-auth0 and would benefit from the SDK owning it.
 
-Read [references/routing-and-config.md](references/routing-and-config.md) for the full decision
-procedure and the constructor/option mapping for both targets.
+For the full decision procedure and the constructor/option mapping for both targets, use the
+co-loaded routing reference.
 
 ## Workflow
 
@@ -94,7 +82,7 @@ Before touching any code, verify the environment is safe for an in-place rewrite
 Run the discovery script against the customer's source root:
 
 ```bash
-bash scripts/scan-usage.sh <path-to-src>
+${CLAUDE_SKILL_DIR}/scripts/scan-usage.sh <path-to-src>
 ```
 
 It inventories every `AuthenticationClient` / `UserInfoClient` import and every sub-client call
@@ -108,17 +96,17 @@ Use the output to decide scope and to route (auth-js vs server-js) per the table
 Add the target package, then rewrite the client construction. The constructor options mostly
 carry over with camelCase names; a few are renamed or dropped.
 
-→ [references/routing-and-config.md](references/routing-and-config.md) — constructor/option mapping.
+Use the co-loaded routing reference for the constructor/option mapping.
 
 ### 3. Rewrite each call site using the method mapping
 
 Go sub-client by sub-client. For every node-auth0 method, apply the mapped replacement.
 
-→ [references/api-mapping.md](references/api-mapping.md) — the complete method-by-method mapping
+Use the co-loaded api-mapping reference for the complete method-by-method mapping
 with before/after code for `.oauth`, `.database`, `.passwordless`, `.backchannel`,
 `.tokenExchange`, and `UserInfoClient`. Note: `UserInfoClient.getUserInfo` maps to
 `TokenResponse.claims` (preferred) or `authClient.getUserInfo({ accessToken })` (auth0-auth-js, when PR #228 merges)
-— see the `UserInfoClient` section in that file.
+— see the `UserInfoClient` section in that reference.
 
 ### 4. Apply the three structural changes at every call site
 
@@ -128,7 +116,7 @@ of nearly all migration bugs — apply them deliberately, not mechanically:
 1. **Return shape** — node-auth0 wraps results in `JSONApiResponse<T>` (`.data`, `.status`,
    `.headers`). The new SDKs return the domain object directly. Read `resp.data.X` becomes `resp.X`.
    If the code read status/headers off the old envelope on success, that metadata now comes from the
-   opt-in `fullResponse` envelope — see references/breaking-changes.md → "Reading HTTP response metadata".
+   opt-in `fullResponse` envelope — see the co-loaded breaking-changes reference → "Reading HTTP response metadata".
 2. **Casing** — node-auth0 uses the snake_case wire shape (`client_id`, `access_token`,
    `expires_in`). The new SDKs use camelCase (`clientId`, `accessToken`, `expiresAt`).
 3. **Token expiry** — node-auth0's `expires_in` is a **relative** lifetime in seconds. The new
@@ -139,7 +127,7 @@ Plus the **error model** change: node-auth0 throws `AuthApiError`; the new SDKs 
 per-operation errors (`TokenByCodeError`, etc.) with a structured `.cause`. MFA is detected with
 the `isMfaRequiredError()` guard instead of string-matching `error === 'mfa_required'`.
 
-→ [references/breaking-changes.md](references/breaking-changes.md) — verbose treatment of all
+Use the co-loaded breaking-changes reference for the verbose treatment of all
 four changes with before/after examples, gotchas, and the exact field-by-field field maps.
 
 ### 5. (Session apps only) Wire the session layer
@@ -148,7 +136,7 @@ If routing to `@auth0/auth0-server-js`, replace the customer's hand-rolled sessi
 handling with the ServerClient flow (`startInteractiveLogin` → `completeInteractiveLogin` →
 `getUser` / `getAccessToken` → `logout`) and a state/transaction store.
 
-→ [references/server-js-sessions.md](references/server-js-sessions.md) — the session model,
+Use the co-loaded sessions reference for the session model,
 store setup, and the redirect-flow rewrite.
 
 ### 6. Build-until-green verification loop
@@ -159,7 +147,7 @@ and repeat the entire loop if **any** step fails:
 1. **Run the verification script** to detect residue patterns (unmigrated imports, `.data.` references, relative `expires_in` arithmetic):
    
    ```bash
-   bash scripts/verify-migration.sh <path-to-src>
+   ${CLAUDE_SKILL_DIR}/scripts/verify-migration.sh <path-to-src>
    ```
 
 2. **Type-check the project** to catch structural mismatches and type errors:
@@ -184,10 +172,12 @@ that skill here to ensure consistency with the repo's own quality gates.
 
 ## Reference index
 
-- [references/routing-and-config.md](references/routing-and-config.md) — target-SDK decision + constructor/option mapping
-- [references/api-mapping.md](references/api-mapping.md) — full method-by-method mapping, all sub-clients
-- [references/breaking-changes.md](references/breaking-changes.md) — return shape, casing, `expiresAt`, error model
-- [references/server-js-sessions.md](references/server-js-sessions.md) — session layer for web apps
+Four references are co-loaded alongside this hub — refer to them by topic as the workflow directs:
+
+- **routing reference** — target-SDK decision + constructor/option mapping
+- **api-mapping reference** — full method-by-method mapping, all sub-clients
+- **breaking-changes reference** — return shape, casing, `expiresAt`, error model
+- **sessions reference** — session layer for web apps
 
 ## SDK versions this skill targets
 

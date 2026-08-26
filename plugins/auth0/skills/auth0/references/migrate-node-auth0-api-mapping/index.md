@@ -10,7 +10,7 @@ the replacement lives on the `@auth0/auth0-auth-js` `AuthClient` (or one of its 
 
 **Before you touch any method,** internalize the three structural changes that apply to *every*
 row — return shape, casing, and `expires_in` → `expiresAt` — plus the error-model change. Those
-are documented in full in [breaking-changes.md](breaking-changes.md). This file shows the
+are documented in full in the co-loaded breaking-changes reference. This file shows the
 method/parameter mapping; that file shows the field-level and error-level mapping. You need both.
 
 ---
@@ -74,7 +74,7 @@ const expiresAt = tokens.expiresAt; // absolute Unix seconds
 > SDK's job. Delete it and hand the SDK the full URL. If they were tracking `state` in a cookie,
 > pass it via the options so the SDK can validate it. **Header reads on success:** if the node-auth0
 > code read `resp.headers.get(...)` on success (for rate-limit telemetry or request-id logging), see
-> [breaking-changes.md → Reading HTTP response metadata (fullResponse)](breaking-changes.md#reading-http-response-metadata-fullresponse)
+> the co-loaded breaking-changes reference → "Reading HTTP response metadata (fullResponse)"
 > for the opt-in envelope. Error-path metadata remains accessible on the typed error.
 
 ### `oauth.authorizationCodeGrantWithPKCE` → `getTokenByCode` (with verifier)
@@ -152,7 +152,7 @@ await authClient.revokeToken({ token: rt });
 
 > **Session apps:** if you are migrating to server-js and this revoke was part of logout, use
 > `serverClient.revokeRefreshToken()` (it reads the refresh token from the session) instead of
-> the low-level `revokeToken`. See [server-js-sessions.md](server-js-sessions.md).
+> the low-level `revokeToken`. See the co-loaded sessions reference.
 
 ### `oauth.tokenForConnection` → `exchangeToken` (Token Vault)
 
@@ -244,7 +244,7 @@ const userId = result.id;
 >
 > **Header reads on success:** node-auth0's `resp.headers`/`resp.status` on the signup envelope
 > map to `fullResponse: true`, which returns `ApiResponse<SignUpResult>` (`{ data, response }`).
-> See [breaking-changes.md → Reading HTTP response metadata (fullResponse)](breaking-changes.md#reading-http-response-metadata-fullresponse).
+> See the co-loaded breaking-changes reference → "Reading HTTP response metadata (fullResponse)".
 
 ### `database.changePassword` → `authClient.database.changePassword`
 
@@ -260,7 +260,7 @@ const message = await authClient.database.changePassword({ email, connection: 'U
 ```
 
 > **Header reads on success:** If the node-auth0 code read response headers on the success path, see
-> [breaking-changes.md → Reading HTTP response metadata (fullResponse)](breaking-changes.md#reading-http-response-metadata-fullresponse).
+> the co-loaded breaking-changes reference → "Reading HTTP response metadata (fullResponse)".
 
 ---
 
@@ -297,7 +297,7 @@ await authClient.passwordless.sendSms({ phoneNumber: '+15551234567' });
 > **Header reads on success:** `sendEmail` and `sendSms` return `void` by default. If the node-auth0
 > code read `resp.headers`/`resp.status` off the `VoidApiResponse`, opt into `fullResponse: true` to
 > get an `ApiResponse<void>` (`data` is `undefined`; `response` carries status/headers). See
-> [breaking-changes.md → Reading HTTP response metadata (fullResponse)](breaking-changes.md#reading-http-response-metadata-fullresponse).
+> the co-loaded breaking-changes reference → "Reading HTTP response metadata (fullResponse)".
 
 ### `passwordless.loginWithEmail` → `getTokenByPasswordlessEmail`
 

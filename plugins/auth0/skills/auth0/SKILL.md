@@ -268,8 +268,7 @@ Step 1, then read the reference files it lists.
 ```
 Read: references/framework-{framework}/index.md
 Read: references/tooling-{tooling}/index.md
-Follow the integration workflow in references/framework-{framework}/index.md.
-Use references/tooling-{tooling}/index.md for all Auth0 tenant configuration steps.
+Follow the integration workflow in references/framework-{framework}/index.md; use references/tooling-{tooling}/index.md for all tenant configuration.
 ```
 
 ### feature:mfa
@@ -351,7 +350,7 @@ Read: references/feature-audit/index.md
 Read: references/feature-audit-pricing/index.md
 Read: references/feature-audit-remediation/index.md
 Read: references/tooling-{tooling}/index.md
-Apply findings only with per-command confirmation; verify each change by re-fetch.
+Apply findings only with per-command confirmation; verify each by re-fetch.
 ```
 
 ### healthcheck
@@ -361,25 +360,25 @@ Read: references/feature-audit/index.md
 Read: references/feature-audit-pricing/index.md
 Read: references/feature-audit-remediation/index.md
 Read: references/tooling-{tooling}/index.md
-If a scan can run, do the audit workflow first, then score and recommend a plan. If not, score capability fit and recommend anyway. Never quote Enterprise pricing.
+If a scan can run, do the audit workflow first, then score and recommend a plan; otherwise score capability fit and recommend anyway. Never quote Enterprise pricing.
 ```
 
 ### upgrade-sdk
 ```
 Read: references/framework-{framework}/index.md
-Follow its "Major Version Migration" section (e.g. Auth0.swift v3, Auth0.Android v4).
-This is an Auth0 SDK version bump — NOT a provider migration. Do not load feature-migration/index.md.
-If no framework is detected: ask which Auth0 SDK the developer is upgrading.
+Follow its "Major Version Migration" section (e.g. Auth0.swift v3).
+This is an SDK version bump — NOT a provider migration. Do not load feature-migration/index.md.
+If no framework is detected: ask which Auth0 SDK is being upgraded.
 ```
 
 ### migrate-node-auth0
-
-```text
-Invoke skill: migrating-node-auth0-to-auth0-server-js
-Read: (skill root)/references/api-mapping.md
-Read: (skill root)/references/breaking-changes.md
-Read: (skill root)/references/routing-and-config.md
-Follow the migration workflow in that skill. Do not load feature-migration/index.md — this is an SDK migration, not a provider migration.
+```
+Read: references/migrate-node-auth0/index.md
+Read: references/migrate-node-auth0-api-mapping/index.md
+Read: references/migrate-node-auth0-breaking-changes/index.md
+Read: references/migrate-node-auth0-routing/index.md
+Read: references/migrate-node-auth0-sessions/index.md
+Follow the migration workflow in the hub reference. Do not load feature-migration/index.md — this is an SDK migration, not a provider migration.
 ```
 
 ### tooling

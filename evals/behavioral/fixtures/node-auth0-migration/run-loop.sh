@@ -17,7 +17,7 @@
 #   # Locally against before/ fixture
 #   REPO=$(git rev-parse --show-toplevel) \
 #   APP_DIR="$REPO/evals/behavioral/fixtures/node-auth0-migration/before" \
-#   SKILL_SCRIPTS="$REPO/plugins/auth0/skills/migrating-node-auth0-to-auth0-server-js/scripts" \
+#   SKILL_SCRIPTS="$REPO/plugins/auth0/skills/auth0/scripts" \
 #   bash run-loop.sh
 #
 #   # With agent rewrite enabled (example)
