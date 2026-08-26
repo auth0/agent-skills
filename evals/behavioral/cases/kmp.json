@@ -1,0 +1,142 @@
+{
+  "slug": "kmp",
+  "origin_skill": "auth0-kmp",
+  "skill_name": "auth0-kmp",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Auth0 authentication to the shared commonMain module of my Kotlin Multiplatform app (targeting Android and iOS) using the com.auth0.kmp:auth0 SDK. Wire up login, logout, and secure token storage in shared code, and apply the per-platform callback configuration.\n\n**Auth0 Credentials:**\n- Domain: `dev-example.auth0.com`\n- Client ID: `abc123def456ghi789jkl012`",
+      "expected_output": "Working KMP shared module with Auth0 Universal Login (login/logout) and CredentialsManager token storage, plus Android manifest placeholders and iOS URL scheme wiring",
+      "expectations": [
+        "Auth0 KMP SDK (com.auth0.kmp:auth0) added to commonMain dependencies",
+        "Has correct com.auth0.kmp import statements",
+        "Constructs Auth0 via Auth0(Auth0Account(...)) in shared code",
+        "Implements login via auth0.webAuth.login (WebAuthClient / Universal Login)",
+        "Implements logout via auth0.webAuth.logout",
+        "Uses CredentialsManager (auth0.credentials()) for token storage",
+        "Branches on the sealed Result type (Result.Success / Result.Failure)",
+        "Configures Android manifestPlaceholders (auth0Domain, auth0Scheme) for the redirect intent-filter",
+        "Registers the iOS callback URL scheme (Info.plist URL Types / CFBundleURLSchemes)",
+        "Does NOT use the native Android SDK (com.auth0.android:auth0)",
+        "Does NOT use the native iOS SDK (Auth0.swift)",
+        "Does NOT use a web SPA SDK in a KMP app",
+        "No client secret (native/mobile apps use PKCE, not client secrets)",
+        "Does not use a localhost callback in a mobile app",
+        "Uses the Auth0 domain dev-example.auth0.com and client ID abc123def456ghi789jkl012"
+      ]
+    }
+  ],
+  "graders": [
+    {
+      "type": "matches",
+      "pattern": "com\\.auth0\\.kmp:auth0|implementation\\([\"']com\\.auth0\\.kmp",
+      "description": "Auth0 KMP SDK added as a commonMain dependency"
+    },
+    {
+      "type": "matches",
+      "pattern": "import com\\.auth0\\.kmp",
+      "description": "Has correct com.auth0.kmp import statement"
+    },
+    {
+      "type": "contains_any",
+      "values": [
+        "Auth0Account(",
+        "Auth0("
+      ],
+      "description": "Constructs the Auth0 client in shared code"
+    },
+    {
+      "type": "matches",
+      "pattern": "webAuth[\\s\\S]{0,40}\\.login|WebAuthClient",
+      "description": "Implements login via auth0.webAuth.login (Universal Login)"
+    },
+    {
+      "type": "matches",
+      "pattern": "webAuth[\\s\\S]{0,40}\\.logout",
+      "description": "Implements logout via auth0.webAuth.logout"
+    },
+    {
+      "type": "contains_any",
+      "values": [
+        "credentials()",
+        "CredentialsManager",
+        "saveCredentials",
+        "getCredentials"
+      ],
+      "description": "Uses CredentialsManager for token storage"
+    },
+    {
+      "type": "matches",
+      "pattern": "Result\\.(Success|Failure)|is Result\\.",
+      "description": "Branches on the sealed Result type"
+    },
+    {
+      "type": "matches",
+      "pattern": "manifestPlaceholders[\\s\\S]{0,80}auth0Domain|\"auth0Domain\"|auth0Scheme",
+      "description": "Configures Android manifestPlaceholders (auth0Domain / auth0Scheme)"
+    },
+    {
+      "type": "contains_any",
+      "values": [
+        "CFBundleURLSchemes",
+        "CFBundleURLTypes",
+        "URL Types"
+      ],
+      "description": "Registers the iOS callback URL scheme"
+    },
+    {
+      "type": "not_matches",
+      "pattern": "com\\.auth0\\.android:auth0|import com\\.auth0\\.android",
+      "description": "Does not use the native Android SDK in a KMP app"
+    },
+    {
+      "type": "not_matches",
+      "pattern": "Auth0\\.swift|pod ['\"]Auth0['\"]|\\.package\\(url: ?[\"']https://github\\.com/auth0/Auth0\\.swift",
+      "description": "Does not use the native iOS SDK (Auth0.swift)"
+    },
+    {
+      "type": "not_contains_any",
+      "values": [
+        "@auth0/auth0-react",
+        "@auth0/auth0-angular",
+        "@auth0/auth0-spa-js",
+        "@auth0/auth0-vue"
+      ],
+      "description": "Does not use a web SPA SDK in a KMP app"
+    },
+    {
+      "type": "not_contains",
+      "value": "client_secret",
+      "description": "No client secret (mobile apps use PKCE, not client secrets)"
+    },
+    {
+      "type": "not_contains",
+      "value": "localhost",
+      "description": "Does not use a localhost callback in a mobile app"
+    },
+    {
+      "type": "contains",
+      "value": "dev-example.auth0.com",
+      "description": "Uses the provided Auth0 domain"
+    },
+    {
+      "type": "contains",
+      "value": "abc123def456ghi789jkl012",
+      "description": "Uses the provided client ID"
+    },
+    {
+      "type": "judge",
+      "question": "Does the solution correctly integrate the com.auth0.kmp SDK into a Kotlin Multiplatform shared module: constructing Auth0 in commonMain, logging in and out via auth0.webAuth (Universal Login), storing tokens with the CredentialsManager (auth0.credentials()), handling the sealed Result type, AND applying the per-platform callback wiring (Android manifestPlaceholders auth0Domain/auth0Scheme and iOS URL scheme registration)? It must NOT mix in the native com.auth0.android:auth0 or Auth0.swift SDKs.",
+      "description": "Correctly integrates the KMP SDK in shared code with per-platform wiring",
+      "examples": "PASS: Builds Auth0(Auth0Account(clientId, domain)) in commonMain, calls auth0.webAuth.login(LoginOptions(...)) and auth0.webAuth.logout(...), persists via auth0.credentials().saveCredentials/getCredentials, branches on Result.Success/Result.Failure, and adds manifestPlaceholders in the Android module plus a CFBundleURLSchemes entry for iOS.\nFAIL: Uses com.auth0.android:auth0 or Auth0.swift instead of com.auth0.kmp.\nFAIL: Writes shared login code but never applies the Android manifestPlaceholders or the iOS URL scheme, so the callback cannot resolve.\nFAIL: Ignores the Result type or hardcodes a client secret.",
+      "framework": "kmp"
+    },
+    {
+      "type": "judge",
+      "question": "Check ONLY for KMP-specific advanced patterns beyond basic login/logout. Look for at least 2 of: (1) the offline_access scope requested in LoginOptions (for refresh-token-backed silent renewal), (2) typed error handling that branches on a specific Auth0Error subtype (WebAuthError, AuthenticationError, or CredentialsManagerError) rather than a generic else/Exception, (3) both the Android manifestPlaceholders AND the iOS URL scheme registered (full per-platform wiring, not just one), (4) auth code written in commonMain/shared code rather than duplicated per platform. Answer YES only if at least 2 are present, NO otherwise.",
+      "description": "Uses skill-specific advanced patterns (offline_access, typed error handling, full per-platform wiring, shared-code placement)",
+      "examples": "PASS: LoginOptions(scope = \"openid profile email offline_access\") AND a when(result.error) branch on WebAuthError.UserCancelled / CredentialsManagerError.NoRefreshToken.\nPASS: Android manifestPlaceholders auth0Domain/auth0Scheme AND iOS CFBundleURLSchemes entry, with the auth logic in commonMain.\nFAIL: Only basic auth0.webAuth.login()/logout() with a generic catch and callback wiring for a single platform.",
+      "framework": "kmp"
+    }
+  ]
+}

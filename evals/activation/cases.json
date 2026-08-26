@@ -247,6 +247,13 @@
       "spot_check": true
     },
     {
+      "id": "neg-kmp-ktor-networking",
+      "prompt": "Set up a shared Ktor HTTP client in the commonMain module of my Kotlin Multiplatform app.",
+      "should_activate": false,
+      "why": "NEAR-MISS. Reuses the exact KMP vocabulary of the fw-kmp positive ('shared', 'commonMain', 'Kotlin Multiplatform') but it's a networking-setup task with no identity/login intent. The twin that proves the description keys on auth intent, not the KMP keyword.",
+      "tags": ["negative", "near-miss"]
+    },
+    {
       "id": "neg-stripe-billing",
       "prompt": "Add Stripe subscription billing with a monthly and annual plan.",
       "should_activate": false,
