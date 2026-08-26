@@ -42,3 +42,7 @@ __pycache__/
 # Misc
 *.bak
 *.tmp
+
+# Vendored SDK tarballs for the node-auth0 migration harness — regenerate with
+# `npm pack` (see fixtures/node-auth0-migration/README.md), not checked in.
+evals/behavioral/fixtures/node-auth0-migration/vendor/*.tgz

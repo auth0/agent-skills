@@ -58,6 +58,12 @@ npm pack --pack-destination <this-dir>/vendor  # in packages/auth0-server-js
 
 ## How to build
 
+The `vendor/*.tgz` tarballs are **not checked in** (they are gitignored). Populate
+them first with the `npm pack` step under "Refreshing the tarballs" above — the
+default `SDK_SOURCE=local` Docker build `COPY`s them and will fail on a clean
+checkout otherwise. (The `published` variant does not need them, but the published
+1.12.1 lacks the per-request surface this harness exercises.)
+
 From the **repository root** (build context must include both the fixture and the skill scripts):
 
 ```bash

@@ -194,5 +194,4 @@ that skill here to ensure consistency with the repo's own quality gates.
 - **Source:** `auth0` (node-auth0) v5.x — `AuthenticationClient`, `UserInfoClient`
 - **Target:** `@auth0/auth0-auth-js` >= v1.12.1 (token layer), `@auth0/auth0-server-js` >= v1.12.1 (session layer)
 
-**Important:** Per-request `RequestOptions` (`signal`, `headers`, per-call `customFetch`) and the
-`fullResponse` envelope are **shipped** in v1.12.1 of both SDKs. These versions are unreleased on npm as of this writing; until a public release cuts, install via the local-tarball / pre-release path (see the migration fixture README).
+**Important:** both SDKs are published on npm at v1.12.1 and require Node.js 20 LTS or newer. The per-request `RequestOptions` (`signal`, `headers`, per-call `customFetch`) and the `fullResponse` envelope landed **after** the 1.12.1 npm release and are not in the published tarball yet — migrations that depend on those APIs must install via the local-tarball / pre-release path (see the migration fixture README) until the next release cuts.
