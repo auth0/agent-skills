@@ -252,7 +252,7 @@ function gradeAll(grader, sources, workspaceDir) {
   return { pass: true, detail: `All ${grader.graders.length} sub-graders passed` }
 }
 
-async function gradeJudge(grader, sources, workspaceDir, model, judgeModel) {
+async function gradeJudge(grader, sources, workspaceDir, model) {
   const fileSummary = sources
     .slice(0, 20)
     .map((s) => `--- ${path.relative(workspaceDir, s.path)} ---\n${s.content.slice(0, 3000)}`)
@@ -273,11 +273,10 @@ VERDICT: NO
 ${fileSummary}`
 
   const judgeArgs = ["-p", judgePrompt, "--permission-mode", "dontAsk", "--no-session-persistence"]
-  const effectiveModel = judgeModel || model
-  if (effectiveModel) judgeArgs.push("--model", effectiveModel)
+  if (model) judgeArgs.push("--model", model)
 
   try {
-    const { stdout } = await $({ timeout: 180000 })`claude ${judgeArgs}`
+    const { stdout } = await $({ timeout: 60000 })`claude ${judgeArgs}`
     const pass = parseVerdict(stdout)
     return { pass, detail: stdout.trim().slice(-300) }
   } catch (e) {
@@ -298,7 +297,7 @@ function parseVerdict(stdout) {
 
 // Run every grader against the workspace. `model` (optional) is forwarded to
 // judge graders as the --model flag for `claude -p`.
-export async function runGraders(graders, workspaceDir, model = null, judgeModel = null) {
+export async function runGraders(graders, workspaceDir, model = null) {
   const sources = readAllSources(workspaceDir)
   const results = []
 
@@ -313,7 +312,7 @@ export async function runGraders(graders, workspaceDir, model = null, judgeModel
       case "matches": result = gradeMatches(grader, sources); break
       case "not_matches": result = gradeNotMatches(grader, sources); break
       case "all": result = gradeAll(grader, sources, workspaceDir); break
-      case "judge": result = await gradeJudge(grader, sources, workspaceDir, model, judgeModel); break
+      case "judge": result = await gradeJudge(grader, sources, workspaceDir, model); break
       default: result = { pass: false, detail: `Unknown grader type: ${grader.type}` }
     }
     results.push({ type: grader.type, description: grader.description, ...result })

@@ -47,9 +47,7 @@ const argv = process.argv.slice(2)
 const flag = (name) => argv.includes(name)
 const modelIdx = argv.indexOf("--model")
 const MODEL = modelIdx !== -1 ? argv[modelIdx + 1] : null
-const judgeModelIdx = argv.indexOf("--judge-model")
-const JUDGE_MODEL = judgeModelIdx !== -1 ? argv[judgeModelIdx + 1] : null
-const slugArgs = argv.filter((a, i) => !a.startsWith("--") && argv[i - 1] !== "--model" && argv[i - 1] !== "--judge-model")
+const slugArgs = argv.filter((a, i) => !a.startsWith("--") && argv[i - 1] !== "--model")
 
 function loadCases() {
   return fs.readdirSync(CASES_DIR)
@@ -144,14 +142,14 @@ async function runEval(slug, evalObj, opts) {
 
   console.log(`\n  Eval ${label}: running agent WITH skill (router loaded)...`)
   await runAgent(prompt, withDir, true)
-  const withRes = await runGraders(graders, withDir, MODEL, JUDGE_MODEL)
+  const withRes = await runGraders(graders, withDir, MODEL)
   const withPass = display(`  ${label} — with skill`, withRes)
 
   let withoutPass = null
   if (!opts.skillOnly) {
     console.log(`\n  Eval ${label}: running agent WITHOUT skill...`)
     await runAgent(prompt, withoutDir, false)
-    const withoutRes = await runGraders(graders, withoutDir, MODEL, JUDGE_MODEL)
+    const withoutRes = await runGraders(graders, withoutDir, MODEL)
     withoutPass = display(`  ${label} — without skill`, withoutRes)
     const delta = withPass - withoutPass
     console.log(`\n  Eval ${label} delta: ${delta >= 0 ? "+" : ""}${delta} (${withPass} vs ${withoutPass} of ${withRes.length})`)
@@ -204,14 +202,14 @@ async function runCase(caseObj, opts) {
 
   console.log("  Running agent WITH skill (router loaded)...")
   await runAgent(prompt, withDir, true)
-  const withRes = await runGraders(graders, withDir, MODEL, JUDGE_MODEL)
+  const withRes = await runGraders(graders, withDir, MODEL)
   const withPass = display("With skill", withRes)
 
   let withoutPass = null
   if (!opts.skillOnly) {
     console.log("\n  Running agent WITHOUT skill...")
     await runAgent(prompt, withoutDir, false)
-    const withoutRes = await runGraders(graders, withoutDir, MODEL, JUDGE_MODEL)
+    const withoutRes = await runGraders(graders, withoutDir, MODEL)
     withoutPass = display("Without skill", withoutRes)
     const delta = withPass - withoutPass
     console.log(`\n  Delta (skill value): ${delta >= 0 ? "+" : ""}${delta} graders (${withPass} vs ${withoutPass} of ${withRes.length})`)
