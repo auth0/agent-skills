@@ -25,14 +25,11 @@ turnkey Flask integration (with ready-made session stores), load
 
 ## When NOT to use it
 
-- **Flask web app** with login/logout - load `framework-flask/index.md` (it
-  ships concrete Flask session stores).
-- **Protecting a FastAPI API** by validating incoming JWT Bearer tokens - that is
-  a resource server, use `framework-fastapi-api/index.md` (`auth0-fastapi-api`).
-  This SDK is for **acquiring** tokens and managing user sessions, not validating
-  them on an API.
-- **Single Page Apps / mobile** - use the relevant client-side framework
-  reference (React, Vue, Angular, Swift, Android, ...).
+| Instead of this SDK | Use | Why |
+|---|---|---|
+| Flask web app with login/logout | `framework-flask/index.md` | Ships concrete Flask session stores. |
+| Protecting a FastAPI API (validating incoming JWT Bearer tokens) | `framework-fastapi-api/index.md` (`auth0-fastapi-api`) | That is a resource server. This SDK **acquires** tokens and manages sessions; it does not validate them on an API. |
+| Single Page App / mobile | The relevant client-side framework reference (React, Vue, Angular, Swift, Android, ...) | Different auth model. |
 
 ## Install
 
@@ -387,50 +384,19 @@ async def login_with_custom_token_exchange(self, options: LoginWithCustomTokenEx
                                            store_options=None) -> LoginWithCustomTokenExchangeResult
 ```
 
-### Account linking
+### Other SDK flows
 
-```python
-async def start_link_user(self, options, store_options=None) -> str      # returns redirect URL
-async def complete_link_user(self, url, store_options=None)
-async def start_unlink_user(self, options, store_options=None) -> str
-async def complete_unlink_user(self, url, store_options=None)
-```
+Every method below takes a trailing `store_options=None`; `start_*` methods
+return a redirect URL (`str`) you complete in a return route with the callback
+URL, mirroring the interactive-login pattern.
 
-`start_link_user` returns a URL to redirect to; complete it in the return route
-with the callback URL, mirroring the interactive-login pattern.
-
-### Connected accounts (My Account API)
-
-```python
-async def start_connect_account(self, options: ConnectAccountOptions, store_options=None) -> str
-async def complete_connect_account(self, ...) -> CompleteConnectAccountResponse
-async def list_connected_accounts(self, store_options=None) -> ListConnectedAccountsResponse
-async def delete_connected_account(self, ...) -> None
-async def list_connected_account_connections(self, ...) -> ListConnectedAccountConnectionsResponse
-```
-
-### CIBA (client-initiated backchannel authentication)
-
-```python
-async def login_backchannel(self, options: dict[str, Any], store_options=None) -> dict[str, Any]
-```
-
-Approves login out-of-band (e.g. push to a phone) without a browser redirect.
-
-### Session transfer (web-to-native handoff)
-
-```python
-async def request_session_transfer_token(self, store_options=None) -> SessionTransferTokenResult
-def build_session_transfer_redirect(self, ...) -> str   # NOT async
-```
-
-### Passkeys
-
-```python
-async def passkey_signup_challenge(self, ...) -> PasskeySignupChallengeResponse
-async def passkey_login_challenge(self, ...) -> PasskeyLoginChallengeResponse
-async def signin_with_passkey(self, ...) -> PasskeyLoginResult
-```
+| Flow | Methods (async unless noted) | Returns / notes |
+|---|---|---|
+| Account linking | `start_link_user(options)` · `complete_link_user(url)` · `start_unlink_user(options)` · `complete_unlink_user(url)` | `start_*` -> redirect URL. |
+| Connected accounts (My Account API) | `start_connect_account(options: ConnectAccountOptions)` · `complete_connect_account(...)` · `list_connected_accounts()` · `delete_connected_account(...)` · `list_connected_account_connections(...)` | `start_*` -> `str`; others -> `CompleteConnectAccountResponse` / `ListConnectedAccountsResponse` / `None` / `ListConnectedAccountConnectionsResponse`. |
+| CIBA (client-initiated backchannel auth) | `login_backchannel(options: dict) -> dict` | Approves login out-of-band (e.g. push to a phone), no browser redirect. |
+| Session transfer (web-to-native handoff) | `request_session_transfer_token() -> SessionTransferTokenResult` · `build_session_transfer_redirect(...) -> str` **(sync)** | Hands a web session to a native app. |
+| Passkeys | `passkey_signup_challenge(...)` · `passkey_login_challenge(...)` · `signin_with_passkey(...)` | -> `PasskeySignupChallengeResponse` / `PasskeyLoginChallengeResponse` / `PasskeyLoginResult`. |
 
 ### Multi-factor authentication (`auth0.mfa`)
 
@@ -457,105 +423,55 @@ Every `MfaClient` method takes an `options` **dict** whose keys are listed below
 plus the same optional `store_options` passthrough as the rest of the SDK. All
 are async except `decrypt_mfa_token`.
 
-#### `auth0.mfa.list_authenticators` — enrolled factors
+| Method | Returns | Purpose |
+|---|---|---|
+| `list_authenticators(options)` | `list[AuthenticatorResponse]` | List enrolled factors. |
+| `enroll_authenticator(options)` | `EnrollmentResponse` | Register a new factor. |
+| `challenge_authenticator(options)` | `ChallengeResponse` | Send/prepare a challenge. |
+| `verify(options, dpop_key=None)` | `MfaVerifyResponse` | Complete the challenge, get tokens. |
+| `decrypt_mfa_token(encrypted_token)` **(sync)** | `MfaTokenContext` | Inspect the token. |
+
+The typical flow is list -> enroll (if none) -> challenge -> verify:
 
 ```python
-async def list_authenticators(self, options, store_options=None) -> list[AuthenticatorResponse]
-```
-
-```python
+# 1. What's enrolled? each -> AuthenticatorResponse: id, authenticator_type,
+#    active, name, oob_channel, type, phone_number, created_at, last_auth
 authenticators = await auth0.mfa.list_authenticators({"mfa_token": mfa_token})
-# each -> AuthenticatorResponse:
-#   id, authenticator_type, active: bool, name, oob_channel, type,
-#   phone_number, created_at, last_auth
-if not authenticators:
-    ...  # nothing enrolled yet -> enroll a factor first
-```
 
-#### `auth0.mfa.enroll_authenticator` — register a new factor
+# 2. Enroll if needed. factor_type: "otp" | "sms" | "voice" | "email" | "auth0"
+#    (Guardian push). Add "phone_number" for sms/voice, "email" for email.
+enroll = await auth0.mfa.enroll_authenticator({"mfa_token": mfa_token, "factor_type": "otp"})
+# otp -> OtpEnrollmentResponse: secret, barcode_uri (render as a QR code),
+#        recovery_codes, id
+# oob -> OobEnrollmentResponse: oob_channel, oob_code, binding_method,
+#        recovery_codes, id
 
-`factor_type` is one of `"otp"`, `"sms"`, `"voice"`, `"email"`, `"auth0"` (Auth0
-Guardian push). Include `phone_number` for SMS/voice and `email` for email.
-
-```python
-async def enroll_authenticator(self, options, store_options=None) -> EnrollmentResponse
-```
-
-```python
-# TOTP authenticator app
-enroll = await auth0.mfa.enroll_authenticator({
-    "mfa_token": mfa_token,
-    "factor_type": "otp",
-})
-# OTP -> OtpEnrollmentResponse: authenticator_type="otp", secret, barcode_uri,
-#        recovery_codes, id   (render barcode_uri as a QR code for the user)
-
-# SMS one-time code
-enroll = await auth0.mfa.enroll_authenticator({
-    "mfa_token": mfa_token,
-    "factor_type": "sms",
-    "phone_number": "+15551234567",
-})
-# OOB -> OobEnrollmentResponse: authenticator_type="oob", oob_channel, oob_code,
-#        binding_method, recovery_codes, id
-```
-
-#### `auth0.mfa.challenge_authenticator` — send/prepare a challenge
-
-For OOB factors (sms/voice/email/auth0) this triggers delivery of the code or
-push. For `otp` it prepares the challenge. Pass `authenticator_id` to target a
-specific enrolled factor.
-
-```python
-async def challenge_authenticator(self, options, store_options=None) -> ChallengeResponse
-```
-
-```python
+# 3. Challenge. For OOB factors this delivers the code/push; for otp it prepares it.
 challenge = await auth0.mfa.challenge_authenticator({
-    "mfa_token": mfa_token,
-    "factor_type": "sms",
-    "authenticator_id": authenticators[0].id,   # optional
+    "mfa_token": mfa_token, "factor_type": "sms",
+    "authenticator_id": authenticators[0].id,   # optional, targets one enrolled factor
 })
 # -> ChallengeResponse: challenge_type, oob_code, binding_method, expires_in
-```
 
-#### `auth0.mfa.verify` — complete the challenge and get tokens
-
-Provide the `mfa_token` plus **exactly one** verification credential:
-`otp`, or `oob_code` + `binding_code`, or `recovery_code`. Set `persist=True`
-(with an `audience`) to write the resulting token set into the state store so the
-session is established.
-
-```python
-async def verify(self, options, store_options=None, dpop_key=None) -> MfaVerifyResponse
-```
-
-```python
-# TOTP / SMS code entered by the user
+# 4. Verify with EXACTLY ONE credential: "otp", or "oob_code" + "binding_code",
+#    or "recovery_code". persist=True (needs "audience") stores the token set as
+#    a session.
 result = await auth0.mfa.verify({
     "mfa_token": mfa_token,
-    "otp": "123456",                       # or: "oob_code" + "binding_code"
-    "persist": True,                        # optional: store tokens in state store
+    "otp": "123456",
+    "persist": True,
     "audience": "https://api.example.com",  # required when persist=True
     "scope": "openid profile email",        # optional
 })
 # -> MfaVerifyResponse: access_token, token_type, expires_in, id_token,
 #    refresh_token, scope, audience, recovery_code
-
-# Recovery-code fallback
-result = await auth0.mfa.verify({"mfa_token": mfa_token, "recovery_code": "ABCD-1234-EFGH"})
+# Recovery fallback: auth0.mfa.verify({"mfa_token": mfa_token, "recovery_code": "ABCD-1234"})
 ```
 
-#### `auth0.mfa.decrypt_mfa_token` — inspect the token (sync)
-
-```python
-def decrypt_mfa_token(self, encrypted_token: str) -> MfaTokenContext
-```
-
-Returns `MfaTokenContext(mfa_token, audience, scope, mfa_requirements, created_at)`.
-Raises `MfaTokenExpiredError` past `mfa_token_ttl` (default 300s) or
-`MfaTokenInvalidError` if tampered. You rarely call this directly; the client
-methods decrypt internally.
+`decrypt_mfa_token` returns `MfaTokenContext(mfa_token, audience, scope,
+mfa_requirements, created_at)`; raises `MfaTokenExpiredError` past `mfa_token_ttl`
+(default 300s) or `MfaTokenInvalidError` if tampered. You rarely call it directly
+- the client methods decrypt internally.
 
 **MFA errors** (from `auth0_server_python.error`): `MfaRequiredError` (the
 trigger, subclass of `AccessTokenError`), `MfaEnrollmentError`,
