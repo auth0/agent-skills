@@ -1,6 +1,6 @@
 ---
 name: migrating-node-auth0-to-auth0-server-js
-description: Use when migrating Auth0 authentication code off the node-auth0 SDK (the `auth0` package, `AuthenticationClient`) to `@auth0/auth0-auth-js` (stateless token grants) or `@auth0/auth0-server-js` (server-managed sessions). Use when porting `AuthenticationClient` usage — `.oauth`, `.database`, `.passwordless`, `.backchannel`, `.tokenExchange`, `UserInfoClient` — off node-auth0 v5, when replacing the `auth0` package's Authentication API in a Node.js backend, or when planning a node-auth0 auth deprecation. Rewrites only the authentication layer, not the surrounding application.
+description: Use when migrating Auth0 authentication code off the node-auth0 SDK (the `auth0` package, `AuthenticationClient`) to `@auth0/auth0-auth-js` (stateless token grants) or `@auth0/auth0-server-js` (server-managed sessions). Use when porting `AuthenticationClient` usage — `.oauth`, `.database`, `.passwordless`, `.backchannel`, `.tokenExchange`, `UserInfoClient` — off node-auth0 v5, when replacing the `auth0` package's Authentication API in a Node.js backend, or when planning a node-auth0 auth deprecation. Also use when asked to move an existing Node.js Auth0 authentication client to a newer Auth0 server SDK even if the `auth0` package is not named explicitly. Rewrites only the authentication layer, not the surrounding application.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
