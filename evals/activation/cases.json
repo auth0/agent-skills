@@ -138,6 +138,13 @@
       "why": "Framework-only signal; 'Swift' was in the OLD list.",
       "tags": ["framework-loss"]
     },
+    {
+      "id": "fw-kmp",
+      "prompt": "Add login and logout to the shared module of my Kotlin Multiplatform app.",
+      "should_activate": true,
+      "why": "Framework-only signal for the com.auth0.kmp SDK; covered by 'any web, mobile, or backend framework and every Auth0 SDK'.",
+      "tags": ["framework-loss"]
+    },
 
     {
       "id": "indirect-node-api",

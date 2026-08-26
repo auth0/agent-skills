@@ -180,6 +180,13 @@
       "expect_refs": ["framework-android/index.md"]
     },
     {
+      "id": "integrate-kmp",
+      "intent": "integrate",
+      "framework": "kmp",
+      "tooling": "cli",
+      "expect_refs": ["framework-kmp/index.md", "tooling-cli/index.md"]
+    },
+    {
       "id": "integrate-ionic-angular",
       "intent": "integrate",
       "framework": "ionic-angular",
