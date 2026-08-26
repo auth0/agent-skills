@@ -109,16 +109,19 @@ Do these in order:
    `mfa_token` off it.
 2. **Branch on enrollment.** No factor yet -> associate (enroll) a new authenticator; the
    response is factor-specific: OTP enrollment returns a `barcode_uri` to render as a QR
-   code, while out-of-band enrollment (SMS, voice, email, push) returns an `oob_code` to
-   carry into the challenge step (push also returns a `barcode_uri`). Recovery codes are
+   code, while out-of-band enrollment (SMS, voice, email, push) returns an `oob_code` that
+   you confirm by submitting it directly to the token endpoint (MFA OOB grant, plus the
+   `binding_code` the user received when the channel requires one) - a just-associated
+   authenticator does NOT need a separate `/mfa/challenge`; push also returns a
+   `barcode_uri`. Recovery codes are
    returned only the first time an authenticator is added. Already enrolled -> challenge
    the existing authenticator so the user is prompted for its code. An explicit
    enrolled/not-enrolled check and branching on the error's requirements are both
    acceptable.
 3. **Verify to finish.** Verification is factor-specific and always carries the
-   `mfa_token`: submit an OTP authenticator code as `otp`; for an out-of-band factor
-   (SMS, voice, email, push) challenge first, then submit the returned `oob_code` (plus a
-   `binding_code` when the channel requires one); submit a recovery code as
+   `mfa_token`: submit an OTP authenticator code as `otp`; for an out-of-band factor on an
+   already-enrolled authenticator, `/mfa/challenge` first to get a fresh `oob_code`, then
+   submit it (plus a `binding_code` when the channel requires one); submit a recovery code as
    `recovery_code` (a distinct factor type via the recovery-code grant, not treated as an
    OTP). Success returns tokens like an ordinary sign-in. Use the detected `framework-*`
    example for the exact method and grant names - do not hand-roll the grants.
@@ -254,7 +257,7 @@ post-MFA access token with the `https://{yourDomain}/mfa/` audience and the
 
 | Operation | Endpoint | Authorized by |
 |---|---|---|
-| Enroll (associate) a new authenticator | `POST /mfa/associate` | `mfa_token` when the user has no active factor yet; otherwise an `enroll`-scoped access token |
+| Enroll (associate) a new authenticator | `POST /mfa/associate` | `mfa_token` when the user has no active factor yet; otherwise an `enroll`-scoped access token for the `https://{yourDomain}/mfa/` audience |
 | List the user's enrolled authenticators | `GET /mfa/authenticators` | `mfa_token` |
 | Challenge an enrolled authenticator | `POST /mfa/challenge` | `mfa_token` |
 | Remove an enrolled authenticator | `DELETE /mfa/authenticators/{id}` | post-MFA access token, `remove:authenticators` scope, mfa audience |
