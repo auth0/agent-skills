@@ -1030,13 +1030,16 @@ If using refresh token rotation, configure a token overlap period of at least **
 >    ```bash
 >    auth0 api get "connections" --query "name=Username-Password-Authentication" --no-input
 >    ```
->    Parse the response to extract the connection `id` and its current `enabled_clients` array. Append the new client_id to the existing array and patch:
+>    Parse the response to extract the connection `id` as `CONNECTION_ID`. If it doesn't exist, create it and parse `id` from the create response as `CONNECTION_ID` instead:
+>
 >    ```bash
->    auth0 api patch "connections/CONNECTION_ID" --data '{"enabled_clients":["EXISTING_IDS...", "NEW_CLIENT_ID"]}' --no-input
+>    auth0 api post "connections" --data '{"strategy":"auth0","name":"Username-Password-Authentication"}' --no-input
 >    ```
->    If it doesn't exist, create it:
+>
+>    Then enable it for the client, using the `CONNECTION_ID` found above (existing) or just created:
+>
 >    ```bash
->    auth0 api post "connections" --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}' --no-input
+>    auth0 api patch "connections/CONNECTION_ID/clients" --data '[{"client_id":"NEW_CLIENT_ID","status":true}]' --no-input
 >    ```
 >
 > 5. **Write the plugin config to app.json** using the Edit tool — add `react-native-auth0` to the plugins array with the domain and custom scheme. Do not echo credentials in your response.

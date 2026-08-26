@@ -12,7 +12,7 @@ Add authentication to an Ionic Angular application using the `@auth0/auth0-angul
 - Node.js 20+ and npm 10+
 - Ionic CLI (`npm install -g @ionic/cli`)
 - Capacitor 5+ configured in the project
-- Auth0 CLI (for automatic setup): `brew install auth0/auth0-cli/auth0`
+- Auth0 CLI (for automatic setup): `brew install auth0`
 - An Auth0 account (free tier works)
 
 ## When NOT to Use
@@ -1034,7 +1034,7 @@ auth0 tenants list --csv --no-input
 If the Auth0 CLI is not installed, instruct the user:
 ```bash
 # macOS
-brew install auth0/auth0-cli/auth0
+brew install auth0
 
 # Linux
 curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh
@@ -1084,18 +1084,19 @@ auth0 api get connections
 
 Parse the JSON array to find the connection with `"name": "Username-Password-Authentication"`.
 
-- **If it exists** but doesn't include the new `client_id` in `enabled_clients`, update it:
-  ```bash
-  auth0 api patch "connections/CONNECTION_ID" --data '{"enabled_clients":["EXISTING_ID_1","EXISTING_ID_2","NEW_CLIENT_ID"]}'
-  ```
-  Keep all existing `enabled_clients` and append the new one.
+- **If it doesn't exist**, create it and parse `id` from the response as `CONNECTION_ID`:
 
-- **If it doesn't exist**, create it:
   ```bash
-  auth0 api post connections --data '{"strategy":"auth0","name":"Username-Password-Authentication","enabled_clients":["CLIENT_ID"]}'
+  auth0 api post connections --data '{"strategy":"auth0","name":"Username-Password-Authentication"}'
   ```
 
-- **If it already includes the client_id**, skip this step.
+- Then enable it for the new client, using the `CONNECTION_ID` found above (existing) or
+  just created. Running this when the client is already enabled is a no-op, so it needs
+  no check first:
+
+  ```bash
+  auth0 api patch "connections/CONNECTION_ID/clients" --data '[{"client_id":"NEW_CLIENT_ID","status":true}]'
+  ```
 
 #### Step A6: Write config file
 

@@ -1275,7 +1275,7 @@ Auth0 supports these password hashing algorithms:
 **Prerequisites:**
 ```bash
 # Install Auth0 CLI
-brew install auth0/auth0-cli/auth0
+brew install auth0
 
 # Login
 auth0 login
@@ -1284,7 +1284,7 @@ auth0 login
 **Import users:**
 ```bash
 # Get connection ID
-auth0 connections list
+auth0 api get connections
 
 # Import users
 auth0 api post "jobs/users-imports" \
@@ -1507,19 +1507,17 @@ Track migration for each user:
 
 ```bash
 # Get total users in Auth0
-auth0 users list --number 1
+auth0 api get "users?per_page=1&include_totals=true" | jq '.total'
 
-# Or via API
-curl "https://YOUR_DOMAIN.auth0.com/api/v2/users?per_page=1" \
-  -H "Authorization: Bearer YOUR_MGMT_API_TOKEN" \
-  | jq '.total'
+# Spot-check a specific migrated user
+auth0 users search --query "email:user@example.com"
 ```
 
 ### Test Login
 
 ```bash
 # Test user can login
-auth0 test login --client-id YOUR_CLIENT_ID
+auth0 test login YOUR_CLIENT_ID
 ```
 
 ### Verify Password Hashes Work

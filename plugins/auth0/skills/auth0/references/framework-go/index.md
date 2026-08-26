@@ -1288,8 +1288,8 @@ Setup instructions for Go API applications.
 > ---
 > **INITIAL SETUP (steps 1–6) — always run during automated setup:**
 >
-> 1. **Check Auth0 CLI**: Run `command -v auth0`. If missing, ask user to install (`brew install auth0/auth0-cli/auth0`) or switch to manual setup.
-> 2. **Check Auth0 login**: Run `auth0 tenants list --csv --no-input 2>&1`. If it fails or returns empty:
+> 1. **Check Auth0 CLI**: Run `command -v auth0`. If missing, ask user to install (`brew install auth0`) or switch to manual setup.
+> 2. **Check Auth0 login**: Run `auth0 tenants list --csv --no-input`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for the user to confirm, then re-run the check to verify.
 > 3. **Confirm active tenant**: Parse the output to identify the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this the correct tenant?"_
@@ -1298,7 +1298,9 @@ Setup instructions for Go API applications.
 > 4. **Create the Auth0 API resource**: Ask for the API name, identifier, and scopes (see SKILL.md checkpoints 4–5 for exact prompts).
 >    **Before creating**, check if an API with the same identifier already exists:
 >    ```bash
->    auth0 apis list --json 2>&1 | grep -c "<INTENDED_IDENTIFIER>"
+>    auth0 apis list --json-compact |
+>      jq -r --arg id "<INTENDED_IDENTIFIER>" \
+>        '[.[] | select(.identifier == $id)] | length'
 >    ```
 >    If it already exists, ask the user: _"An API with identifier `<ID>` already exists. Would you like to reuse it, or should I create a new one with a different identifier?"_
 >    If creating new:
@@ -1406,7 +1408,7 @@ Below uses the Auth0 CLI to create an Auth0 API resource and retrieve your crede
 
 ```bash
 # Install Auth0 CLI (macOS)
-brew install auth0/auth0-cli/auth0
+brew install auth0
 
 # Login (opens browser for authentication)
 auth0 login

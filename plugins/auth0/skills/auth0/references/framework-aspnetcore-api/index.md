@@ -765,7 +765,7 @@ Below uses the Auth0 CLI to create an Auth0 API resource and retrieve your crede
 
 ```bash
 # Install Auth0 CLI (macOS)
-brew install auth0/auth0-cli/auth0
+brew install auth0
 
 # Login
 auth0 login --no-input
