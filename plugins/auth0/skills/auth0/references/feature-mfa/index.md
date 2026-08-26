@@ -46,7 +46,7 @@ The two places, in detail:
 1. **Tenant / login flow** - the tenant decides MFA is required (Guardian policy) or an Action requires it conditionally. This is what actually challenges the user. See "Tenant configuration".
 2. **Application** - the app *triggers* a step-up and *verifies* the result. Triggering alone never enforces anything; verification is what closes the bypass.
 
-### The mechanic (language-neutral)
+### The mechanic: browser step-up
 
 Do these in order:
 
@@ -74,7 +74,7 @@ Do these in order:
 
    | Your context | How to verify MFA | Never |
    |---|---|---|
-   | Session-managing SDK (web app holds the tokens for you) | Read the `amr` claim (it contains `mfa`, plus the factor's own value if a specific factor is required) off the SDK's own session / current-user accessor - the object it returns, or the result of completing the login - because the SDK already validated that token, so its claims are trustworthy as-is. The accessor name is SDK-specific; see the loaded `framework-*` reference. | Re-decode or re-verify the token by hand |
+   | Session-managing SDK (web app holds the tokens for you) | Read the `amr` claim (Auth0 documents `mfa` in `amr` when MFA completed) off the SDK's own session / current-user accessor - the object it returns, or the result of completing the login - because the SDK already validated that token, so its claims are trustworthy as-is. `amr` is not a reliable contract for *which* factor ran; to enforce a **specific** factor on the backend, have a post-login Action read `event.authentication.methods[].type` and set a custom claim to check, rather than parsing a factor value out of `amr`. The accessor name is SDK-specific; see the loaded `framework-*` reference. | Re-decode or re-verify the token by hand |
    | Resource API (receives a raw bearer token) | Enforce the high-value **scope** (e.g. `transfer:funds`) on the access token in your *existing* JWT/scope-check middleware - see "Related capabilities". Access tokens carry **no `amr`** by default; only check `amr` here if the tenant adds it and this API validates it as a custom claim. Not MFA-specific SDK surface. | Check `amr` on an access token that has none (rejecting valid stepped-up callers); hand-roll token decoding; add MFA-specific SDK surface |
    | Frontend | Treat the `amr` check as UX, not security | Rely on it to enforce anything |
 
@@ -83,9 +83,51 @@ Do these in order:
    audience - a web/session backend on `amr`, a resource API on the required scope - and
    reject when that signal is absent.
 
-4. **Adaptive / conditional MFA** is enforced in a post-login Action that calls
-   `api.multifactor.enable(...)`, which is a full alternative enforcement path to the
-   Guardian policy, not merely a layer on top of it. See "Tenant configuration".
+4. **Conditional MFA** is required in a post-login Action that calls
+   `api.multifactor.enable(...)`. Action-defined MFA behavior takes precedence over the
+   Dashboard/Guardian policy, so it customizes or overrides that policy rather than being
+   a separate engine that replaces it. This is distinct from **Adaptive MFA**, which is
+   the Guardian `confidence-score` tenant policy (owned by the `tooling-*` reference); an
+   Action can refine it. If the tenant-wide `all-applications` policy is set, MFA is
+   already mandatory everywhere and an Action can only add conditions on top, not relax
+   it. See "Tenant configuration".
+
+### The mechanic: API-driven MFA (no-redirect flows)
+
+When the app collects credentials itself instead of redirecting to Universal Login (a
+direct-grant or passwordless back-end), no browser is present to run the challenge, so
+the app drives MFA in-band. Sign-in returns an `mfa_required` error carrying an
+`mfa_token` that drives enrollment, challenge, and verification below (removing a factor
+needs a separate post-MFA access token - see step 4). Each step is a method on the
+SDK's own MFA client - read the detected `framework-*` reference's example (see "Example
+code snippets") for the exact names, and **never** hand-roll the token grant or the MFA
+API URLs.
+
+Do these in order:
+
+1. **Detect and read the token.** Catch the `mfa_required` error and read the
+   `mfa_token` off it.
+2. **Branch on enrollment.** No factor yet -> associate (enroll) a new authenticator; the
+   response is factor-specific: OTP enrollment returns a `barcode_uri` to render as a QR
+   code, while out-of-band enrollment (SMS, voice, email, push) returns an `oob_code` to
+   carry into the challenge step (push also returns a `barcode_uri`). Recovery codes are
+   returned only the first time an authenticator is added. Already enrolled -> challenge
+   the existing authenticator so the user is prompted for its code. An explicit
+   enrolled/not-enrolled check and branching on the error's requirements are both
+   acceptable.
+3. **Verify to finish.** Verification is factor-specific and always carries the
+   `mfa_token`: submit an OTP authenticator code as `otp`; for an out-of-band factor
+   (SMS, voice, email, push) challenge first, then submit the returned `oob_code` (plus a
+   `binding_code` when the channel requires one); submit a recovery code as
+   `recovery_code` (a distinct factor type via the recovery-code grant, not treated as an
+   OTP). Success returns tokens like an ordinary sign-in. Use the detected `framework-*`
+   example for the exact method and grant names - do not hand-roll the grants.
+4. **Self-service management.** Let a user list the account's authenticators and remove
+   one through the same MFA client - not the Management API (see "MFA API surface" vs
+   "Management API surface" below). Listing and challenging run on the `mfa_token`, but
+   removing an authenticator requires a **post-MFA access token** with the
+   `https://{yourDomain}/mfa/` audience and the `remove:authenticators` scope; the
+   `mfa_token` alone does not authorize the `DELETE`.
 
 ### Feature-level symbols
 
@@ -128,7 +170,7 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 
 | Error | Cause | Handling |
 |---|---|---|
-| `mfa_required` | The session has not completed MFA | Re-authenticate interactively with the step-up parameters |
+| `mfa_required` | MFA has not been completed | Browser flow: re-authenticate interactively with the step-up parameters. No-redirect flow: read the `mfa_token` off the error and drive the MFA API (enroll/challenge/verify) |
 | `association_required` | The user has no authenticator enrolled | Send the user through enrollment (self-service or enrollment ticket), then challenge |
 | `unsupported_challenge_type` | The app supports none of the challenge types the user is enrolled with, or the user is not enrolled | Align the app's supported challenge types with the user's enrolled authenticators (or enroll the user) - do NOT change tenant config first |
 | `mfa_invalid_code` | Wrong OTP entered | Prompt to retry |
@@ -201,9 +243,28 @@ tenant MFA config is CLI or Terraform only. For conditional enforcement, a post-
 Action calling `api.multifactor.enable(...)` is configured via `tooling-cli`
 (`auth0 actions ...`).
 
-### Management API surface (enrollment)
+### MFA API surface (in-flow self-service)
 
-For a custom enrollment experience, use the Management API (endpoints, not examples):
+The mechanic above wraps these MFA API endpoints - the language-neutral floor that every
+SDK wraps; do not call them by hand. None need a Management API admin scope, but they do
+not all take the same credential: enrolling, challenging, and listing run on the
+`mfa_token` from the `mfa_required` error, while removing an authenticator requires a
+post-MFA access token with the `https://{yourDomain}/mfa/` audience and the
+`remove:authenticators` scope:
+
+| Operation | Endpoint | Authorized by |
+|---|---|---|
+| Enroll (associate) a new authenticator | `POST /mfa/associate` | `mfa_token` when the user has no active factor yet; otherwise an `enroll`-scoped access token |
+| List the user's enrolled authenticators | `GET /mfa/authenticators` | `mfa_token` |
+| Challenge an enrolled authenticator | `POST /mfa/challenge` | `mfa_token` |
+| Remove an enrolled authenticator | `DELETE /mfa/authenticators/{id}` | post-MFA access token, `remove:authenticators` scope, mfa audience |
+| Complete sign-in with the verified factor | `POST /oauth/token` (MFA grant) | `mfa_token` |
+
+### Management API surface (admin / out-of-band enrollment)
+
+Only for acting on a user *by id* with a Management API token (an admin dashboard or a
+provisioning back-end) - **not** for a user managing their own factors in the flow above,
+which uses the `mfa_token` and the MFA API surface instead:
 
 | Operation | Endpoint |
 |---|---|
@@ -226,6 +287,8 @@ For a custom enrollment experience, use the Management API (endpoints, not examp
 | Preferring SMS by default | SMS is vulnerable to SIM-swap | Prefer TOTP or WebAuthn; treat SMS as a fallback |
 | No recovery codes enabled | Users get locked out when they lose a device | Enable recovery codes during enrollment |
 | Wrong HTTP verb on `guardian/policies` | Returns a misleading 404 | Use `PUT` with a bare JSON array |
+| Using the Management API to list or remove a user's own factors during the sign-in flow | Forces the app to hold Management API admin scopes and ignores the `mfa_token` the flow already issued | List and challenge through the SDK's MFA client on the `mfa_token`; remove with a post-MFA `remove:authenticators` access token (mfa audience); reserve the Management API for admin / out-of-band |
+| Assuming an already-enrolled factor needs no challenge and jumping straight to verify | Diverges from the SDK's documented enrolled-factor flow and breaks for out-of-band factors (SMS/push), whose challenge is what delivers the code | Challenge the enrolled authenticator, then verify |
 
 ## Related capabilities
 
