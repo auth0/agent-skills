@@ -1,927 +1,263 @@
+# Auth0 MFA
 
-# Auth0 MFA Guide
+Require a second authentication factor - during login, or step-up before a sensitive action - and enforce it where it cannot be bypassed: on the tenant and on your API. For adding a first login to an app, use the `framework-*` reference instead; MFA layers on top of an existing login.
 
-Add Multi-Factor Authentication to protect user accounts and require additional verification for sensitive operations.
+## When to use / when NOT to use
 
+**Use when** the app must:
 
-## Overview
+- Require a second factor for all logins (baseline enforcement).
+- Step up to MFA before a specific sensitive action (payment, settings change, admin operation) without forcing it on every login.
+- Require MFA conditionally based on risk, role, client, or requested scopes (adaptive MFA).
+- Meet a compliance obligation that mandates multi-factor (PCI-DSS, SOC 2, HIPAA).
 
-### What is MFA?
+**Do NOT use this reference when:**
 
-Multi-Factor Authentication (MFA) requires users to provide two or more verification factors to access their accounts. Auth0 supports multiple MFA factors and enables step-up authentication for sensitive operations.
+- The task is adding the initial login/logout to an app - that is the `framework-*` reference. MFA presupposes a working login.
+- The request is passkeys/WebAuthn as the *primary* passwordless factor rather than a second factor - the mechanic overlaps but the framing differs; still route here for the enrollment surface, but treat passwordless login as a login concern.
+- The task is only tenant provisioning with no application behavior - defer to `tooling-*`.
 
-### When to Use This Skill
+## Concepts
 
-- Adding MFA to protect user accounts
-- Requiring additional verification for sensitive actions (payments, settings changes)
-- Implementing adaptive/risk-based authentication
-- Meeting compliance requirements (PCI-DSS, SOC2, HIPAA)
+- **Factor** - a verification method (TOTP/OTP, SMS, email, push, WebAuthn, voice, recovery code).
+- **Step-up authentication** - requiring MFA for a specific action after an initial login that did not use MFA.
+- **Adaptive MFA** - requiring MFA conditionally from risk or context signals rather than always.
 
-### MFA Factors Supported
+## SDK integration
 
-| Factor | Type | Description |
-|--------|------|-------------|
-| TOTP | Something you have | Time-based one-time passwords (Google Authenticator, Authy) |
-| SMS | Something you have | One-time codes via text message |
-| Email | Something you have | One-time codes via email |
-| Push | Something you have | Push notifications via Auth0 Guardian app |
-| WebAuthn | Something you have/are | Security keys, biometrics, passkeys |
-| Voice | Something you have | One-time codes via phone call |
-| Recovery Code | Backup | One-time use recovery codes |
+MFA must be enforced in two independent places; getting either wrong ships a bypass:
 
-### Key Concepts
+1. **Tenant / login flow** - the tenant decides MFA is required (Guardian policy or Action). This is what actually challenges the user. See "Tenant configuration".
+2. **Application** - the app triggers the step-up and *verifies* the result. Triggering alone enforces nothing; verification closes the bypass.
 
-| Concept | Description |
-|---------|-------------|
-| `acr_values` | Request MFA during authentication |
-| `amr` claim | Authentication Methods Reference - indicates how user authenticated |
-| Step-up auth | Require MFA for specific actions after initial login |
-| Adaptive MFA | Conditionally require MFA based on risk signals |
+**Pick one mechanic:**
 
+- App redirects to Universal Login (regular web app or SPA) -> **browser step-up** below.
+- App collects credentials itself (a direct-grant or passwordless backend, e.g. `@auth0/auth0-auth-js` / `@auth0/auth0-server-js`) -> **API-driven MFA** below; skip the browser-step-up section.
 
-## Step 1: Enable MFA in Tenant
+Before writing code, read the detected SDK's example (see "Example code snippets").
 
-### Via Auth0 Dashboard
+### The mechanic: browser step-up
 
-1. Go to **Security → Multi-factor Auth**
-2. Enable desired factors (TOTP, SMS, etc.)
-3. Configure **Policies**:
-   - **Always** - Require MFA for all logins
-   - **Adaptive** - Risk-based MFA
-   - **Never** - Disable MFA (use step-up instead)
+Recipe (do in order):
 
-### Via Auth0 CLI
+1. **Trigger.** Send the authorization request with the PAPE multi-factor `acr_values` and
+   `max_age=0` (forces a fresh challenge so a live session cannot satisfy it silently).
+   Every SDK wraps this one shape:
 
-Enforcing MFA takes **two independent calls**: `PUT guardian/factors/<factor>`
-makes a factor available, and `PUT guardian/policies` makes MFA required.
-Configure the factor first — not because the API requires that order, but
-because a policy set before any factor is available leaves users with no way
-to complete MFA. A factor alone never prompts anyone.
+   ```
+   GET /authorize?...&acr_values=http://schemas.openid.net/pape/policies/2007/06/multi-factor&max_age=0
+   ```
 
-The Guardian policy provides tenant-wide baseline enforcement. A post-login
-Action calling `api.multifactor.enable()` is a second, independent
-enforcement path — it can require MFA conditionally (based on risk, client,
-scopes, etc.) and can override the global policy for that login. Actions
-aren't limited to adaptive rules layered on top of the policy; they're a
-full alternative way to enforce MFA.
+2. **Verify** completion with the signal that matches your audience (table below).
+3. **Enforce** that same signal server-side on every protected endpoint, rejecting when it
+   is absent. A frontend check is UX, never security.
+4. **Conditional MFA:** require it from a post-login Action calling `api.multifactor.enable(...)`.
 
-```bash
-# View current MFA configuration (read factors from the collection path)
-auth0 api get "guardian/factors"
+| Your context | Verify with |
+|---|---|
+| Session-managing SDK (web app) | The `amr` claim (contains `mfa` when MFA completed) off the SDK's own session / current-user accessor - already validated, so trust it as-is. Accessor name is SDK-specific -> see the `framework-*` reference. |
+| Resource API (raw bearer token) | The high-value **scope** (e.g. `transfer:funds`) on the access token, via your *existing* JWT/scope-check middleware - see "Related capabilities". |
+| Frontend | Nothing - treat any `amr` check as UX, never enforcement. |
 
-# Enable TOTP (One-time Password)
-auth0 api put "guardian/factors/otp" --data '{"enabled": true}'
+Notes: a silent token request may instead surface an `mfa_required` error - handle it by
+re-authenticating interactively. Never re-decode or re-verify the token by hand (see
+"Common mistakes"). `amr` is not a reliable contract for *which* factor ran; to enforce a
+**specific** factor, have the post-login Action read `event.authentication.methods[].type`
+into a custom claim. Action-defined MFA overrides the Guardian policy (it refines, not
+replaces) and differs from **Adaptive MFA** (the Guardian `confidence-score` policy, owned
+by `tooling-*`); if the `all-applications` policy is set, an Action can only add conditions,
+not relax it.
 
-# Enable SMS
-auth0 api put "guardian/factors/sms" --data '{"enabled": true}'
+### The mechanic: API-driven MFA (no-redirect flows)
 
-# Enable Push notifications
-auth0 api put "guardian/factors/push-notification" --data '{"enabled": true}'
+The app collects credentials, so no browser runs the challenge: sign-in returns an
+`mfa_required` error carrying an `mfa_token`. Each step is a method on the SDK's own MFA
+client - get exact names from the `framework-*` example; never hand-roll the token grant
+or the MFA API URLs.
 
-# Enable WebAuthn (Roaming - Security Keys)
-auth0 api put "guardian/factors/webauthn-roaming" --data '{"enabled": true}'
+Recipe (do in order):
 
-# Enable WebAuthn (Platform - Biometrics)
-auth0 api put "guardian/factors/webauthn-platform" --data '{"enabled": true}'
+1. **Read the token.** Catch `mfa_required`; read `mfa_token` off it.
+2. **Branch on enrollment.**
+   - *No factor yet* -> associate (enroll). OTP returns a `barcode_uri` to render as a QR
+     code; out-of-band (SMS/voice/email/push) returns an `oob_code` you confirm by
+     submitting it directly to the token endpoint (MFA OOB grant, plus a `binding_code`
+     when the channel requires one) - a just-associated authenticator needs no separate
+     `/mfa/challenge`. Recovery codes are returned only on first enrollment.
+   - *Already enrolled* -> challenge the existing authenticator so the user is prompted for
+     its code.
 
-# Enable Email
-auth0 api put "guardian/factors/email" --data '{"enabled": true}'
-```
+   (An explicit enrolled/not-enrolled check or branching on the error's requirements are both fine.)
+3. **Verify to finish.** Always carries the `mfa_token`: submit an OTP code as `otp`; for an
+   already-enrolled out-of-band factor, `/mfa/challenge` first for a fresh `oob_code`, then
+   submit it (plus a `binding_code` when needed); submit a recovery code as `recovery_code`
+   (its own recovery-code grant, not treated as an OTP). Success returns tokens like an
+   ordinary sign-in.
+4. **Self-service management.** List and remove factors through the MFA client, not the
+   Management API. List and challenge use the `mfa_token`; **removal needs a post-MFA access
+   token** (`https://{yourDomain}/mfa/` audience + `remove:authenticators` scope) - the
+   `mfa_token` alone does not authorize the `DELETE`. See "MFA API surface".
 
-### Configure MFA Policy
+### Feature-level symbols
 
-Use **`put`** with a bare JSON array. This endpoint replaces the whole policy
-list, so a wrong verb here answers with a 404 that reads like a path or
-permissions problem.
+Protocol-level names that are identical across every SDK - what a grader would assert
+and what the app must get right:
 
-```bash
-# Set MFA policy: "all-applications" or "confidence-score"
-auth0 api put "guardian/policies" --data '["all-applications"]'
-auth0 api put "guardian/policies" --data '[]'    # unenforce
+| Symbol | Meaning |
+|---|---|
+| `acr_values` | Authorization-request parameter used to request MFA |
+| `http://schemas.openid.net/pape/policies/2007/06/multi-factor` | The PAPE value that requests multi-factor |
+| `max_age=0` | Forces fresh authentication so a live session cannot satisfy the step-up silently |
+| `amr` | ID-token claim listing the methods used; contains `mfa` when MFA completed. Not present on access tokens by default |
+| `acr` | Claim echoing the satisfied authentication context |
+| high-value scope | An API scope (e.g. `transfer:funds`) whose request an Action gates behind MFA; its presence on the access token is the API-side proof of step-up |
+| `api.multifactor.enable(...)` | Post-login Action call that requires MFA for the current login |
 
-# Verify both halves: enabled factor(s) AND a non-empty policy
-auth0 api get "guardian/factors" | jq -c '[.[] | select(.enabled == true)]'
-auth0 api get "guardian/policies"
-```
+SDK-specific symbols (an SDK's own method or option name - e.g. the silent-token call,
+the `mfa_required`/`MfaRequiredError` handling, the interactive re-auth option, refresh-token
+requirements) are **not** listed here; they belong in the relevant `framework-*` reference.
 
-### Same configuration in Terraform
+### `amr` claim values
 
-The CLI commands above are one way to enable factors and set the policy. If the
-project is infrastructure-as-code, the loaded tooling reference gives the
-equivalent:
-- CLI: `auth0 api put guardian/factors/...` + `auth0 api put guardian/policies`
-- Terraform: `auth0_guardian` resource (`policy` + per-factor blocks)
-- MCP: not available — the Auth0 MCP server exposes no Guardian/MFA tool; use the CLI or Terraform.
-
-
-## Step 2: Implement Step-Up Authentication
-
-Step-up auth requires MFA for sensitive operations without requiring it for every login.
-
-### The `acr_values` Parameter
-
-Request MFA by including `acr_values` in your authorization request:
-
-```
-acr_values=http://schemas.openid.net/pape/policies/2007/06/multi-factor
-```
-
-### Implementation Pattern
-
-The general pattern for all frameworks:
-
-1. Check if user has already completed MFA (inspect `amr` claim)
-2. If not, request MFA via `acr_values` parameter
-3. Proceed with sensitive action once MFA is verified
-
-**For complete framework-specific examples, see the sections below:**
-- React (basic and custom hook)
-- Next.js (App Router)
-- Vue.js
-- Angular
-
-
-## Additional Resources
-
-This skill is split into multiple files for better organization:
-
-### Step-Up Examples
-Complete code examples for all frameworks:
-- React (basic and custom hook patterns)
-- Next.js (App Router with API routes)
-- Vue.js (composition API)
-- Angular (services and components)
-
-### Backend Validation
-Learn how to validate MFA status on your backend:
-- Node.js / Express JWT validation
-- Python / Flask validation
-- Middleware examples
-
-### Advanced Topics
-Advanced MFA implementation patterns:
-- Adaptive MFA with Auth0 Actions
-- Conditional MFA based on risk signals
-- MFA Enrollment API
-
-### Reference Guide
-Common patterns and troubleshooting:
-- Remember MFA for 30 days
-- MFA for high-value transactions
-- MFA status display
-- Error handling
-- AMR claim values
-- Testing strategies
-- Security considerations
-
-
-## Related Capabilities
-
-- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
-- Passkeys / WebAuthn — ask for MFA (feature:mfa)
-- Auth0 Actions — custom login-flow logic for adaptive/conditional authentication
-
-
-## References
-
-- [Auth0 MFA Documentation](https://auth0.com/docs/secure/multi-factor-authentication)
-- [Step-Up Authentication](https://auth0.com/docs/secure/multi-factor-authentication/step-up-authentication)
-- [MFA API](https://auth0.com/docs/secure/multi-factor-authentication/manage-mfa-auth0-apis)
-- [acr_values Parameter](https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow/add-login-auth-code-flow#request-parameters)
-
----
-
-## Common Patterns
-
-### Pattern 1: Remember MFA for 30 Days
-
-```typescript
-// React: Check MFA age before requiring
-const requireMFAIfStale = async (maxAgeSeconds = 30 * 24 * 60 * 60) => {
-  const claims = await getIdTokenClaims();
-  const authTime = claims?.auth_time;
-
-  if (!authTime) return requireMFA();
-
-  const authAge = Math.floor(Date.now() / 1000) - authTime;
-
-  if (authAge > maxAgeSeconds) {
-    return requireMFA({ maxAge: 0 });
-  }
-
-  return hasMFA();
-};
-```
-
-### Pattern 2: MFA Challenge for High-Value Transactions
-
-```typescript
-// Frontend
-const transferFunds = async (amount: number) => {
-  // Require MFA for transfers over $1000
-  if (amount > 1000) {
-    const verified = await requireMFA();
-    if (!verified) return;
-  }
-
-  await api.post('/transfer', { amount });
-};
-
-// Backend middleware
-const requireMFAForHighValue = (threshold: number) => {
-  return (req, res, next) => {
-    const amount = req.body?.amount || 0;
-
-    if (amount > threshold) {
-      const amr = req.auth?.amr || [];
-      if (!amr.includes('mfa')) {
-        return res.status(403).json({
-          error: 'MFA required for high-value transactions',
-          code: 'mfa_required',
-        });
-      }
-    }
-
-    next();
-  };
-};
-
-app.post('/transfer', validateJwt, requireMFAForHighValue(1000), handleTransfer);
-```
-
-### Pattern 3: MFA Status Display
-
-```typescript
-// React component showing MFA status
-function MFAStatus() {
-  const { getIdTokenClaims } = useAuth0();
-  const [mfaStatus, setMfaStatus] = useState<string[]>([]);
-
-  useEffect(() => {
-    getIdTokenClaims().then(claims => {
-      setMfaStatus(claims?.amr || []);
-    });
-  }, []);
-
-  const getMFALabel = (method: string) => {
-    const labels: Record<string, string> = {
-      'mfa': 'Multi-Factor Auth',
-      'otp': 'Authenticator App',
-      'sms': 'SMS Code',
-      'email': 'Email Code',
-      'pwd': 'Password',
-      'hwk': 'Security Key',
-    };
-    return labels[method] || method;
-  };
-
-  return (
-    <div>
-      <h3>Authentication Methods Used:</h3>
-      <ul>
-        {mfaStatus.map(method => (
-          <li key={method}>{getMFALabel(method)}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-```
-
----
-
-## Error Handling
-
-| Error | Cause | Solution |
-|-------|-------|----------|
-| `mfa_required` | User hasn't completed MFA | Redirect with `acr_values` parameter |
-| `mfa_registration_required` | User has no MFA enrolled | Direct to enrollment or enable self-enrollment |
-| `mfa_invalid_code` | Wrong OTP code entered | Prompt user to retry |
-| `too_many_attempts` | Too many failed MFA attempts | Wait or contact support |
-| `unsupported_challenge_type` | MFA factor not enabled | Enable the factor in dashboard |
-
----
-
-## AMR Claim Values
-
-The `amr` (Authentication Methods Reference) claim indicates how the user authenticated:
+The `amr` array reports how the user authenticated (protocol-level; KEEP INLINE):
 
 | Value | Meaning |
-|-------|---------|
-| `pwd` | Password authentication |
+|---|---|
+| `pwd` | Password |
 | `mfa` | Multi-factor authentication completed |
-| `otp` | One-time password (TOTP) |
-| `sms` | SMS verification |
-| `email` | Email verification |
-| `hwk` | Hardware key (WebAuthn) |
+| `otp` | One-time password (TOTP authenticator app) |
+| `sms` | SMS code |
+| `email` | Email code |
+| `hwk` | Hardware key (WebAuthn security key) |
 | `swk` | Software key |
 | `pop` | Proof of possession |
-| `fed` | Federated authentication (social/enterprise) |
+| `fed` | Federated (social / enterprise) |
 
----
+### Error responses
 
-## Testing
+Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 
-### Verify MFA is Working
+| Error | Cause | Handling |
+|---|---|---|
+| `mfa_required` | MFA has not been completed | Browser flow: re-authenticate interactively with the step-up parameters. No-redirect flow: read the `mfa_token` off the error and drive the MFA API (enroll/challenge/verify) |
+| `association_required` | The user has no authenticator enrolled | Send the user through enrollment (self-service or enrollment ticket), then challenge |
+| `unsupported_challenge_type` | The app supports none of the challenge types the user is enrolled with, or the user is not enrolled | Align the app's supported challenge types with the user's enrolled authenticators (or enroll the user) - do NOT change tenant config first |
+| `mfa_invalid_code` | Wrong OTP entered | Prompt to retry |
+| `too_many_attempts` | Repeated failures | Back off; the account may be temporarily blocked |
 
-1. **Enable MFA** in Auth0 Dashboard
-2. **Login** and complete MFA enrollment
-3. **Check ID token** for `amr` claim containing `mfa`
-4. **Test step-up** by calling endpoint requiring MFA
-5. **Verify backend** rejects requests without MFA
+### Example code snippets
 
-### Test Commands
+**Before writing MFA code:** find the one row below matching the detected SDK and read
+ONLY the named section from its URL (from that heading down to the next `## `) - these are
+large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
+No matching row (e.g. a backend SDK like `auth0-server-python`), or the fetch fails? Fall
+back to the language-neutral mechanic above. Never substitute a web search for "how to do
+MFA".
+files or docs searches.
+
+| SDK | Raw example file (markdown) | Find section |
+|---|---|---|
+| `@auth0/auth0-react` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-spa-js` | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/EXAMPLES.md | `## Using Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
+
+## Tenant configuration
+
+A factor must be enabled before anything can challenge with it; enabling a factor alone
+never prompts anyone until an enforcement path requires it, and setting enforcement
+before any factor is enabled leaves users unable to complete MFA. So enable the factor
+first, then choose an enforcement path - the two are independent:
+
+- **Tenant-wide (Guardian policy)** - set `guardian/policies` to `["all-applications"]` to
+  require MFA for *every* application on every login. This is the only path the ordering
+  rule above is about, and the CLI anchor below shows it.
+- **Conditional (post-login Action)** - enable the factor and configure an Action that
+  calls `api.multifactor.enable(...)`; do **not** set the `all-applications` policy, or MFA
+  becomes mandatory for every application instead of the conditions the Action defines.
+
+The CLI anchor for the tenant-wide path (enable factor, then require the policy):
 
 ```bash
-# Check which factors are available
-auth0 api get "guardian/factors"
+# 1. Enable a factor (otp shown; others: sms, email, push-notification,
+#    webauthn-roaming, webauthn-platform)
+auth0 api put "guardian/factors/otp" --data '{"enabled": true}'
 
-# List user's enrollments
-auth0 api get "users/USER_ID/authenticators"
-
-# Check whether MFA is actually enforced. `[]` means available but not required.
-auth0 api get "guardian/policies"
+# 2. Require MFA tenant-wide. PUT replaces the whole policy list with a bare array;
+#    the wrong verb answers with a 404 that reads like a path/permissions problem.
+#    An empty array means "available but NOT required".
+auth0 api put "guardian/policies" --data '["all-applications"]'
 ```
 
----
+The full factor set, the `confidence-score` (adaptive) policy, the Terraform
+`auth0_guardian` resource, and MCP coverage are owned by the loaded `tooling-*`
+reference (DEFER ACROSS): the Auth0 MCP server exposes no Guardian/MFA tool, so
+tenant MFA config is CLI or Terraform only.
 
-## Security Considerations
+### MFA API surface (in-flow self-service)
 
-- **Always validate MFA on the backend** - Never trust frontend-only checks
-- **Use `max_age=0`** for sensitive operations to force fresh authentication
-- **Prefer TOTP/WebAuthn** over SMS (SIM swapping risk)
-- **Enable recovery codes** so users don't get locked out
-- **Log MFA events** for security auditing
-- **Consider adaptive MFA** to balance security and UX
+The mechanic above wraps these MFA API endpoints - the language-neutral floor that every
+SDK wraps; do not call them by hand. None need a Management API admin scope, but they do
+not all take the same credential: enrolling, challenging, and listing run on the
+`mfa_token` from the `mfa_required` error, while removing an authenticator requires a
+post-MFA access token with the `https://{yourDomain}/mfa/` audience and the
+`remove:authenticators` scope:
 
----
+| Operation | Endpoint | Authorized by |
+|---|---|---|
+| Enroll (associate) a new authenticator | `POST /mfa/associate` | `mfa_token` when the user has no active factor yet; otherwise an `enroll`-scoped access token for the `https://{yourDomain}/mfa/` audience |
+| List the user's enrolled authenticators | `GET /mfa/authenticators` | `mfa_token` |
+| Challenge an enrolled authenticator | `POST /mfa/challenge` | `mfa_token` |
+| Remove an enrolled authenticator | `DELETE /mfa/authenticators/{id}` | post-MFA access token, `remove:authenticators` scope, mfa audience |
+| Complete sign-in with the verified factor | `POST /oauth/token` (MFA grant) | `mfa_token` |
 
-## Related Capabilities
+### Management API surface (admin / out-of-band enrollment)
 
-- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
-- Passkeys / WebAuthn — ask for MFA (feature:mfa)
-- Auth0 Actions — custom login-flow logic for adaptive/conditional authentication
+Only for acting on a user *by id* with a Management API token (an admin dashboard or a
+provisioning back-end) - **not** for a user managing their own factors in the flow above,
+which uses the `mfa_token` and the MFA API surface instead:
 
----
+| Operation | Endpoint |
+|---|---|
+| List a user's authentication methods | `GET users/{id}/authentication-methods` |
+| Delete one authentication method | `DELETE users/{id}/authentication-methods/{authentication_method_id}` |
+| Send an enrollment ticket | `POST guardian/enrollments/ticket` |
+
+## Common mistakes
+
+| Mistake | Why it breaks | Correct approach |
+|---|---|---|
+| Setting a Guardian policy before enabling any factor | Users are required to do MFA but have no factor to complete it with | Enable the factor first, then set the policy |
+| Treating an enabled factor as enforcement | A factor with no policy never challenges anyone | Enforce with a policy or a post-login Action |
+| Reading `guardian/policies` as `[]` and assuming MFA is on | `[]` means available but not required | Confirm a non-empty policy (or an Action that enables MFA) |
+| Trusting a frontend MFA check | The client can be bypassed entirely | Enforce server-side: `amr` on a web/session backend, the high-value scope on a resource API |
+| Checking `amr` on a resource API's access token | Access tokens carry no `amr` by default, so valid stepped-up callers are rejected | Gate the API on the high-value scope; add `amr` as a custom claim only if this API also validates it |
+| Hand-decoding the token to read `amr` (`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS) | Reinvents validation the SDK already performed, and usually disables `exp`/`iss`/audience checks in the process | Read `amr` from the SDK's session/current-user accessor; its claims are already verified |
+| Omitting `max_age=0` on step-up | A still-valid session satisfies the request with no fresh challenge | Send `max_age=0` (or the SDK's fresh-auth option) for step-up |
+| Ignoring `mfa_required` from a silent token call | The step-up silently fails and the action proceeds unverified | Catch it and re-authenticate interactively |
+| Preferring SMS by default | SMS is vulnerable to SIM-swap | Prefer TOTP or WebAuthn; treat SMS as a fallback |
+| No recovery codes enabled | Users get locked out when they lose a device | Enable recovery codes during enrollment |
+| Wrong HTTP verb on `guardian/policies` | Returns a misleading 404 | Use `PUT` with a bare JSON array |
+| Using the Management API to list or remove a user's own factors during the sign-in flow | Forces the app to hold Management API admin scopes and ignores the `mfa_token` the flow already issued | List and challenge through the SDK's MFA client on the `mfa_token`; remove with a post-MFA `remove:authenticators` access token (mfa audience); reserve the Management API for admin / out-of-band |
+| Assuming an already-enrolled factor needs no challenge and jumping straight to verify | Diverges from the SDK's documented enrolled-factor flow and breaks for out-of-band factors (SMS/push), whose challenge is what delivers the code | Challenge the enrolled authenticator, then verify |
+
+## Related capabilities
+
+- **Tenant setup and Actions** - `tooling-cli` and `tooling-terraform` own Guardian
+  factor/policy configuration and Action deployment (`auth0 actions ...`).
+- **SDK-side step-up trigger** - the detected `framework-*` reference owns the SDK's own
+  step-up call, its `mfa_required` handling, and any refresh-token requirement.
+- **Server-side MFA enforcement** - the API `framework-*` references (JWT validation) own
+  the scope/claim-check middleware; on a resource API gate the sensitive endpoint on the
+  high-value scope (access tokens carry no `amr` by default), and on a web/session backend
+  check the `amr` claim.
+- **First login** - if the app has no login yet, add it with the `framework-*` reference
+  before layering MFA.
 
 ## References
-
-- [Auth0 MFA Documentation](https://auth0.com/docs/secure/multi-factor-authentication)
-- [Step-Up Authentication](https://auth0.com/docs/secure/multi-factor-authentication/step-up-authentication)
-- [MFA API](https://auth0.com/docs/secure/multi-factor-authentication/manage-mfa-auth0-apis)
-- [acr_values Parameter](https://auth0.com/docs/get-started/authentication-and-authorization-flow/authorization-code-flow/add-login-auth-code-flow#request-parameters)
-
----
-
-## Step 3: Validate MFA on Backend
-
-Always validate MFA status on the backend for sensitive operations.
-
-### Node.js / Express
-
-```typescript
-import { expressjwt, GetVerificationKey } from 'express-jwt';
-import { expressJwtSecret } from 'jwks-rsa';
-import { Request, Response, NextFunction } from 'express';
-
-// Extend Request type
-interface AuthRequest extends Request {
-  auth?: {
-    sub: string;
-    amr?: string[];
-    acr?: string;
-    [key: string]: any;
-  };
-}
-
-// JWT validation middleware
-const validateJwt = expressjwt({
-  secret: expressJwtSecret({
-    cache: true,
-    rateLimit: true,
-    jwksUri: `https://${process.env.AUTH0_DOMAIN}/.well-known/jwks.json`,
-  }) as GetVerificationKey,
-  audience: process.env.AUTH0_AUDIENCE,
-  issuer: `https://${process.env.AUTH0_DOMAIN}/`,
-  algorithms: ['RS256'],
-});
-
-// MFA requirement middleware
-const requireMFA = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const amr = req.auth?.amr || [];
-
-  if (!amr.includes('mfa')) {
-    return res.status(403).json({
-      error: 'MFA required',
-      code: 'mfa_required',
-      message: 'This action requires multi-factor authentication',
-    });
-  }
-
-  next();
-};
-
-// Usage
-app.post('/api/transfer', validateJwt, requireMFA, (req, res) => {
-  // User has completed MFA
-  res.json({ success: true });
-});
-
-// Optional: Check specific MFA methods
-const requireTOTP = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const amr = req.auth?.amr || [];
-
-  // Check for OTP-based MFA (TOTP)
-  if (!amr.includes('otp') && !amr.includes('mfa')) {
-    return res.status(403).json({
-      error: 'TOTP required',
-      code: 'totp_required',
-    });
-  }
-
-  next();
-};
-```
-
-### Python (Flask)
-
-```python
-from functools import wraps
-from flask import request, jsonify, g
-import jwt
-from jwt import PyJWKClient
-
-AUTH0_DOMAIN = os.environ.get('AUTH0_DOMAIN')
-AUTH0_AUDIENCE = os.environ.get('AUTH0_AUDIENCE')
-
-def require_auth(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        auth_header = request.headers.get('Authorization', '')
-        if not auth_header.startswith('Bearer '):
-            return jsonify({'error': 'Missing token'}), 401
-
-        token = auth_header.split(' ')[1]
-
-        try:
-            jwks_url = f'https://{AUTH0_DOMAIN}/.well-known/jwks.json'
-            jwks_client = PyJWKClient(jwks_url)
-            signing_key = jwks_client.get_signing_key_from_jwt(token)
-
-            payload = jwt.decode(
-                token,
-                signing_key.key,
-                algorithms=['RS256'],
-                audience=AUTH0_AUDIENCE,
-                issuer=f'https://{AUTH0_DOMAIN}/'
-            )
-            g.user = payload
-        except jwt.exceptions.PyJWTError as e:
-            return jsonify({'error': f'Invalid token: {str(e)}'}), 401
-
-        return f(*args, **kwargs)
-    return decorated
-
-def require_mfa(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        amr = g.user.get('amr', [])
-
-        if 'mfa' not in amr:
-            return jsonify({
-                'error': 'MFA required',
-                'code': 'mfa_required',
-                'message': 'This action requires multi-factor authentication'
-            }), 403
-
-        return f(*args, **kwargs)
-    return decorated
-
-# Usage
-@app.route('/api/transfer', methods=['POST'])
-@require_auth
-@require_mfa
-def transfer():
-    # User has completed MFA
-    return jsonify({'success': True})
-```
-
----
-
----
-
-## Step 4: Adaptive MFA with Actions
-
-Use Auth0 Actions to require MFA based on conditions.
-
-### Create Action: Conditional MFA
-
-```javascript
-// Action: Require MFA for Sensitive Operations
-// Trigger: Login / Post Login
-
-exports.onExecutePostLogin = async (event, api) => {
-  // Always require MFA for admins
-  const roles = event.authorization?.roles || [];
-  if (roles.includes('admin')) {
-    if (event.authentication?.methods?.find(m => m.name === 'mfa')) {
-      return; // MFA already completed
-    }
-    api.multifactor.enable('any', { allowRememberBrowser: false });
-    return;
-  }
-
-  // Require MFA for new devices
-  const isNewDevice = !event.authentication?.methods?.find(
-    m => m.name === 'pwd' && m.timestamp
-  );
-
-  if (isNewDevice) {
-    api.multifactor.enable('any', { allowRememberBrowser: true });
-    return;
-  }
-
-  // Require MFA for suspicious locations
-  const riskAssessment = event.request?.geoip;
-  const userCountry = event.user?.user_metadata?.country;
-
-  if (riskAssessment?.countryCode !== userCountry) {
-    api.multifactor.enable('any', { allowRememberBrowser: false });
-    return;
-  }
-};
-```
-
-### Create Action: MFA Based on Requested Scopes
-
-```javascript
-// Action: MFA for Sensitive Scopes
-// Trigger: Login / Post Login
-
-exports.onExecutePostLogin = async (event, api) => {
-  const requestedScopes = event.request?.query?.scope?.split(' ') || [];
-  const sensitiveScopes = ['transfer:funds', 'admin:write', 'delete:users'];
-
-  const requiresMFA = requestedScopes.some(scope =>
-    sensitiveScopes.includes(scope)
-  );
-
-  if (requiresMFA) {
-    const hasMFA = event.authentication?.methods?.find(m => m.name === 'mfa');
-    if (!hasMFA) {
-      api.multifactor.enable('any');
-    }
-  }
-};
-```
-
-### Deploy Action via CLI
-
-```bash
-# Create the action
-auth0 actions create \
-  --name "Conditional MFA" \
-  --trigger post-login \
-  --code "$(cat conditional-mfa.js)"
-
-# Deploy the action
-auth0 actions deploy ACTION_ID
-
-# Attach to login flow
-auth0 api patch "actions/triggers/post-login/bindings" --data '{
-  "bindings": [{"ref": {"type": "action_id", "value": "ACTION_ID"}}]
-}'
-```
-
----
-
-## Step 5: MFA Enrollment API
-
-For custom enrollment experiences, use the MFA API.
-
-### List User's MFA Enrollments
-
-```bash
-# Get user's enrolled authenticators
-curl -X GET "https://YOUR_DOMAIN/api/v2/users/USER_ID/authenticators" \
-  -H "Authorization: Bearer MGMT_TOKEN"
-```
-
-### Delete an Enrollment
-
-```bash
-# Remove an authenticator
-curl -X DELETE "https://YOUR_DOMAIN/api/v2/users/USER_ID/authenticators/AUTHENTICATOR_ID" \
-  -H "Authorization: Bearer MGMT_TOKEN"
-```
-
-### Trigger Enrollment Email
-
-```bash
-# Send enrollment email to user
-curl -X POST "https://YOUR_DOMAIN/api/v2/guardian/enrollments/ticket" \
-  -H "Authorization: Bearer MGMT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "user_id": "USER_ID",
-    "send_mail": true
-  }'
-```
-
----
-
----
-
-# MFA Step-Up Authentication Examples
-
-Framework-specific code examples for implementing step-up authentication.
-
----
-
-## React
-
-### Basic Example
-
-```typescript
-import { useAuth0 } from '@auth0/auth0-react';
-
-function SensitiveAction() {
-  const { getAccessTokenSilently, getIdTokenClaims } = useAuth0();
-
-  const requireMFA = async () => {
-    // Check if user already completed MFA
-    const claims = await getIdTokenClaims();
-    const amr = claims?.amr || [];
-
-    if (!amr.includes('mfa')) {
-      // Request MFA via step-up authentication
-      await getAccessTokenSilently({
-        authorizationParams: {
-          acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
-          max_age: 0, // Force re-authentication
-        },
-      });
-    }
-
-    // User has completed MFA, proceed with sensitive action
-    return performSensitiveAction();
-  };
-
-  return (
-    <button onClick={requireMFA}>
-      Transfer Funds (Requires MFA)
-    </button>
-  );
-}
-```
-
-### Custom Hook
-
-```typescript
-import { useAuth0 } from '@auth0/auth0-react';
-import { useCallback, useState } from 'react';
-
-interface StepUpOptions {
-  maxAge?: number;
-}
-
-export function useStepUpAuth() {
-  const { getAccessTokenSilently, getIdTokenClaims, loginWithRedirect } = useAuth0();
-  const [isVerifying, setIsVerifying] = useState(false);
-
-  const hasMFA = useCallback(async (): Promise<boolean> => {
-    const claims = await getIdTokenClaims();
-    const amr = claims?.amr || [];
-    return amr.includes('mfa');
-  }, [getIdTokenClaims]);
-
-  const requireMFA = useCallback(async (options: StepUpOptions = {}) => {
-    setIsVerifying(true);
-    try {
-      const mfaCompleted = await hasMFA();
-
-      if (!mfaCompleted) {
-        // Try silent step-up first
-        try {
-          await getAccessTokenSilently({
-            authorizationParams: {
-              acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
-              max_age: options.maxAge ?? 0,
-            },
-            cacheMode: 'off',
-          });
-        } catch {
-          // Silent failed, redirect to MFA
-          await loginWithRedirect({
-            authorizationParams: {
-              acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
-              max_age: options.maxAge ?? 0,
-            },
-          });
-          return false;
-        }
-      }
-
-      return true;
-    } finally {
-      setIsVerifying(false);
-    }
-  }, [getAccessTokenSilently, loginWithRedirect, hasMFA]);
-
-  return { requireMFA, hasMFA, isVerifying };
-}
-
-// Usage
-function TransferFunds() {
-  const { requireMFA, isVerifying } = useStepUpAuth();
-
-  const handleTransfer = async () => {
-    const verified = await requireMFA();
-    if (verified) {
-      // Proceed with transfer
-    }
-  };
-
-  return (
-    <button onClick={handleTransfer} disabled={isVerifying}>
-      {isVerifying ? 'Verifying...' : 'Transfer Funds'}
-    </button>
-  );
-}
-```
-
----
-
-## Next.js (App Router)
-
-### API Route
-
-```typescript
-// app/api/sensitive/route.ts
-// v4 removed withApiAuthRequired — guard the route by reading the session directly.
-import { auth0 } from '@/lib/auth0';
-import { NextResponse } from 'next/server';
-
-export async function POST(req: Request) {
-  const session = await auth0.getSession();
-
-  if (!session) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  // Check if MFA was completed
-  const amr = session.user?.amr || [];
-
-  if (!amr.includes('mfa')) {
-    return NextResponse.json(
-      { error: 'MFA required', code: 'mfa_required' },
-      { status: 403 }
-    );
-  }
-
-  // Proceed with sensitive operation
-  return NextResponse.json({ success: true });
-}
-```
-
-### Client Component
-
-```typescript
-// app/transfer/page.tsx
-'use client';
-
-import { useUser } from '@auth0/nextjs-auth0/client';
-import { useRouter } from 'next/navigation';
-
-export default function TransferPage() {
-  const { user } = useUser();
-  const router = useRouter();
-
-  const handleTransfer = async () => {
-    const response = await fetch('/api/sensitive', { method: 'POST' });
-
-    if (response.status === 403) {
-      const { code } = await response.json();
-      if (code === 'mfa_required') {
-        // Redirect to login with MFA required (v4 mounts auth routes at /auth/*, not /api/auth/*)
-        router.push('/auth/login?acr_values=http://schemas.openid.net/pape/policies/2007/06/multi-factor');
-        return;
-      }
-    }
-
-    // Success
-  };
-
-  return <button onClick={handleTransfer}>Transfer Funds</button>;
-}
-```
-
----
-
-## Vue.js
-
-`idTokenClaims` is a reactive ref from `useAuth0()` — read it as `idTokenClaims.value?.amr`, not via `getIdTokenClaims()`.
-
-```typescript
-<script setup lang="ts">
-import { useAuth0 } from '@auth0/auth0-vue';
-import { ref } from 'vue';
-
-const { getAccessTokenSilently, idTokenClaims, loginWithRedirect } = useAuth0();
-const isVerifying = ref(false);
-
-const hasMFA = (): boolean => {
-  const amr = idTokenClaims.value?.amr || [];
-  return amr.includes('mfa');
-};
-
-const requireMFA = async () => {
-  isVerifying.value = true;
-  try {
-    if (!(await hasMFA())) {
-      try {
-        await getAccessTokenSilently({
-          authorizationParams: {
-            acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
-            max_age: 0,
-          },
-        });
-      } catch {
-        await loginWithRedirect({
-          authorizationParams: {
-            acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
-          },
-        });
-        return false;
-      }
-    }
-    return true;
-  } finally {
-    isVerifying.value = false;
-  }
-};
-
-const handleSensitiveAction = async () => {
-  if (await requireMFA()) {
-    // Proceed with sensitive action
-    console.log('MFA verified, proceeding...');
-  }
-};
-</script>
-
-<template>
-  <button @click="handleSensitiveAction" :disabled="isVerifying">
-    {{ isVerifying ? 'Verifying...' : 'Transfer Funds' }}
-  </button>
-</template>
-```
-
----
-
-## Angular
-
-```typescript
-import { Component, inject } from '@angular/core';
-import { AuthService } from '@auth0/auth0-angular';
-import { firstValueFrom } from 'rxjs';
-
-@Component({
-  selector: 'app-sensitive-action',
-  template: `
-    <button (click)="handleSensitiveAction()" [disabled]="isVerifying">
-      {{ isVerifying ? 'Verifying...' : 'Transfer Funds' }}
-    </button>
-  `
-})
-export class SensitiveActionComponent {
-  private auth = inject(AuthService);
-  isVerifying = false;
-
-  private async hasMFA(): Promise<boolean> {
-    const claims = await firstValueFrom(this.auth.idTokenClaims$);
-    const amr = (claims as any)?.amr || [];
-    return amr.includes('mfa');
-  }
-
-  async handleSensitiveAction() {
-    this.isVerifying = true;
-    try {
-      if (!(await this.hasMFA())) {
-        // Request MFA
-        this.auth.loginWithRedirect({
-          authorizationParams: {
-            acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor',
-            max_age: 0,
-          },
-        });
-        return;
-      }
-
-      // MFA verified, proceed
-      console.log('MFA verified, proceeding...');
-    } finally {
-      this.isVerifying = false;
-    }
-  }
-}
-```
+[Auth0 MFA docs](https://auth0.com/docs/secure/multi-factor-authentication)
+[Step-Up Authentication](https://auth0.com/docs/secure/multi-factor-authentication/step-up-authentication).
