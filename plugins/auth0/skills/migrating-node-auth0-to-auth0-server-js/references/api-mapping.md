@@ -384,17 +384,15 @@ const tokens = await authClient.exchangeToken({
 
 ---
 
-## `UserInfoClient` → `TokenResponse.claims` or `authClient.userinfo.getUserInfo()` or `serverClient.getUser()`
+## `UserInfoClient` → `TokenResponse.claims` or `authClient.getUserInfo({ accessToken })` or `serverClient.getUser()`
 
-The standalone `UserInfoClient` from node-auth0 does not exist in the new SDK. In `@auth0/auth0-auth-js`
-v1.12.1+ there **is** an `authClient.userinfo` sub-client (added in
-[auth0-auth-js PR #228](https://github.com/auth0/auth0-auth-js/pull/228)). Choose the replacement
+The standalone `UserInfoClient` from node-auth0 does not exist in the new SDK. Choose the replacement
 based on what the app needs:
 
 | Customer's intent | Replacement |
 |---|---|
 | Wanted user profile claims right after login | Read `TokenResponse.claims` from the grant result — the SDK already decodes the ID token. No extra `/userinfo` round-trip needed. Preferred. |
-| Wanted a live `/userinfo` response for an arbitrary access token (auth-js v1.12.1+) | `await authClient.userinfo.getUserInfo(accessToken)` — the new sub-client. |
+| Wanted a live `/userinfo` response for an arbitrary access token (auth-js, when PR #228 merges) | `await authClient.getUserInfo({ accessToken })` — direct method on AuthClient. |
 | Wanted the profile in a server-rendered app with a session | `await serverClient.getUser()` returns the stored user claims from the session. |
 | Genuinely needs a raw `/userinfo` fetch on older SDK versions | Call the `/userinfo` endpoint directly with `fetch`. The endpoint is in the tenant's server metadata (`getServerMetadata()`). |
 
@@ -414,11 +412,12 @@ const tokens = await authClient.getTokenByCode(callbackUrl, {});
 const profile = tokens.claims; // { sub, name, email, ... } decoded from the id_token
 ```
 
-**After — sub-client (auth0-auth-js v1.12.1+), when you only have an access token:**
+**After — direct method (auth0-auth-js, when PR #228 merges), when you only have an access token:**
 
 ```ts
-// authClient.userinfo is available in @auth0/auth0-auth-js v1.12.1+
-const profile = await authClient.userinfo.getUserInfo(accessToken);
+// authClient.getUserInfo() lands when auth0-auth-js PR #228 merges.
+// Takes an options object: { accessToken, expectedSubject? }
+const profile = await authClient.getUserInfo({ accessToken });
 // { sub, name, email, ... }
 ```
 
@@ -458,7 +457,7 @@ const profile = await resp.json();
 | `backchannel.authorize` | `authClient.initiateBackchannelAuthentication({ ... })` | auth-js |
 | `backchannel.backchannelGrant` | `authClient.backchannelAuthenticationGrant({ authReqId })` | auth-js |
 | `tokenExchange.exchangeToken` | `authClient.exchangeToken({ subjectTokenType, subjectToken, audience })` | auth-js |
-| `UserInfoClient.getUserInfo` | `TokenResponse.claims` (preferred) / `authClient.userinfo.getUserInfo()` (auth-js v1.12.1+) / `serverClient.getUser()` / raw `/userinfo` fetch | auth-js / server-js |
+| `UserInfoClient.getUserInfo` | `TokenResponse.claims` (preferred) / `authClient.getUserInfo({ accessToken })` (auth-js, when PR #228 merges) / `serverClient.getUser()` / raw `/userinfo` fetch | auth-js / server-js |
 | (no equivalent) — build `/authorize` URL | `authClient.buildAuthorizationUrl({ ... })` | auth-js |
 | (no equivalent) — build `/v2/logout` URL | `authClient.buildLogoutUrl({ returnTo })` | auth-js |
 | `ManagementClient.*` | **not migrated — stays on `auth0`** | — |

@@ -1,6 +1,6 @@
 ---
 name: migrating-node-auth0-to-auth0-server-js
-description: Migrate Auth0 authentication code off the node-auth0 SDK (the `auth0` package, `AuthenticationClient`) to `@auth0/auth0-auth-js` (stateless token grants) or `@auth0/auth0-server-js` (server-managed sessions). Use when porting `AuthenticationClient` usage — `.oauth`, `.database`, `.passwordless`, `.backchannel`, `.tokenExchange`, `UserInfoClient` — off node-auth0 v5, when replacing the `auth0` package's Authentication API in a Node.js backend, or when planning a node-auth0 auth deprecation. Rewrites only the authentication layer, not the surrounding application.
+description: Use when migrating Auth0 authentication code off the node-auth0 SDK (the `auth0` package, `AuthenticationClient`) to `@auth0/auth0-auth-js` (stateless token grants) or `@auth0/auth0-server-js` (server-managed sessions). Use when porting `AuthenticationClient` usage — `.oauth`, `.database`, `.passwordless`, `.backchannel`, `.tokenExchange`, `UserInfoClient` — off node-auth0 v5, when replacing the `auth0` package's Authentication API in a Node.js backend, or when planning a node-auth0 auth deprecation. Rewrites only the authentication layer, not the surrounding application.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -115,7 +115,7 @@ Go sub-client by sub-client. For every node-auth0 method, apply the mapped repla
 → [references/api-mapping.md](references/api-mapping.md) — the complete method-by-method mapping
 with before/after code for `.oauth`, `.database`, `.passwordless`, `.backchannel`,
 `.tokenExchange`, and `UserInfoClient`. Note: `UserInfoClient.getUserInfo` maps to
-`TokenResponse.claims` (preferred) or `authClient.userinfo.getUserInfo()` (auth0-auth-js v1.12.1+)
+`TokenResponse.claims` (preferred) or `authClient.getUserInfo({ accessToken })` (auth0-auth-js, when PR #228 merges)
 — see the `UserInfoClient` section in that file.
 
 ### 4. Apply the three structural changes at every call site

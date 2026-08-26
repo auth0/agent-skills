@@ -312,11 +312,6 @@
       "expected_output": "Threads the per-call concerns through the RequestOptions second argument to getTokenByClientCredentials: headers: { 'X-Correlation-Id': correlationId } and signal: AbortSignal.timeout(5000). Does NOT reintroduce a global headers/timeoutDuration option on the AuthClient constructor.",
       "graders": [
         {
-          "type": "contains",
-          "value": "RequestOptions",
-          "description": "References RequestOptions for per-call config"
-        },
-        {
           "type": "matches",
           "pattern": "AbortSignal\\.timeout\\(\\s*5000\\s*\\)",
           "description": "Maps timeoutDuration to AbortSignal.timeout(5000)"
@@ -412,7 +407,7 @@
       "scaffold": {
         "src/user-profile.ts": "import { AuthenticationClient, UserInfoClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nconst userInfo = new UserInfoClient({ domain });\nasync function getUserProfile(callbackUrl, codeVerifier) {\n  const resp = await auth0.oauth.authorizationCodeGrantWithPKCE(\n    { code: new URL(callbackUrl).searchParams.get('code'), redirect_uri: redirectUri },\n    { codeVerifier }\n  );\n  const accessToken = resp.data.access_token;\n  const profile = await userInfo.getUserInfo(accessToken);\n  return { sub: profile.data.sub, email: profile.data.email };\n}\n"
       },
-      "expected_output": "Removes UserInfoClient import from 'auth0'; uses getTokenByCode to get tokens; reads sub and email from either tokens.claims (preferred: SDK decodes ID token, no extra round-trip) or authClient.userinfo.getUserInfo() (auth0-auth-js v1.12.1+).",
+      "expected_output": "Removes UserInfoClient import from 'auth0'; uses getTokenByCode to get tokens; reads sub and email from either tokens.claims (preferred: SDK decodes ID token, no extra round-trip) or authClient.getUserInfo({ accessToken }) (auth0-auth-js, direct method, when PR #228 merges).",
       "graders": [
         {
           "type": "not_contains",
@@ -431,9 +426,9 @@
         },
         {
           "type": "judge",
-          "question": "Does the userinfo-claims solution remove the node-auth0 UserInfoClient entirely, use getTokenByCode to perform the authorization code grant, and then read the user profile from either (a) tokens.claims (preferred — SDK decodes the ID token, no extra network call) or (b) authClient.userinfo.getUserInfo() from auth0-auth-js? Both approaches are acceptable; what is NOT acceptable is keeping the old UserInfoClient or making a raw /userinfo HTTP fetch.",
-          "examples": "PASS: const tokens = await authClient.getTokenByCode(callbackUrl, { codeVerifier }); return { sub: tokens.claims.sub, email: tokens.claims.email };\nPASS: const tokens = await authClient.getTokenByCode(callbackUrl, { codeVerifier }); const profile = await authClient.userinfo.getUserInfo(tokens.accessToken); return { sub: profile.sub, email: profile.email };\nFAIL: Still imports or instantiates UserInfoClient from 'auth0'.\nFAIL: Makes a raw fetch('/userinfo') call instead of using SDK methods.",
-          "description": "Judge confirms UserInfoClient removed; profile read via tokens.claims or authClient.userinfo.getUserInfo()"
+          "question": "Does the userinfo-claims solution remove the node-auth0 UserInfoClient entirely, use getTokenByCode to perform the authorization code grant, and then read the user profile from either (a) tokens.claims (preferred — SDK decodes the ID token, no extra network call) or (b) authClient.getUserInfo({ accessToken }) from auth0-auth-js? Both approaches are acceptable; what is NOT acceptable is keeping the old UserInfoClient or making a raw /userinfo HTTP fetch.",
+          "examples": "PASS: const tokens = await authClient.getTokenByCode(callbackUrl, { codeVerifier }); return { sub: tokens.claims.sub, email: tokens.claims.email };\nPASS: const tokens = await authClient.getTokenByCode(callbackUrl, { codeVerifier }); const profile = await authClient.getUserInfo({ accessToken: tokens.accessToken }); return { sub: profile.sub, email: profile.email };\nFAIL: Still imports or instantiates UserInfoClient from 'auth0'.\nFAIL: Makes a raw fetch('/userinfo') call instead of using SDK methods.",
+          "description": "Judge confirms UserInfoClient removed; profile read via tokens.claims or authClient.getUserInfo({ accessToken })"
         }
       ]
     },

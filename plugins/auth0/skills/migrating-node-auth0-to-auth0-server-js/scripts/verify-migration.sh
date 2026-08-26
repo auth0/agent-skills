@@ -54,8 +54,8 @@ check "No residual AuthenticationClient" \
   "new[[:space:]]+AuthenticationClient" \
   "Replace with AuthClient (@auth0/auth0-auth-js) or ServerClient (@auth0/auth0-server-js)."
 
-check "No residual UserInfoClient / getUserInfo" \
-  "new[[:space:]]+UserInfoClient|\.getUserInfo\(" \
+check "No residual UserInfoClient" \
+  "UserInfoClient" \
   "Use TokenResponse.claims, serverClient.getUser(), or a direct /userinfo fetch."
 
 check "No residual node-auth0 auth sub-client calls" \
