@@ -6,7 +6,7 @@ runs an end-to-end migration workflow: scan → (optional agent-driven rewrite) 
 
 ## Layout
 
-```
+```text
 node-auth0-migration/
 ├── Dockerfile          # build the harness image (SDK_SOURCE=local|published)
 ├── run-loop.sh         # build-until-green orchestrator (scan → agent → tsc → test → verify)
@@ -21,9 +21,10 @@ node-auth0-migration/
 
 ## SDKs and where they come from
 
-The target SDKs (per-request `RequestOptions` + the `fullResponse` envelope) are **code-complete in
-1.12.1 but not yet published to npm**. The harness therefore defaults to installing from local
-tarballs so it can test the real shipped surface without waiting on a release.
+`@auth0/auth0-auth-js@1.12.1` and `@auth0/auth0-server-js@1.12.1` are published on npm, but the
+per-request `RequestOptions` + `fullResponse` envelope surface this harness exercises landed **after**
+that release and is not in the published tarball yet. The harness therefore defaults to installing from
+local tarballs so it can test the real shipped surface without waiting on the next release.
 
 - `auth0@^5` — the migration source (node-auth0 v5), from the public registry.
 - `@auth0/auth0-auth-js@1.12.1` / `@auth0/auth0-server-js@1.12.1` — the migration targets.
@@ -33,7 +34,7 @@ tarballs so it can test the real shipped surface without waiting on a release.
 - `local` (default) — installs the server-js tarball from `vendor/`. `before/package.json` and
   `after/package.json` carry an `overrides` map pinning `@auth0/auth0-auth-js` to the vendored
   auth-js tarball, so server-js's peer resolves to the local build, not the registry.
-- `published` — installs the pinned published versions. Flip to this once 1.12.1 is on npm.
+- `published` — installs the pinned published versions. Flip to this once the per-request surface ships in a public release.
 
 ### Refreshing the tarballs
 

@@ -163,8 +163,10 @@ async function runCase(caseObj, opts) {
 
   // Shape detection: new per-eval cases carry graders INSIDE each eval and have
   // no top-level graders array. Legacy cases carry a single flat top-level
-  // graders array and run only evals[0].prompt. See EVAL-EXECUTION-FINDINGS.md.
-  const perEval = !caseObj.graders && !!caseObj.evals?.[0]?.graders
+  // graders array and run only evals[0].prompt. Detect per-eval from ANY eval,
+  // not just evals[0], so a case whose first eval lacks graders is not misrouted
+  // to the legacy path (which would return graded:false without running).
+  const perEval = !caseObj.graders && !!caseObj.evals?.some((e) => Array.isArray(e.graders))
 
   if (perEval) {
     const evalResults = []
