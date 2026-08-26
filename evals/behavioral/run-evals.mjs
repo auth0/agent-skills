@@ -120,7 +120,7 @@ function display(label, results) {
 
 // Run one eval (prompt + scaffold + graders) in its own isolated workspace pair.
 // Shared by the per-eval branch; returns per-eval pass counts.
-async function runEval(slug, evalObj, opts) {
+async function runEval(slug, evalObj, opts, index = 0) {
   const graders = evalObj.graders
   const prompt = evalObj.prompt
   const label = evalObj.id ?? "eval"
@@ -132,7 +132,8 @@ async function runEval(slug, evalObj, opts) {
   }
   if (!prompt) { console.log(`  Eval ${label}: SKIP (no prompt).`); return { id: label, graded: false } }
 
-  const base = path.join(os.tmpdir(), `auth0-eval-${slug}-${label}-${process.pid}`)
+  const safeLabel = String(label).replace(/[^A-Za-z0-9_-]/g, '_');
+  const base = path.join(os.tmpdir(), `auth0-eval-${slug}-${index}-${safeLabel}-${process.pid}`)
   const withDir = path.join(base, "with-skill")
   const withoutDir = path.join(base, "without-skill")
   fs.mkdirSync(withDir, { recursive: true })
@@ -167,8 +168,8 @@ async function runCase(caseObj, opts) {
 
   if (perEval) {
     const evalResults = []
-    for (const evalObj of caseObj.evals) {
-      evalResults.push(await runEval(caseObj.slug, evalObj, opts))
+    for (let i = 0; i < caseObj.evals.length; i++) {
+      evalResults.push(await runEval(caseObj.slug, caseObj.evals[i], opts, i))
     }
     const graded = evalResults.filter((r) => r.graded)
     if (!graded.length) return { slug: caseObj.slug, graded: false }

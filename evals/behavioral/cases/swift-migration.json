@@ -27,7 +27,7 @@
     }
   ],
   "scaffold": {
-    "Package.swift": ".package(url: \"https://github.com/auth0/Auth0.swift\", from: \"2.0.0\")\n",
+    "Package.swift": "// swift-tools-version:5.9\nimport PackageDescription\n\nlet package = Package(\n    name: \"MyApp\",\n    dependencies: [\n        .package(url: \"https://github.com/auth0/Auth0.swift\", from: \"2.0.0\")\n    ]\n)\n",
     "Sources/App/AuthenticationService.swift": "import Auth0\n\nclass AuthenticationService: ObservableObject {\n    @Published var isAuthenticated = false\n    private let credentialsManager = CredentialsManager(authentication: Auth0.authentication())\n\n    init() { isAuthenticated = credentialsManager.canRenew() }\n\n    func login() async {\n        do {\n            let credentials = try await Auth0.webAuth()\n                .scope(\"openid profile email offline_access\")\n                .start()\n            _ = credentialsManager.store(credentials: credentials)\n            await MainActor.run { isAuthenticated = true }\n        } catch WebAuthError.userCancelled { }\n        catch { print(\"Login failed: \\(error)\") }\n    }\n\n    func logout() async {\n        do { try await Auth0.webAuth().clearSession() }\n        catch { print(\"Logout failed: \\(error)\") }\n        _ = credentialsManager.clear()\n        await MainActor.run { isAuthenticated = false }\n    }\n\n    func getUser() -> UserInfo? {\n        return credentialsManager.user\n    }\n}\n"
   },
   "graders": [
