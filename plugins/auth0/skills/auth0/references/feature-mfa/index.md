@@ -19,118 +19,85 @@ Require a second authentication factor - during login, or step-up before a sensi
 
 ## Concepts
 
-The working vocabulary; the theory lives in the Auth0 docs (DEFER OUT):
-
 - **Factor** - a verification method (TOTP/OTP, SMS, email, push, WebAuthn, voice, recovery code).
 - **Step-up authentication** - requiring MFA for a specific action after an initial login that did not use MFA.
 - **Adaptive MFA** - requiring MFA conditionally from risk or context signals rather than always.
 
-Concept depth, factor trade-offs, and the enrollment UX are owned by
-[Auth0 MFA docs](https://auth0.com/docs/secure/multi-factor-authentication) and
-[Step-Up Authentication](https://auth0.com/docs/secure/multi-factor-authentication/step-up-authentication).
-Do not restate them here.
-
 ## SDK integration
 
-MFA has to be enforced in two independent places, and getting either wrong ships a bypass.
+MFA must be enforced in two independent places; getting either wrong ships a bypass:
 
-1. The tenant/login flow challenges the user (Guardian policy or Action) - see "Tenant configuration".
-2. The app confirms MFA occurred and re-checks it server-side on the protected action, using the signal that matches the audience: a web app reads `amr` from its validated session/ID token; a resource API enforces the high-value **scope** on the access token (access tokens carry no `amr` by default).
+1. **Tenant / login flow** - the tenant decides MFA is required (Guardian policy or Action). This is what actually challenges the user. See "Tenant configuration".
+2. **Application** - the app triggers the step-up and *verifies* the result. Triggering alone enforces nothing; verification closes the bypass.
 
-Before writing any code, you MUST read the detected SDK's example - see "Example code
-snippets" for the URL and how to retrieve it (use any URL-reading tool you have; do not
-substitute a topic web search). Do not write MFA code from memory.
+**Pick one mechanic:**
 
-The two places, in detail:
+- App redirects to Universal Login (regular web app or SPA) -> **browser step-up** below.
+- App collects credentials itself (a direct-grant or passwordless backend, e.g. `@auth0/auth0-auth-js` / `@auth0/auth0-server-js`) -> **API-driven MFA** below; skip the browser-step-up section.
 
-1. **Tenant / login flow** - the tenant decides MFA is required (Guardian policy) or an Action requires it conditionally. This is what actually challenges the user. See "Tenant configuration".
-2. **Application** - the app *triggers* a step-up and *verifies* the result. Triggering alone never enforces anything; verification is what closes the bypass.
+Before writing code, read the detected SDK's example (see "Example code snippets").
 
 ### The mechanic: browser step-up
 
-Do these in order:
+Recipe (do in order):
 
-1. **Trigger a step-up.** Request MFA at the authorization endpoint with the OIDC PAPE
-   multi-factor `acr_values`, and force a fresh authentication with `max_age=0` so a
-   still-valid session does not silently satisfy the request without a real challenge:
+1. **Trigger.** Send the authorization request with the PAPE multi-factor `acr_values` and
+   `max_age=0` (forces a fresh challenge so a live session cannot satisfy it silently).
+   Every SDK wraps this one shape:
 
    ```
    GET /authorize?...&acr_values=http://schemas.openid.net/pape/policies/2007/06/multi-factor&max_age=0
    ```
 
-   This one HTTP shape is the language-neutral floor; every SDK wraps it. On a silent
-   token request, an SDK may instead surface an `mfa_required` error (the SDK-native
-   step-up path) that the app handles by re-authenticating interactively. Both routes
-   satisfy the challenge, but the resulting signal differs by audience: a web app
-   receives an ID token whose `amr` reflects that MFA occurred, while an API-audience
-   request receives an access token carrying the high-value scope the challenge gated.
+2. **Verify** completion with the signal that matches your audience (table below).
+3. **Enforce** that same signal server-side on every protected endpoint, rejecting when it
+   is absent. A frontend check is UX, never security.
+4. **Conditional MFA:** require it from a post-login Action calling `api.multifactor.enable(...)`.
 
-2. **Verify completion.** After the flow, confirm MFA actually happened using the signal
-   that matches your audience (see the table below) - and **never re-decode or re-verify
-   the token by hand** (`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS
-   lookups): it duplicates validation the SDK already did and reliably ships *weaker*
-   than the SDK - hand-rolled decodes routinely disable `exp`/`iss`/audience checks to
-   "make it work".
+| Your context | Verify with |
+|---|---|
+| Session-managing SDK (web app) | The `amr` claim (contains `mfa` when MFA completed) off the SDK's own session / current-user accessor - already validated, so trust it as-is. Accessor name is SDK-specific -> see the `framework-*` reference. |
+| Resource API (raw bearer token) | The high-value **scope** (e.g. `transfer:funds`) on the access token, via your *existing* JWT/scope-check middleware - see "Related capabilities". |
+| Frontend | Nothing - treat any `amr` check as UX, never enforcement. |
 
-   | Your context | How to verify MFA | Never |
-   |---|---|---|
-   | Session-managing SDK (web app holds the tokens for you) | Read the `amr` claim (Auth0 documents `mfa` in `amr` when MFA completed) off the SDK's own session / current-user accessor - the object it returns, or the result of completing the login - because the SDK already validated that token, so its claims are trustworthy as-is. `amr` is not a reliable contract for *which* factor ran; to enforce a **specific** factor on the backend, have a post-login Action read `event.authentication.methods[].type` and set a custom claim to check, rather than parsing a factor value out of `amr`. The accessor name is SDK-specific; see the loaded `framework-*` reference. | Re-decode or re-verify the token by hand |
-   | Resource API (receives a raw bearer token) | Enforce the high-value **scope** (e.g. `transfer:funds`) on the access token in your *existing* JWT/scope-check middleware - see "Related capabilities". Access tokens carry **no `amr`** by default; only check `amr` here if the tenant adds it and this API validates it as a custom claim. Not MFA-specific SDK surface. | Check `amr` on an access token that has none (rejecting valid stepped-up callers); hand-roll token decoding; add MFA-specific SDK surface |
-   | Frontend | Treat the `amr` check as UX, not security | Rely on it to enforce anything |
-
-3. **Enforce server-side.** A frontend check is UX, not security. Any endpoint guarding a
-   sensitive action must independently confirm MFA using the row above that matches its
-   audience - a web/session backend on `amr`, a resource API on the required scope - and
-   reject when that signal is absent.
-
-4. **Conditional MFA** is required in a post-login Action that calls
-   `api.multifactor.enable(...)`. Action-defined MFA behavior takes precedence over the
-   Dashboard/Guardian policy, so it customizes or overrides that policy rather than being
-   a separate engine that replaces it. This is distinct from **Adaptive MFA**, which is
-   the Guardian `confidence-score` tenant policy (owned by the `tooling-*` reference); an
-   Action can refine it. If the tenant-wide `all-applications` policy is set, MFA is
-   already mandatory everywhere and an Action can only add conditions on top, not relax
-   it. See "Tenant configuration".
+Notes: a silent token request may instead surface an `mfa_required` error - handle it by
+re-authenticating interactively. Never re-decode or re-verify the token by hand (see
+"Common mistakes"). `amr` is not a reliable contract for *which* factor ran; to enforce a
+**specific** factor, have the post-login Action read `event.authentication.methods[].type`
+into a custom claim. Action-defined MFA overrides the Guardian policy (it refines, not
+replaces) and differs from **Adaptive MFA** (the Guardian `confidence-score` policy, owned
+by `tooling-*`); if the `all-applications` policy is set, an Action can only add conditions,
+not relax it.
 
 ### The mechanic: API-driven MFA (no-redirect flows)
 
-When the app collects credentials itself instead of redirecting to Universal Login (a
-direct-grant or passwordless back-end), no browser is present to run the challenge, so
-the app drives MFA in-band. Sign-in returns an `mfa_required` error carrying an
-`mfa_token` that drives enrollment, challenge, and verification below (removing a factor
-needs a separate post-MFA access token - see step 4). Each step is a method on the
-SDK's own MFA client - read the detected `framework-*` reference's example (see "Example
-code snippets") for the exact names, and **never** hand-roll the token grant or the MFA
-API URLs.
+The app collects credentials, so no browser runs the challenge: sign-in returns an
+`mfa_required` error carrying an `mfa_token`. Each step is a method on the SDK's own MFA
+client - get exact names from the `framework-*` example; never hand-roll the token grant
+or the MFA API URLs.
 
-Do these in order:
+Recipe (do in order):
 
-1. **Detect and read the token.** Catch the `mfa_required` error and read the
-   `mfa_token` off it.
-2. **Branch on enrollment.** No factor yet -> associate (enroll) a new authenticator; the
-   response is factor-specific: OTP enrollment returns a `barcode_uri` to render as a QR
-   code, while out-of-band enrollment (SMS, voice, email, push) returns an `oob_code` that
-   you confirm by submitting it directly to the token endpoint (MFA OOB grant, plus the
-   `binding_code` the user received when the channel requires one) - a just-associated
-   authenticator does NOT need a separate `/mfa/challenge`; push also returns a
-   `barcode_uri`. Recovery codes are
-   returned only the first time an authenticator is added. Already enrolled -> challenge
-   the existing authenticator so the user is prompted for its code. An explicit
-   enrolled/not-enrolled check and branching on the error's requirements are both
-   acceptable.
-3. **Verify to finish.** Verification is factor-specific and always carries the
-   `mfa_token`: submit an OTP authenticator code as `otp`; for an out-of-band factor on an
-   already-enrolled authenticator, `/mfa/challenge` first to get a fresh `oob_code`, then
-   submit it (plus a `binding_code` when the channel requires one); submit a recovery code as
-   `recovery_code` (a distinct factor type via the recovery-code grant, not treated as an
-   OTP). Success returns tokens like an ordinary sign-in. Use the detected `framework-*`
-   example for the exact method and grant names - do not hand-roll the grants.
-4. **Self-service management.** Let a user list the account's authenticators and remove
-   one through the same MFA client - not the Management API (see "MFA API surface" vs
-   "Management API surface" below). Listing and challenging run on the `mfa_token`, but
-   removing an authenticator requires a **post-MFA access token** with the
-   `https://{yourDomain}/mfa/` audience and the `remove:authenticators` scope; the
-   `mfa_token` alone does not authorize the `DELETE`.
+1. **Read the token.** Catch `mfa_required`; read `mfa_token` off it.
+2. **Branch on enrollment.**
+   - *No factor yet* -> associate (enroll). OTP returns a `barcode_uri` to render as a QR
+     code; out-of-band (SMS/voice/email/push) returns an `oob_code` you confirm by
+     submitting it directly to the token endpoint (MFA OOB grant, plus a `binding_code`
+     when the channel requires one) - a just-associated authenticator needs no separate
+     `/mfa/challenge`. Recovery codes are returned only on first enrollment.
+   - *Already enrolled* -> challenge the existing authenticator so the user is prompted for
+     its code.
+
+   (An explicit enrolled/not-enrolled check or branching on the error's requirements are both fine.)
+3. **Verify to finish.** Always carries the `mfa_token`: submit an OTP code as `otp`; for an
+   already-enrolled out-of-band factor, `/mfa/challenge` first for a fresh `oob_code`, then
+   submit it (plus a `binding_code` when needed); submit a recovery code as `recovery_code`
+   (its own recovery-code grant, not treated as an OTP). Success returns tokens like an
+   ordinary sign-in.
+4. **Self-service management.** List and remove factors through the MFA client, not the
+   Management API. List and challenge use the `mfa_token`; **removal needs a post-MFA access
+   token** (`https://{yourDomain}/mfa/` audience + `remove:authenticators` scope) - the
+   `mfa_token` alone does not authorize the `DELETE`. See "MFA API surface".
 
 ### Feature-level symbols
 
@@ -181,21 +148,13 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 
 ### Example code snippets
 
-**STOP - before writing any MFA code, run this procedure in order:**
-
-1. **Find your row.** In the table below, pick the one row whose SDK matches the `framework-*`
-   reference detected for this task. It is a lookup, not a judgment call - not the whole table.
-2. **No matching row?** (For example a backend SDK such as `auth0-server-python`.) Skip to the
-   language-neutral mechanic above. Stop here.
-3. **Open that row's URL and read the section named in "Find section"** - it is the source of
-   idiomatic usage. The URLs are raw markdown, so any tool that can read a URL works: `WebFetch`,
-   `curl`/HTTP from your shell, or your web/docs-fetch tool.
-4. **Can't read the URL** (no such tool, or the fetch fails)? Fall back to the language-neutral
-   mechanic above. Stop here.
-5. **Never** substitute a general web search for "how to do MFA", and **never** write MFA code
-   from memory.
-
-**Not done until** you have read the matching row's URL, or confirmed a skip case (step 2 or 4).
+**Before writing MFA code:** find the one row below matching the detected SDK and read
+ONLY the named section from its URL (from that heading down to the next `## `) - these are
+large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
+No matching row (e.g. a backend SDK like `auth0-server-python`), or the fetch fails? Fall
+back to the language-neutral mechanic above. Never substitute a web search for "how to do
+MFA".
+files or docs searches.
 
 | SDK | Raw example file (markdown) | Find section |
 |---|---|---|
@@ -206,11 +165,6 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 | `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
 | `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/EXAMPLES.md | `## Using Multi-Factor Authentication (MFA)` |
 | `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
-
-Enforce the high-value **scope** on the
-access token with that standard middleware per "Related capabilities". Access tokens
-carry no `amr` by default, so only check `amr` on the backend if this API adds and
-validates it as a custom claim.
 
 ## Tenant configuration
 
@@ -242,9 +196,7 @@ auth0 api put "guardian/policies" --data '["all-applications"]'
 The full factor set, the `confidence-score` (adaptive) policy, the Terraform
 `auth0_guardian` resource, and MCP coverage are owned by the loaded `tooling-*`
 reference (DEFER ACROSS): the Auth0 MCP server exposes no Guardian/MFA tool, so
-tenant MFA config is CLI or Terraform only. For conditional enforcement, a post-login
-Action calling `api.multifactor.enable(...)` is configured via `tooling-cli`
-(`auth0 actions ...`).
+tenant MFA config is CLI or Terraform only.
 
 ### MFA API surface (in-flow self-service)
 
@@ -305,3 +257,7 @@ which uses the `mfa_token` and the MFA API surface instead:
   check the `amr` claim.
 - **First login** - if the app has no login yet, add it with the `framework-*` reference
   before layering MFA.
+
+## References
+[Auth0 MFA docs](https://auth0.com/docs/secure/multi-factor-authentication)
+[Step-Up Authentication](https://auth0.com/docs/secure/multi-factor-authentication/step-up-authentication).
