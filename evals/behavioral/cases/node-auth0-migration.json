@@ -138,7 +138,7 @@
       "id": "leave-management-client",
       "prompt": "Migrate the AuthenticationClient / M2M token grant in src/api-client.ts to @auth0/auth0-auth-js. Leave the ManagementClient import and usage exactly as-is (it is not being migrated). Edit src/api-client.ts in place.",
       "scaffold": {
-        "src/api-client.ts": "import { AuthenticationClient, ManagementClient } from 'auth0';\nconst auth = new AuthenticationClient({ domain, clientId, clientSecret });\nconst mgmt = new ManagementClient({ domain, clientId, clientSecret });\nexport async function getApiToken() {\n  const resp = await auth.oauth.clientCredentialsGrant({ audience });\n  return resp.data.access_token;\n}\nexport async function getUsers() {\n  return (await mgmt.users.getAll()).data;\n}\n"
+        "src/api-client.ts": "import { AuthenticationClient, ManagementClient } from 'auth0';\nconst auth = new AuthenticationClient({ domain, clientId, clientSecret });\nconst mgmt = new ManagementClient({ domain, clientId, clientSecret });\nexport async function getApiToken() {\n  const resp = await auth.oauth.clientCredentialsGrant({ audience });\n  return resp.data.access_token;\n}\nexport async function getUsers() {\n  return (await mgmt.users.list()).data;\n}\n"
       },
       "expected_output": "Migrates only the AuthenticationClient usage to @auth0/auth0-auth-js; keeps the ManagementClient import and usage from 'auth0' untouched.",
       "graders": [

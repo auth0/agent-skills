@@ -21,7 +21,7 @@ export async function getApiToken() {
 
 // This function MUST NOT be touched (uses ManagementClient, out of scope)
 export async function listUsers() {
-  const users = await mgmtClient.users.getAll({ per_page: 50 });
+  const users = await mgmtClient.users.list({ per_page: 50 });
   return users.data;
 }
 
