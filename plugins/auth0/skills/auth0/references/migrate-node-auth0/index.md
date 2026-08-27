@@ -73,8 +73,6 @@ Before touching any code, verify the environment is safe for an in-place rewrite
    
    Both SDKs are published on npm (`@auth0/auth0-auth-js@1.12.1`, `@auth0/auth0-server-js@1.12.1` are the current `latest`), and both require Node.js 20 LTS or newer — verify the project's runtime before installing.
 
-   Caveat: the per-request options surface (`signal`, `headers`, per-call `customFetch` in `RequestOptions`) and the `fullResponse` envelope landed **after** the 1.12.1 npm release and are not in the published tarball yet. Migrations that depend on those APIs must install from the local-tarball / pre-release path (see the migration fixture README) until the next release cuts; plain token-grant migrations work against the published 1.12.1.
-
 4. **Verify source SDK:** Confirm that node-auth0 v5 is present in the project's dependencies and is the source SDK being migrated.
 
 ### 1. Discover every call site
@@ -184,4 +182,4 @@ Four references are co-loaded alongside this hub — refer to them by topic as t
 - **Source:** `auth0` (node-auth0) v5.x — `AuthenticationClient`, `UserInfoClient`
 - **Target:** `@auth0/auth0-auth-js` >= v1.12.1 (token layer), `@auth0/auth0-server-js` >= v1.12.1 (session layer)
 
-**Important:** both SDKs are published on npm at v1.12.1 and require Node.js 20 LTS or newer. The per-request `RequestOptions` (`signal`, `headers`, per-call `customFetch`) and the `fullResponse` envelope landed **after** the 1.12.1 npm release and are not in the published tarball yet — migrations that depend on those APIs must install via the local-tarball / pre-release path (see the migration fixture README) until the next release cuts.
+**Important:** both SDKs are published on npm at v1.12.1 and require Node.js 20 LTS or newer.
