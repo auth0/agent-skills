@@ -25,6 +25,7 @@
 ## When NOT to Use
 
 - **Flutter web**: Use the Auth0 Flutter web integration — web uses a different platform interface (`Auth0Web`) wrapping Auth0 SPA JS
+- **Flutter Windows desktop**: Use the Auth0 Flutter Windows integration — Windows uses `windowsWebAuthentication()`, a custom URL scheme + Registry protocol handler, and has no `CredentialsManager`
 - **Native iOS (Swift, no Flutter)**: Use the Auth0 Swift integration
 - **Native Android (Kotlin/Java, no Flutter)**: Use the Auth0 Android integration
 - **React Native**: Use the Auth0 React Native integration
@@ -409,6 +410,7 @@ For complete patterns with Riverpod, Bloc, biometrics, and advanced scenarios, s
 
 - Initial Auth0 setup and account creation — if Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 - Same SDK on the web platform — ask for the Auth0 Flutter web integration
+- Same SDK on Windows desktop — ask for the Auth0 Flutter Windows integration
 - Native iOS (Swift) — ask for the Auth0 Swift integration
 - Native Android (Kotlin/Java) — ask for the Auth0 Android integration
 

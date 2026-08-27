@@ -97,6 +97,14 @@
       "spot_check": true
     },
     {
+      "id": "fw-flutter-windows",
+      "prompt": "Add Auth0 login to my Flutter Windows desktop app.",
+      "should_activate": true,
+      "why": "Framework-only signal naming a specific platform variant (Flutter Windows desktop), not just 'Flutter' generically.",
+      "tags": ["framework-loss"],
+      "spot_check": true
+    },
+    {
       "id": "fw-fastapi",
       "prompt": "I need to protect these FastAPI endpoints so only authenticated callers can reach them.",
       "should_activate": true,
