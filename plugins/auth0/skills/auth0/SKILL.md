@@ -366,9 +366,9 @@ If a scan can run, do the audit workflow first, then score and recommend a plan;
 ### upgrade-sdk
 ```
 Read: references/framework-{framework}/index.md
-Follow its "Major Version Migration" section (e.g. Auth0.swift v3).
+Follow its "Major Version Migration" section (e.g. Auth0.swift v3, Auth0.Android v4).
 This is an SDK version bump — NOT a provider migration. Do not load feature-migration/index.md.
-If no framework is detected: ask which Auth0 SDK is being upgraded.
+If no framework detected: ask which Auth0 SDK to upgrade.
 ```
 
 ### migrate-node-auth0

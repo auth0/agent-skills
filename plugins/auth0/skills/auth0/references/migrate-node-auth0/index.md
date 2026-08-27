@@ -105,7 +105,7 @@ Go sub-client by sub-client. For every node-auth0 method, apply the mapped repla
 Use the co-loaded api-mapping reference for the complete method-by-method mapping
 with before/after code for `.oauth`, `.database`, `.passwordless`, `.backchannel`,
 `.tokenExchange`, and `UserInfoClient`. Note: `UserInfoClient.getUserInfo` maps to
-`TokenResponse.claims` (preferred) or `authClient.getUserInfo({ accessToken })` (auth0-auth-js, when PR #228 merges)
+`TokenResponse.claims` (preferred) or `authClient.getUserInfo({ accessToken })` (auth0-auth-js)
 — see the `UserInfoClient` section in that reference.
 
 ### 4. Apply the three structural changes at every call site
