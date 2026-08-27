@@ -26,7 +26,7 @@ class SkillDirectoryStructureRule(Rule):
     # Allowed directories per Agent Skills spec (plus tests/ for validation
     # artifacts and agents/ for the Agent Plugins per-skill interface config,
     # e.g. agents/openai.yaml required by the OpenAI plugin submission checker)
-    ALLOWED_DIRS = {'scripts', 'references', 'assets', 'tests', 'agents'}
+    ALLOWED_DIRS = frozenset({'scripts', 'references', 'assets', 'tests', 'agents'})
 
     # Files that are allowed in skill root
     ALLOWED_ROOT_FILES = {'SKILL.md', '.gitignore', '.gitkeep'}
