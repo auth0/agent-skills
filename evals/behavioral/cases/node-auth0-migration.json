@@ -123,7 +123,7 @@
         },
         {
           "type": "not_contains",
-          "value": "resp.data.",
+          "value": "resp.data",
           "description": "Does not read resp.data envelope"
         },
         {

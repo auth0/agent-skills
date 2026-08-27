@@ -248,6 +248,13 @@
       "framework": null,
       "tooling": "cli",
       "expect_refs": ["feature-healthcheck/index.md", "feature-audit/index.md", "feature-audit-pricing/index.md", "feature-audit-remediation/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "migrate-node-auth0",
+      "intent": "migrate-node-auth0",
+      "framework": null,
+      "tooling": null,
+      "expect_refs": ["feature-migrate-node-auth0/index.md", "feature-migrate-node-auth0-api-mapping/index.md", "feature-migrate-node-auth0-breaking-changes/index.md", "feature-migrate-node-auth0-routing/index.md", "feature-migrate-node-auth0-sessions/index.md"]
     }
   ]
 }
