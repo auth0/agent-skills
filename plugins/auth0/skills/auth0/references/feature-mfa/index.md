@@ -151,7 +151,7 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 **Before writing MFA code:** find the one row below matching the detected SDK and read
 ONLY the named section from its URL (from that heading down to the next `## `) - these are
 large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
-No matching row (e.g. a backend SDK like `auth0-server-python`), or the fetch fails? Fall
+No matching row (a backend SDK not listed below), or the fetch fails? Fall
 back to the language-neutral mechanic above. Never substitute a web search for "how to do
 MFA".
 files or docs searches.
@@ -165,6 +165,7 @@ files or docs searches.
 | `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
 | `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/EXAMPLES.md | `## Using Multi-Factor Authentication (MFA)` |
 | `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
+| `auth0-server-python` | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/StepUpAuthentication.md | whole file |
 
 ## Tenant configuration
 
