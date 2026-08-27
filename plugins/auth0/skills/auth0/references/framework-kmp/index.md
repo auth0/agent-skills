@@ -22,8 +22,10 @@ platform-native implementations for each target.
   confirmation before proceeding.
 - After either automatic or manual Auth0 configuration, you MUST apply the
   required per-platform changes — Android manifest placeholders (`auth0Domain`,
-  `auth0Scheme`) and iOS URL scheme registration — before treating the
-  integration as complete. Shared code alone does not wire up the callback.
+  `auth0Scheme`) plus the `INTERNET` permission, and the iOS
+  simulator-architecture build settings — before treating the integration as
+  complete. Shared code alone does not wire up the callback. (The iOS callback
+  needs **no** `Info.plist` URL-scheme entry — see Step 4.)
 - If the project still fails to build after several fix attempts (~5–6), stop
   and ask the user how to proceed rather than making further speculative changes.
 
@@ -40,10 +42,45 @@ platform-native implementations for each target.
 
 - A Kotlin Multiplatform project applying `org.jetbrains.kotlin.multiplatform`,
   with `commonMain`, `androidMain`, and `iosMain` source sets.
-- Kotlin 2.3.21 or later.
-- Android target: `minSdk` 24 or higher.
-- iOS target: 14.0 or higher (`iosArm64`, `iosSimulatorArm64`).
+- Toolchain that meets the SDK's floors (see **Toolchain compatibility** below):
+  Kotlin 2.3.21, `compileSdk 36`, `minSdk 24`, iOS 14+.
 - An Auth0 tenant. The Auth0 CLI (`auth0`) installed for automatic setup.
+
+## Toolchain compatibility
+
+Consuming `com.auth0.kmp` forces the build chain upward — its klibs and AAR
+metadata set hard floors. These are the versions the SDK itself builds against
+(`gradle/libs.versions.toml` in `auth0/auth0-kmp`); confirm current values
+against the release you pin.
+
+| Tool | Version | Why |
+|------|---------|-----|
+| Kotlin | 2.3.21 | SDK klibs are compiled with it; the consumer must match or exceed. |
+| `compileSdk` | 36 | Required by the SDK's AAR metadata — a lower value fails the build. |
+| `minSdk` | 24 | SDK floor. |
+| iOS deployment target | 14.0+ | SDK floor. |
+| Android Gradle Plugin | 9.x (SDK uses 9.1.1) | Works — but see the module-layout rule below. |
+
+**AGP 9 + module layout (the real constraint).** AGP 9 removed the ability to
+apply **`com.android.application`** and **`org.jetbrains.kotlin.multiplatform`**
+in the *same* Gradle module — the old single-module `composeApp` layout that
+older KMP wizards generated. Symptom:
+
+```
+The 'com.android.application' plugin is not compatible with the
+'org.jetbrains.kotlin.multiplatform' plugin since AGP 9.
+```
+
+This is **not** a reason to downgrade AGP — the SDK builds fine on AGP 9. Fix the
+*layout* instead, either:
+
+- use AGP 9's KMP library plugin (`com.android.kotlin.multiplatform.library`) for
+  the shared module, or
+- split into a `shared` **library** module (KMP) plus a separate `androidApp`
+  **application** module.
+
+Pinning AGP to the latest 8.x (e.g. 8.13.0 with Gradle 8.13) is a fallback only
+if you must keep a single-module app.
 
 ## Quick Start Workflow
 
@@ -129,6 +166,29 @@ val account = Auth0Account(
 val auth0 = Auth0(account)
 ```
 
+**Injecting credentials (keeping them out of source).** One clean pattern: put
+the values in gitignored `local.properties`, then generate a config object at
+build time so `commonMain` reads constants, not literals:
+
+```properties
+# local.properties (gitignored)
+auth0.domain=YOUR_TENANT.REGION.auth0.com
+auth0.clientId=YOUR_CLIENT_ID
+```
+
+```kotlin
+// shared/build.gradle.kts — read local.properties and emit a generated
+// Auth0Config object into a source dir wired via kotlin.srcDir(...)
+val localProps = java.util.Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }
+        ?.inputStream()?.use { load(it) }
+}
+// register a task that writes Auth0Config.DOMAIN / Auth0Config.CLIENT_ID, then:
+// commonMain { kotlin.srcDir(generateAuth0ConfigTask) }
+```
+
+Then build the account from `Auth0Config.DOMAIN` / `Auth0Config.CLIENT_ID`.
+
 ### Step 4 — Configure callback and logout URLs
 
 KMP callback/logout URLs are per-platform. Register **both** the Android and iOS
@@ -155,13 +215,54 @@ android {
 }
 ```
 
+Add the `INTERNET` permission to the Android app's manifest — the SDK does not
+declare it, so the consuming app must:
 
-**iOS platform config.** Register the callback URL scheme (your bundle
-identifier) under **URL Types** in the app target (Info → URL Types, or
-`CFBundleURLSchemes` in `Info.plist`), and ensure the returning URL is delivered
-to the SDK from your app/scene lifecycle. Confirm the exact resume-handling API
-against the SDK version you pinned — the iOS layer uses SKIE to bridge Kotlin
+```xml
+<!-- androidApp/src/main/AndroidManifest.xml -->
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+**No init call is required.** The SDK captures the `Context` at launch via an
+`androidx.startup` initializer merged from its manifest, and auto-declares its
+`RedirectActivity`. Call `Auth0Android.init(context)` only if you have removed
+the startup initializer or run from a secondary process the initializer missed.
+
+**iOS platform config.** The SDK drives login with `ASWebAuthenticationSession`,
+which is created with the callback scheme and intercepts the redirect through its
+own completion handler. **No `Info.plist` `CFBundleURLTypes` / URL Types entry is
+required, and no `onOpenURL` / AppDelegate / SceneDelegate resume handler is
+needed** — the sample app registers none. You only register the callback URL in
+the Auth0 application (Step 4). The iOS layer uses SKIE to bridge Kotlin
 `suspend` functions to Swift `async/await`.
+
+See **iOS build configuration** below for the required simulator-architecture
+settings.
+
+### iOS build configuration (Apple Silicon)
+
+The SDK publishes only the device and Apple-Silicon-simulator variants — there is
+**no** Intel-simulator (`ios_x64`) artifact. Declare exactly these iOS targets in
+the shared module; do **not** add `iosX64()`:
+
+```kotlin
+kotlin {
+    iosArm64()            // device
+    iosSimulatorArm64()   // simulator (Apple Silicon)
+}
+```
+
+Adding `iosX64()` fails dependency resolution with `No matching variant ...
+ios_x64`. Then tell Xcode to build the simulator arm64-only — in the app target's
+build settings, for **both** Debug and Release:
+
+```
+EXCLUDED_ARCHS[sdk=iphonesimulator*] = x86_64
+```
+
+Skipping this fails the Xcode build inside the "Compile Kotlin Framework"
+run-script phase with `Command PhaseScriptExecution failed with a nonzero exit
+code` and `error: Unknown iOS simulator arch: 'x86_64'`.
 
 ### Step 5 — Implement authentication (shared code)
 
@@ -330,8 +431,11 @@ Error families (all sealed `Auth0Error` subtypes):
   `com.auth0.android:auth0` and Auth0.swift — do not mix them or copy native
   init code verbatim.
 - **Skipping per-platform wiring.** Shared `commonMain` code compiles but login
-  will not return without the Android manifest placeholders and the iOS URL
-  scheme + resume handling.
+  will not return without the Android manifest placeholders + `INTERNET`
+  permission and the iOS simulator-architecture build settings.
+- **Adding an iOS `Info.plist` URL scheme.** Not needed for this SDK
+  (`ASWebAuthenticationSession` handles the callback) — that's the old Auth0.swift
+  pattern. Registering one does nothing.
 - **Registering only one callback URL.** Both the Android and iOS callback/logout
   URL forms must be added to the Auth0 app, or one platform's redirect fails.
 - **Wrong application type.** KMP apps require a **Native** Auth0 application, not
@@ -345,12 +449,16 @@ Error families (all sealed `Auth0Error` subtypes):
 
 | Symptom | Likely cause | Fix |
 | --- | --- | --- |
-| Browser opens but never returns to the app | Per-platform callback not wired | Add the Android manifest placeholders (`auth0Domain`, `auth0Scheme`) and register the iOS URL scheme + resume handling (Step 4). |
+| Browser opens but never returns to the app | Per-platform callback not wired | Add the Android manifest placeholders (`auth0Domain`, `auth0Scheme`) + `INTERNET` permission; on iOS no URL-scheme entry is needed (Step 4). |
 | Login works on one platform, fails on the other | Only one callback/logout URL registered | Register **both** the Android and iOS URL forms in the Auth0 app. |
 | `WebAuthError.InvalidState` / `TransactionActiveAlready` | Stale or overlapping login transaction | Ensure a single in-flight login; call `webAuth.cancel()` before retrying. |
 | `getCredentials()` returns `NoRefreshToken` / `NoCredentials` | Missing `offline_access`, or nothing was stored | Request `offline_access` at login and `saveCredentials` after success; otherwise re-authenticate. |
 | Your API rejects the access token | Missing or wrong `audience` | Pass `audience` in `LoginOptions` so the token is issued for your API. |
 | `WebAuthError.UserCancelled` | User dismissed the browser | Expected — treat as a no-op, not a failure. |
+| `... requires ... compile against version 36 or later` | `compileSdk` too low | Set `compileSdk = 36`. |
+| `... 'com.android.application' ... not compatible with ... 'org.jetbrains.kotlin.multiplatform' ... since AGP 9` | Both plugins applied in one module | Use AGP 9's `com.android.kotlin.multiplatform.library`, or split into `shared` (library) + `androidApp` (application) modules (see Toolchain compatibility). |
+| `No matching variant ... ios_x64` | `iosX64()` target declared | Remove `iosX64()`; keep only `iosArm64()` + `iosSimulatorArm64()`. |
+| `PhaseScriptExecution failed` + `Unknown iOS simulator arch: 'x86_64'` | Xcode building simulator for Intel | Add `EXCLUDED_ARCHS[sdk=iphonesimulator*] = x86_64` (Debug + Release). |
 
 ## Testing Checklist
 
@@ -380,5 +488,7 @@ Error families (all sealed `Auth0Error` subtypes):
 ## Version compatibility
 
 - SDK group/artifact: `com.auth0.kmp:auth0` (umbrella).
-- Requires Kotlin 2.3.21+, Android `minSdk` 24+, iOS 14.0+.
-- Targets supported: Android and iOS only.
+- Toolchain floors: Kotlin 2.3.21, `compileSdk 36`, `minSdk 24`, iOS 14.0+ (see
+  **Toolchain compatibility**).
+- Targets supported: Android and iOS only (`iosArm64` + `iosSimulatorArm64`; no
+  `iosX64`).
