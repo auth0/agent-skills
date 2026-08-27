@@ -45,7 +45,7 @@ local build after the base install:
 ```bash
 cd after
 npm install --ignore-scripts
-npm install --ignore-scripts ./vendor/auth0-auth0-auth-js-1.12.1.tgz  # overlay the shipped surface
+npm install --ignore-scripts ../vendor/auth0-auth0-auth-js-1.12.1.tgz  # overlay the shipped surface
 npx tsc --noEmit
 ```
 

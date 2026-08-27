@@ -26,7 +26,7 @@ if [ ! -d "$ROOT" ]; then
   exit 2
 fi
 
-FILE_GLOBS=(--include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' --include='*.mjs' --include='*.cts' --include='*.mts')
+FILE_GLOBS=(--include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' --include='*.mjs' --include='*.cjs' --include='*.cts' --include='*.mts')
 EXCLUDES=(--exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build --exclude-dir=.git --exclude-dir=coverage)
 
 FAILED=0
@@ -60,7 +60,7 @@ check "No residual UserInfoClient" \
 
 check "No residual node-auth0 auth sub-client calls" \
   "\.oauth\.(authorizationCodeGrant|refreshTokenGrant|passwordGrant|clientCredentialsGrant|revokeRefreshToken|tokenForConnection|pushedAuthorization)|\.passwordless\.(sendSMS|loginWithEmail|loginWithSMS)|\.backchannel\.(authorize|backchannelGrant)|\.tokenExchange\.exchangeToken" \
-  "Map each call via references/api-mapping.md."
+  "Map each call via references/migrate-node-auth0-api-mapping/index.md."
 
 check "No '.data.' access on token/grant results" \
   "\.(data)\.(access_token|refresh_token|id_token|expires_in|token_type)" \
@@ -68,7 +68,7 @@ check "No '.data.' access on token/grant results" \
 
 check "No relative expires_in arithmetic" \
   "Date\.now\(\)[[:space:]]*\+[^;]*expires_in|expires_in[[:space:]]*\*[[:space:]]*1000" \
-  "expiresAt is an ABSOLUTE Unix timestamp (seconds). Do not add Date.now(). See breaking-changes.md#3."
+  "expiresAt is an ABSOLUTE Unix timestamp (seconds). Do not add Date.now(). See references/migrate-node-auth0-breaking-changes/index.md."
 
 check "No AuthApiError catches" \
   "AuthApiError" \

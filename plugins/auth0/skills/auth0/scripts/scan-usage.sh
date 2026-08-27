@@ -18,7 +18,7 @@ if [ ! -d "$ROOT" ]; then
 fi
 
 # Only look at JS/TS sources; skip dependencies and build output.
-FILE_GLOBS=(--include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' --include='*.mjs' --include='*.cts' --include='*.mts')
+FILE_GLOBS=(--include='*.ts' --include='*.tsx' --include='*.js' --include='*.jsx' --include='*.mjs' --include='*.cjs' --include='*.cts' --include='*.mts')
 EXCLUDES=(--exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build --exclude-dir=.git --exclude-dir=coverage)
 
 # grep helper: recursive, line-numbered, extended regex. Never fail the script on "no matches".
@@ -75,5 +75,5 @@ printf '%-45s %s\n' "expires_in occurrences (inspect):"   "$(count 'expires_in')
 printf '%-45s %s\n' "ManagementClient refs (leave alone):" "$(count 'ManagementClient')"
 
 echo
-echo "Next: use references/routing-and-config.md to choose the target SDK, then"
-echo "references/api-mapping.md to rewrite each call site above."
+echo "Next: use references/migrate-node-auth0-routing/index.md to choose the target SDK, then"
+echo "references/migrate-node-auth0-api-mapping/index.md to rewrite each call site above."
