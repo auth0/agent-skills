@@ -38,7 +38,7 @@ section heading (`### feature:mfa`) listing which reference files to load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
-| Add login, signup, sign-in, or "let users log in / create accounts" to an app | **integrate** |
+| Add login, signup, sign-in, "let users log in / create accounts" to an app, or otherwise add and use an Auth0 SDK in an app or script | **integrate** |
 | Require a second step after the password — a one-time code, SMS or email code, authenticator app, passkey, fingerprint/face (biometric), or security key; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
 | Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
 | Deploy a hosted self-service portal for profile, passkeys, MFA, or organization details instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
@@ -55,6 +55,10 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | Upgrade the Auth0 SDK itself to a new major version (e.g. Auth0.swift v2→v3, Auth0.Android v3→v4) — breaking changes, deprecated APIs, "update to the latest SDK". *Auth0: SDK major-version upgrade.* | **upgrade-sdk** |
 | Install Auth0's Vercel Marketplace integration, connect Auth0 to a Vercel project, or sync Auth0 configuration into a Vercel-hosted Next.js app. *Auth0: Vercel native integration.* | **integrate** |
 | Use the Auth0 CLI directly — "create an app/API with the `auth0` CLI", script tenant setup, or automate Auth0 config in CI — with no application framework in play. *Auth0: CLI / tooling-only.* | **tooling** |
+
+### If nothing clearly matches
+
+Pick the closest goal. If the goal is genuinely unclear, ask the developer what they're trying to accomplish - don't guess an intent.
 
 ---
 
@@ -90,6 +94,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `express-oauth2-jwt-bearer` | `express-jwt` |
 | `react-native-auth0` + `app.json` or `app.config.js` present | `expo` |
 | `react-native-auth0` (no Expo files) | `react-native` |
+| `auth0` (the bare package, not `@auth0/*`) | `node-auth0` |
 
 ### Python — check `requirements.txt` or `pyproject.toml`
 
@@ -199,6 +204,7 @@ request. **Stop at the first match.**
 | Vue (not Nuxt/Ionic) | `vue` |
 | React SPA (not Next.js) | `react` |
 | vanilla JS / plain JS / no framework SPA | `spa-js` |
+| node-auth0 / the `auth0` npm package | `node-auth0` |
 | Express (web app / server-rendered) | `express` |
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
