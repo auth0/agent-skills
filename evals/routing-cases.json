@@ -236,6 +236,13 @@
       "expect_refs": ["framework-java-mvc/index.md", "tooling-cli/index.md"]
     },
     {
+      "id": "integrate-node-auth0",
+      "intent": "integrate",
+      "framework": "node-auth0",
+      "tooling": "cli",
+      "expect_refs": ["framework-node-auth0/index.md", "tooling-cli/index.md"]
+    },
+    {
       "id": "audit-tenant",
       "intent": "audit",
       "framework": null,
