@@ -145,24 +145,14 @@ SDK, so check the `@capacitor/browser` rows before it.
 
 ### Mobile (native)
 
-Check the `flutter-windows` row first — a Flutter project can carry a
-`windows/` platform directory alongside `android/`/`ios/`/`web/`; a `windows/`
-directory is the more specific signal.
-
 | Signal | Framework |
 |---|---|
 | `build.gradle(.kts)` + `com.auth0.kmp:auth0` (Kotlin Multiplatform module) | `kmp` |
 | `Package.swift` or `.xcodeproj` + Auth0.swift | `swift` |
 | `build.gradle` + `com.auth0.android:auth0` | `android` |
-| `pubspec.yaml` + `auth0_flutter` + `windows/` platform directory present | `flutter-windows` |
+| `pubspec.yaml` + `auth0_flutter` + `windows/` | `flutter-windows` |
 | `pubspec.yaml` + `auth0_flutter` + `flutter.web: false` | `flutter-native` |
 | `pubspec.yaml` + `auth0_flutter` + web enabled | `flutter-web` |
-
-> **Flutter platform note:** a Flutter project often has multiple platform
-> folders (`android/`, `ios/`, `web/`, `windows/`) at once. If more than one
-> is present and the request doesn't say which platform it's about, ask
-> before loading — don't guess between `flutter-native`, `flutter-web`, and
-> `flutter-windows`.
 
 ### Tier 2 — Framework from non-Auth0 workspace dependencies
 
@@ -193,7 +183,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `go.mod` present + HTTP server/router | `go` |
 | `org.jetbrains.kotlin.multiplatform` plugin + `commonMain` source set (shared Android+iOS module) | `kmp` |
 | `Package.swift` or `.xcodeproj` | `swift` |
-| `pubspec.yaml` (Flutter) + `windows/` platform directory present | `flutter-windows` |
+| `pubspec.yaml` (Flutter) + `windows/` | `flutter-windows` |
 | `pubspec.yaml` (Flutter, web disabled) | `flutter-native` |
 | `pubspec.yaml` (Flutter, web enabled) | `flutter-web` |
 | `*.csproj` referencing MAUI | `maui` |
@@ -234,7 +224,7 @@ request. **Stop at the first match.**
 | Kotlin Multiplatform / KMP / shared Android+iOS auth code / `com.auth0.kmp` | `kmp` |
 | Swift / iOS | `swift` |
 | Android / Kotlin | `android` |
-| Flutter (native / web / Windows desktop) | `flutter-native` / `flutter-web` / `flutter-windows` |
+| Flutter (native / web / Windows) | `flutter-native` / `flutter-web` / `flutter-windows` |
 | React Native / Expo | `react-native` / `expo` |
 | Ionic (Angular/React/Vue) | `ionic-angular` / `ionic-react` / `ionic-vue` |
 
