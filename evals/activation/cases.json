@@ -170,6 +170,21 @@
       "tags": ["indirect", "feature"]
     },
     {
+      "id": "indirect-delegated-admin",
+      "prompt": "On our SaaS settings page, each customer's own admin should be able to invite teammates, remove them, and change their roles — without us handing management credentials to the browser.",
+      "should_activate": true,
+      "why": "Delegated administration through the My Organization API, described as a product requirement with no Auth0 term used.",
+      "tags": ["indirect", "feature", "delegated-admin"],
+      "spot_check": true
+    },
+    {
+      "id": "indirect-self-service-sso",
+      "prompt": "We want enterprise customers to hook up their own Okta or Entra ID sign-in themselves from inside our app, instead of emailing us metadata for us to configure by hand.",
+      "should_activate": true,
+      "why": "Self-service SSO: a customer's own admin manages their organization's identity provider via the My Organization API rather than a support ticket.",
+      "tags": ["indirect", "feature", "delegated-admin"]
+    },
+    {
       "id": "indirect-signup-flow",
       "prompt": "New users need to create an account and verify their email before they can use the app.",
       "should_activate": true,

@@ -18,7 +18,9 @@ These consolidate the per-skill `tests/` harnesses that shipped with the ~44
 individual skills before the single-skill migration. Each skill carried its own
 near-identical ~1,200-line `run-evals.mjs`; that logic now lives once in
 `graders.mjs` + `run-evals.mjs`, with one case file per framework/feature under
-`cases/`. Each case records the `origin_skill` it came from.
+`cases/`. Each ported case records the `origin_skill` it came from; a case
+authored against a reference that never existed as a standalone skill (such as
+`my-organization`) sets `origin_skill` to `null`.
 
 ## Layout
 
@@ -30,7 +32,7 @@ behavioral/
 └── cases/
     ├── flask.json        # { slug, origin_skill, evals[], graders[] }
     ├── express-jwt.json
-    └── ...               # 19 cases; 13 have machine graders, 6 (branding,
+    └── ...               # 20 cases; 14 have machine graders, 6 (branding,
                           # custom-domains, cli, acul, audit, healthcheck) are
                           # expectations-only → manual transcript review
 ```

@@ -97,13 +97,13 @@ rules:
   # (frameworks, intents, tooling) locked down by scripts/check_routing_evals.py
   # and check_router_reachability.py, so its token budget is intentionally large
   # and can't be trimmed without dropping routes. Each intent adds a table row +
-  # a Step 4 loader block, so the body grows as intents are added. Warn limit is
-  # 4300 (still catches real bloat) with the 6000 error ceiling unchanged. The
+  # a Step 4 loader block, so the kbody grows as intents are added. Warn limit is
+  # 4500 (still catches real bloat) with the 6000 error ceiling unchanged. The
   # skill-description budget (200) is unchanged and enforced separately.
   context-budget:
     limits:
       skill:
-        warn: 4300
+        warn: 4500
         error: 6000
 
   # feature-audit.md and feature-healthcheck.md express Auth0 feature-gap severity
