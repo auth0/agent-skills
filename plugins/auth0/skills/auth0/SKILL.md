@@ -31,10 +31,10 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 ## Step 1: Detect intent
 
 Match the request against the **What the developer wants** column — it describes
-the goal in plain language, not just the Auth0 term (someone who says *"make
-users confirm with a code from their phone"* lands on `feature:mfa`). The
-**Intent** you pick is a lookup key: in **Step 4** it appears verbatim as a
-section heading (`### feature:mfa`) listing which reference files to load.
+the goal in plain language, not just the Auth0 term (e.g. *"make users confirm
+with a code from their phone"* → `feature:mfa`). The **Intent** you pick is a
+lookup key: in **Step 4** it appears verbatim as a section heading
+(`### feature:mfa`) listing which reference files to load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
@@ -58,15 +58,15 @@ section heading (`### feature:mfa`) listing which reference files to load.
 
 ### If nothing clearly matches
 
-Pick the closest goal. If the goal is genuinely unclear, ask the developer what they're trying to accomplish - don't guess an intent.
+Pick the closest goal, or ask what they're trying to accomplish if genuinely unclear — don't guess.
 
 ---
 
 ## Step 2: Detect framework
 
-> **Skip this step for the `tooling` intent** — a CLI-first request has no
-> framework. Go to Step 3, load the tooling reference; only ask about a
-> framework if the developer later pivots to integrating auth into an app.
+> **Skip this step for the `tooling` intent** — go to Step 3 and load the
+> tooling reference; only revisit framework if the developer pivots to
+> integrating auth into an app.
 
 Work top-down. **Stop at the first tier that yields a framework.**
 
@@ -157,9 +157,9 @@ SDK, so check the `@capacitor/browser` rows before it.
 ### Tier 2 — Framework from non-Auth0 workspace dependencies
 
 If no Auth0 SDK matched, detect the framework from ordinary (non-Auth0)
-dependencies. **Stop at the first match.** This picks the base; any web-vs-API
-variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
-`@ionic/*` rows before their base framework.
+dependencies. **Stop at the first match.** Web-vs-API variants are resolved in
+"Variant disambiguation" below. As in Tier 1, check `@ionic/*` rows before
+their base framework.
 
 | Signal | Base framework |
 |---|---|
@@ -241,8 +241,7 @@ pin the variant, choose **intent-first**:
 | laravel | `laravel` | `laravel-api` | API-only (token guard), no Blade UI |
 | aspnetcore | `aspnetcore-auth` | `aspnetcore-api` | Web API / JWT bearer, no cookie login UI |
 
-If intent is still ambiguous (both a UI and protected endpoints, or unclear),
-**state what you detected and ask the developer** web app vs API before loading.
+If still ambiguous, **state what you detected and ask** web app vs API before loading.
 
 ### If nothing matched
 
@@ -250,10 +249,9 @@ Ask the developer what framework/language they are using. Do not guess.
 
 ### Conflicts
 
-If Tier 2 (workspace) and Tier 3 (prompt) disagree materially (e.g. the prompt
-says "Next.js" but `package.json` has no `next`), **state the conflict and ask**
-rather than silently picking. Workspace signals outrank the prompt when both are
-present and consistent.
+If Tier 2 (workspace) and Tier 3 (prompt) disagree materially (e.g. prompt says
+"Next.js" but `package.json` has no `next`), **state the conflict and ask**
+rather than silently picking. Workspace outranks prompt when both are consistent.
 
 ---
 
