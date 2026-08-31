@@ -122,6 +122,12 @@ rules:
   # point at — same class as the rule's built-in tests/ exemption. Exempt it so
   # it isn't flagged as an unreferenced/shadow file.
   #
+  # agents/openai.yaml is Codex-facing interface config (display_name,
+  # short_description, default_prompt) read directly by the Codex/ChatGPT
+  # runtime, not agent-facing content the SKILL.md router should link to —
+  # same class as validate-skill.sh above. Exempt it so it isn't flagged as
+  # unreferenced.
+  #
   # framework-*.md / tooling-*.md are routed from SKILL.md ONLY through the
   # `references/framework-{framework}.md` and `references/tooling-{tooling}.md`
   # placeholder templates in Step 4. This rule does literal substring matching
@@ -136,6 +142,7 @@ rules:
       - "scripts/validate-skill.sh"
       - "references/framework-*.md"
       - "references/tooling-*.md"
+      - "agents/openai.yaml"
 
 # Custom rules for marketplace-specific validation
 custom-rules:

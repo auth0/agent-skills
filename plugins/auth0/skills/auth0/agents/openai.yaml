@@ -1,0 +1,5 @@
+# plugins/auth0/skills/auth0/agents/openai.yaml
+interface:
+  display_name: "Auth0"
+  short_description: "Add, secure, debug, and migrate Auth0 authentication - login, MFA, SSO, RBAC, Organizations, custom domains, and Universal Login across 20+ frameworks"
+  default_prompt: "Use $auth0 to add, secure, debug, or migrate authentication in any app — login, MFA, SSO, Organizations, RBAC, custom domains, and Universal Login branding."
