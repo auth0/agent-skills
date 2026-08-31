@@ -148,13 +148,13 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 
 ### Example code snippets
 
-**Before writing MFA code:** find the one row below matching the detected SDK and read
-ONLY the named section from its URL (from that heading down to the next `## `) - these are
-large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
-No matching row (a backend SDK not listed below), or the fetch fails? Fall
-back to the language-neutral mechanic above. Never substitute a web search for "how to do
-MFA".
-files or docs searches.
+**Before writing MFA code:** find the row below matching the detected SDK **and** the flow
+being implemented — for SDKs with both an `(MFA)` and a `(step-up)` row, pick the one that
+matches what the user needs (API-driven MFA enrollment/flow vs. browser step-up redirect).
+Read ONLY the named section from its URL (from that heading down to the next `## `) - these
+are large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
+No matching row (a backend SDK not listed below), or the fetch fails? Fall back to the
+language-neutral mechanic above. Never substitute a web search for "how to do MFA".
 
 | SDK | Raw example file (markdown) | Find section |
 |---|---|---|
