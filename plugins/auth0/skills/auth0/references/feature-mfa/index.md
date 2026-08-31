@@ -158,8 +158,11 @@ files or docs searches.
 
 | SDK | Raw example file (markdown) | Find section |
 |---|---|---|
+| `@auth0/auth0-react` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
 | `@auth0/auth0-react` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
 | `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
 | `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Step-Up Authentication` |
 | `@auth0/auth0-spa-js` | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/step-up-authentication.md | whole file |
 | `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
