@@ -148,24 +148,29 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 
 ### Example code snippets
 
-**Before writing MFA code:** find the one row below matching the detected SDK and read
-ONLY the named section from its URL (from that heading down to the next `## `) - these are
-large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
-No matching row (a backend SDK not listed below), or the fetch fails? Fall
-back to the language-neutral mechanic above. Never substitute a web search for "how to do
-MFA".
-files or docs searches.
+**Before writing MFA code:** find the row below matching the detected SDK **and** the flow
+being implemented — for SDKs with both an `(MFA)` and a `(step-up)` row, default to `(step-up)` unless the user explicitly requests the MFA API flow.
+Read ONLY the named section from its URL (from that heading down to the next `## `) - these
+are large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
+No matching row (a backend SDK not listed below), or the fetch fails? Fall back to the
+language-neutral mechanic above. Never substitute a web search for "how to do MFA".
 
 | SDK | Raw example file (markdown) | Find section |
 |---|---|---|
-| `@auth0/auth0-react` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-spa-js` | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-react` (MFA) | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-react` (step-up) | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-vue` (MFA) | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-vue` (step-up) | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-angular` (MFA) | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-angular` (step-up) | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-spa-js` (step-up) | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/step-up-authentication.md | whole file |
 | `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
-| `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/EXAMPLES.md | `## Using Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/examples/mfa.md | whole file |
 | `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
-| `auth0-server-python` | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/StepUpAuthentication.md | whole file |
+| `Auth0.swift` (iOS/macOS) | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/mfa-api.md | whole file |
+| `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/authentication-api/mfa-flexible-factors.md | whole file |
+| `auth0-server-python` (MFA flow) | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/MFA.md | whole file |
+| `auth0-server-python` (step-up) | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/StepUpAuthentication.md | whole file |
 
 ## Tenant configuration
 
