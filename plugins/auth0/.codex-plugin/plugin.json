@@ -1,6 +1,6 @@
 {
   "name": "auth0",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Add Auth0 authentication to any app — login, MFA, SSO, Organizations, RBAC, ACUL, custom domains, and branding. Debug auth errors, validate JWTs, manage token lifecycles, and migrate from Clerk, Firebase, or Cognito. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, Spring Boot, Go, Swift, Android, Flutter, Laravel, PHP, ASP.NET Core, React Native, Expo, Ionic, .NET MAUI, and more.",
   "skills": "./skills/",
   "author": {
@@ -8,7 +8,7 @@
     "email": "support@auth0.com",
     "url": "https://auth0.com"
   },
-  "homepage": "https://auth0.com/developers",
+  "homepage": "https://auth0.com/docs/quickstart/agent-skills",
   "repository": "https://github.com/auth0/agent-skills",
   "license": "Apache-2.0",
   "interface": {
@@ -19,19 +19,35 @@
     "category": "Developer Tools",
     "websiteURL": "https://auth0.com",
     "privacyPolicyURL": "https://auth0.com/privacy",
-    "termsOfServiceURL": "https://auth0.com/terms"
+    "termsOfServiceURL": "https://auth0.com/terms",
+    "brandColor": "#EB5424",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png",
+    "defaultPrompt": [
+      "Add Auth0 login to my app",
+      "Debug why my Auth0 login is failing",
+      "Audit my Auth0 tenant's health and security"
+    ]
   },
   "keywords": [
     "auth0",
+    "authentication",
+    "authorization",
+    "oauth",
+    "oidc",
+    "mfa",
+    "sso",
+    "rbac",
+    "sdk",
     "quickstart",
     "migration",
-    "mfa",
     "branding",
     "custom-domains",
     "security",
     "acul",
     "universal-login",
-    "sdk",
+    "jwt",
+    "cli",
     "react",
     "nextjs",
     "vue",
@@ -53,8 +69,6 @@
     "react-native",
     "expo",
     "spa-js",
-    "node",
-    "jwt",
-    "cli"
+    "node"
   ]
 }
