@@ -87,14 +87,14 @@ if you must keep a single-module app.
 ### Step 1 — Install the SDK
 
 > **Agent instruction:** Before providing setup instructions, fetch the latest
-> release version so the dependency line is current:
+> release version (including pre-releases) so the dependency line is current:
 > ```
-> gh api repos/auth0/auth0-kmp/releases/latest --jq '.tag_name'
+> gh api repos/auth0/auth0-kmp/releases --jq '.[0].tag_name'
 > ```
-> Use the returned version (strip a leading `v` if present) in the
-> `implementation` line instead of any hardcoded version below. If the CLI is
-> unavailable, tell the user to check the repo's Releases page and pin the latest
-> tag.
+> Strip a leading `v` from the returned tag before using it in the
+> `implementation` line. If the result is empty, report an error and tell the
+> user to check the repo's Releases page and pin the latest tag manually. If
+> the CLI is unavailable, direct the user to the Releases page.
 
 Add the SDK to the shared module's `commonMain` dependencies. The umbrella
 `auth0` artifact pulls in the sub-modules (`auth0-core`, `auth0-authentication`,
@@ -135,11 +135,18 @@ auth0 apps create \
   --type native \
   --callbacks "<CALLBACK_URLS>" \
   --logout-urls "<LOGOUT_URLS>" \
-  --reveal-secrets --json > /tmp/auth0_app.json
+  --json > /tmp/auth0_app.json
 ```
 
-Read `/tmp/auth0_app.json` with the Read tool, extract `client_id` and the tenant
-`domain`, then write them into the project (see Step 3) — do not echo them.
+Read `/tmp/auth0_app.json` with the Read tool to extract `client_id` — do not
+echo it. The app resource does **not** include the tenant domain; fetch it
+separately:
+
+```bash
+auth0 tenants list --json | jq -r '.[0].domain'
+```
+
+Write both `client_id` and the tenant domain into the project (see Step 3).
 
 See the `tooling-cli` reference for the full CLI workflow and callback-URL
 formatting; the required URL shapes for KMP are in Step 4 below.
@@ -177,14 +184,36 @@ auth0.clientId=YOUR_CLIENT_ID
 ```
 
 ```kotlin
-// shared/build.gradle.kts — read local.properties and emit a generated
-// Auth0Config object into a source dir wired via kotlin.srcDir(...)
+// shared/build.gradle.kts
 val localProps = java.util.Properties().apply {
     rootProject.file("local.properties").takeIf { it.exists() }
         ?.inputStream()?.use { load(it) }
 }
-// register a task that writes Auth0Config.DOMAIN / Auth0Config.CLIENT_ID, then:
-// commonMain { kotlin.srcDir(generateAuth0ConfigTask) }
+
+val generateAuth0ConfigTask by tasks.registering {
+    val domain = localProps.getProperty("auth0.domain", "")
+    val clientId = localProps.getProperty("auth0.clientId", "")
+    val outputDir = layout.buildDirectory.dir("generated/auth0Config/commonMain/kotlin")
+    outputs.dir(outputDir)
+    doLast {
+        outputDir.get().asFile.also { it.mkdirs() }
+            .resolve("Auth0Config.kt")
+            .writeText(
+                "object Auth0Config {\n" +
+                "    const val DOMAIN = \"$domain\"\n" +
+                "    const val CLIENT_ID = \"$clientId\"\n" +
+                "}\n"
+            )
+    }
+}
+
+kotlin {
+    sourceSets {
+        commonMain {
+            kotlin.srcDir(generateAuth0ConfigTask)
+        }
+    }
+}
 ```
 
 Then build the account from `Auth0Config.DOMAIN` / `Auth0Config.CLIENT_ID`.
@@ -286,7 +315,11 @@ auth0.webAuth.logout(LogoutOptions(federated = false))
 ```
 
 **Direct login (`AuthenticationClient`)** — only when you own the login UI and
-have a database/realm connection; Universal Login is preferred for security:
+have a database/realm connection; Universal Login is preferred for security.
+Before using this flow, enable the **Password** or **Password Realm** grant type
+for the Native application in the Auth0 Dashboard (Applications → your app →
+Settings → Advanced Settings → Grant Types) — these grants are not enabled by
+default for Native apps:
 
 ```kotlin
 val result = auth0.authentication.login(
@@ -369,10 +402,14 @@ The SDK returns a token but ships no HTTP client. In `commonMain`, attach the
 request (it auto-renews) rather than caching the string:
 
 ```kotlin
-val token = (credentialsManager.getCredentials() as? Result.Success)?.data?.accessToken
-
-val response = httpClient.get("https://api.example.com/me") {
-    header("Authorization", "Bearer $token")
+when (val result = credentialsManager.getCredentials()) {
+    is Result.Success -> {
+        val response = httpClient.get("https://api.example.com/me") {
+            header("Authorization", "Bearer ${result.data.accessToken}")
+        }
+        // handle response
+    }
+    is Result.Failure -> { /* re-authenticate or show error */ }
 }
 ```
 
@@ -405,13 +442,15 @@ Error families (all sealed `Auth0Error` subtypes):
 
 - **`WebAuthError`** (Universal Login): `UserCancelled`, `InvalidState`,
   `TransactionActiveAlready`, `BrowserError`, `AuthorizationError`, `ApiError`,
-  `Network`, `IdTokenValidation`.
+  `Network`, `IdTokenValidation`, `DPoP`, `Unknown`.
 - **`AuthenticationError`** (direct `AuthenticationClient` calls): `ApiError`
   (`code` / `errorDescription` / `statusCode`), `InvalidInput`, `Network`,
   `Unknown`, `IdTokenValidation`.
 - **`CredentialsManagerError`** (storage / renewal): `NoCredentials`,
   `NoRefreshToken`, `LargeMinTtl`, `ApiError`, `Network`, `StoreFailed`,
-  `CryptoFailed`. Treat `NoCredentials` / `NoRefreshToken` as "re-authenticate".
+  `CryptoFailed`, `DeserializationFailed`, `DPoPKeyMissing`, `DPoPKeyMismatch`,
+  `DPoPNotConfigured`, `DPoPKeyUnavailable`, `Unknown`. Treat `NoCredentials` /
+  `NoRefreshToken` as "re-authenticate".
 
 ## API quick reference
 
