@@ -11,7 +11,9 @@ plugins/auth0/
 │   └── plugin.json
 └── skills/
     └── auth0/
-        └── SKILL.md
+        ├── SKILL.md
+        └── agents/
+            └── openai.yaml
 ```
 
 The canonical skill content is shared with the Claude and Cursor packages; do
