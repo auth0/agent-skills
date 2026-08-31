@@ -180,7 +180,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `laravel/framework` in `composer.json` | `laravel` (variant below) |
 | `composer.json` present (no Laravel) | `php` (variant below) |
 | `go.mod` present + HTTP server/router | `go` |
-| `org.jetbrains.kotlin.multiplatform` plugin + `commonMain` source set (shared Android+iOS module) | `kmp` |
+| `org.jetbrains.kotlin.multiplatform` plugin + explicit Android **and** iOS targets or source sets (`androidMain` + `iosMain`, or `iosArm64()`/`iosSimulatorArm64()` declared) | `kmp` |
 | `Package.swift` or `.xcodeproj` | `swift` |
 | `pubspec.yaml` (Flutter, web disabled) | `flutter-native` |
 | `pubspec.yaml` (Flutter, web enabled) | `flutter-web` |
@@ -188,6 +188,10 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `*.csproj` (WinForms) | `winforms` |
 | `*.csproj` (WPF) | `wpf` |
 | `*.csproj` ASP.NET (web app or API) | `aspnetcore` (variant below) |
+
+> **`kmp` note:** `commonMain` alone is not sufficient — KMP also targets JVM,
+> desktop, and web. Only route to `kmp` when both Android and iOS targets are
+> explicitly present. If the target platforms are unclear, ask before routing.
 
 > **`react` note:** a plain React project maps to `react` for an SPA using the
 > React SDK, or `spa-js` if the app is framework-agnostic vanilla JS. If unclear,
