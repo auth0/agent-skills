@@ -235,11 +235,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AuthService {
   late final Auth0 _auth0;
   Credentials? _credentials;
-
-  static const _appCustomURL = 'myapp://callback';
+  final String _appCustomURL;
+  final String? _redirectUrl;
+  final String? _returnTo;
   static const _credentialsKey = 'auth0_credentials';
 
-  AuthService({required String domain, required String clientId}) {
+  AuthService({
+    required String domain,
+    required String clientId,
+    required String appCustomURL,
+    String? redirectUrl,
+    String? returnTo,
+  })  : _appCustomURL = appCustomURL,
+        _redirectUrl = redirectUrl,
+        _returnTo = returnTo {
+    assert(
+      (redirectUrl == null) == (returnTo == null),
+      'Set both redirectUrl and returnTo when using the intermediary HTTPS callback.',
+    );
     _auth0 = Auth0(domain, clientId);
   }
 
@@ -258,17 +271,34 @@ class AuthService {
   /// Launch Web Auth via the system browser and persist the result.
   /// No credentials are stored automatically on Windows.
   Future<void> login() async {
-    _credentials = await _auth0.windowsWebAuthentication().login(
-      appCustomURL: _appCustomURL,
-      scopes: {'openid', 'profile', 'email', 'offline_access'},
-    );
+    final webAuth = _auth0.windowsWebAuthentication();
+    if (_redirectUrl == null) {
+      _credentials = await webAuth.login(
+        appCustomURL: _appCustomURL,
+        scopes: {'openid', 'profile', 'email', 'offline_access'},
+      );
+    } else {
+      _credentials = await webAuth.login(
+        appCustomURL: _appCustomURL,
+        redirectUrl: _redirectUrl!,
+        scopes: {'openid', 'profile', 'email', 'offline_access'},
+      );
+    }
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_credentialsKey, jsonEncode(_credentials!.toMap()));
   }
 
   /// Clear the browser session and drop persisted + in-memory credentials.
   Future<void> logout() async {
-    await _auth0.windowsWebAuthentication().logout(appCustomURL: _appCustomURL);
+    final webAuth = _auth0.windowsWebAuthentication();
+    if (_returnTo == null) {
+      await webAuth.logout(appCustomURL: _appCustomURL);
+    } else {
+      await webAuth.logout(
+        appCustomURL: _appCustomURL,
+        returnTo: _returnTo!,
+      );
+    }
     _credentials = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_credentialsKey);
@@ -302,6 +332,10 @@ class _MyAppState extends State<MyApp> {
   final _authService = AuthService(
     domain: 'YOUR_AUTH0_DOMAIN',
     clientId: 'YOUR_AUTH0_CLIENT_ID',
+    appCustomURL: 'com.example.app://callback',
+    // For Option B, also set:
+    // redirectUrl: 'https://your-app.example.com/callback',
+    // returnTo: 'https://your-app.example.com/logout',
   );
 
   @override
