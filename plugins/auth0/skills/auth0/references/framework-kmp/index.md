@@ -191,14 +191,21 @@ val localProps = java.util.Properties().apply {
 }
 
 val generateAuth0ConfigTask by tasks.registering {
-    val domain = localProps.getProperty("auth0.domain", "")
-    val clientId = localProps.getProperty("auth0.clientId", "")
+    val domain = localProps.getProperty("auth0.domain")
+        ?.takeIf { it.isNotBlank() }
+        ?: error("local.properties must define auth0.domain")
+    val clientId = localProps.getProperty("auth0.clientId")
+        ?.takeIf { it.isNotBlank() }
+        ?: error("local.properties must define auth0.clientId")
+    inputs.property("domain", domain)
+    inputs.property("clientId", clientId)
     val outputDir = layout.buildDirectory.dir("generated/auth0Config/commonMain/kotlin")
     outputs.dir(outputDir)
     doLast {
         outputDir.get().asFile.also { it.mkdirs() }
             .resolve("Auth0Config.kt")
             .writeText(
+                "package auth0config\n\n" +
                 "object Auth0Config {\n" +
                 "    const val DOMAIN = \"$domain\"\n" +
                 "    const val CLIENT_ID = \"$clientId\"\n" +
