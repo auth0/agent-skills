@@ -1,5 +1,3 @@
-# Auth0 Flutter Windows
-
 # Auth0 Flutter Windows Desktop Integration
 
 `auth0_flutter` is the official Auth0 SDK for Flutter applications. **Windows
@@ -249,10 +247,11 @@ class AuthService {
   })  : _appCustomURL = appCustomURL,
         _redirectUrl = redirectUrl,
         _returnTo = returnTo {
-    assert(
-      (redirectUrl == null) == (returnTo == null),
-      'Set both redirectUrl and returnTo when using the intermediary HTTPS callback.',
-    );
+    if ((redirectUrl == null) != (returnTo == null)) {
+      throw ArgumentError(
+        'Set both redirectUrl and returnTo when using the intermediary HTTPS callback.',
+      );
+    }
     _auth0 = Auth0(domain, clientId);
   }
 

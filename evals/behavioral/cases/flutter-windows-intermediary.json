@@ -51,27 +51,32 @@
     },
     {
       "type": "matches",
-      "pattern": "windowsWebAuthentication\\(\\)\\s*\\.login\\(|windowsWebAuthentication\\(\\)[\\s\\S]{0,40}\\.login\\(",
+      "pattern": "windowsWebAuthentication\\(\\)\\s*\\.login\\(|windowsWebAuthentication\\(\\)[\\s\\S]{0,300}?\\.login\\(",
       "description": "Implements login via windowsWebAuthentication().login()"
     },
     {
       "type": "matches",
-      "pattern": "windowsWebAuthentication\\(\\)\\s*\\.logout\\(|windowsWebAuthentication\\(\\)[\\s\\S]{0,40}\\.logout\\(",
+      "pattern": "windowsWebAuthentication\\(\\)\\s*\\.logout\\(|windowsWebAuthentication\\(\\)[\\s\\S]{0,300}?\\.logout\\(",
       "description": "Implements logout via windowsWebAuthentication().logout()"
     },
     {
       "type": "matches",
-      "pattern": "appCustomURL\\s*:",
-      "description": "Passes appCustomURL to login() and logout()"
+      "pattern": "\\.login\\([\\s\\S]{0,150}?appCustomURL\\s*:",
+      "description": "Passes appCustomURL to login()"
     },
     {
       "type": "matches",
-      "pattern": "redirectUrl\\s*:",
+      "pattern": "\\.logout\\([\\s\\S]{0,150}?appCustomURL\\s*:",
+      "description": "Passes appCustomURL to logout()"
+    },
+    {
+      "type": "matches",
+      "pattern": "\\.login\\([\\s\\S]{0,150}?redirectUrl\\s*:",
       "description": "Passes redirectUrl to login() for the intermediary HTTPS callback flow"
     },
     {
       "type": "matches",
-      "pattern": "returnTo\\s*:",
+      "pattern": "\\.logout\\([\\s\\S]{0,150}?returnTo\\s*:",
       "description": "Passes returnTo to logout() for the intermediary HTTPS callback flow"
     },
     {
