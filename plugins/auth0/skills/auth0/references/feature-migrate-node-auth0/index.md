@@ -94,9 +94,11 @@ Use the output to decide scope and to route (auth-js vs server-js) per the table
 Add the target package, then rewrite the client construction. The constructor options mostly
 carry over with camelCase names; a few are renamed or dropped.
 
-Use the co-loaded routing reference for the constructor/option mapping.
+Read: references/feature-migrate-node-auth0/routing.md
 
 ### 3. Rewrite each call site using the method mapping
+
+Load breaking-changes.md first, then api-mapping.md. Apply both in a single pass at each call site. Do not do the method rename without simultaneously applying the structural changes (return shape, casing, expiresAt, error model).
 
 Go sub-client by sub-client. For every node-auth0 method, apply the mapped replacement.
 
@@ -170,12 +172,14 @@ that skill here to ensure consistency with the repo's own quality gates.
 
 ## Reference index
 
-Four references are co-loaded alongside this hub — refer to them by topic as the workflow directs:
+Load each leaf at the workflow step indicated. Do not load leaves up front.
 
-- **routing reference** — target-SDK decision + constructor/option mapping
-- **api-mapping reference** — full method-by-method mapping, all sub-clients
-- **breaking-changes reference** — return shape, casing, `expiresAt`, error model
-- **sessions reference** — session layer for web apps
+| Workflow step | Load leaf | Condition |
+|---|---|---|
+| Step 2 (target SDK + constructor) | `Read: references/feature-migrate-node-auth0/routing.md` | Always |
+| Step 3 (structural changes, **before** method rewrite) | `Read: references/feature-migrate-node-auth0/breaking-changes.md` | Always |
+| Step 3 (method rewrite, **after** breaking-changes) | `Read: references/feature-migrate-node-auth0/api-mapping.md` | Always |
+| Step 5 (session layer) | `Read: references/feature-migrate-node-auth0/sessions.md` | Only if routing decision = `@auth0/auth0-server-js` |
 
 ## SDK versions this skill targets
 

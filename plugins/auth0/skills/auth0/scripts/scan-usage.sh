@@ -75,5 +75,5 @@ printf '%-45s %s\n' "expires_in occurrences (inspect):"   "$(count 'expires_in')
 printf '%-45s %s\n' "ManagementClient refs (leave alone):" "$(count 'ManagementClient')"
 
 echo
-echo "Next: use references/feature-migrate-node-auth0-routing/index.md to choose the target SDK, then"
-echo "references/feature-migrate-node-auth0-api-mapping/index.md to rewrite each call site above."
+echo "Next: use references/feature-migrate-node-auth0/routing.md to choose the target SDK, then"
+echo "references/feature-migrate-node-auth0/api-mapping.md to rewrite each call site above."

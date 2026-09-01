@@ -374,11 +374,7 @@ If no framework detected: ask which Auth0 SDK to upgrade.
 ### migrate-node-auth0
 ```
 Read: references/feature-migrate-node-auth0/index.md
-Read: references/feature-migrate-node-auth0-api-mapping/index.md
-Read: references/feature-migrate-node-auth0-breaking-changes/index.md
-Read: references/feature-migrate-node-auth0-routing/index.md
-Read: references/feature-migrate-node-auth0-sessions/index.md
-Follow the migration workflow in the hub reference. Do not load feature-migration/index.md.
+Follow the dispatch table in that hub. Do not load feature-migration/index.md.
 ```
 
 ### tooling
