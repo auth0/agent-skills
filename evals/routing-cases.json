@@ -62,7 +62,7 @@
       "intent": "feature:mfa",
       "framework": "nextjs",
       "tooling": "cli",
-      "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
+      "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md"]
     },
     {
       "id": "feature-organizations-b2b-combo",

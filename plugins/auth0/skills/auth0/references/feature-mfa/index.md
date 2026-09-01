@@ -56,7 +56,7 @@ Recipe (do in order):
 
 | Your context | Verify with |
 |---|---|
-| Session-managing SDK (web app) | The `amr` claim (contains `mfa` when MFA completed) off the SDK's own session / current-user accessor - already validated, so trust it as-is. Accessor name is SDK-specific -> see the `framework-*` reference. |
+| Session-managing SDK (web app) | The `amr` claim (contains `mfa` when MFA completed) off the SDK's own session / current-user accessor - already validated, so trust it as-is. Accessor name is SDK-specific -> see the SDK's own example ("Example code snippets" below). |
 | Resource API (raw bearer token) | The high-value **scope** (e.g. `transfer:funds`) on the access token, via your *existing* JWT/scope-check middleware - see "Related capabilities". |
 | Frontend | Nothing - treat any `amr` check as UX, never enforcement. |
 
@@ -73,7 +73,7 @@ not relax it.
 
 The app collects credentials, so no browser runs the challenge: sign-in returns an
 `mfa_required` error carrying an `mfa_token`. Each step is a method on the SDK's own MFA
-client - get exact names from the `framework-*` example; never hand-roll the token grant
+client - get exact names from the SDK's own example ("Example code snippets" below); never hand-roll the token grant
 or the MFA API URLs.
 
 Recipe (do in order):
@@ -116,7 +116,7 @@ and what the app must get right:
 
 SDK-specific symbols (an SDK's own method or option name - e.g. the silent-token call,
 the `mfa_required`/`MfaRequiredError` handling, the interactive re-auth option, refresh-token
-requirements) are **not** listed here; they belong in the relevant `framework-*` reference.
+requirements) are **not** listed here; get them from the SDK's own example (see "Example code snippets").
 
 ### `amr` claim values
 
@@ -255,8 +255,9 @@ which uses the `mfa_token` and the MFA API surface instead:
 
 - **Tenant setup and Actions** - `tooling-cli` and `tooling-terraform` own Guardian
   factor/policy configuration and Action deployment (`auth0 actions ...`).
-- **SDK-side step-up trigger** - the detected `framework-*` reference owns the SDK's own
-  step-up call, its `mfa_required` handling, and any refresh-token requirement.
+- **SDK-side step-up trigger** - the SDK's own step-up call, its `mfa_required` handling,
+  and any refresh-token requirement live in that SDK's own example (see "Example code
+  snippets"), not in a `framework-*` reference.
 - **Server-side MFA enforcement** - the API `framework-*` references (JWT validation) own
   the scope/claim-check middleware; on a resource API gate the sensitive endpoint on the
   high-value scope (access tokens carry no `amr` by default), and on a web/session backend

@@ -933,7 +933,7 @@ const { error, isLoading } = useAuth0();
 | `consent_required` | User hasn't consented to requested scopes | Re-trigger login with `prompt: 'consent'` |
 | `invalid_grant` | Refresh token expired or revoked | Clear session and re-authenticate |
 | `access_denied` | User denied consent or rule blocked access | Check Auth0 Actions/Rules for blocks |
-| `mfa_required` | MFA is required for the user | Handle MFA enrollment flow |
+| `mfa_required` | MFA is required for the user | See the feature:mfa reference |
 
 ## Testing Patterns
 

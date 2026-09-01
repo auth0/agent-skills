@@ -184,7 +184,7 @@ const response = await fetch('https://your-api.example.com/data', {
 - API calls with tokens → see the Calling Protected APIs section below
 - Refresh tokens → see the Refresh Token Rotation section below
 - Organizations → see the Organizations section below
-- MFA handling → see the MFA Handling section below
+- MFA / step-up → ask for MFA (feature:mfa)
 - Error handling → see the Error Handling section below
 
 ## References
@@ -269,13 +269,8 @@ process.env.REACT_APP_AUTH0_DOMAIN
 | `PopupTimeoutError` | `@auth0/auth0-spa-js` | `loginWithPopup` — user didn't complete in time |
 | `PopupCancelledError` | `@auth0/auth0-spa-js` | `loginWithPopup` — popup was closed by the user |
 | `PopupOpenError` | `@auth0/auth0-spa-js` | `loginWithPopup` — `window.open` returned null (popups blocked) |
-| `MfaRequiredError` | `@auth0/auth0-spa-js` | `getTokenSilently` — MFA step required; access `error.mfa_token` |
 | `MissingRefreshTokenError` | `@auth0/auth0-spa-js` | `getTokenSilently` — refresh token not available |
 | `ConnectError` | `@auth0/auth0-spa-js` | `handleRedirectCallback` — error in connected accounts flow |
-| `MfaListAuthenticatorsError` | `@auth0/auth0-spa-js` | `auth0.mfa.getAuthenticators()` failed |
-| `MfaEnrollmentError` | `@auth0/auth0-spa-js` | `auth0.mfa.enroll()` failed |
-| `MfaChallengeError` | `@auth0/auth0-spa-js` | `auth0.mfa.challenge()` failed |
-| `MfaVerifyError` | `@auth0/auth0-spa-js` | `auth0.mfa.verify()` failed |
 
 ---
 
@@ -698,29 +693,6 @@ if (organization && invitation) {
 
 ---
 
-## MFA Handling
-
-Handle MFA when `getTokenSilently()` requires a second factor:
-
-```js
-import { MfaRequiredError } from '@auth0/auth0-spa-js';
-
-try {
-  const token = await auth0.getTokenSilently();
-} catch (error) {
-  if (error instanceof MfaRequiredError) {
-    // Trigger MFA challenge via popup or redirect
-    await auth0.loginWithPopup({
-      authorizationParams: {
-        mfa_token: error.mfa_token
-      }
-    });
-  }
-}
-```
-
----
-
 ## DPoP (Device-Bound Tokens)
 
 Enable DPoP to bind access tokens to the client's cryptographic key pair:
@@ -755,7 +727,6 @@ import {
   PopupTimeoutError,
   PopupCancelledError,
   PopupOpenError,
-  MfaRequiredError,
   MissingRefreshTokenError
 } from '@auth0/auth0-spa-js';
 
