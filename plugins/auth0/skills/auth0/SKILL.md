@@ -147,6 +147,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 
 | Signal | Framework |
 |---|---|
+| `build.gradle(.kts)` + `com.auth0.kmp:auth0` (Kotlin Multiplatform module) | `kmp` |
 | `Package.swift` or `.xcodeproj` + Auth0.swift | `swift` |
 | `build.gradle` + `com.auth0.android:auth0` | `android` |
 | `pubspec.yaml` + `auth0_flutter` + `flutter.web: false` | `flutter-native` |
@@ -179,6 +180,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `laravel/framework` in `composer.json` | `laravel` (variant below) |
 | `composer.json` present (no Laravel) | `php` (variant below) |
 | `go.mod` present + HTTP server/router | `go` |
+| `org.jetbrains.kotlin.multiplatform` plugin + `commonMain` source set (shared Android+iOS module) | `kmp` |
 | `Package.swift` or `.xcodeproj` | `swift` |
 | `pubspec.yaml` (Flutter, web disabled) | `flutter-native` |
 | `pubspec.yaml` (Flutter, web enabled) | `flutter-web` |
@@ -217,6 +219,7 @@ request. **Stop at the first match.**
 | PHP web app / PHP API | `php` / `php-api` |
 | Laravel web app / Laravel API | `laravel` / `laravel-api` |
 | Go / Golang API | `go` |
+| Kotlin Multiplatform / KMP / shared Android+iOS auth code / `com.auth0.kmp` | `kmp` |
 | Swift / iOS | `swift` |
 | Android / Kotlin | `android` |
 | Flutter (native / web) | `flutter-native` / `flutter-web` |
