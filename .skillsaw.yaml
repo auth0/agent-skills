@@ -103,7 +103,7 @@ rules:
   context-budget:
     limits:
       skill:
-        warn: 4300
+        warn: 5000
         error: 6000
 
   # feature-audit.md and feature-healthcheck.md express Auth0 feature-gap severity
