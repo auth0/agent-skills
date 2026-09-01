@@ -38,7 +38,7 @@ migration. Recommend **`@auth0/auth0-server-js`** only when the customer current
 session/cookie/refresh logic around node-auth0 and would benefit from the SDK owning it.
 
 For the full decision procedure and the constructor/option mapping for both targets, use the
-co-loaded routing reference.
+routing.md (loaded above at step 2).
 
 ## Workflow
 
@@ -96,27 +96,17 @@ carry over with camelCase names; a few are renamed or dropped.
 
 Read: references/feature-migrate-node-auth0/routing.md
 
-### 3. Rewrite each call site using the method mapping
+### 3. Apply the four structural changes at every call site
 
 Load breaking-changes.md first, then api-mapping.md. Apply both in a single pass at each call site. Do not do the method rename without simultaneously applying the structural changes (return shape, casing, expiresAt, error model).
 
-Go sub-client by sub-client. For every node-auth0 method, apply the mapped replacement.
-
-Use the co-loaded api-mapping reference for the complete method-by-method mapping
-with before/after code for `.oauth`, `.database`, `.passwordless`, `.backchannel`,
-`.tokenExchange`, and `UserInfoClient`. Note: `UserInfoClient.getUserInfo` maps to
-`TokenResponse.claims` (preferred) or `authClient.getUserInfo({ accessToken })` (auth0-auth-js)
-— see the `UserInfoClient` section in that reference.
-
-### 4. Apply the three structural changes at every call site
-
-Regardless of which method you touch, three cross-cutting changes apply. These are the source
+Regardless of which method you touch, four cross-cutting changes apply. These are the source
 of nearly all migration bugs — apply them deliberately, not mechanically:
 
 1. **Return shape** — node-auth0 wraps results in `JSONApiResponse<T>` (`.data`, `.status`,
    `.headers`). The new SDKs return the domain object directly. Read `resp.data.X` becomes `resp.X`.
    If the code read status/headers off the old envelope on success, that metadata now comes from the
-   opt-in `fullResponse` envelope — see the co-loaded breaking-changes reference → "Reading HTTP response metadata".
+   opt-in `fullResponse` envelope — see the breaking-changes.md (loaded at this step) → "Reading HTTP response metadata".
 2. **Casing** — node-auth0 uses the snake_case wire shape (`client_id`, `access_token`,
    `expires_in`). The new SDKs use camelCase (`clientId`, `accessToken`, `expiresAt`).
 3. **Token expiry** — node-auth0's `expires_in` is a **relative** lifetime in seconds. The new
@@ -127,8 +117,18 @@ Plus the **error model** change: node-auth0 throws `AuthApiError`; the new SDKs 
 per-operation errors (`TokenByCodeError`, etc.) with a structured `.cause`. MFA is detected with
 the `isMfaRequiredError()` guard instead of string-matching `error === 'mfa_required'`.
 
-Use the co-loaded breaking-changes reference for the verbose treatment of all
+Use the breaking-changes.md (loaded at this step) for the verbose treatment of all
 four changes with before/after examples, gotchas, and the exact field-by-field field maps.
+
+### 4. Rewrite each call site using the method mapping
+
+Go sub-client by sub-client. For every node-auth0 method, apply the mapped replacement.
+
+Use the api-mapping.md (loaded at this step) for the complete method-by-method mapping
+with before/after code for `.oauth`, `.database`, `.passwordless`, `.backchannel`,
+`.tokenExchange`, and `UserInfoClient`. Note: `UserInfoClient.getUserInfo` maps to
+`TokenResponse.claims` (preferred) or `authClient.getUserInfo({ accessToken })` (auth0-auth-js)
+— see the `UserInfoClient` section in that reference.
 
 ### 5. (Session apps only) Wire the session layer
 
@@ -136,7 +136,9 @@ If routing to `@auth0/auth0-server-js`, replace the customer's hand-rolled sessi
 handling with the ServerClient flow (`startInteractiveLogin` → `completeInteractiveLogin` →
 `getUser` / `getAccessToken` → `logout`) and a state/transaction store.
 
-Use the co-loaded sessions reference for the session model,
+Read: references/feature-migrate-node-auth0/sessions.md
+
+Use the sessions.md (loaded at this step) for the session model,
 store setup, and the redirect-flow rewrite.
 
 ### 6. Build-until-green verification loop

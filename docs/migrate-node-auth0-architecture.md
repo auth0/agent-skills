@@ -40,8 +40,8 @@ The four detailed references live inside the hub's own directory as leaves:
 references/feature-migrate-node-auth0/
   index.md            ← hub (always loaded)
   routing.md          ← loaded at step 2 (target SDK + constructor)
-  api-mapping.md      ← loaded at step 3 (method rewrite)
-  breaking-changes.md ← loaded at step 4 (structural changes)
+  breaking-changes.md ← loaded at step 3 (structural changes, before method rewrite)
+  api-mapping.md      ← loaded at step 3 (method rewrite, after breaking-changes)
   sessions.md         ← loaded at step 5 (session apps only)
 ```
 
