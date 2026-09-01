@@ -150,9 +150,15 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `build.gradle(.kts)` + `com.auth0.kmp:auth0` (Kotlin Multiplatform module) | `kmp` |
 | `Package.swift` or `.xcodeproj` + Auth0.swift | `swift` |
 | `build.gradle` + `com.auth0.android:auth0` | `android` |
-| `pubspec.yaml` + `auth0_flutter` + `windows/` | `flutter-windows` |
+| `pubspec.yaml` + `auth0_flutter` + developer names/targets Windows desktop | `flutter-windows` |
 | `pubspec.yaml` + `auth0_flutter` + `flutter.web: false` | `flutter-native` |
 | `pubspec.yaml` + `auth0_flutter` + web enabled | `flutter-web` |
+
+> `flutter create` scaffolds `windows/`, `android/`, `ios/`, and `web/`
+> together by default, so the presence of `windows/` alone doesn't mean
+> Windows is the target. Only pick `flutter-windows` when the developer's
+> request names Windows/desktop, or `windows/` is the *only* platform
+> directory present. Otherwise ask which platform(s) they're building for.
 
 ### Tier 2 — Framework from non-Auth0 workspace dependencies
 
@@ -183,7 +189,7 @@ their base framework.
 | `go.mod` present + HTTP server/router | `go` |
 | `org.jetbrains.kotlin.multiplatform` plugin + `commonMain` source set (shared Android+iOS module) | `kmp` |
 | `Package.swift` or `.xcodeproj` | `swift` |
-| `pubspec.yaml` (Flutter) + `windows/` | `flutter-windows` |
+| `pubspec.yaml` (Flutter) + developer names/targets Windows desktop | `flutter-windows` |
 | `pubspec.yaml` (Flutter, web disabled) | `flutter-native` |
 | `pubspec.yaml` (Flutter, web enabled) | `flutter-web` |
 | `*.csproj` referencing MAUI | `maui` |

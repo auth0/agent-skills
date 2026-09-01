@@ -59,8 +59,13 @@
     },
     {
       "type": "matches",
-      "pattern": "appCustomURL\\s*:",
-      "description": "Passes appCustomURL to login() and logout()"
+      "pattern": "\\.login\\([\\s\\S]{0,150}?appCustomURL\\s*:",
+      "description": "Passes appCustomURL to login()"
+    },
+    {
+      "type": "matches",
+      "pattern": "\\.logout\\([\\s\\S]{0,150}?appCustomURL\\s*:",
+      "description": "Passes appCustomURL to logout()"
     },
     {
       "type": "not_contains_any",
@@ -94,7 +99,8 @@
       "values": [
         "manifestPlaceholders",
         "AndroidManifest",
-        "CFBundleURLTypes"
+        "CFBundleURLTypes",
+        "Info.plist"
       ],
       "description": "Does not use mobile-only manifest config (manifestPlaceholders, AndroidManifest, Info.plist, CFBundleURLTypes)"
     },

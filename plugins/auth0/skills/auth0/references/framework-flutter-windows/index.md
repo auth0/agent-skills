@@ -10,18 +10,16 @@ protocol handler instead of Info.plist/AndroidManifest registration, a native
 C++ runner integration to receive the callback, and **no built-in credential
 storage** — the app must persist the returned `Credentials` itself.
 
-> **Agent instruction:** Before providing SDK setup instructions, fetch the latest release version by running one of:
-> ```bash
-> gh api repos/auth0/auth0-flutter/releases/latest --jq '.tag_name'
-> ```
-> ```bash
-> flutter pub info auth0_flutter 2>/dev/null | head -5
-> ```
-> Or check pub.dev:
+> **Agent instruction:** Before providing SDK setup instructions, fetch the
+> latest published version from pub.dev:
 > ```bash
 > curl -s https://pub.dev/api/packages/auth0_flutter | python3 -c "import sys,json;print(json.load(sys.stdin)['latest']['version'])"
 > ```
-> Use the returned version in all dependency lines instead of any hardcoded version below. Windows support requires v2.1.0 or later.
+> This returns a bare semver (e.g. `2.2.0`) — no `v` prefix or GitHub tag
+> formatting. Use that exact value as `<VERSION>` in the Step 1 dependency
+> line below instead of any hardcoded version. Windows support requires
+> v2.1.0 or later; if the fetched version is older, use `2.1.0` and flag it
+> to the user.
 
 ## When NOT to Use
 
@@ -51,8 +49,11 @@ storage** — the app must persist the returned `Credentials` itself.
 > **Agent instruction:** Check the project directory for `pubspec.yaml` and a `windows/` platform directory. If neither is present, this is not a Flutter Windows project — ask the user.
 
 ```bash
-flutter pub add auth0_flutter
+flutter pub add auth0_flutter:^<VERSION>
 ```
+
+Replace `<VERSION>` with the pub.dev version fetched above (e.g.
+`auth0_flutter:^2.2.0`).
 
 ### Step 2 — Choose a callback pattern and configure Auth0
 
@@ -102,11 +103,11 @@ them explicitly into the vcpkg instance:
 ```powershell
 git clone https://github.com/microsoft/vcpkg
 .\vcpkg\bootstrap-vcpkg.bat
-setx VCPKG_ROOT "%CD%\vcpkg"
+$env:VCPKG_ROOT = "$PWD\vcpkg"
 ```
 
 ```powershell
-vcpkg install --recurse "cpp-httplib[core,openssl]:x64-windows" nlohmann-json:x64-windows openssl:x64-windows
+.\vcpkg\vcpkg.exe install --recurse "cpp-httplib[core,openssl]:x64-windows" nlohmann-json:x64-windows openssl:x64-windows
 ```
 
 ### Step 4 — Configure `windows/CMakeLists.txt`
@@ -198,7 +199,7 @@ waiting plugin.
 > 1. **Single-instance mutex** — a second launch triggered by the OS
 >    protocol handler forwards its URI to the already-running instance
 >    instead of opening a new window.
-> 2. **Named-pipe server** (`\\.\pipe\auth0flutter_pipe`) — the running
+> 2. **Named-pipe server** (`\\.\pipe\<scheme>_auth0_pipe`) — the running
 >    instance listens for the forwarded URI, validates it starts with the
 >    app's callback prefix (e.g. `myapp://callback`), and writes it to
 >    `PLUGIN_STARTUP_URL`. The pipe's security descriptor must restrict
@@ -209,22 +210,34 @@ waiting plugin.
 >    protocol-scheme URI, if present) is written to `PLUGIN_STARTUP_URL`
 >    before Flutter starts, after the same prefix check.
 >
-> Update `kCallbackPrefix` in the copied file to match the chosen scheme
-> (e.g. `L"myapp://callback"`).
+> The example file's mutex and pipe names are fixed strings shared by every
+> app that copies them unmodified — two different Auth0-Flutter-Windows apps
+> installed on the same machine would collide on the same mutex/pipe, and one
+> app's callback could be forwarded into the other's window. Rename both to
+> include the app's own custom scheme, e.g. `Local\<scheme>_auth0_singleton`
+> for the mutex and `\\.\pipe\<scheme>_auth0_pipe` for the pipe, and update
+> `kCallbackPrefix` to match the chosen scheme (e.g. `L"myapp://callback"`).
 
 ### Step 7 — Implement Authentication
 
 > **Agent instruction:** search the project for the main app entry point (`lib/main.dart`). Create an `AuthService` class that stores `Credentials` manually — there is no `CredentialsManager` on Windows, so the app owns persistence (e.g. via `shared_preferences` or secure storage).
 
+```bash
+flutter pub add shared_preferences
+```
+
 ```dart
 // lib/auth_service.dart
+import 'dart:convert';
 import 'package:auth0_flutter/auth0_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
   late final Auth0 _auth0;
   Credentials? _credentials;
 
   static const _appCustomURL = 'myapp://callback';
+  static const _credentialsKey = 'auth0_credentials';
 
   AuthService({required String domain, required String clientId}) {
     _auth0 = Auth0(domain, clientId);
@@ -233,24 +246,40 @@ class AuthService {
   bool get isAuthenticated => _credentials != null;
   UserProfile? get user => _credentials?.user;
 
-  /// Launch Web Auth via the system browser. No credentials are stored
-  /// automatically on Windows — persist the result yourself.
+  /// Restore credentials saved from a previous session, if any.
+  Future<void> restoreSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final stored = prefs.getString(_credentialsKey);
+    if (stored != null) {
+      _credentials = Credentials.fromMap(jsonDecode(stored));
+    }
+  }
+
+  /// Launch Web Auth via the system browser and persist the result.
+  /// No credentials are stored automatically on Windows.
   Future<void> login() async {
     _credentials = await _auth0.windowsWebAuthentication().login(
       appCustomURL: _appCustomURL,
       scopes: {'openid', 'profile', 'email', 'offline_access'},
     );
-    // TODO: persist _credentials (e.g. shared_preferences / secure storage)
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_credentialsKey, jsonEncode(_credentials!.toMap()));
   }
 
-  /// Clear the browser session and drop the in-memory credentials.
+  /// Clear the browser session and drop persisted + in-memory credentials.
   Future<void> logout() async {
     await _auth0.windowsWebAuthentication().logout(appCustomURL: _appCustomURL);
     _credentials = null;
-    // TODO: also clear any persisted credentials
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_credentialsKey);
   }
 }
 ```
+
+> **Note:** `shared_preferences` stores plaintext on disk — fine for this
+> example, but for production apps handling refresh tokens prefer OS-backed
+> secure storage (e.g. `flutter_secure_storage`, which uses DPAPI on
+> Windows).
 
 ```dart
 // lib/main.dart
@@ -364,12 +393,17 @@ toolchain line (Step 4) or missing vcpkg packages (Step 3).
 in Option A, doubles as the `redirect_uri`/`returnTo` value automatically.
 
 Minimal intermediary-server implementation (Node.js/Express) for Option B —
-validate `state` server-side before forwarding, since this endpoint is an
-open-redirect target otherwise:
+validate `state` against the value stored when the auth request was initiated
+before forwarding, since this endpoint is an open-redirect target otherwise:
 
 ```javascript
 app.get('/callback', (req, res) => {
   const { code, state, error, error_description } = req.query;
+  const expectedState = pendingStates.get(state); // stored when the login request started
+  if (!state || !expectedState) {
+    return res.status(400).send('Invalid or missing state');
+  }
+  pendingStates.delete(state);
   if (error) {
     res.redirect(`myapp://callback?error=${error}&error_description=${encodeURIComponent(error_description)}`);
   } else {
