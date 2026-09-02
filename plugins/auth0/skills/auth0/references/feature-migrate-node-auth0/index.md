@@ -74,7 +74,7 @@ Before touching any code, verify the environment is safe for an in-place rewrite
    
    Both SDKs are published on npm (`@auth0/auth0-auth-js@1.12.1`, `@auth0/auth0-server-js@1.12.1` are the current `latest`), and both require Node.js 20 LTS or newer — verify the project's runtime before installing.
 
-4. **Verify source SDK:** Confirm that node-auth0 v5 is present in the project's dependencies and is the source SDK being migrated.
+4. **Verify source SDK:** Confirm that node-auth0 v6 is present in the project's dependencies and is the source SDK being migrated.
 
 ### 1. Discover every call site
 
@@ -186,7 +186,7 @@ Load each leaf at the workflow step indicated. Do not load leaves up front.
 
 ## SDK versions this skill targets
 
-- **Source:** `auth0` (node-auth0) v5.x — `AuthenticationClient`, `UserInfoClient`
+- **Source:** `auth0` (node-auth0) v6.x — `AuthenticationClient`, `UserInfoClient`
 - **Target:** `@auth0/auth0-auth-js` >= v1.12.1 (token layer), `@auth0/auth0-server-js` >= v1.12.1 (session layer)
 
 **Important:** both SDKs are published on npm at v1.12.1 and require Node.js 20 LTS or newer.
