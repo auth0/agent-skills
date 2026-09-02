@@ -30,7 +30,7 @@ behavioral/
 └── cases/
     ├── flask.json        # { slug, origin_skill, evals[], graders[] }
     ├── express-jwt.json
-    └── ...               # 19 cases; 13 have machine graders, 6 (branding,
+    └── ...               # 20 cases; 14 have machine graders, 6 (branding,
                           # custom-domains, cli, acul, audit, healthcheck) are
                           # expectations-only → manual transcript review
 ```
@@ -89,6 +89,12 @@ Notes on the negative graders:
 - **Generated lockfiles** (`package-lock.json`, `Podfile.lock`, `*.lock`, …) are
   excluded from the source scan entirely — they pin the full transitive graph,
   so substrings there don't reflect the authored code.
+- **Template files are invisible.** `SOURCE_EXTENSIONS` in `graders.mjs` covers
+  `.html` but not view-engine templates (`.ejs`, `.hbs`, `.pug`, `.liquid`, …),
+  so a grader can't assert anything about a rendered template's contents. Target
+  the server source instead — e.g. the `fastify` case checks the *argument* passed
+  to `reply.view()` in `server.js` rather than looking for `views/profile.ejs`
+  on disk. Add the extension to the set if you need template assertions.
 - `not_contains*` / `not_matches` graders are auto-invalidated if no positive
   grader passed, so an empty workspace can't score by writing nothing.
 
