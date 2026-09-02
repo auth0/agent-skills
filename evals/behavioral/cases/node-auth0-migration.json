@@ -16,9 +16,9 @@
           "description": "Uses getTokenByRefreshToken for refresh grant"
         },
         {
-          "type": "contains",
-          "value": "tokens.accessToken",
-          "description": "Reads tokens.accessToken directly"
+          "type": "matches",
+          "description": "Reads accessToken from result (direct property access or destructuring)",
+          "pattern": "\\w+\\.accessToken|(?:const|let) \\{[^}]*accessToken[^}]*\\}\\s*=\\s*await\\s+\\w+\\.getToken"
         },
         {
           "type": "not_matches",
@@ -39,7 +39,7 @@
     },
     {
       "id": "return-shape-and-casing",
-      "prompt": "Migrate the file src/client-credentials.ts in place. It performs a node-auth0 client-credentials M2M call; migrate it to the modern SDK.",
+      "prompt": "Migrate the file src/client-credentials.ts in place. It performs a node-auth0 client-credentials M2M call; migrate it to @auth0/auth0-auth-js.",
       "scaffold": {
         "src/client-credentials.ts": "import { AuthenticationClient } from 'auth0';\nconst auth0 = new AuthenticationClient({ domain, clientId, clientSecret });\nconst resp = await auth0.oauth.clientCredentialsGrant({ audience: 'https://api.example.com' });\nconst token = resp.data.access_token;\n"
       },
@@ -51,9 +51,9 @@
           "description": "Uses getTokenByClientCredentials for M2M"
         },
         {
-          "type": "contains",
-          "value": "tokens.accessToken",
-          "description": "Reads tokens.accessToken directly"
+          "type": "matches",
+          "description": "Reads accessToken from result (direct property access or destructuring)",
+          "pattern": "\\w+\\.accessToken|(?:const|let) \\{[^}]*accessToken[^}]*\\}\\s*=\\s*await\\s+\\w+\\.getToken"
         },
         {
           "type": "not_contains",
@@ -97,9 +97,9 @@
           "description": "Does not use string comparison e.error === 'mfa_required'"
         },
         {
-          "type": "contains",
-          "value": "tokens.accessToken",
-          "description": "Reads tokens.accessToken directly"
+          "type": "matches",
+          "description": "Reads accessToken from result (direct property access or destructuring)",
+          "pattern": "\\w+\\.accessToken|(?:const|let) \\{[^}]*accessToken[^}]*\\}\\s*=\\s*await\\s+\\w+\\.getToken"
         }
       ]
     },

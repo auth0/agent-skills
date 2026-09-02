@@ -34,6 +34,10 @@ instance directly (not a sub-client).
 
 The single most important semantic change in the whole migration.
 
+> **Server-js routing:** If your routing decision (Step 2) is `@auth0/auth0-server-js`, do NOT use
+> `getTokenByCode` for the callback handler. Use `serverClient.completeInteractiveLogin(callbackUrl, storeOptions)`
+> instead (covered in Step 5 — the sessions reference). Skip the rest of this entry.
+
 **node-auth0** — you pass the raw authorization `code` (and `redirect_uri`) that you extracted
 from the callback query string yourself:
 
@@ -439,7 +443,7 @@ const profile = await resp.json();
 
 | node-auth0 | new SDK equivalent | Layer |
 |---|---|---|
-| `oauth.authorizationCodeGrant` | `authClient.getTokenByCode(url, opts)` | auth-js |
+| `oauth.authorizationCodeGrant` | `authClient.getTokenByCode(url, opts)` (auth-js) / `serverClient.completeInteractiveLogin(url, storeOpts)` — see sessions.md (server-js) | auth-js / server-js |
 | `oauth.authorizationCodeGrantWithPKCE` | `authClient.getTokenByCode(url, { codeVerifier })` | auth-js |
 | `oauth.refreshTokenGrant` | `authClient.getTokenByRefreshToken({ refreshToken })` | auth-js |
 | `oauth.passwordGrant` | `authClient.getTokenByPassword({ ... })` | auth-js |
