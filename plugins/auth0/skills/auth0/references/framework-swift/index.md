@@ -771,32 +771,13 @@ Auth0
             // Access token available at credentials.accessToken
             credentialsManager.store(credentials: credentials)
         case .failure(let error) where error.isMultifactorRequired:
-            // Extract MFA token for MFA challenge flow
-            if let mfaPayload = error.mfaRequiredErrorPayload {
-                startMFAChallenge(mfaToken: mfaPayload.mfaToken)
-            }
+            // MFA required — see the feature:mfa reference
         case .failure(let error) where error.isNetworkError:
             showNetworkError()
         case .failure(let error):
             print("Auth error code: \(error.code), description: \(error.localizedDescription)")
         }
     }
-```
-
----
-
-## MFA (Multi-Factor Authentication)
-
-### Handling MFA Required Error
-
-```swift
-// When login returns isMultifactorRequired = true, challenge with OTP
-func verifyMFA(mfaToken: String, otp: String) async throws -> Credentials {
-    return try await Auth0
-        .authentication()
-        .multifactorChallenge(mfaToken: mfaToken, types: ["otp"])
-        .start()
-}
 ```
 
 ---

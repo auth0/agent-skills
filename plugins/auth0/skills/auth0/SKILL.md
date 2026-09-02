@@ -4,7 +4,7 @@ description: Use when adding, fixing, or improving how an app authenticates user
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
-  version: '2.1.1'
+  version: '2.1.2'
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
@@ -285,7 +285,6 @@ Use references/tooling-{tooling}/index.md for all Auth0 tenant configuration ste
 ```
 Read: references/feature-mfa/index.md
 Read: references/tooling-{tooling}/index.md
-If framework detected: Read references/framework-{framework}/index.md (for SDK-side step-up trigger)
 ```
 
 ### feature:organizations
