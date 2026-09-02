@@ -10,9 +10,11 @@ storage** — the app must persist the returned `Credentials` itself.
 
 > **Agent instruction:** Before providing SDK setup instructions, fetch the
 > latest published version from pub.dev:
+>
 > ```bash
 > curl -s https://pub.dev/api/packages/auth0_flutter | python3 -c "import sys,json;print(json.load(sys.stdin)['latest']['version'])"
 > ```
+>
 > This returns a bare semver (e.g. `2.2.0`) — no `v` prefix or GitHub tag
 > formatting. Use that exact value as `<VERSION>` in the Step 1 dependency
 > line below instead of any hardcoded version. Windows support requires
@@ -189,9 +191,11 @@ waiting plugin.
 > validation of the forwarded URI). Do not hand-write this logic from
 > memory — fetch the canonical reference implementation and adapt only the
 > callback-prefix constant to the chosen scheme:
+>
 > ```bash
 > curl -sL https://raw.githubusercontent.com/auth0/auth0-flutter/main/auth0_flutter/example/windows/runner/main.cpp
 > ```
+>
 > The three required pieces, copied from that file into the app's
 > `wWinMain`:
 > 1. **Single-instance mutex** — a second launch triggered by the OS
@@ -258,12 +262,18 @@ class AuthService {
   bool get isAuthenticated => _credentials != null;
   UserProfile? get user => _credentials?.user;
 
-  /// Restore credentials saved from a previous session, if any.
+  /// Restore credentials saved from a previous session, if still valid.
+  /// There's no refresh-token renewal here — an expired record is dropped,
+  /// leaving the user to log in again.
   Future<void> restoreSession() async {
     final prefs = await SharedPreferences.getInstance();
     final stored = prefs.getString(_credentialsKey);
-    if (stored != null) {
-      _credentials = Credentials.fromMap(jsonDecode(stored));
+    if (stored == null) return;
+    final credentials = Credentials.fromMap(jsonDecode(stored));
+    if (credentials.expiresAt.isAfter(DateTime.now())) {
+      _credentials = credentials;
+    } else {
+      await prefs.remove(_credentialsKey);
     }
   }
 
@@ -288,19 +298,25 @@ class AuthService {
   }
 
   /// Clear the browser session and drop persisted + in-memory credentials.
+  /// Local state is cleared even if the remote logout call fails, so the
+  /// app never gets stuck showing an authenticated screen with a stale
+  /// persisted record; the error is rethrown for the caller to surface.
   Future<void> logout() async {
-    final webAuth = _auth0.windowsWebAuthentication();
-    if (_returnTo == null) {
-      await webAuth.logout(appCustomURL: _appCustomURL);
-    } else {
-      await webAuth.logout(
-        appCustomURL: _appCustomURL,
-        returnTo: _returnTo!,
-      );
+    try {
+      final webAuth = _auth0.windowsWebAuthentication();
+      if (_returnTo == null) {
+        await webAuth.logout(appCustomURL: _appCustomURL);
+      } else {
+        await webAuth.logout(
+          appCustomURL: _appCustomURL,
+          returnTo: _returnTo!,
+        );
+      }
+    } finally {
+      _credentials = null;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_credentialsKey);
     }
-    _credentials = null;
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_credentialsKey);
   }
 }
 ```
@@ -336,13 +352,24 @@ class _MyAppState extends State<MyApp> {
     // redirectUrl: 'https://your-app.example.com/callback',
     // returnTo: 'https://your-app.example.com/logout',
   );
+  bool _restoring = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _authService.restoreSession().then((_) {
+      setState(() => _restoring = false);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: _authService.isAuthenticated
-          ? HomeScreen(authService: _authService, onChanged: _refresh)
-          : LoginScreen(authService: _authService, onChanged: _refresh),
+      home: _restoring
+          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+          : _authService.isAuthenticated
+              ? HomeScreen(authService: _authService, onChanged: _refresh)
+              : LoginScreen(authService: _authService, onChanged: _refresh),
     );
   }
 
@@ -391,8 +418,18 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () async {
-              await authService.logout();
-              onChanged();
+              final messenger = ScaffoldMessenger.of(context);
+              try {
+                await authService.logout();
+              } on WebAuthenticationException catch (e) {
+                messenger.showSnackBar(
+                  SnackBar(content: Text('Logout error: ${e.message}')),
+                );
+              } finally {
+                // Local credentials are always cleared by logout(), so
+                // refresh to LoginScreen even if the remote call failed.
+                onChanged();
+              }
             },
             icon: const Icon(Icons.logout),
           ),
@@ -438,9 +475,9 @@ app.get('/callback', (req, res) => {
   }
   pendingStates.delete(state);
   if (error) {
-    res.redirect(`myapp://callback?error=${error}&error_description=${encodeURIComponent(error_description)}`);
+    res.redirect(`myapp://callback?error=${encodeURIComponent(error)}&error_description=${encodeURIComponent(error_description)}`);
   } else {
-    res.redirect(`myapp://callback?code=${code}&state=${state}`);
+    res.redirect(`myapp://callback?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`);
   }
 });
 ```

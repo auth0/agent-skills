@@ -98,7 +98,7 @@
     },
     {
       "id": "fw-flutter-windows",
-      "prompt": "Add Auth0 login to my Flutter Windows desktop app.",
+      "prompt": "Add login and logout to my Flutter Windows desktop app.",
       "should_activate": true,
       "why": "Framework-only signal naming a specific platform variant (Flutter Windows desktop), not just 'Flutter' generically.",
       "tags": ["framework-loss"],
