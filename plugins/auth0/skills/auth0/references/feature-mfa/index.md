@@ -56,7 +56,7 @@ Recipe (do in order):
 
 | Your context | Verify with |
 |---|---|
-| Session-managing SDK (web app) | The `amr` claim (contains `mfa` when MFA completed) off the SDK's own session / current-user accessor - already validated, so trust it as-is. Accessor name is SDK-specific -> see the `framework-*` reference. |
+| Session-managing SDK (web app) | The `amr` claim (contains `mfa` when MFA completed) off the SDK's own session / current-user accessor - already validated, so trust it as-is. Accessor name is SDK-specific -> see the SDK's own example ("Example code snippets" below). |
 | Resource API (raw bearer token) | The high-value **scope** (e.g. `transfer:funds`) on the access token, via your *existing* JWT/scope-check middleware - see "Related capabilities". |
 | Frontend | Nothing - treat any `amr` check as UX, never enforcement. |
 
@@ -73,7 +73,7 @@ not relax it.
 
 The app collects credentials, so no browser runs the challenge: sign-in returns an
 `mfa_required` error carrying an `mfa_token`. Each step is a method on the SDK's own MFA
-client - get exact names from the `framework-*` example; never hand-roll the token grant
+client - get exact names from the SDK's own example ("Example code snippets" below); never hand-roll the token grant
 or the MFA API URLs.
 
 Recipe (do in order):
@@ -116,7 +116,7 @@ and what the app must get right:
 
 SDK-specific symbols (an SDK's own method or option name - e.g. the silent-token call,
 the `mfa_required`/`MfaRequiredError` handling, the interactive re-auth option, refresh-token
-requirements) are **not** listed here; they belong in the relevant `framework-*` reference.
+requirements) are **not** listed here; get them from the SDK's own example (see "Example code snippets").
 
 ### `amr` claim values
 
@@ -148,23 +148,29 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 
 ### Example code snippets
 
-**Before writing MFA code:** find the one row below matching the detected SDK and read
-ONLY the named section from its URL (from that heading down to the next `## `) - these are
-large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
-No matching row (e.g. a backend SDK like `auth0-server-python`), or the fetch fails? Fall
-back to the language-neutral mechanic above. Never substitute a web search for "how to do
-MFA".
-files or docs searches.
+**Before writing MFA code:** find the row below matching the detected SDK **and** the flow
+being implemented — for SDKs with both an `(MFA)` and a `(step-up)` row, default to `(step-up)` unless the user explicitly requests the MFA API flow.
+Read ONLY the named section from its URL (from that heading down to the next `## `) - these
+are large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
+No matching row (a backend SDK not listed below), or the fetch fails? Fall back to the
+language-neutral mechanic above. Never substitute a web search for "how to do MFA".
 
 | SDK | Raw example file (markdown) | Find section |
 |---|---|---|
-| `@auth0/auth0-react` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-spa-js` | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-react` (MFA) | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-react` (step-up) | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-vue` (MFA) | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-vue` (step-up) | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-angular` (MFA) | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-angular` (step-up) | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Step-Up Authentication` |
+| `@auth0/auth0-spa-js` (step-up) | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/step-up-authentication.md | whole file |
 | `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
-| `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/EXAMPLES.md | `## Using Multi-Factor Authentication (MFA)` |
+| `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/examples/mfa.md | whole file |
 | `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
+| `Auth0.swift` (iOS/macOS) | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/mfa-api.md | whole file |
+| `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/authentication-api/mfa-flexible-factors.md | whole file |
+| `auth0-server-python` (MFA flow) | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/MFA.md | whole file |
+| `auth0-server-python` (step-up) | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/StepUpAuthentication.md | whole file |
 
 ## Tenant configuration
 
@@ -249,8 +255,9 @@ which uses the `mfa_token` and the MFA API surface instead:
 
 - **Tenant setup and Actions** - `tooling-cli` and `tooling-terraform` own Guardian
   factor/policy configuration and Action deployment (`auth0 actions ...`).
-- **SDK-side step-up trigger** - the detected `framework-*` reference owns the SDK's own
-  step-up call, its `mfa_required` handling, and any refresh-token requirement.
+- **SDK-side step-up trigger** - the SDK's own step-up call, its `mfa_required` handling,
+  and any refresh-token requirement live in that SDK's own example (see "Example code
+  snippets"), not in a `framework-*` reference.
 - **Server-side MFA enforcement** - the API `framework-*` references (JWT validation) own
   the scope/claim-check middleware; on a resource API gate the sensitive endpoint on the
   high-value scope (access tokens carry no `amr` by default), and on a web/session backend

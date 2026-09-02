@@ -20,10 +20,13 @@ class SkillDirectoryStructureRule(Rule):
     - references/  - Additional documentation
     - assets/      - Static resources (templates, images, data files)
     - tests/       - Validation artifacts (TDD transcripts, test data)
+    - agents/      - Client-specific interface config (e.g. agents/openai.yaml)
     """
 
-    # Allowed directories per Agent Skills spec (plus tests/ for validation artifacts)
-    ALLOWED_DIRS = {'scripts', 'references', 'assets', 'tests'}
+    # Allowed directories per Agent Skills spec (plus tests/ for validation
+    # artifacts and agents/ for the Agent Plugins per-skill interface config,
+    # e.g. agents/openai.yaml required by the OpenAI plugin submission checker)
+    ALLOWED_DIRS = frozenset({'scripts', 'references', 'assets', 'tests', 'agents'})
 
     # Files that are allowed in skill root
     ALLOWED_ROOT_FILES = {'SKILL.md', '.gitignore', '.gitkeep'}
@@ -34,7 +37,7 @@ class SkillDirectoryStructureRule(Rule):
 
     @property
     def description(self) -> str:
-        return "Skills must follow Agent Skills specification: only SKILL.md in root, other content in scripts/, references/, assets/, or tests/"
+        return "Skills must follow Agent Skills specification: only SKILL.md in root, other content in scripts/, references/, assets/, tests/, or agents/"
 
     def default_severity(self) -> Severity:
         return Severity.ERROR
@@ -85,7 +88,7 @@ class SkillDirectoryStructureRule(Rule):
                     violations.append(
                         self.violation(
                             f"Unexpected directory '{item_name}/' in skill root. "
-                            f"Only 'scripts/', 'references/', 'assets/', and 'tests/' "
+                            f"Only 'scripts/', 'references/', 'assets/', 'tests/', and 'agents/' "
                             f"directories are allowed. Move content to an appropriate directory.",
                             file_path=item
                         )

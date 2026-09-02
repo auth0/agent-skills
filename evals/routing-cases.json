@@ -62,7 +62,7 @@
       "intent": "feature:mfa",
       "framework": "nextjs",
       "tooling": "cli",
-      "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
+      "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md"]
     },
     {
       "id": "feature-organizations-b2b-combo",
@@ -180,6 +180,13 @@
       "expect_refs": ["framework-android/index.md"]
     },
     {
+      "id": "integrate-kmp",
+      "intent": "integrate",
+      "framework": "kmp",
+      "tooling": "cli",
+      "expect_refs": ["framework-kmp/index.md", "tooling-cli/index.md"]
+    },
+    {
       "id": "integrate-ionic-angular",
       "intent": "integrate",
       "framework": "ionic-angular",
@@ -234,6 +241,13 @@
       "framework": "java-mvc",
       "tooling": "cli",
       "expect_refs": ["framework-java-mvc/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-node-auth0",
+      "intent": "integrate",
+      "framework": "node-auth0",
+      "tooling": "cli",
+      "expect_refs": ["framework-node-auth0/index.md", "tooling-cli/index.md"]
     },
     {
       "id": "audit-tenant",

@@ -4,7 +4,7 @@ description: Use when adding, fixing, or improving how an app authenticates user
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
-  version: '2.1.0'
+  version: '2.1.2'
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
@@ -37,7 +37,7 @@ listing which reference files to load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
-| Add login, signup, sign-in, or "let users log in / create accounts" to an app | **integrate** |
+| Add login, signup, sign-in, "let users log in / create accounts" to an app, or otherwise add and use an Auth0 SDK in an app or script | **integrate** |
 | Require a second step after the password — a one-time code, SMS or email code, authenticator app, passkey, fingerprint/face (biometric), or security key; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
 | Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
 | Deploy a hosted self-service portal for profile, passkeys, MFA, or organization details instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
@@ -55,6 +55,10 @@ listing which reference files to load.
 | Migrate a Node.js app off the legacy `auth0` npm package to `auth0-server-js` / `auth0-auth-js` — API mapping, breaking changes, config differences. *Auth0: node-auth0 migration.* | **migrate-node-auth0** |
 | Install Auth0's Vercel Marketplace integration, connect Auth0 to a Vercel project, or sync Auth0 configuration into a Vercel-hosted Next.js app. *Auth0: Vercel native integration.* | **integrate** |
 | Use the Auth0 CLI directly — "create an app/API with the `auth0` CLI", script tenant setup, or automate Auth0 config in CI — with no application framework in play. *Auth0: CLI / tooling-only.* | **tooling** |
+
+### If nothing clearly matches
+
+Pick the closest goal. If the goal is genuinely unclear, ask the developer what they're trying to accomplish - don't guess an intent.
 
 ---
 
@@ -90,6 +94,7 @@ SDK, so check `@capacitor/browser` rows first.
 | `express-oauth2-jwt-bearer` | `express-jwt` |
 | `react-native-auth0` + `app.json` or `app.config.js` present | `expo` |
 | `react-native-auth0` (no Expo files) | `react-native` |
+| `auth0` (the bare package, not `@auth0/*`) | `node-auth0` |
 
 ### Python — check `requirements.txt` or `pyproject.toml`
 
@@ -142,6 +147,7 @@ SDK, so check `@capacitor/browser` rows first.
 
 | Signal | Framework |
 |---|---|
+| `build.gradle(.kts)` + `com.auth0.kmp:auth0` (Kotlin Multiplatform module) | `kmp` |
 | `Package.swift` or `.xcodeproj` + Auth0.swift | `swift` |
 | `build.gradle` + `com.auth0.android:auth0` | `android` |
 | `pubspec.yaml` + `auth0_flutter` + `flutter.web: false` | `flutter-native` |
@@ -174,6 +180,7 @@ before their base framework.
 | `laravel/framework` in `composer.json` | `laravel` (variant below) |
 | `composer.json` present (no Laravel) | `php` (variant below) |
 | `go.mod` present + HTTP server/router | `go` |
+| `org.jetbrains.kotlin.multiplatform` plugin + `commonMain` source set (shared Android+iOS module) | `kmp` |
 | `Package.swift` or `.xcodeproj` | `swift` |
 | `pubspec.yaml` (Flutter, web disabled) | `flutter-native` |
 | `pubspec.yaml` (Flutter, web enabled) | `flutter-web` |
@@ -199,6 +206,7 @@ request. **Stop at the first match.**
 | Vue (not Nuxt/Ionic) | `vue` |
 | React SPA (not Next.js) | `react` |
 | vanilla JS / plain JS / no framework SPA | `spa-js` |
+| node-auth0 / the `auth0` npm package | `node-auth0` |
 | Express (web app / server-rendered) | `express` |
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
@@ -211,6 +219,7 @@ request. **Stop at the first match.**
 | PHP web app / PHP API | `php` / `php-api` |
 | Laravel web app / Laravel API | `laravel` / `laravel-api` |
 | Go / Golang API | `go` |
+| Kotlin Multiplatform / KMP / shared Android+iOS auth code / `com.auth0.kmp` | `kmp` |
 | Swift / iOS | `swift` |
 | Android / Kotlin | `android` |
 | Flutter (native / web) | `flutter-native` / `flutter-web` |
@@ -275,7 +284,6 @@ Follow the integration workflow in references/framework-{framework}/index.md; us
 ```
 Read: references/feature-mfa/index.md
 Read: references/tooling-{tooling}/index.md
-If framework detected: Read references/framework-{framework}/index.md (for SDK-side step-up trigger)
 ```
 
 ### feature:organizations
