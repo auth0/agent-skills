@@ -90,6 +90,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `@auth0/auth0-spa-js` | `spa-js` |
 | `express-openid-connect` | `express` |
 | `@auth0/auth0-fastify` | `fastify` |
+| `@auth0/auth0-hono` | `hono` |
 | `@auth0/auth0-fastify-api` | `fastify-api` |
 | `express-oauth2-jwt-bearer` | `express-jwt` |
 | `react-native-auth0` + `app.json` or `app.config.js` present | `expo` |
@@ -174,6 +175,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `react` (no meta-framework above) | `react` (SPA) — see note |
 | `express` in `package.json` | `express` (variant below) |
 | `fastify` in `package.json` | `fastify` (variant below) |
+| `hono` in `package.json` | `hono` |
 | `flask` in `requirements.txt`/`pyproject.toml` | `flask` |
 | `fastapi` in `requirements.txt`/`pyproject.toml` | `fastapi-api` |
 | `spring-boot` in `pom.xml`/`build.gradle` | `springboot-api` |
@@ -210,6 +212,7 @@ request. **Stop at the first match.**
 | Express (web app / server-rendered) | `express` |
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
+| Hono (web) | `hono` |
 | Flask | `flask` |
 | FastAPI | `fastapi-api` |
 | Spring Boot | `springboot-api` |
