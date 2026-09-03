@@ -150,6 +150,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `build.gradle(.kts)` + `com.auth0.kmp:auth0` (Kotlin Multiplatform module) | `kmp` |
 | `Package.swift` or `.xcodeproj` + Auth0.swift | `swift` |
 | `build.gradle` + `com.auth0.android:auth0` | `android` |
+| `pubspec.yaml` + `auth0_flutter` + developer names/targets Windows desktop | `flutter-windows` |
 | `pubspec.yaml` + `auth0_flutter` + `flutter.web: false` | `flutter-native` |
 | `pubspec.yaml` + `auth0_flutter` + web enabled | `flutter-web` |
 
@@ -182,6 +183,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `go.mod` present + HTTP server/router | `go` |
 | `org.jetbrains.kotlin.multiplatform` plugin + `commonMain` source set (shared Android+iOS module) | `kmp` |
 | `Package.swift` or `.xcodeproj` | `swift` |
+| `pubspec.yaml` (Flutter) + developer names/targets Windows desktop | `flutter-windows` |
 | `pubspec.yaml` (Flutter, web disabled) | `flutter-native` |
 | `pubspec.yaml` (Flutter, web enabled) | `flutter-web` |
 | `*.csproj` referencing MAUI | `maui` |
@@ -222,7 +224,7 @@ request. **Stop at the first match.**
 | Kotlin Multiplatform / KMP / shared Android+iOS auth code / `com.auth0.kmp` | `kmp` |
 | Swift / iOS | `swift` |
 | Android / Kotlin | `android` |
-| Flutter (native / web) | `flutter-native` / `flutter-web` |
+| Flutter (native / web / Windows) | `flutter-native` / `flutter-web` / `flutter-windows` |
 | React Native / Expo | `react-native` / `expo` |
 | Ionic (Angular/React/Vue) | `ionic-angular` / `ionic-react` / `ionic-vue` |
 
