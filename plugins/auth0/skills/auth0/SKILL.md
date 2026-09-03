@@ -154,12 +154,6 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `pubspec.yaml` + `auth0_flutter` + `flutter.web: false` | `flutter-native` |
 | `pubspec.yaml` + `auth0_flutter` + web enabled | `flutter-web` |
 
-> `flutter create` scaffolds `windows/`, `android/`, `ios/`, and `web/`
-> together by default, so the presence of `windows/` alone doesn't mean
-> Windows is the target. Only pick `flutter-windows` when the developer's
-> request names Windows/desktop, or `windows/` is the *only* platform
-> directory present. Otherwise ask which platform(s) they're building for.
-
 ### Tier 2 — Framework from non-Auth0 workspace dependencies
 
 If no Auth0 SDK matched, detect the framework from ordinary (non-Auth0)
