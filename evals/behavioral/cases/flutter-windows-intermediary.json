@@ -51,12 +51,12 @@
     },
     {
       "type": "matches",
-      "pattern": "windowsWebAuthentication\\(\\)\\s*\\.login\\(|windowsWebAuthentication\\(\\)[\\s\\S]{0,300}?\\.login\\(",
+      "pattern": "windowsWebAuthentication\\(\\)\\s*\\.login\\(|(\\w+)\\s*=[^;\\n]*windowsWebAuthentication\\(\\)[\\s\\S]{0,300}?\\1\\.login\\(",
       "description": "Implements login via windowsWebAuthentication().login()"
     },
     {
       "type": "matches",
-      "pattern": "windowsWebAuthentication\\(\\)\\s*\\.logout\\(|windowsWebAuthentication\\(\\)[\\s\\S]{0,300}?\\.logout\\(",
+      "pattern": "windowsWebAuthentication\\(\\)\\s*\\.logout\\(|(\\w+)\\s*=[^;\\n]*windowsWebAuthentication\\(\\)[\\s\\S]{0,300}?\\1\\.logout\\(",
       "description": "Implements logout via windowsWebAuthentication().logout()"
     },
     {

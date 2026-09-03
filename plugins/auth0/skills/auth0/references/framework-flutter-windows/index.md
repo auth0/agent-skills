@@ -222,17 +222,17 @@ waiting plugin.
 
 ### Step 7 — Implement Authentication
 
-> **Agent instruction:** search the project for the main app entry point (`lib/main.dart`). Create an `AuthService` class that stores `Credentials` manually — there is no `CredentialsManager` on Windows, so the app owns persistence (e.g. via `shared_preferences` or secure storage).
+> **Agent instruction:** search the project for the main app entry point (`lib/main.dart`). Create an `AuthService` class that stores `Credentials` manually — there is no `CredentialsManager` on Windows, so the app owns persistence via secure storage (e.g. `flutter_secure_storage`), since the credentials can include a refresh token.
 
 ```bash
-flutter pub add shared_preferences
+flutter pub add flutter_secure_storage
 ```
 
 ```dart
 // lib/auth_service.dart
 import 'dart:convert';
 import 'package:auth0_flutter/auth0_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   late final Auth0 _auth0;
@@ -240,6 +240,7 @@ class AuthService {
   final String _appCustomURL;
   final String? _redirectUrl;
   final String? _returnTo;
+  static const _storage = FlutterSecureStorage();
   static const _credentialsKey = 'auth0_credentials';
 
   AuthService({
@@ -263,17 +264,21 @@ class AuthService {
   UserProfile? get user => _credentials?.user;
 
   /// Restore credentials saved from a previous session, if still valid.
-  /// There's no refresh-token renewal here — an expired record is dropped,
-  /// leaving the user to log in again.
+  /// There's no refresh-token renewal here — an expired or unreadable
+  /// record is dropped, leaving the user to log in again.
   Future<void> restoreSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getString(_credentialsKey);
+    final stored = await _storage.read(key: _credentialsKey);
     if (stored == null) return;
-    final credentials = Credentials.fromMap(jsonDecode(stored));
-    if (credentials.expiresAt.isAfter(DateTime.now())) {
-      _credentials = credentials;
-    } else {
-      await prefs.remove(_credentialsKey);
+    try {
+      final credentials = Credentials.fromMap(jsonDecode(stored));
+      if (credentials.expiresAt.isAfter(DateTime.now())) {
+        _credentials = credentials;
+      } else {
+        await _storage.delete(key: _credentialsKey);
+      }
+    } catch (_) {
+      // Malformed or outdated schema from a previous app version.
+      await _storage.delete(key: _credentialsKey);
     }
   }
 
@@ -293,8 +298,10 @@ class AuthService {
         scopes: {'openid', 'profile', 'email', 'offline_access'},
       );
     }
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_credentialsKey, jsonEncode(_credentials!.toMap()));
+    await _storage.write(
+      key: _credentialsKey,
+      value: jsonEncode(_credentials!.toMap()),
+    );
   }
 
   /// Clear the browser session and drop persisted + in-memory credentials.
@@ -314,17 +321,16 @@ class AuthService {
       }
     } finally {
       _credentials = null;
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.remove(_credentialsKey);
+      await _storage.delete(key: _credentialsKey);
     }
   }
 }
 ```
 
-> **Note:** `shared_preferences` stores plaintext on disk — fine for this
-> example, but for production apps handling refresh tokens prefer OS-backed
-> secure storage (e.g. `flutter_secure_storage`, which uses DPAPI on
-> Windows).
+> **Note:** `login()` requests the `offline_access` scope, so the persisted
+> `Credentials` can contain a refresh token — store it with
+> `flutter_secure_storage` (DPAPI-backed on Windows), never with
+> `shared_preferences`, which is plaintext on disk.
 
 ```dart
 // lib/main.dart
