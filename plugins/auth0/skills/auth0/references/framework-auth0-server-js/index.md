@@ -25,7 +25,7 @@ access token, and builds the logout URL.
 ## Critical rules
 
 - **The Client Secret and the cookie secret are server secrets.** Load
-  `clientSecret` and `cookieOptions.secret` from environment variables; never
+  `clientSecret` and the store `secret` from environment variables; never
   hardcode them or expose them to a browser.
 - **Never read the contents of `.env*` during setup** - it may contain secrets
   that should not be exposed in the LLM context. Before writing to any env file
@@ -46,7 +46,7 @@ access token, and builds the logout URL.
 - An Auth0 Regular Web Application with the redirect URI in Allowed Callback URLs
   and the logout URL in Allowed Logout URLs. Configure it with the loaded
   tooling reference.
-- A strong random string for `cookieOptions.secret` (at least 32 random bytes);
+- A strong random string for the store `secret` (at least 32 random bytes);
   generate it once and store it in an environment variable.
 - A `stateStore` and a `transactionStore`. The SDK ships `StatelessStateStore`,
   `StatefulStateStore`, and `CookieTransactionStore` as built-ins; pick a pair or
@@ -87,6 +87,10 @@ AUTH0_COOKIE_SECRET=<32+ random bytes>
 
 ### 3. Instantiate ServerClient
 
+Both built-in stores take a second argument: a `CookieHandler` you implement
+for your framework (`setCookie`, `getCookie`, `getCookies`, `deleteCookie`) so
+the store can read and write cookies on the current request/response.
+
 ```ts
 import {
   ServerClient,
@@ -94,13 +98,15 @@ import {
   StatelessStateStore,
 } from "@auth0/auth0-server-js";
 
+const cookieHandler = createCookieHandler(); // your framework's cookie adapter
+
 const serverClient = new ServerClient({
   domain: process.env.AUTH0_DOMAIN!,        // bare hostname
   clientId: process.env.AUTH0_CLIENT_ID!,
   clientSecret: process.env.AUTH0_CLIENT_SECRET!,
   authorizationParams: { redirect_uri: process.env.AUTH0_REDIRECT_URI! },
-  transactionStore: new CookieTransactionStore({ secret: process.env.AUTH0_COOKIE_SECRET! }),
-  stateStore: new StatelessStateStore({ secret: process.env.AUTH0_COOKIE_SECRET! }),
+  transactionStore: new CookieTransactionStore({ secret: process.env.AUTH0_COOKIE_SECRET! }, cookieHandler),
+  stateStore: new StatelessStateStore({ secret: process.env.AUTH0_COOKIE_SECRET! }, cookieHandler),
 });
 ```
 
@@ -120,7 +126,7 @@ await serverClient.completeInteractiveLogin(callbackUrl, storeOptions);
 const user = await serverClient.getUser(storeOptions);
 
 // Get an access token for calling an API
-const { token } = await serverClient.getAccessToken(storeOptions);
+const { accessToken } = await serverClient.getAccessToken(storeOptions);
 
 // Logout: redirect the user to the returned URL
 const logoutUrl = await serverClient.logout({ returnTo }, storeOptions);
@@ -139,20 +145,20 @@ const logoutUrl = await serverClient.logout({ returnTo }, storeOptions);
 
 ## Multi-domain / multi-tenant
 
-For per-request domain resolution, pass a `domainResolver` function instead of a
-static `domain`. Note that the `serverClient.mfa` and `serverClient.authClient`
-sub-clients are only available in static-domain mode.
+For per-request domain resolution, pass a `DomainResolver` function as `domain`
+instead of a static hostname string. Note that the `serverClient.mfa` and
+`serverClient.authClient` sub-clients are only available in static-domain mode.
 
 ## Common mistakes
 
 | Mistake | Fix |
 |---|---|
 | Omitting `authorizationParams.redirect_uri` | Required for interactive login; must match Allowed Callback URLs. |
-| Hardcoding `cookieOptions.secret` | Load it from an env variable; treat it as a server secret. |
+| Hardcoding the store `secret` | Load it from an env variable; treat it as a server secret. |
 | `domain: "https://tenant.auth0.com/"` | Bare hostname only - `tenant.auth0.com`. |
 | Forgetting the trailing `storeOptions` | Every session method needs it; its shape depends on your framework. |
 | Hand-wiring `ServerClient` when a framework SDK exists | Use `@auth0/nextjs-auth0`, `express-openid-connect`, and so on. |
-| Accessing `serverClient.mfa` with a `domainResolver` set | Those sub-clients are unavailable in multi-domain mode. |
+| Accessing `serverClient.mfa` with a `DomainResolver` set as `domain` | Those sub-clients are unavailable in multi-domain mode. |
 
 ## Related capabilities
 

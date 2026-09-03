@@ -119,7 +119,7 @@ const m2m = await authClient.getTokenByClientCredentials({ audience });
 const refreshed = await authClient.getTokenByRefreshToken({ refreshToken });
 
 // User profile from an access token
-const user = await authClient.getUserInfo(accessToken);
+const user = await authClient.getUserInfo({ accessToken });
 ```
 
 ### 6. Logout
