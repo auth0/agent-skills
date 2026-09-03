@@ -283,6 +283,13 @@
       "framework": "auth0-server-js",
       "tooling": "cli",
       "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-flutter-windows",
+      "intent": "integrate",
+      "framework": "flutter-windows",
+      "tooling": "cli",
+      "expect_refs": ["framework-flutter-windows/index.md", "tooling-cli/index.md"]
     }
   ]
 }
