@@ -48,7 +48,7 @@ Match the detected SDK to whichever mode its own reference uses; do not infer th
 SDK's platform.
 
 For richer per-SDK examples (org switching, reading org claims) read the SDK's own file, only
-the named section (from that heading to the next `## `):
+the named section (from that heading to the next heading of the same or higher level):
 
 | SDK | Raw example file (markdown) | Find section |
 |---|---|---|
@@ -56,7 +56,7 @@ the named section (from that heading to the next `## `):
 | `@auth0/auth0-spa-js` | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/organizations.md | `## Organizations` |
 | `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Organizations` |
 | `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Organizations` |
-| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `My Organization API Proxy` |
+| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Passing authorization parameters` |
 | `express-openid-connect` | https://raw.githubusercontent.com/auth0/express-openid-connect/master/EXAMPLES.md | `9. Validate Claims from an ID token before logging a user in` |
 | `react-native-auth0` | https://raw.githubusercontent.com/auth0/react-native-auth0/master/EXAMPLES.md | `## Organizations` |
 | `Auth0.swift` | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/advanced-features/organizations.md | `Log in to an organization` |
@@ -140,13 +140,16 @@ auth0 api patch "connections/<con-id>/clients" \
 auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
 ```
 
-The read is checkpoint-paginated (`take` max 1000): pass the returned `next` token as `from`
-until it is absent. When matching automatically rather than by a known name, page through all
-results and fail unless exactly one connection matches, rather than guessing.
+Both connection reads are checkpoint-paginated (`take` defaults to 50): omit `from` on the
+first call, then while the response carries a `next` value pass it as `from` until it is
+absent. The lookup above only inspects the first page, so page through all results before
+concluding a connection is absent, and fail unless exactly one matches rather than guessing.
 
-Enabling a connection for clients (`connections/<con-id>/clients`) and adding it to the org
-(`organizations/<org-id>/enabled_connections`) are independent: both are required, and
-skipping either leaves org members with no way to log in.
+A connection added to the organization's `enabled_connections` is what appears at that org's
+login prompt and lets members authenticate. Enabling the connection for a client
+(`connections/<con-id>/clients`) is a separate setting - it governs the connection's
+availability to the app outside the organization context - and is not what enables organization
+login.
 
 ---
 
