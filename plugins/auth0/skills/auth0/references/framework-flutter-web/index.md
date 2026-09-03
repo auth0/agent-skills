@@ -14,6 +14,7 @@
 ## When NOT to Use
 
 - **Flutter mobile (iOS/Android)**: use the Auth0 integration workflow for Flutter native — mobile uses a different platform interface with Web Auth via system browser
+- **Flutter Windows desktop**: use the Auth0 integration workflow for Flutter Windows — Windows uses `windowsWebAuthentication()` and a custom URL scheme protocol handler, not the browser-embedded `Auth0Web` API
 - **Native iOS (Swift)**: use the Auth0 integration workflow for Swift
 - **Native Android (Kotlin/Java)**: use the Auth0 integration workflow for Android
 - **React SPA**: use the Auth0 integration workflow for React

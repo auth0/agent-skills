@@ -1,0 +1,120 @@
+{
+  "slug": "flutter-windows",
+  "origin_skill": "auth0-flutter-windows",
+  "skill_name": "auth0-flutter-windows",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Auth0 authentication to a Flutter Windows desktop application using the auth0_flutter SDK.\n\n**Auth0 Credentials:**\n- Domain: `dev-example.auth0.com`\n- Client ID: `abc123def456ghi789jkl012`",
+      "expected_output": "Working Flutter Windows app with Auth0 Web Auth login/logout via windowsWebAuthentication(), appCustomURL passed for the custom URL scheme, and manually managed (not CredentialsManager-backed) credential storage",
+      "expectations": [
+        "auth0_flutter SDK added to pubspec.yaml dependencies",
+        "Has import for the auth0_flutter package (import package:auth0_flutter/auth0_flutter.dart)",
+        "Uses the Auth0 mobile/desktop class (not Auth0Web)",
+        "Uses windowsWebAuthentication() instead of webAuthentication() for login/logout",
+        "Implements login via windowsWebAuthentication().login()",
+        "Implements logout via windowsWebAuthentication().logout()",
+        "Passes appCustomURL to login() and logout()",
+        "Does not use credentialsManager / CredentialsManager (not supported on Windows)",
+        "Manually stores the Credentials object returned from login()",
+        "Auth0 domain dev-example.auth0.com passed to the Auth0 constructor",
+        "Client ID abc123def456ghi789jkl012 passed to the Auth0 constructor",
+        "Does not use web-specific APIs (Auth0Web, auth0_flutter_web.dart, auth0-spa-js)",
+        "Does not use mobile-only manifest config (manifestPlaceholders, AndroidManifest, Info.plist, CFBundleURLTypes)",
+        "No client_secret in native code (PKCE does not require one)",
+        "Solution correctly integrates Auth0 into a Flutter Windows app with login, logout, and manual credential handling"
+      ]
+    }
+  ],
+  "graders": [
+    {
+      "type": "matches",
+      "pattern": "auth0_flutter:\\s*\\^|auth0_flutter:",
+      "description": "auth0_flutter SDK added to pubspec.yaml dependencies"
+    },
+    {
+      "type": "contains",
+      "value": "package:auth0_flutter/auth0_flutter.dart",
+      "description": "Has import for the auth0_flutter package (import package:auth0_flutter/auth0_flutter.dart)"
+    },
+    {
+      "type": "matches",
+      "pattern": "Auth0\\(['\"]|Auth0\\(\\s",
+      "description": "Uses the Auth0 mobile/desktop class (not Auth0Web)"
+    },
+    {
+      "type": "matches",
+      "pattern": "windowsWebAuthentication\\(",
+      "description": "Uses windowsWebAuthentication() instead of webAuthentication() for login/logout"
+    },
+    {
+      "type": "matches",
+      "pattern": "windowsWebAuthentication\\(\\)\\s*\\.login\\(|(\\w+)\\s*=[^;\\n]*windowsWebAuthentication\\(\\)[\\s\\S]{0,300}?\\1\\.login\\(",
+      "description": "Implements login via windowsWebAuthentication().login()"
+    },
+    {
+      "type": "matches",
+      "pattern": "windowsWebAuthentication\\(\\)\\s*\\.logout\\(|(\\w+)\\s*=[^;\\n]*windowsWebAuthentication\\(\\)[\\s\\S]{0,300}?\\1\\.logout\\(",
+      "description": "Implements logout via windowsWebAuthentication().logout()"
+    },
+    {
+      "type": "matches",
+      "pattern": "\\.login\\([\\s\\S]{0,150}?appCustomURL\\s*:",
+      "description": "Passes appCustomURL to login()"
+    },
+    {
+      "type": "matches",
+      "pattern": "\\.logout\\([\\s\\S]{0,150}?appCustomURL\\s*:",
+      "description": "Passes appCustomURL to logout()"
+    },
+    {
+      "type": "not_contains_any",
+      "values": [
+        "credentialsManager",
+        "CredentialsManager"
+      ],
+      "description": "Does not use credentialsManager / CredentialsManager (not supported on Windows)"
+    },
+    {
+      "type": "contains",
+      "value": "dev-example.auth0.com",
+      "description": "Auth0 domain dev-example.auth0.com passed to the Auth0 constructor"
+    },
+    {
+      "type": "contains",
+      "value": "abc123def456ghi789jkl012",
+      "description": "Client ID abc123def456ghi789jkl012 passed to the Auth0 constructor"
+    },
+    {
+      "type": "not_contains_any",
+      "values": [
+        "Auth0Web(",
+        "auth0_flutter_web.dart",
+        "auth0-spa-js"
+      ],
+      "description": "Does not use web-specific APIs (Auth0Web, auth0_flutter_web.dart, auth0-spa-js)"
+    },
+    {
+      "type": "not_contains_any",
+      "values": [
+        "manifestPlaceholders",
+        "AndroidManifest",
+        "Info.plist",
+        "CFBundleURLTypes"
+      ],
+      "description": "Does not use mobile-only manifest config (manifestPlaceholders, AndroidManifest, Info.plist, CFBundleURLTypes)"
+    },
+    {
+      "type": "not_contains",
+      "value": "client_secret",
+      "description": "No client_secret in native code (PKCE does not require one)"
+    },
+    {
+      "type": "judge",
+      "description": "Solution correctly integrates Auth0 into a Flutter Windows app with login, logout, and manual credential handling",
+      "question": "Does the solution correctly integrate Auth0 into a Flutter Windows desktop app with: (1) working login via auth0.windowsWebAuthentication().login(appCustomURL: ...), (2) logout via windowsWebAuthentication().logout(appCustomURL: ...), (3) the returned Credentials object stored/managed manually by the app (not via a CredentialsManager, which doesn't exist on Windows), and (4) correct Auth0(domain, clientId) initialization?",
+      "examples": "PASS: Uses Auth0(domain, clientId), windowsWebAuthentication().login(appCustomURL: 'myapp://callback') for login, windowsWebAuthentication().logout(appCustomURL: ...) for logout, and stores the returned Credentials in app state or local storage itself.\nFAIL: Uses webAuthentication() or Auth0Web instead of windowsWebAuthentication().\nFAIL: Calls credentialsManager.credentials() as if Windows had automatic credential storage.\nFAIL: Missing appCustomURL on login or logout.",
+      "framework": "dart"
+    }
+  ]
+}
