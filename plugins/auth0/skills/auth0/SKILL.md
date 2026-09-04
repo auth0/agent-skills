@@ -181,7 +181,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `express` in `package.json` | `express` (variant below) |
 | `fastify` in `package.json` | `fastify` (variant below) |
 | `flask` in `requirements.txt`/`pyproject.toml` | `flask` |
-| `fastapi` in `requirements.txt`/`pyproject.toml` | `fastapi-api` |
+| `fastapi` in `requirements.txt`/`pyproject.toml` | `fastapi-api` (variant below) |
 | `spring-boot` in `pom.xml`/`build.gradle` | `springboot-api` |
 | `laravel/framework` in `composer.json` | `laravel` (variant below) |
 | `composer.json` present (no Laravel) | `php` (variant below) |
@@ -218,7 +218,7 @@ request. **Stop at the first match.**
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
 | Flask | `flask` |
-| FastAPI | `fastapi-api` |
+| FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
 | `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
 | Spring Boot | `springboot-api` |
 | Java MVC / servlet | `java-mvc` |
@@ -243,6 +243,7 @@ pin the variant, choose **intent-first**:
 |---|---|---|---|
 | express | `express` | `express-jwt` | protecting API routes / validating JWTs, no server-rendered UI |
 | fastify | `fastify` | `fastify-api` | resource server / JWT validation only |
+| fastapi | `server-python` | `fastapi-api` | resource server / JWT validation only; a web app with login/logout UI uses `server-python` |
 | php | `php` | `php-api` | building/protecting a PHP API, no web UI |
 | laravel | `laravel` | `laravel-api` | API-only (token guard), no Blade UI |
 | aspnetcore | `aspnetcore-auth` | `aspnetcore-api` | Web API / JWT bearer, no cookie login UI |

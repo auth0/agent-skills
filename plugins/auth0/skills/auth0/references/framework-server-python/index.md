@@ -361,7 +361,8 @@ resp = await auth0.custom_token_exchange(
         scope="read:data write:data",                 # optional
     )
 )
-print(resp.access_token)
+# resp.access_token / resp.expires_in are now available - use the token to call
+# your API. Never log or print access tokens.
 
 # Exchange AND establish a user session in one call
 result = await auth0.login_with_custom_token_exchange(
@@ -372,7 +373,7 @@ result = await auth0.login_with_custom_token_exchange(
     ),
     store_options={"request": request, "response": response},
 )
-user = result.state_data["user"]
+user = result.state_data.user   # state_data is a StateData model - attribute access
 ```
 
 Signatures:
@@ -631,7 +632,10 @@ stores, load `framework-flask/index.md`.
 ### Private Key JWT (no client secret)
 
 ```python
-with open("private_key.pem") as f:
+# Load the PEM from a path given by an env var (keep the key file out of the
+# repo - add *.pem to .gitignore); or pass the key contents directly via
+# os.environ["AUTH0_CLIENT_ASSERTION_KEY"].
+with open(os.environ["AUTH0_CLIENT_ASSERTION_KEY_PATH"]) as f:
     private_key = f.read()
 
 auth0 = ServerClient(
