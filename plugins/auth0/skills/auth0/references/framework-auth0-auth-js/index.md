@@ -98,8 +98,8 @@ const authClient = new AuthClient({
 ### 4. Authorization code + PKCE
 
 `buildAuthorizationUrl()` returns the URL to redirect to along with the
-`codeVerifier` and `state` you must persist for the callback. After Auth0
-redirects back, exchange the code:
+`codeVerifier` you must persist for the callback. After Auth0 redirects back,
+exchange the code:
 
 ```ts
 const { authorizationUrl, codeVerifier } = await authClient.buildAuthorizationUrl();

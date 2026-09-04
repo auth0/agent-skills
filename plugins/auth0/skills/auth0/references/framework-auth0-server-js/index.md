@@ -98,7 +98,7 @@ import {
   StatelessStateStore,
 } from "@auth0/auth0-server-js";
 
-const cookieHandler = createCookieHandler(); // your framework's cookie adapter
+const cookieHandler = new MyCookieHandler(); // a CookieHandler you implement; see EXAMPLES.md for a Fastify adapter
 
 const serverClient = new ServerClient({
   domain: process.env.AUTH0_DOMAIN!,        // bare hostname
@@ -122,7 +122,7 @@ const url = await serverClient.startInteractiveLogin({}, storeOptions);
 // Callback route: completes the login, then redirect into the app
 await serverClient.completeInteractiveLogin(callbackUrl, storeOptions);
 
-// Read the session user (null when not logged in)
+// Read the session user (undefined when not logged in)
 const user = await serverClient.getUser(storeOptions);
 
 // Get an access token for calling an API
@@ -136,8 +136,8 @@ const logoutUrl = await serverClient.logout({ returnTo }, storeOptions);
 
 - `CookieTransactionStore` - holds the short-lived login transaction (state,
   PKCE verifier) in a cookie.
-- `StatelessStateStore` - keeps the whole session in a signed cookie; no server
-  store needed.
+- `StatelessStateStore` - keeps the whole session in an encrypted cookie; no
+  server store needed.
 - `StatefulStateStore` - keeps a session ID in the cookie and the session in an
   external store you provide.
 - `AbstractStateStore` / `AbstractTransactionStore` - interfaces to implement a
