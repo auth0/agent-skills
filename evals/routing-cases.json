@@ -271,6 +271,27 @@
       "expect_refs": ["feature-healthcheck/index.md", "feature-audit/index.md", "feature-audit-pricing/index.md", "feature-audit-remediation/index.md", "tooling-cli/index.md"]
     },
     {
+      "id": "integrate-auth0-auth-js",
+      "intent": "integrate",
+      "framework": "auth0-auth-js",
+      "tooling": "cli",
+      "expect_refs": ["framework-auth0-auth-js/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-auth0-server-js",
+      "intent": "integrate",
+      "framework": "auth0-server-js",
+      "tooling": "cli",
+      "expect_refs": ["framework-auth0-server-js/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-mfa-auth0-server-js-combo",
+      "intent": "feature:mfa",
+      "framework": "auth0-server-js",
+      "tooling": "cli",
+      "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md"]
+    },
+    {
       "id": "integrate-flutter-windows",
       "intent": "integrate",
       "framework": "flutter-windows",

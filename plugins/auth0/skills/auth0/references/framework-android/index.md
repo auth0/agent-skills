@@ -851,7 +851,7 @@ WebAuthProvider.login(account)
     .start(this, object : Callback<Credentials, AuthenticationException> {
         override fun onSuccess(result: Credentials) {
             // User authenticated to organization
-            val orgId = result.claims["org_id"]
+            val orgId = result.user.getExtraInfo()["org_id"] as? String
         }
 
         override fun onFailure(error: AuthenticationException) {
