@@ -51,6 +51,13 @@
       "expect_refs": ["framework-flask/index.md", "tooling-terraform/index.md"]
     },
     {
+      "id": "integrate-server-python",
+      "intent": "integrate",
+      "framework": "server-python",
+      "tooling": "cli",
+      "expect_refs": ["framework-server-python/index.md", "tooling-cli/index.md"]
+    },
+    {
       "id": "feature-mfa-standalone",
       "intent": "feature:mfa",
       "framework": null,
