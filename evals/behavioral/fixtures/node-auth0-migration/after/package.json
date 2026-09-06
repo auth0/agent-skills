@@ -1,0 +1,20 @@
+{
+  "name": "node-auth0-migration-after-fixture",
+  "version": "1.0.0",
+  "private": true,
+  "description": "After-state fixture for auth0-auth-js 1.12.1 migration testing",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "test": "echo 'no tests' && exit 0"
+  },
+  "dependencies": {
+    "@auth0/auth0-auth-js": "^1.12.1",
+    "auth0": "^5.0.0",
+    "express": "^4.18.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}

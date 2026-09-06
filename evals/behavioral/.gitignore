@@ -1,2 +1,13 @@
 node_modules/
 package-lock.json
+
+# Session artifacts — not for review
+HANDOFF-*.md
+PROGRESS-LOG-*.md
+ERRORS-*.md
+OBSERVATIONS-*.md
+EVAL-EXECUTION-FINDINGS.md
+ROAD-A-PROGRESS.md
+run-full-eval.sh
+watch-errors.sh
+PLAN-*.md

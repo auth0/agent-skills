@@ -30,7 +30,8 @@ behavioral/
 └── cases/
     ├── flask.json        # { slug, origin_skill, evals[], graders[] }
     ├── express-jwt.json
-    └── ...               # 19 cases; 13 have machine graders, 6 (branding,
+    └── ...               # 20 cases; 14 have machine graders (node-auth0-migration
+                          # is multi-eval, per-eval graders), 6 (branding,
                           # custom-domains, cli, acul, audit, healthcheck) are
                           # expectations-only → manual transcript review
 ```
@@ -46,6 +47,7 @@ node run-evals.mjs --dry-run       # validate case files + grader regexes (no ag
 node run-evals.mjs                 # run every case
 node run-evals.mjs flask express-jwt   # run only named slugs
 node run-evals.mjs --model <id>    # pin a model for the agent AND judge graders
+node run-evals.mjs --judge-model <id>  # override just the judge model (else = --model)
 node run-evals.mjs --skill-only    # skip the without-skill comparison
 ```
 
@@ -68,11 +70,51 @@ Edit the JSON under `cases/`. Shape:
     { "type": "not_contains_any", "values": ["Authlib", "python-jose"], "description": "no wrong lib" },
     { "type": "judge", "question": "Does the code ...?", "examples": "PASS: ...\nFAIL: ..." }
   ],
-  "scaffold": {                 // optional — seed files so Tier 1/2 detection fires
+  "scaffold": {                 // optional — seed files so Tier 1/2 detection fires,
+                                //   OR starter code the agent edits in place (see below)
     "package.json": "{ \"dependencies\": { \"@auth0/nextjs-auth0\": \"^4.0.0\" } }"
   }
 }
 ```
+
+### Per-eval schema (multi-eval graded cases)
+
+A case with several independent migration scenarios (e.g. `node-auth0-migration`)
+puts the graders **and** a scaffold **inside each eval**, and omits the top-level
+`graders` array. Each eval runs in its own isolated workspace: its `scaffold`
+files are written to disk, the agent is told to edit them in place, and its own
+`graders` run against that workspace.
+
+```jsonc
+{
+  "slug": "node-auth0-migration",
+  "origin_skill": "migrating-node-auth0-to-auth0-server-js",
+  "evals": [
+    {
+      "id": "expires-at-absolute",
+      "prompt": "Migrate the file src/refresh.ts in place. ...",
+      "scaffold": { "src/refresh.ts": "import { AuthenticationClient } from 'auth0';\n..." },
+      "expected_output": "...(documents intent; not graded)...",
+      "graders": [
+        { "type": "contains", "value": "getTokenByRefreshToken", "description": "Uses the refresh method" }
+      ]
+    }
+    // ... more evals, each with its own prompt + scaffold + graders
+  ]
+}
+```
+
+**Shape detection / backward compat:** the runner treats a case as *per-eval*
+when it has **no top-level `graders`** and `evals[0].graders` **is present**.
+Otherwise it uses the **legacy** path: one workspace, `evals[0].prompt`, the flat
+top-level `graders`, and the optional top-level `scaffold`. The 13 single-eval
+graded cases and the 6 expectations-only cases keep working unchanged.
+
+**Why scaffold + "edit in place" matters:** graders read files in the workspace.
+If a prompt embeds the code inline and never tells the agent to write a file, the
+agent replies in prose, the workspace stays empty, and every grader fails
+("not found in any source file"). Ship the starter code as `scaffold` and phrase
+the prompt as "migrate `src/<file>` in place." See `EVAL-EXECUTION-FINDINGS.md`.
 
 Grader types: `contains`, `contains_any`, `not_contains`, `not_contains_any`,
 `matches` (regex), `not_matches` (regex must be absent), `file_contains`

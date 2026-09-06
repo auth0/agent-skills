@@ -96,6 +96,18 @@ function scaffold(caseObj, dir) {
   }
 }
 
+// Per-eval scaffold: a multi-eval case gives each eval its own starter files
+// under `eval.scaffold` so the agent has a file on disk to edit in place. Mirror
+// of scaffold() above but keyed off the eval object, not the case.
+function scaffoldEval(evalObj, dir) {
+  if (!evalObj.scaffold) return
+  for (const [rel, content] of Object.entries(evalObj.scaffold)) {
+    const full = path.join(dir, rel)
+    fs.mkdirSync(path.dirname(full), { recursive: true })
+    fs.writeFileSync(full, content)
+  }
+}
+
 function display(label, results) {
   const passed = results.filter((r) => r.pass).length
   console.log(`\n  ${label}: ${passed}/${results.length} passed (${((passed / results.length) * 100).toFixed(0)}%)`)
@@ -106,10 +118,72 @@ function display(label, results) {
   return passed
 }
 
+// Run one eval (prompt + scaffold + graders) in its own isolated workspace pair.
+// Shared by the per-eval branch; returns per-eval pass counts.
+async function runEval(slug, evalObj, opts, index = 0) {
+  const graders = evalObj.graders
+  const prompt = evalObj.prompt
+  const label = evalObj.id ?? "eval"
+
+  if (!graders) {
+    console.log(`\n  Eval ${label}: no machine graders (expectations-only).`)
+    for (const a of evalObj.assertions || evalObj.expectations || []) console.log(`    - ${a}`)
+    return { id: label, graded: false }
+  }
+  if (!prompt) { console.log(`  Eval ${label}: SKIP (no prompt).`); return { id: label, graded: false } }
+
+  const safeLabel = String(label).replace(/[^A-Za-z0-9_-]/g, '_');
+  const base = path.join(os.tmpdir(), `auth0-eval-${slug}-${index}-${safeLabel}-${process.pid}`)
+  const withDir = path.join(base, "with-skill")
+  const withoutDir = path.join(base, "without-skill")
+  fs.mkdirSync(withDir, { recursive: true })
+  if (!opts.skillOnly) fs.mkdirSync(withoutDir, { recursive: true })
+  scaffoldEval(evalObj, withDir)
+  if (!opts.skillOnly) scaffoldEval(evalObj, withoutDir)
+
+  console.log(`\n  Eval ${label}: running agent WITH skill (router loaded)...`)
+  await runAgent(prompt, withDir, true)
+  const withRes = await runGraders(graders, withDir, MODEL)
+  const withPass = display(`  ${label} — with skill`, withRes)
+
+  let withoutPass = null
+  if (!opts.skillOnly) {
+    console.log(`\n  Eval ${label}: running agent WITHOUT skill...`)
+    await runAgent(prompt, withoutDir, false)
+    const withoutRes = await runGraders(graders, withoutDir, MODEL)
+    withoutPass = display(`  ${label} — without skill`, withoutRes)
+    const delta = withPass - withoutPass
+    console.log(`\n  Eval ${label} delta: ${delta >= 0 ? "+" : ""}${delta} (${withPass} vs ${withoutPass} of ${withRes.length})`)
+  }
+  return { id: label, graded: true, total: withRes.length, withPass, withoutPass, workspace: base }
+}
+
 async function runCase(caseObj, opts) {
+  console.log(`\n${"=".repeat(72)}\n  Case: ${caseObj.slug}  (was ${caseObj.origin_skill})`)
+
+  // Shape detection: new per-eval cases carry graders INSIDE each eval and have
+  // no top-level graders array. Legacy cases carry a single flat top-level
+  // graders array and run only evals[0].prompt. Detect per-eval from ANY eval,
+  // not just evals[0], so a case whose first eval lacks graders is not misrouted
+  // to the legacy path (which would return graded:false without running).
+  const perEval = !caseObj.graders && !!caseObj.evals?.some((e) => Array.isArray(e.graders))
+
+  if (perEval) {
+    const evalResults = []
+    for (let i = 0; i < caseObj.evals.length; i++) {
+      evalResults.push(await runEval(caseObj.slug, caseObj.evals[i], opts, i))
+    }
+    const graded = evalResults.filter((r) => r.graded)
+    if (!graded.length) return { slug: caseObj.slug, graded: false }
+    const total = graded.reduce((s, r) => s + r.total, 0)
+    const withPass = graded.reduce((s, r) => s + r.withPass, 0)
+    const withoutPass = opts.skillOnly ? null : graded.reduce((s, r) => s + (r.withoutPass || 0), 0)
+    return { slug: caseObj.slug, graded: true, total, withPass, withoutPass, evalBreakdown: evalResults }
+  }
+
+  // Legacy path — single workspace, evals[0].prompt, top-level graders.
   const graders = caseObj.graders
   const prompt = caseObj.evals?.[0]?.prompt
-  console.log(`\n${"=".repeat(72)}\n  Case: ${caseObj.slug}  (was ${caseObj.origin_skill})`)
 
   if (!graders) {
     console.log("  No machine graders (routing-regression / expectations-only case).")
@@ -154,7 +228,9 @@ async function main() {
   if (flag("--list")) {
     console.log("  Available cases:")
     for (const c of loadCases()) {
-      console.log(`    ${c.slug.padEnd(20)} ${c.graders ? `${c.graders.length} graders` : "expectations-only"}  (was ${c.origin_skill})`)
+      const perEval = !c.graders && !!c.evals?.[0]?.graders
+      const n = perEval ? c.evals.reduce((s, e) => s + (e.graders?.length || 0), 0) : (c.graders?.length || 0)
+      console.log(`    ${c.slug.padEnd(20)} ${n ? `${n} graders` : "expectations-only"}  (was ${c.origin_skill})`)
     }
     return
   }
@@ -163,12 +239,18 @@ async function main() {
     let ok = 0, bad = 0
     for (const c of cases) {
       if (!c.evals?.length) { console.log(`  BAD  ${c.slug}: no evals`); bad++; continue }
-      if (c.graders) for (const g of c.graders) {
+      const perEval = !c.graders && !!c.evals[0]?.graders
+      const allGraders = perEval
+        ? c.evals.flatMap((e) => e.graders || [])
+        : (c.graders || [])
+      for (const g of allGraders) {
         if (g.type === "matches" || g.type === "not_matches") {
           try { new RegExp(g.pattern) } catch { console.log(`  BAD  ${c.slug}: invalid regex ${g.pattern}`); bad++ }
         }
       }
-      console.log(`  OK   ${c.slug}: ${c.evals.length} eval(s), ${c.graders ? c.graders.length + " graders" : "expectations-only"}`)
+      const shape = perEval ? "per-eval" : "legacy"
+      const graderDesc = allGraders.length ? `${allGraders.length} graders (${shape})` : "expectations-only"
+      console.log(`  OK   ${c.slug}: ${c.evals.length} eval(s), ${graderDesc}`)
       ok++
     }
     console.log(`\n  ${ok} case files valid, ${bad} problems.`)
@@ -190,11 +272,19 @@ async function main() {
   let failed = 0
   for (const s of summary) {
     if (!s.graded) { console.log(`  ${s.slug.padEnd(20)} (manual review — no machine graders)`); continue }
-    const d = s.withoutPass == null ? "" : `  delta ${s.withPass - s.withoutPass >= 0 ? "+" : ""}${s.withPass - s.withoutPass}`
     // A graded case fails if any grader did not pass with the skill loaded.
     const isFail = s.withPass < s.total
     if (isFail) failed++
+    const d = s.withoutPass == null ? "" : `  delta ${s.withPass - s.withoutPass >= 0 ? "+" : ""}${s.withPass - s.withoutPass}`
     console.log(`  ${isFail ? "FAIL" : "PASS"}  ${s.slug.padEnd(20)} with-skill ${s.withPass}/${s.total}${d}`)
+    // Multi-eval cases: show the per-eval breakdown under the aggregate row.
+    if (s.evalBreakdown) {
+      for (const e of s.evalBreakdown) {
+        if (!e.graded) { console.log(`        ${(e.id + "").padEnd(30)} (manual review)`); continue }
+        const ed = e.withoutPass == null ? "" : `  Δ${e.withPass - e.withoutPass >= 0 ? "+" : ""}${e.withPass - e.withoutPass}`
+        console.log(`        ${(e.withPass < e.total ? "FAIL" : "PASS")}  ${(e.id + "").padEnd(30)} ${e.withPass}/${e.total}${ed}`)
+      }
+    }
   }
   const graded = summary.filter((s) => s.graded).length
   console.log(`\n  ${graded - failed}/${graded} graded cases passed, ${failed} failed.`)
