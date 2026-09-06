@@ -1,6 +1,6 @@
 # Auth0 Organizations
 
-Multi-tenant B2B authentication. Organizations let each of your customers have their own isolated user pool, roles, and connections — all within one Auth0 tenant.
+Multi-tenant B2B authentication. Organizations let each of your customers have their own isolated user pool, roles, and connections - all within one Auth0 tenant.
 
 ---
 
@@ -12,7 +12,7 @@ Use Organizations when you need:
 - Different login connections per customer (e.g., Okta SSO for CustomerA, Google Workspace for CustomerB)
 - Organization-scoped invitations and member management
 
-Do NOT use Organizations for consumer apps (B2C). Organizations is a B2B construct — instead, use plain Auth0 connections within a single tenant for B2C, and reserve Organizations for B2B multi-tenant scenarios.
+Do NOT use Organizations for consumer apps (B2C). Organizations is a B2B construct - instead, use plain Auth0 connections within a single tenant for B2C, and reserve Organizations for B2B multi-tenant scenarios.
 
 ---
 
@@ -32,34 +32,40 @@ Do NOT use Organizations for consumer apps (B2C). Organizations is a B2B constru
 
 ### Pass organization at login
 
-All Auth0 SDKs support passing `organization` in `authorizationParams` (or equivalent):
+The org-login shape is protocol-level and identical across every SDK. Send the organization
+identifier on the `/authorize` request, then read `org_id` back off the returned token. Only
+how the SDK takes that identifier differs, and it is one of two modes. Get the exact call from
+the **loaded `framework-{framework}/index.md` reference** (the router loads it alongside this
+file), not from memory:
 
-**React:**
-```javascript
-loginWithRedirect({
-  authorizationParams: { organization: 'org_xxxxx' }
-});
-```
+- **As a login argument** - pass `organization` inside the login call's authorization params,
+  e.g. `loginWithRedirect({ authorizationParams: { organization: 'org_xxx' } })`. Some SDKs
+  surface it as a URL param the handler forwards, e.g. `/auth/login?organization=org_xxx`.
+- **As a builder option** - set it on the auth request builder before starting login, e.g.
+  `.organization("org_xxx")` or `.withOrganization("org_xxx")`.
 
-**Next.js (nextjs-auth0 v4):**
-```javascript
-// Pass org via URL param: /auth/login?organization=org_xxx
-// The nextjs-auth0 handler forwards it automatically
-```
+Match the detected SDK to whichever mode its own reference uses; do not infer the mode from the
+SDK's platform.
 
-**Vue:**
-```javascript
-loginWithRedirect({
-  authorizationParams: { organization: 'org_xxxxx' }
-});
-```
+For richer per-SDK examples (org switching, reading org claims) read the SDK's own file, only
+the named section (from that heading to the next heading of the same or higher level):
 
-**Express:**
-```javascript
-app.get('/login/:orgId', (req, res) => {
-  res.oidc.login({ authorizationParams: { organization: req.params.orgId } });
-});
-```
+| SDK | Raw example file (markdown) | Find section |
+|---|---|---|
+| `@auth0/auth0-react` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Use with Auth0 organizations` |
+| `@auth0/auth0-spa-js` | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/organizations.md | `## Organizations` |
+| `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Organizations` |
+| `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Organizations` |
+| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Passing authorization parameters` |
+| `express-openid-connect` | https://raw.githubusercontent.com/auth0/express-openid-connect/master/EXAMPLES.md | `9. Validate Claims from an ID token before logging a user in` |
+| `react-native-auth0` | https://raw.githubusercontent.com/auth0/react-native-auth0/master/EXAMPLES.md | `## Organizations` |
+| `Auth0.swift` | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/advanced-features/organizations.md | `Log in to an organization` |
+| `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/organizations.md | `Organizations` |
+| `auth0-server-python` | https://raw.githubusercontent.com/auth0/auth0-server-python/main/README.md | `#### Organizations` |
+
+No matching row? The framework reference loaded alongside this file carries the SDK-specific
+org login syntax; fall back to it plus the protocol shape above. 
+Never hand-roll the authorize URL or decode the token by hand.
 
 ### Reading the organization back
 
@@ -92,9 +98,8 @@ app.get('/api/data', checkJwt, (req, res) => {
 
 ## Tenant Configuration (via chosen tooling)
 
-See your tooling reference file for the full command syntax. The Auth0 MCP server
-exposes **no** organizations tool, so for an MCP-only session fall back to the CLI
-or Terraform.
+The Auth0 MCP server exposes **no** organizations tool, so use the CLI or Terraform (full
+command syntax lives in your tooling reference).
 
 | Operation | CLI | Terraform |
 |---|---|---|
@@ -105,21 +110,17 @@ or Terraform.
 | Assign an org-scoped role | `auth0 api post "organizations/<org-id>/members/<user-id>/roles" --data '{"roles":["<role-id>"]}'` | `auth0_organization_member_roles` |
 | Create an invitation | `auth0 orgs invitations create` (see below) | not covered |
 
-Check `auth0 commands orgs --detailed` for the current subcommand surface before
-falling back to `auth0 api`, and read flag names off `--help` rather than
-inferring them from the field they set.
-
+Verify subcommands with `auth0 commands orgs --detailed` and read flag names off `--help`
+rather than inferring them; use `auth0 api` for anything without a dedicated subcommand.
 Reading connections back returns a **bare array**, so use `jq '.[]'`, not
 `jq '.enabled_connections[]'`.
 
 ### Finding or creating a login connection
 
-An organization with no enabled connection has no way for its members to log in.
-Reuse an existing database connection when the tenant has one, and only create
-one when it does not:
+Reuse an existing database connection when the tenant has one; create one only if it does not:
 
 ```bash
-# List database connections in the tenant and pick one explicitly by name —
+# List database connections in the tenant and pick one explicitly by name -
 # the API defines no ordering, so `.[0]` silently grabs an arbitrary connection.
 auth0 api get "connections?strategy=auth0" | jq -r '.[] | select(.name=="<connection-name>") | .id'
 
@@ -127,11 +128,11 @@ auth0 api get "connections?strategy=auth0" | jq -r '.[] | select(.name=="<connec
 # ^[a-zA-Z0-9](-[a-zA-Z0-9]|[a-zA-Z0-9])*$, max 128 chars.
 auth0 api post connections --data '{"name":"<connection-name>","strategy":"auth0"}'
 
-# Enable it for the organization — without this, org members have no way to log in.
+# Enable it for the organization - without this, org members have no way to log in.
 auth0 api post "organizations/<org-id>/enabled_connections" \
   --data '{"connection_id":"<con-id>","assign_membership_on_login":true}'
 
-# Enable it for each app that will use it — status false disables. Max 50 per call.
+# Enable it for each app that will use it - status false disables. Max 50 per call.
 auth0 api patch "connections/<con-id>/clients" \
   --data '[{"client_id":"<client-id>","status":true}]'
 
@@ -139,17 +140,16 @@ auth0 api patch "connections/<con-id>/clients" \
 auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
 ```
 
-The read is checkpoint-paginated: `take` defaults to 50 (max 1000), and a `next`
-token comes back while more remain, so pass it as `from` until `next` is absent.
-If listing to find a match automatically rather than by a known name, page
-through all results and fail rather than guess unless exactly one connection
-matches.
+Both connection reads are checkpoint-paginated (`take` defaults to 50): omit `from` on the
+first call, then while the response carries a `next` value pass it as `from` until it is
+absent. The lookup above only inspects the first page, so page through all results before
+concluding a connection is absent, and fail unless exactly one matches rather than guessing.
 
-`connections/<con-id>/clients` only enables the connection for applications —
-it does not make the connection usable by the organization. An org whose
-connection is enabled for clients but never added to
-`organizations/<org-id>/enabled_connections` still has no way for members to
-log in.
+A connection added to the organization's `enabled_connections` is what appears at that org's
+login prompt and lets members authenticate. Enabling the connection for a client
+(`connections/<con-id>/clients`) is a separate setting - it governs the connection's
+availability to the app outside the organization context - and is not what enables organization
+login.
 
 ---
 
@@ -167,7 +167,7 @@ auth0 api patch "clients/<client-id>" \
   --data '{"organization_usage":"allow","organization_require_behavior":"no_prompt"}'
 
 # 2. Without this: "A default login route is required to generate the invitation url."
-#    Read the current value FIRST — the setting is tenant-wide, and you may need
+#    Read the current value FIRST - the setting is tenant-wide, and you may need
 #    to restore it. An empty response means it's currently unset.
 auth0 api get "tenants/settings" | jq -r '.default_redirection_uri // ""'
 
@@ -182,7 +182,7 @@ either scheme, so a local-dev URL will not satisfy it.
 `default_redirection_uri` is **tenant-wide**, not per app or per organization, so
 setting it changes login behaviour for everything in the tenant. Put the
 captured value back afterwards if the invitation was the only reason you set
-it — restore it to an empty string (`{"default_redirection_uri":""}`), not the
+it - restore it to an empty string (`{"default_redirection_uri":""}`), not the
 literal text `"unset"`, if it was empty before.
 
 If you keep the new value, say so in your summary. Silently repointing a shared
@@ -206,12 +206,12 @@ The invite link lands on your app carrying **both** an `invitation` and an `orga
 https://your-app.com/login?invitation={ticket_id}&organization={org_id}
 ```
 
-Your app must read **both** params from the URL and forward **both** to the `/authorize` request (the SDK's login call). This is protocol-level behavior — it holds for SPA, mobile, and Regular Web App SDKs alike; only *where* you wire it differs:
+Your app must read **both** params from the URL and forward **both** to the `/authorize` request (the SDK's login call). This is protocol-level behavior - it holds for SPA, mobile, and Regular Web App SDKs alike; only *where* you wire it differs:
 
 - **SPA / mobile** (public client): read from the browser URL, pass in `authorizationParams` on the login call.
 - **Regular Web App** (confidential client): read from the server request, pass through the OIDC middleware / challenge params.
 
-**Forward the invitation's own `organization` — do not substitute your app's configured default org.** The invite is scoped to the org it was issued for, which may differ from your default.
+**Forward the invitation's own `organization` - do not substitute your app's configured default org.** The invite is scoped to the org it was issued for, which may differ from your default.
 
 ---
 
@@ -221,10 +221,9 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 |---|---|
 | Forgetting `organization` in `authorizationParams` | Always pass the org identifier at login time |
 | Not forwarding the `invitation` param when accepting an invite | Read `invitation` + `organization` from the callback URL and forward both to `/authorize` |
-| Using your default org for an invitation link | Forward the invite's own `organization` param — it may differ from your configured default |
-| Using `org_id` from ID token on backend | Validate from the access token, not ID token |
-| Reading the display `org_id` from the access token in a client app | Web apps read `org_id` from the ID token; reserve the access token's `org_id` for API validation |
-| Hand-decoding a token to read `org_id` | Use the SDK's claim accessor (`getUser()` / `getIdTokenClaims()` / session user) — the claim is already exposed |
+| Using your default org for an invitation link | Forward the invite's own `organization` param - it may differ from your configured default |
+| Reading `org_id` from the wrong token | Web/client apps read it from the ID token (display); APIs validate it from the access token (authorization) |
+| Hand-decoding a token to read `org_id` | Use the SDK's claim accessor (`getUser()` / `getIdTokenClaims()` / session user) - the claim is already exposed |
 | Mixing up org `id` (org_xxx) and `name` (slug) | `id` for API calls, `name` for display |
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
 | Not enabling a connection for the org | `auth0 api post "organizations/<org-id>/enabled_connections"`, or Dashboard → Organization → Connections |

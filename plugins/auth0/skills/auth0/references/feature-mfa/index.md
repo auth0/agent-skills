@@ -62,7 +62,8 @@ Recipe (do in order):
 
 Notes: a silent token request may instead surface an `mfa_required` error - handle it by
 re-authenticating interactively. Never re-decode or re-verify the token by hand (see
-"Common mistakes"). `amr` is not a reliable contract for *which* factor ran; to enforce a
+"Common mistakes"). Some session SDKs persist only a default subset of ID-token claims, so
+`amr` can be missing from the accessor until you opt it in (see "Common mistakes"). `amr` is not a reliable contract for *which* factor ran; to enforce a
 **specific** factor, have the post-login Action read `event.authentication.methods[].type`
 into a custom claim. Action-defined MFA overrides the Guardian policy (it refines, not
 replaces) and differs from **Adaptive MFA** (the Guardian `confidence-score` policy, owned
@@ -164,7 +165,7 @@ language-neutral mechanic above. Never substitute a web search for "how to do MF
 | `@auth0/auth0-angular` (MFA) | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
 | `@auth0/auth0-angular` (step-up) | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Step-Up Authentication` |
 | `@auth0/auth0-spa-js` (step-up) | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/step-up-authentication.md | whole file |
-| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
+| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/guides/mfa.md | whole file |
 | `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/examples/mfa.md | whole file |
 | `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
 | `Auth0.swift` (iOS/macOS) | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/mfa-api.md | whole file |
@@ -243,6 +244,7 @@ which uses the `mfa_token` and the MFA API surface instead:
 | Trusting a frontend MFA check | The client can be bypassed entirely | Enforce server-side: `amr` on a web/session backend, the high-value scope on a resource API |
 | Checking `amr` on a resource API's access token | Access tokens carry no `amr` by default, so valid stepped-up callers are rejected | Gate the API on the high-value scope; add `amr` as a custom claim only if this API also validates it |
 | Hand-decoding the token to read `amr` (`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS) | Reinvents validation the SDK already performed, and usually disables `exp`/`iss`/audience checks in the process | Read `amr` from the SDK's session/current-user accessor; its claims are already verified |
+| Assuming the session accessor always carries `amr` | Some SDKs persist only a default claim subset, so `amr` is silently absent and the check never passes | Opt the claim in: `@auth0/nextjs-auth0` v4 needs a `beforeSessionSaved` hook to copy `amr` into the session (`session.user.amr`); `express-openid-connect` keeps the full claims on `req.oidc.idTokenClaims`, not the filtered `req.oidc.user` |
 | Omitting `max_age=0` on step-up | A still-valid session satisfies the request with no fresh challenge | Send `max_age=0` (or the SDK's fresh-auth option) for step-up |
 | Ignoring `mfa_required` from a silent token call | The step-up silently fails and the action proceeds unverified | Catch it and re-authenticate interactively |
 | Preferring SMS by default | SMS is vulnerable to SIM-swap | Prefer TOTP or WebAuthn; treat SMS as a fallback |

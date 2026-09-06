@@ -772,6 +772,7 @@ Auth0
             credentialsManager.store(credentials: credentials)
         case .failure(let error) where error.isMultifactorRequired:
             // MFA required — see the feature:mfa reference
+            break
         case .failure(let error) where error.isNetworkError:
             showNetworkError()
         case .failure(let error):

@@ -154,6 +154,7 @@ per-framework skill.
 | **iOS/macOS** | [`Auth0.swift`](https://github.com/auth0/Auth0.swift) | Swift (iOS, macOS, tvOS, watchOS, visionOS) |
 | **Flutter** | [`auth0_flutter`](https://github.com/auth0/auth0-flutter) | Flutter mobile (iOS/Android, Dart) |
 | **Flutter Web** | [`auth0_flutter`](https://github.com/auth0/auth0-flutter) | Flutter Web (Dart) |
+| **Flutter Windows** | [`auth0_flutter`](https://github.com/auth0/auth0-flutter) | Flutter Windows desktop (Dart) |
 | **.NET MAUI** | [`Auth0.OidcClient.MAUI`](https://github.com/auth0/auth0-oidc-client-net) | .NET MAUI (iOS, Android, macOS, Windows) |
 | **.NET Android** | [`Auth0.OidcClient.AndroidX`](https://github.com/auth0/auth0-oidc-client-net) | .NET Android (Xamarin) |
 | **.NET iOS** | [`Auth0.OidcClient.iOS`](https://github.com/auth0/auth0-oidc-client-net) | .NET iOS (Xamarin) |
