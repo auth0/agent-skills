@@ -22,6 +22,19 @@ else the Auth0 Dashboard exposes, through the Management API.
 > ```
 > Use the returned version instead of any version shown below.
 
+## Migrating node-auth0 authentication usage
+
+If the task is migrating an existing app OFF the legacy `auth0` package's
+Authentication API surface (`AuthenticationClient`, `oauth.*`, `database.*`,
+`passwordless.*`, `backchannel.*`, `tokenExchange.*`, id-token validation) to
+`@auth0/auth0-auth-js` / `@auth0/auth0-server-js`, dispatch to the migration
+leaf. `ManagementClient` administration stays on this package and is not part of
+that migration.
+
+| Intent | Load |
+|---|---|
+| migrate-node-auth0 | `Read: references/framework-node-auth0/migration.md` |
+
 ## Critical rules
 
 - **Never read the contents of `.env*` during setup** - it may contain secrets

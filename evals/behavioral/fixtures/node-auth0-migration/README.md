@@ -10,7 +10,7 @@ runs an end-to-end migration workflow: scan → (optional agent-driven rewrite) 
 node-auth0-migration/
 ├── Dockerfile          # build the harness image (SDK_SOURCE=local|published)
 ├── run-loop.sh         # build-until-green orchestrator (scan → agent → tsc → test → verify)
-├── before/             # node-auth0 v5 fixture app (the migration SOURCE, tsc-clean)
+├── before/             # node-auth0 v6 fixture app (the migration SOURCE, tsc-clean)
 │   └── src/*.ts        # 7 files: each exercises a migration trap
 ├── after/              # hand-authored REFERENCE migration (the Tier-2 target)
 │   └── src/*.ts        # compiles against @auth0/auth0-auth-js 1.12.1; passes verify-migration.sh
@@ -26,7 +26,7 @@ per-request `RequestOptions` + `fullResponse` envelope surface this harness exer
 that release and is not in the published tarball yet. The harness therefore defaults to installing from
 local tarballs so it can test the real shipped surface without waiting on the next release.
 
-- `auth0@^5` — the migration source (node-auth0 v5), from the public registry.
+- `auth0@^6` — the migration source (node-auth0 v6), from the public registry.
 - `@auth0/auth0-auth-js@1.12.1` / `@auth0/auth0-server-js@1.12.1` — the migration targets.
 
 `SDK_SOURCE` (Docker build ARG) selects the target install path:
@@ -77,7 +77,7 @@ default `SDK_SOURCE=local` Docker build `COPY`s them and will fail on a clean
 checkout otherwise. (The `published` variant does not need them, but the published
 1.12.1 lacks the per-request surface this harness exercises.)
 
-From the **repository root** (build context must include both the fixture and the skill scripts):
+From the **repository root** (build context must include this fixture dir — which now carries the harness scan/verify scripts — and the skill plugin):
 
 ```bash
 docker build -f evals/behavioral/fixtures/node-auth0-migration/Dockerfile \

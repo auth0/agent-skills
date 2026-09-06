@@ -5,7 +5,7 @@
 
 FROM node:20-slim
 
-# Install bash, git (needed by verify-migration.sh), and grep (scan-usage.sh requirement)
+# Install bash, git (needed by run-loop.sh's preflight stash), and grep (scan-usage.sh requirement)
 RUN apt-get update && \
     apt-get install -y bash git grep && \
     rm -rf /var/lib/apt/lists/*
@@ -23,7 +23,7 @@ COPY evals/behavioral/fixtures/node-auth0-migration/before/ /app/
 # Copy the local SDK tarballs (used only when SDK_SOURCE=local; harmless otherwise)
 COPY evals/behavioral/fixtures/node-auth0-migration/vendor/ /app/vendor/
 
-# Install dependencies for the fixture app (includes auth0@^5 from its package.json)
+# Install dependencies for the fixture app (includes auth0@^6 from its package.json)
 RUN npm install
 
 # Install the TARGET SDKs.
@@ -37,9 +37,12 @@ RUN if [ "$SDK_SOURCE" = "local" ]; then \
       npm install --save @auth0/auth0-auth-js@1.12.1 @auth0/auth0-server-js@1.12.1; \
     fi
 
-# Copy the migration skill scripts + the whole plugin (so the agent step can load it)
-COPY plugins/auth0/skills/auth0/scripts/scan-usage.sh /skill-scripts/scan-usage.sh
-COPY plugins/auth0/skills/auth0/scripts/verify-migration.sh /skill-scripts/verify-migration.sh
+# Copy the harness oracle scripts + the whole plugin (so the agent step can load it).
+# scan-usage.sh / verify-migration.sh are the harness's deterministic scan/verify oracle;
+# they live in this fixture dir (not in the skill) — the shipped skill inlines the same
+# commands into references/framework-node-auth0/migration.md.
+COPY evals/behavioral/fixtures/node-auth0-migration/scan-usage.sh /skill-scripts/scan-usage.sh
+COPY evals/behavioral/fixtures/node-auth0-migration/verify-migration.sh /skill-scripts/verify-migration.sh
 COPY evals/behavioral/fixtures/node-auth0-migration/agent-rewrite.sh /skill-scripts/agent-rewrite.sh
 COPY evals/behavioral/fixtures/node-auth0-migration/run-loop.sh /skill-scripts/run-loop.sh
 COPY plugins/auth0/ /skill/plugins/auth0/

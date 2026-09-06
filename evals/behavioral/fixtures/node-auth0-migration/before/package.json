@@ -2,13 +2,13 @@
   "name": "node-auth0-migration-before-fixture",
   "version": "1.0.0",
   "private": true,
-  "description": "Before-state fixture for node-auth0 v5 migration testing",
+  "description": "Before-state fixture for node-auth0 v6 migration testing",
   "scripts": {
     "build": "tsc --noEmit",
     "test": "echo 'no tests' && exit 0"
   },
   "dependencies": {
-    "auth0": "^5.0.0",
+    "auth0": "^6.0.0",
     "express": "^4.18.0"
   },
   "overrides": {

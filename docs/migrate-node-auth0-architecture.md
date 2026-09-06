@@ -1,94 +1,78 @@
-# migrate-node-auth0: Target Architecture
+# migrate-node-auth0: Architecture
 
-## The core idea: progressive disclosure
+## The core idea: consolidation under the framework hub
 
-Today the migration skill loads everything at once. The moment an agent decides "this is a node-auth0 migration," it reads all five files — the hub plus four topic references, about 1,466 lines total — even when most of that content is irrelevant to the migration in front of it. A stateless backend that only does token grants still pays to load the entire sessions reference and the entire CIBA/backchannel mapping it will never touch.
+Previously the migration guidance lived in a standalone `feature-migrate-node-auth0/` directory: five files totaling roughly 1,466 lines (a hub plus four topic leaves). That directory is deleted. All migration content now lives in a single file, `references/framework-node-auth0/migration.md`, dispatched from the existing `framework-node-auth0` hub.
 
-The target architecture changes this from "load everything, then figure out what you need" to "load a lean map, then fetch each detailed section only when you actually reach it." That is the whole point, and it mirrors what the rest of the repo already does.
+The `framework-node-auth0` hub now serves two roles: the Management API reference it always handled, plus a dispatch-table row routing the `migrate-node-auth0` intent to `migration.md`. The router points at one fewer top-level directory, and the three-hop navigation tree is preserved.
 
 ## Three layers, and what each one knows
 
 ### Layer 1 — the router (`SKILL.md`)
 
-The router's only job is to recognize the intent and point at one file. It becomes leaner: today it names five files; after the change it names one.
+The router's only job is to recognize the intent and point at one file. For the migration intent:
 
 ```
 ### migrate-node-auth0
-Read: references/feature-migrate-node-auth0/index.md
-Follow the dispatch table in that hub — load each leaf at the step that needs it.
-Do not load feature-migration/index.md.
+Read: references/framework-node-auth0/index.md
+Follow the dispatch table in that hub — load migration.md for the full migration reference.
 ```
 
-The router never contained migration facts — no API names, no version numbers, no steps — and it still won't. It is a switchboard. Shrinking it also returns token headroom against the 4,300-token router budget that previously forced prose trimming.
+The router holds no migration facts — no API names, no version numbers, no steps. It is a switchboard. Pointing at the existing `framework-node-auth0` hub instead of a dedicated feature directory also returns token headroom in the router, since the `migrate-node-auth0` entry now shares the hub with Management API routing.
 
-### Layer 2 — the hub (`feature-migrate-node-auth0/index.md`)
+### Layer 2 — the hub (`framework-node-auth0/index.md`)
 
-The always-loaded map. It holds what every migration needs regardless of shape:
+The hub contains the Management API reference (unchanged) and a dispatch table entry for the migration intent. It routes `migrate-node-auth0` requests to `migration.md`. It is always loaded when the migration intent fires.
 
-- Scope rules (rewrite the auth layer; leave `ManagementClient` alone).
-- The target-SDK decision (`@auth0/auth0-auth-js` vs `@auth0/auth0-server-js`).
-- The numbered 0–6 workflow spine.
-- The script invocations (`scan-usage.sh`, `verify-migration.sh`).
+### Layer 3 — the leaf (`migration.md`)
 
-Crucially it carries a **dispatch table** mapping each workflow step to the one leaf that step needs. The hub is small and cheap, and gives the agent a complete mental model of the job before any detail is pulled in.
+The single comprehensive migration reference. All migration content — target SDK routing logic, breaking changes, API method mapping, session migration, scan commands, and verify commands — lives here as one roughly 1,600-line document.
 
-### Layer 3 — the leaves (loaded on demand)
+`migration.md` is a sink: no outbound links to any other `.md` file.
 
-The four detailed references live inside the hub's own directory as leaves:
+The scan and verify commands appear as visible code blocks directly in `migration.md` (Section 2 for scan, Section 8 for verify). The corresponding shell scripts (`scan-usage.sh`, `verify-migration.sh`) were moved out of the skill into `evals/behavioral/fixtures/node-auth0-migration/`, where they serve as deterministic eval oracle scripts. The shipped skill no longer includes those scripts.
+
+## Directory structure
 
 ```
-references/feature-migrate-node-auth0/
-  index.md            ← hub (always loaded)
-  routing.md          ← loaded at step 2 (target SDK + constructor)
-  breaking-changes.md ← loaded at step 3 (structural changes, before method rewrite)
-  api-mapping.md      ← loaded at step 3 (method rewrite, after breaking-changes)
-  sessions.md         ← loaded at step 5 (session apps only)
+references/framework-node-auth0/
+  index.md       <- hub: Management API content + migrate-node-auth0 dispatch row
+  migration.md   <- leaf: comprehensive migration reference (~1,600 lines)
 ```
 
-Each leaf is a self-contained document section, read only when the workflow step that needs it arrives. A stateless migration never opens `sessions.md`. This is the leanness win: the common case loads noticeably less, and no case loads more than today.
+The old `feature-migrate-node-auth0/` directory and its five files (`index.md`, `routing.md`, `breaking-changes.md`, `api-mapping.md`, `sessions.md`) are deleted.
 
-## Dispatch table (lives in the hub)
+## Why nested under the framework hub, not a separate directory
 
-| At workflow step | Load leaf |
-|---|---|
-| Step 2 — target SDK + constructor | `references/feature-migrate-node-auth0/routing.md` |
-| Step 3 — structural changes (before method rewrite) | `references/feature-migrate-node-auth0/breaking-changes.md` |
-| Step 3 — method rewrite (after breaking-changes) | `references/feature-migrate-node-auth0/api-mapping.md` |
-| Step 5 — session apps only | `references/feature-migrate-node-auth0/sessions.md` |
+**The one-hop rule.** Navigation is three levels deep: router to hub `index.md` to leaf. The "one-hop rule" (enforced by `scripts/check_router_reachability.py`) constrains only the reference layer: from the reachability checker's own docstring, "the ONLY second hop allowed is a hub `index.md` dispatching to leaves in its OWN directory." A hub gets exactly one downward hop, to a same-directory leaf; a leaf gets none (it is a sink).
 
-## Why nested, not flat siblings
+Keeping a separate `feature-migrate-node-auth0/` directory alongside `framework-node-auth0/` would have the router point at two separate node-auth0 top-level directories. Merging migration into the existing `framework-node-auth0` hub is the correct shape: one hub per topic area, leaves in its own directory.
 
-Two structural reasons.
+**Consolidation over duplication.** `framework-node-auth0` already covers Management API usage and constructor patterns. Migration builds on those same patterns. Merging migration under the same hub avoids cross-directory links and keeps all node-auth0 knowledge in one place.
 
-**The one-hop rule.** The navigation tree is three levels deep (router → hub `index.md` → leaf), so following it from the top is two pointer-follows. The first — router → reference — is the base route and is not counted; routing is the router's entire job. The "one-hop rule" (enforced by `scripts/check_router_reachability.py`) constrains only the *reference layer*: from `check_router_reachability.py`'s own docstring, "the ONLY second hop allowed is a hub `index.md` dispatching to leaves in its OWN directory." So a hub gets exactly one downward hop, to a same-directory leaf; a leaf gets none (it's a sink). Keeping flat sibling directories but having the hub point at a *sibling* reference is a sideways cross-directory hop — not the one permitted same-directory hop — which the checker rejects. Nesting the detail files under the hub is the only shape that lets the hub dispatch to them legally.
-
-**It is the repo's existing convention.** `docs/architecture.md` calls this a "leaf group." The `framework-hono` design doc is a worked example of the same structure, and PR #194 (`framework-node-auth0`, merged) is the single-file version of the same principle. This refactor brings one skill onto the convention everything else already follows; it introduces no new loader, manifest, or frontmatter mechanism.
+**It follows the repo convention.** `docs/architecture.md` describes this as a "leaf group." The existing `framework-node-auth0` reference is the pattern this change extends. No new loader, manifest, or frontmatter mechanism is introduced.
 
 ## The one real constraint: leaves are sinks
 
-A leaf file cannot reference any other `.md` file — no markdown links, no backticked filenames, no `Read:` verbs, no `references/...` paths, not even in prose. The reachability checker treats a leaf as a strict sink and fails on any intra-skill `.md` reference.
-
-Today the api-mapping and breaking-changes references point at each other only by descriptive name ("the co-loaded breaking-changes reference"), never by an actual path, so they are already sink-clean. This is the one place to verify carefully after the move, because a stray literal path would fail CI. It is the sole asymmetric risk; everything else is mechanical.
+`migration.md` cannot reference any other `.md` file — no markdown links, no backticked filenames, no `Read:` verbs, no `references/...` paths, not even in prose. The reachability checker treats a leaf as a strict sink and fails on any intra-skill `.md` reference. This is the one asymmetric risk: a stray literal path fails CI. Everything else is mechanical.
 
 ## Before / after: what the agent experiences
 
-**Before.** "This is a migration" → dumps ~1,466 lines into context → works through it.
+**Before.** "This is a migration" → router points to `feature-migrate-node-auth0/index.md` → loads hub + up to four topic leaves (~1,466 lines across five files).
 
-**After.** "This is a migration" → loads the hub map (~185 lines) → sees the workflow and dispatch table → at each step pulls in exactly the one detailed section that step needs → skips entirely the sections that don't apply.
-
-Same total knowledge available, delivered just-in-time instead of all-up-front, on the structure the repo already enforces everywhere else.
+**After.** "This is a migration" → router points to `framework-node-auth0/index.md` → hub dispatch table row → loads `migration.md` (~1,600 lines in one file).
 
 ## Load-cost comparison
 
 | Scenario | Before | After |
 |---|---|---|
-| Stateless auth-js migration (no sessions) | all 5 files (~1,466 L) | hub + routing + api-mapping + breaking-changes (~1,256 L); `sessions.md` skipped |
-| Server-js session app | all 5 files (~1,466 L) | hub + all 4 leaves as steps reach them (~1,466 L), but staged not up-front |
-| Router cost, every case | 5 `Read:` lines | 1 `Read:` line |
+| Any node-auth0 migration | hub + up to 4 topic leaves (~1,466 L) across `feature-migrate-node-auth0/` | hub index + `migration.md` (~1,600 L) under `framework-node-auth0/` |
+| Router cost, every case | dedicated `Read:` line pointing to `feature-migrate-node-auth0/` | `Read:` line pointing to `framework-node-auth0/` (shared with Management API routing) |
+| Skill-shipped scripts | `scan-usage.sh`, `verify-migration.sh` in `plugins/auth0/skills/auth0/scripts/` | none — commands inlined in `migration.md`; scripts live in `evals/behavioral/fixtures/node-auth0-migration/` |
 
 ## Invariants preserved
 
-- Router carries pure dispatch, zero migration specifics — unchanged, now leaner.
-- Reference content (the migration substance) is unchanged; only relocated.
-- History preserved via `git mv`.
+- Router carries pure dispatch, zero migration specifics — unchanged.
+- Reference content (migration substance) is equivalent; only structure changed.
+- Navigation depth is three hops: router to hub to leaf.
 - Enforced by `check_router_reachability.py` (structure) and `check_routing_evals.py` (routing table), both in CI.

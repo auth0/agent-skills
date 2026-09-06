@@ -59,8 +59,8 @@ check "No residual UserInfoClient" \
   "Use TokenResponse.claims, serverClient.getUser(), or a direct /userinfo fetch."
 
 check "No residual node-auth0 auth sub-client calls" \
-  "\.oauth\.(authorizationCodeGrant|refreshTokenGrant|passwordGrant|clientCredentialsGrant|revokeRefreshToken|tokenForConnection|pushedAuthorization)|\.passwordless\.(sendSMS|loginWithEmail|loginWithSMS)|\.backchannel\.(authorize|backchannelGrant)|\.tokenExchange\.exchangeToken" \
-  "Map each call via references/feature-migrate-node-auth0/api-mapping.md."
+  "\.oauth\.(authorizationCodeGrant|authorizationCodeGrantWithPKCE|refreshTokenGrant|passwordGrant|clientCredentialsGrant|revokeRefreshToken|tokenForConnection|pushedAuthorization)|\.passwordless\.(loginWithEmail|loginWithSMS)|\.backchannel\.(authorize|backchannelGrant)|\.tokenExchange\.exchangeToken" \
+  "Map each call via the api-mapping section in the migration guide."
 
 check "No '.data.' access on token/grant results" \
   "\.(data)\.(access_token|refresh_token|id_token|expires_in|token_type)" \
@@ -68,7 +68,7 @@ check "No '.data.' access on token/grant results" \
 
 check "No relative expires_in arithmetic" \
   "Date\.now\(\)[[:space:]]*\+[^;]*expires_in|expires_in[[:space:]]*\*[[:space:]]*1000" \
-  "expiresAt is an ABSOLUTE Unix timestamp (seconds). Do not add Date.now(). See references/feature-migrate-node-auth0/breaking-changes.md."
+  "expiresAt is an ABSOLUTE Unix timestamp (seconds). Do not add Date.now(). See the breaking-changes section of references/framework-node-auth0/migration.md."
 
 check "No AuthApiError catches" \
   "AuthApiError" \
@@ -76,7 +76,7 @@ check "No AuthApiError catches" \
 
 check "No 'mfa_required' string checks" \
   "['\"]mfa_required['\"]" \
-  "Use isMfaRequiredError(e) from @auth0/auth0-auth-js instead of string matching."
+  "Check e.cause?.error === 'mfa_required' on the typed per-operation error instead of string matching."
 
 echo
 if [ "$FAILED" -ne 0 ]; then

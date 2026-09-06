@@ -17,7 +17,7 @@
 #   # Locally against before/ fixture
 #   REPO=$(git rev-parse --show-toplevel) \
 #   APP_DIR="$REPO/evals/behavioral/fixtures/node-auth0-migration/before" \
-#   SKILL_SCRIPTS="$REPO/plugins/auth0/skills/auth0/scripts" \
+#   SKILL_SCRIPTS="$REPO/evals/behavioral/fixtures/node-auth0-migration" \
 #   bash run-loop.sh
 #
 #   # With agent rewrite enabled (example)
@@ -130,6 +130,16 @@ for iter in $(seq 1 "$MAX_ITERS"); do
   stage_banner 2 "Agent Rewrite"
 
   if [ -n "$MIGRATION_AGENT_CMD" ]; then
+    # ---- git preflight: stash before mutating files ----
+    GIT_CHECK=$(git -C "$APP_DIR" rev-parse --is-inside-work-tree 2>&1 || true)
+    if [ "$GIT_CHECK" = "true" ]; then
+      STASH_NAME="run-loop-pre-rewrite-iter${iter}-$(date +%Y%m%d-%H%M%S)"
+      echo "Git repo detected — stashing before agent rewrite (restore with: git -C '$APP_DIR' stash pop)"
+      git -C "$APP_DIR" stash push --include-untracked --message "$STASH_NAME" || true
+    else
+      echo "WARNING: APP_DIR '$APP_DIR' is not a git repository — no backup possible before agent rewrite."
+    fi
+
     echo "Running agent rewrite command..."
     echo "  Command: $MIGRATION_AGENT_CMD"
     echo
@@ -143,7 +153,13 @@ for iter in $(seq 1 "$MAX_ITERS"); do
       echo "Agent rewrite step completed successfully."
       AGENT_STEP_RAN=true
     else
-      error_banner "Agent rewrite step failed (exit code $?)"
+      rewrite_exit=$?
+      error_banner "Agent rewrite step failed (exit code $rewrite_exit)"
+      # Restore the stash on failure so the repo is left clean
+      if [ "$GIT_CHECK" = "true" ]; then
+        echo "Restoring pre-rewrite stash..."
+        git -C "$APP_DIR" stash pop || true
+      fi
       popd > /dev/null
       exit 1
     fi
@@ -159,25 +175,38 @@ for iter in $(seq 1 "$MAX_ITERS"); do
 
   # ========== STAGE 3: TYPE-CHECK ==========
 
-  stage_banner 3 "Type-Check (tsc --noEmit)"
+  stage_banner 3 "Type-Check (tsc --noEmit, TypeScript projects only)"
 
   pushd "$APP_DIR" > /dev/null
-  if npm run build; then
-    echo
-    echo "Type-check passed."
-  else
-    error_banner "Type-check failed (iteration $iter/$MAX_ITERS)"
-    popd > /dev/null
+  # Guard: only run tsc when the project is TypeScript (has tsconfig.json or non-declaration .ts files).
+  # Never run npm run build unconditionally — JS-only or no-build projects will hard-fail.
+  IS_TS=false
+  if find . -maxdepth 4 -name "tsconfig.json" -not -path "*/node_modules/*" 2>/dev/null | grep -q .; then
+    IS_TS=true
+  elif find . -maxdepth 4 -name "*.ts" ! -name "*.d.ts" -not -path "*/node_modules/*" 2>/dev/null | grep -q .; then
+    IS_TS=true
+  fi
 
-    # If we're out of iterations, fail
-    if [ "$iter" -eq "$MAX_ITERS" ]; then
-      echo "Max iterations reached. Exiting with failure."
-      exit 1
+  if [ "$IS_TS" = "true" ]; then
+    if npx tsc --noEmit; then
+      echo
+      echo "Type-check passed."
+    else
+      error_banner "Type-check failed (iteration $iter/$MAX_ITERS)"
+      popd > /dev/null
+
+      # If we're out of iterations, fail
+      if [ "$iter" -eq "$MAX_ITERS" ]; then
+        echo "Max iterations reached. Exiting with failure."
+        exit 1
+      fi
+
+      # Otherwise, continue to next iteration
+      echo "Continuing to next iteration..."
+      continue
     fi
-
-    # Otherwise, continue to next iteration
-    echo "Continuing to next iteration..."
-    continue
+  else
+    echo "No TypeScript detected — skipping tsc check."
   fi
   popd > /dev/null
 
