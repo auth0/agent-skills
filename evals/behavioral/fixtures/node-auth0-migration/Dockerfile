@@ -23,7 +23,13 @@ COPY evals/behavioral/fixtures/node-auth0-migration/before/ /app/
 # Copy the local SDK tarballs (used only when SDK_SOURCE=local; harmless otherwise)
 COPY evals/behavioral/fixtures/node-auth0-migration/vendor/ /app/vendor/
 
-# Install dependencies for the fixture app (includes auth0@^6 from its package.json)
+# Install dependencies for the fixture app (includes auth0@^6 from its package.json).
+# NOTE: before/package.json has an unconditional `overrides` entry pointing
+# @auth0/auth0-auth-js to file:./vendor/auth0-auth0-auth-js-1.12.1.tgz.
+# The vendor/ tarballs are gitignored, so a `published` build (SDK_SOURCE=published)
+# on a fresh checkout will fail here because the tarball does not exist.
+# That code path is an unimplemented CI fallback — once a release cuts, remove
+# (or conditional-ise) the override in before/package.json before enabling it.
 RUN npm install
 
 # Install the TARGET SDKs.

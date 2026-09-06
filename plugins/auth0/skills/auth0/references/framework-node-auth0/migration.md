@@ -855,9 +855,15 @@ const expiresIn = resp.data.expires_in; // relative seconds
 const reqId = resp.headers.get('x-request-id'); // metadata on success envelope
 ```
 
-**auth0-auth-js** — you pass the **entire callback `URL`**. The SDK extracts `code` and
-validates `state` for you. `redirect_uri` comes from the `AuthClient` config /
-`authorizationParams`, not the call:
+**auth0-auth-js** — you pass the **entire callback `URL`**. The SDK extracts
+`code` and performs the PKCE exchange. `redirect_uri` comes from the `AuthClient`
+config / `authorizationParams`, not the call.
+
+> **CSRF: validate `state` before calling `getTokenByCode`.** `AuthClient.getTokenByCode`
+> does NOT compare the callback `state` against your stored transaction state. You must do
+> this yourself before calling the method; abort on mismatch. If you use
+> `@auth0/auth0-server-js`, prefer `completeInteractiveLogin()` — it validates and consumes
+> the transaction internally so you never hand-roll the state check.
 
 ```ts
 import { AuthClient } from '@auth0/auth0-auth-js';
@@ -866,6 +872,14 @@ const authClient = new AuthClient({ domain, clientId, clientSecret });
 
 // `callbackUrl` is a URL object for the full incoming request URL,
 // e.g. new URL(req.url, `https://${req.headers.host}`)
+
+// 1. Validate state BEFORE exchanging the code (CSRF protection).
+const callbackState = callbackUrl.searchParams.get('state');
+if (!callbackState || callbackState !== storedState) {
+  throw new Error('State mismatch — possible CSRF attack; abort the flow.');
+}
+
+// 2. Exchange the code for tokens.
 const tokens = await authClient.getTokenByCode(callbackUrl, {
   codeVerifier: verifier, // PKCE: the verifier you persisted before the redirect
 });
@@ -874,8 +888,7 @@ const expiresAt = tokens.expiresAt; // absolute Unix seconds (not relative)
 ```
 
 > **PKCE is the only supported flow for `getTokenByCode`.** Pass the `codeVerifier` you
-> persisted before the redirect. State validation is handled internally by the SDK when you
-> use `startInteractiveLogin` / `completeInteractiveLogin` via server-js.
+> persisted before the redirect.
 
 > **Gotcha:** if the customer's code manually parses `req.query.code`, that parsing is now the
 > SDK's job. Delete it and hand the SDK the full URL. **Header reads on success:** if the
@@ -1462,31 +1475,34 @@ app.get('/logout', async (req, res) => {
 });
 ```
 
-`logout` clears the session from the state store and returns the Auth0 `/v2/logout` URL. If the
-customer also revoked the refresh token on logout (via `oauth.revokeRefreshToken`), call
-`serverClient.revokeRefreshToken({ req, res })` before redirecting — it reads the refresh token
-from the session, so you do not handle the raw token yourself.
+`logout` clears the session from the state store AND automatically best-effort-revokes the
+session refresh token before deletion. Do NOT call `serverClient.revokeRefreshToken({ req, res })`
+on the logout path — the session is already gone by the time logout returns and the call will
+throw `MissingSessionError`. Use `revokeRefreshToken` only for standalone revocation (revoking
+a token without ending the session).
 
 ---
 
 ### Non-redirect logins that also establish a session
 
-If the customer used node-auth0 for a non-redirect login (password grant, passwordless, CIBA,
+If the customer used node-auth0 for a non-redirect login (passwordless, CIBA,
 custom token exchange) *and* wants a server-js session out of it, use the ServerClient methods
 that both authenticate and write the session:
 
 | Flow | ServerClient method |
 |---|---|
 | Backchannel / CIBA | `loginBackchannel({ ... }, storeOptions)` |
-| Passwordless (send) | `startPasswordless({ connection, email \| phoneNumber, ... }, storeOptions)` |
 | Passwordless (verify code → session) | `completePasswordless({ connection, email \| phoneNumber, verificationCode }, storeOptions)` |
 | Passwordless magic link (callback → session) | `completePasswordlessMagicLink(url, storeOptions)` |
 | Custom token exchange → session | `loginWithCustomTokenExchange({ ... }, storeOptions)` |
 | MFA verify → session | `serverClient.mfa.verify({ ... }, storeOptions)` |
 
 Each of these performs the underlying grant *and* persists the resulting tokens to the state
-store, so the user is logged in afterward — exactly the behavior the customer previously wrote
-by hand after a node-auth0 grant.
+store, so the user is logged in afterward.
+
+**Passwordless initiation** — `startPasswordless({ connection, email | phoneNumber, ... }, storeOptions)` sends the OTP or magic link and stores the pending anti-forgery transaction. It does NOT exchange tokens or establish a session. Call `completePasswordless` or `completePasswordlessMagicLink` to finish the flow and create the session.
+
+**Password grant (ROPC)** — `ServerClient` has no password-grant session method. Migrations from `oauth.passwordGrant` stay on `@auth0/auth0-auth-js` (`authClient.getTokenByPassword`) and the app owns session handling. There is no server-js session bridge for ROPC.
 
 ---
 

@@ -12,7 +12,7 @@
 #   2. Residual node-auth0 auth sub-client calls (.oauth./.passwordless./.backchannel./.tokenExchange.).
 #   3. `.data.` access on what looks like a token/grant result (return-shape residue).
 #   4. `expires_in` arithmetic (the relative→absolute expiry hazard).
-#   5. `AuthApiError` catches and `'mfa_required'` string checks (error-model residue).
+#   5. `AuthApiError` catches (error-model residue).
 #
 # ManagementClient is intentionally NOT flagged — it stays on the 'auth0' package.
 
@@ -74,9 +74,9 @@ check "No AuthApiError catches" \
   "AuthApiError" \
   "Use the typed per-operation error (e.g. TokenByRefreshTokenError) and check e.cause.error."
 
-check "No 'mfa_required' string checks" \
-  "['\"]mfa_required['\"]" \
-  "Check e.cause?.error === 'mfa_required' on the typed per-operation error instead of string matching."
+check "No isMfaRequiredError helper (legacy MFA error-check)" \
+  "isMfaRequiredError" \
+  "Use the typed per-operation error: catch the error and check e.cause?.error === 'mfa_required'."
 
 echo
 if [ "$FAILED" -ne 0 ]; then

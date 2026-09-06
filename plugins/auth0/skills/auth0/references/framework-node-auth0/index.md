@@ -6,10 +6,11 @@ Administer an Auth0 tenant from server-side Node.js / TypeScript with the
 connections, roles, organizations, actions, resource servers, and everything
 else the Auth0 Dashboard exposes, through the Management API.
 
-> **Authentication lives in separate packages.** node-auth0 covers the
-> Management API only - it does not sign users in or issue tokens. For
-> authentication (OAuth token grants, database signup, passwordless, MFA
-> challenges, or reading a user's profile from an access token) use
+> **Session management lives in separate packages.** node-auth0 provides
+> `ManagementClient` for tenant administration plus the stateless
+> `AuthenticationClient` and `UserInfoClient` auth APIs. It does NOT own
+> browser sessions, cookies, token storage, or automatic token refresh — those
+> are what the migration targets add. For session-bearing authentication use
 > `@auth0/auth0-auth-js` for stateless token/OAuth operations or
 > `@auth0/auth0-server-js` for stateful server sessions. Both sit alongside
 > node-auth0 in the same project when you need administration and
@@ -60,17 +61,19 @@ that migration.
 
 ## When NOT to use
 
-node-auth0 is a Management-API-only SDK. It does not sign users in, hold
-sessions, or validate access tokens for your endpoints. Route elsewhere for:
+node-auth0 provides ManagementClient (tenant administration) plus the stateless
+AuthenticationClient and UserInfoClient auth APIs. It does not hold sessions,
+manage cookies, store tokens, or auto-refresh them. Route elsewhere for:
 
 - **End-user login, signup, or sessions** - use the app's framework SDK. Use the
   Auth0 integration workflow for Next.js, React, Vue, Angular, Express, the
   mobile SDKs, and so on; those own the redirect, callback, cookies, and token
   storage.
-- **Authentication API operations** - token grants, database signup,
-  passwordless, MFA challenges, or reading a user's profile from an access token
-  - use `@auth0/auth0-auth-js` or `@auth0/auth0-server-js` (see the callout at
-  the top).
+- **Session-bearing authentication** - if you need cookies, server-managed
+  sessions, automatic token refresh, or browser login redirects, use
+  `@auth0/auth0-auth-js` (stateless token grants) or `@auth0/auth0-server-js`
+  (full session management). node-auth0's `AuthenticationClient` is stateless
+  and does not cover these concerns.
 - **Protecting an API by validating incoming JWTs** - use
   `express-oauth2-jwt-bearer` (the Express API integration workflow) or the
   framework's resource-server SDK.
@@ -278,7 +281,7 @@ the full resource graph.
 | Passing a resource id as `{ id }` to `get`/`update`/`delete` | The id is a positional string - `management.users.get(userId)`, `management.users.update(userId, body)`. |
 | `domain: "https://tenant.auth0.com/"` | Bare hostname only - `tenant.auth0.com`. |
 | Using node-auth0 to log users into an app | Wrong SDK - use the app's framework SDK for login/sessions. |
-| Using node-auth0 for authentication (token grants, signup, MFA, `/userinfo`) | Use `@auth0/auth0-auth-js` or `@auth0/auth0-server-js`. |
+| Using node-auth0 for session-bearing auth (cookies, token storage, auto-refresh) | node-auth0 is stateless — use `@auth0/auth0-auth-js` or `@auth0/auth0-server-js`. |
 | Granting the M2M app broad Management scopes | Grant only what the task needs (e.g. just `read:users`). |
 | Hardcoding the client secret in source | Load from an env variable; keep `.env` out of git. |
 | Per-record loops for large jobs | The Management API is rate limited - keep `maxRetries` on and prefer bulk/Import-Users jobs. |

@@ -132,10 +132,16 @@ for iter in $(seq 1 "$MAX_ITERS"); do
   if [ -n "$MIGRATION_AGENT_CMD" ]; then
     # ---- git preflight: stash before mutating files ----
     GIT_CHECK=$(git -C "$APP_DIR" rev-parse --is-inside-work-tree 2>&1 || true)
+    STASH_REF=""
     if [ "$GIT_CHECK" = "true" ]; then
       STASH_NAME="run-loop-pre-rewrite-iter${iter}-$(date +%Y%m%d-%H%M%S)"
       echo "Git repo detected — stashing before agent rewrite (restore with: git -C '$APP_DIR' stash pop)"
+      STASH_BEFORE=$(git -C "$APP_DIR" rev-parse -q --verify refs/stash 2>/dev/null || true)
       git -C "$APP_DIR" stash push --include-untracked --message "$STASH_NAME" || true
+      STASH_AFTER=$(git -C "$APP_DIR" rev-parse -q --verify refs/stash 2>/dev/null || true)
+      if [ "$STASH_BEFORE" != "$STASH_AFTER" ] && [ -n "$STASH_AFTER" ]; then
+        STASH_REF="$STASH_AFTER"
+      fi
     else
       echo "WARNING: APP_DIR '$APP_DIR' is not a git repository — no backup possible before agent rewrite."
     fi
@@ -155,10 +161,15 @@ for iter in $(seq 1 "$MAX_ITERS"); do
     else
       rewrite_exit=$?
       error_banner "Agent rewrite step failed (exit code $rewrite_exit)"
-      # Restore the stash on failure so the repo is left clean
+      # Restore the repo on failure: undo any agent changes then re-apply the
+      # pre-rewrite stash ONLY if one was actually created (STASH_REF non-empty).
       if [ "$GIT_CHECK" = "true" ]; then
-        echo "Restoring pre-rewrite stash..."
-        git -C "$APP_DIR" stash pop || true
+        echo "Restoring pre-rewrite state..."
+        git -C "$APP_DIR" reset --hard HEAD
+        git -C "$APP_DIR" clean -fd
+        if [ -n "$STASH_REF" ]; then
+          git -C "$APP_DIR" stash pop || true
+        fi
       fi
       popd > /dev/null
       exit 1
