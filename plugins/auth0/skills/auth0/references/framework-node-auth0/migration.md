@@ -861,11 +861,14 @@ const reqId = resp.headers.get('x-request-id'); // metadata on success envelope
 `code` and performs the PKCE exchange. `redirect_uri` comes from the `AuthClient`
 config / `authorizationParams`, not the call.
 
-> **CSRF: validate `state` before calling `getTokenByCode`.** `AuthClient.getTokenByCode`
-> does NOT compare the callback `state` against your stored transaction state. You must do
-> this yourself before calling the method; abort on mismatch. If you use
-> `@auth0/auth0-server-js`, prefer `completeInteractiveLogin()` — it validates and consumes
-> the transaction internally so you never hand-roll the state check.
+> **CSRF: validate `state` before calling `getTokenByCode` or `completeInteractiveLogin`.**
+> Neither `AuthClient.getTokenByCode` nor `ServerClient.completeInteractiveLogin` compares
+> the callback `state` against your stored transaction state. `completeInteractiveLogin`
+> deletes (consumes) the pending transaction after the exchange, but performs no explicit
+> state comparison. Validate the callback `state` against your stored value before calling
+> either method; abort on mismatch. PKCE binds the authorization code to the stored
+> `codeVerifier`, so a substituted code is rejected at the token endpoint, but that is
+> not a substitute for explicit state validation.
 
 ```ts
 import { AuthClient } from '@auth0/auth0-auth-js';
@@ -1502,7 +1505,7 @@ that both authenticate and write the session:
 Each of these performs the underlying grant *and* persists the resulting tokens to the state
 store, so the user is logged in afterward.
 
-**Passwordless initiation** — `startPasswordless({ connection, email | phoneNumber, ... }, storeOptions)` sends the OTP or magic link and stores the pending anti-forgery transaction. It does NOT exchange tokens or establish a session. Call `completePasswordless` or `completePasswordlessMagicLink` to finish the flow and create the session.
+**Passwordless initiation** — `startPasswordless({ connection, email | phoneNumber, ... }, storeOptions)` sends the OTP or magic link. Only **email magic-link** mode (`send: 'link'`) stores a pending anti-forgery transaction with a generated `state`; SMS-OTP and email-OTP (`send: 'code'`) send the code and return immediately with no transaction stored. It does NOT exchange tokens or establish a session. Call `completePasswordless` or `completePasswordlessMagicLink` to finish the flow and create the session.
 
 **Password grant (ROPC)** — `ServerClient` has no password-grant session method. Migrations from `oauth.passwordGrant` stay on `@auth0/auth0-auth-js` (`authClient.getTokenByPassword`) and the app owns session handling. There is no server-js session bridge for ROPC.
 
