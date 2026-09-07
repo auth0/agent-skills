@@ -31,9 +31,10 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 ## Step 1: Detect intent
 
 Match the request against the **What the developer wants** column — it describes
-the goal in plain language, not just the Auth0 term. The **Intent** you pick is a
-lookup key: in **Step 4** it appears verbatim as a section heading (`### feature:mfa`)
-listing which reference files to load.
+the goal in plain language, not just the Auth0 term (someone who says *"make
+users confirm with a code from their phone"* lands on `feature:mfa`). The
+**Intent** you pick is a lookup key: in **Step 4** it appears verbatim as a
+section heading (`### feature:mfa`) listing which reference files to load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
@@ -74,7 +75,7 @@ Work top-down. **Stop at the first tier that yields a framework.**
 ### Node.js / JavaScript / TypeScript — check `package.json` → `dependencies`
 
 Rows are most-specific first: an Ionic/Capacitor project also carries the base
-SDK, so check `@capacitor/browser` rows first.
+SDK, so check the `@capacitor/browser` rows before it.
 
 | Package | Framework |
 |---|---|
@@ -99,14 +100,9 @@ SDK, so check `@capacitor/browser` rows first.
 
 ### Python — check `requirements.txt` or `pyproject.toml`
 
-Rows are most-specific first: `auth0-server-python` is the framework-agnostic
-server core, so check for a co-installed web framework before falling back to the
-bare-SDK row.
-
 | Package | Framework |
 |---|---|
-| `auth0-server-python` + `flask` | `flask` |
-| `auth0-server-python` (no Flask web framework) | `server-python` |
+| `auth0-server-python` | `flask` |
 | `auth0-fastapi-api` | `fastapi-api` |
 
 ### Java / Kotlin — check `build.gradle` or `pom.xml`
@@ -131,7 +127,7 @@ bare-SDK row.
 ### PHP — check `composer.json`
 
 `auth0/auth0-php` powers both PHP web apps and APIs via `SdkConfiguration`'s
-`strategy`. Check the more-specific `STRATEGY_API` row first.
+`strategy`. The `STRATEGY_API` row is more specific — check it first.
 
 | Package | Framework |
 |---|---|
@@ -156,7 +152,6 @@ bare-SDK row.
 | `build.gradle(.kts)` + `com.auth0.kmp:auth0` (Kotlin Multiplatform module) | `kmp` |
 | `Package.swift` or `.xcodeproj` + Auth0.swift | `swift` |
 | `build.gradle` + `com.auth0.android:auth0` | `android` |
-| `pubspec.yaml` + `auth0_flutter` + developer names/targets Windows desktop | `flutter-windows` |
 | `pubspec.yaml` + `auth0_flutter` + `flutter.web: false` | `flutter-native` |
 | `pubspec.yaml` + `auth0_flutter` + web enabled | `flutter-web` |
 
@@ -164,8 +159,8 @@ bare-SDK row.
 
 If no Auth0 SDK matched, detect the framework from ordinary (non-Auth0)
 dependencies. **Stop at the first match.** This picks the base; any web-vs-API
-variant is resolved in "Variant disambiguation" below. Check `@ionic/*` rows
-before their base framework.
+variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
+`@ionic/*` rows before their base framework.
 
 | Signal | Base framework |
 |---|---|
@@ -182,14 +177,13 @@ before their base framework.
 | `express` in `package.json` | `express` (variant below) |
 | `fastify` in `package.json` | `fastify` (variant below) |
 | `flask` in `requirements.txt`/`pyproject.toml` | `flask` |
-| `fastapi` in `requirements.txt`/`pyproject.toml` | `fastapi-api` (variant below) |
+| `fastapi` in `requirements.txt`/`pyproject.toml` | `fastapi-api` |
 | `spring-boot` in `pom.xml`/`build.gradle` | `springboot-api` |
 | `laravel/framework` in `composer.json` | `laravel` (variant below) |
 | `composer.json` present (no Laravel) | `php` (variant below) |
 | `go.mod` present + HTTP server/router | `go` |
 | `org.jetbrains.kotlin.multiplatform` plugin + `commonMain` source set (shared Android+iOS module) | `kmp` |
 | `Package.swift` or `.xcodeproj` | `swift` |
-| `pubspec.yaml` (Flutter) + developer names/targets Windows desktop | `flutter-windows` |
 | `pubspec.yaml` (Flutter, web disabled) | `flutter-native` |
 | `pubspec.yaml` (Flutter, web enabled) | `flutter-web` |
 | `*.csproj` referencing MAUI | `maui` |
@@ -214,15 +208,14 @@ request. **Stop at the first match.**
 | Vue (not Nuxt/Ionic) | `vue` |
 | React SPA (not Next.js) | `react` |
 | vanilla JS / plain JS / no framework SPA | `spa-js` |
-| node-auth0 / the `auth0` npm package | `node-auth0` |
 | `@auth0/auth0-server-js` / auth0-server-js / server-side Auth0 session SDK | `auth0-server-js` |
 | `@auth0/auth0-auth-js` / auth0-auth-js / AuthClient / low-level OAuth OIDC | `auth0-auth-js` |
+| node-auth0 / the `auth0` npm package | `node-auth0` |
 | Express (web app / server-rendered) | `express` |
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
 | Flask | `flask` |
-| FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
-| `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
+| FastAPI | `fastapi-api` |
 | Spring Boot | `springboot-api` |
 | Java MVC / servlet | `java-mvc` |
 | ASP.NET Core web app / API | `aspnetcore-auth` / `aspnetcore-api` |
@@ -233,7 +226,7 @@ request. **Stop at the first match.**
 | Kotlin Multiplatform / KMP / shared Android+iOS auth code / `com.auth0.kmp` | `kmp` |
 | Swift / iOS | `swift` |
 | Android / Kotlin | `android` |
-| Flutter (native / web / Windows) | `flutter-native` / `flutter-web` / `flutter-windows` |
+| Flutter (native / web) | `flutter-native` / `flutter-web` |
 | React Native / Expo | `react-native` / `expo` |
 | Ionic (Angular/React/Vue) | `ionic-angular` / `ionic-react` / `ionic-vue` |
 
@@ -246,7 +239,6 @@ pin the variant, choose **intent-first**:
 |---|---|---|---|
 | express | `express` | `express-jwt` | protecting API routes / validating JWTs, no server-rendered UI |
 | fastify | `fastify` | `fastify-api` | resource server / JWT validation only |
-| fastapi | `server-python` | `fastapi-api` | resource server / JWT validation only; a web app with login/logout UI uses `server-python` |
 | php | `php` | `php-api` | building/protecting a PHP API, no web UI |
 | laravel | `laravel` | `laravel-api` | API-only (token guard), no Blade UI |
 | aspnetcore | `aspnetcore-auth` | `aspnetcore-api` | Web API / JWT bearer, no cookie login UI |
@@ -269,7 +261,7 @@ present and consistent.
 
 ## Step 3: Detect tooling
 
-Read the project file tree and request — a project-context decision, not a preference.
+Read the project file tree and the request — a project-context decision, not a product preference.
 
 | Project has... | Load |
 |---|---|
@@ -289,7 +281,8 @@ Step 1, then read the reference files it lists.
 ```
 Read: references/framework-{framework}/index.md
 Read: references/tooling-{tooling}/index.md
-Follow the integration workflow in references/framework-{framework}/index.md; use references/tooling-{tooling}/index.md for all tenant configuration.
+Follow the integration workflow in references/framework-{framework}/index.md.
+Use references/tooling-{tooling}/index.md for all Auth0 tenant configuration steps.
 ```
 
 ### feature:mfa
@@ -370,7 +363,7 @@ Read: references/feature-audit/index.md
 Read: references/feature-audit-pricing/index.md
 Read: references/feature-audit-remediation/index.md
 Read: references/tooling-{tooling}/index.md
-Apply findings only with per-command confirmation; verify each by re-fetch.
+Apply findings only with per-command confirmation; verify each change by re-fetch.
 ```
 
 ### healthcheck
