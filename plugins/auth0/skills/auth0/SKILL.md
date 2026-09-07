@@ -380,15 +380,15 @@ Read: references/feature-audit/index.md
 Read: references/feature-audit-pricing/index.md
 Read: references/feature-audit-remediation/index.md
 Read: references/tooling-{tooling}/index.md
-If a scan can run, do the audit workflow first, then score and recommend a plan; otherwise score capability fit and recommend anyway. Never quote Enterprise pricing.
+If a scan can run, do the audit workflow first, then score and recommend a plan. If not, score capability fit and recommend anyway. Never quote Enterprise pricing.
 ```
 
 ### upgrade-sdk
 ```
 Read: references/framework-{framework}/index.md
 Follow its "Major Version Migration" section (e.g. Auth0.swift v3, Auth0.Android v4).
-This is an SDK version bump — NOT a provider migration. Do not load feature-migration/index.md.
-If no framework detected: ask which Auth0 SDK to upgrade.
+This is an Auth0 SDK version bump — NOT a provider migration. Do not load feature-migration/index.md.
+If no framework is detected: ask which Auth0 SDK the developer is upgrading.
 ```
 
 ### tooling
