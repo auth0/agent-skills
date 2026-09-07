@@ -100,9 +100,14 @@ SDK, so check the `@capacitor/browser` rows before it.
 
 ### Python — check `requirements.txt` or `pyproject.toml`
 
+Rows are most-specific first: `auth0-server-python` is the framework-agnostic
+server core, so check for a co-installed web framework before falling back to the
+bare-SDK row.
+
 | Package | Framework |
 |---|---|
-| `auth0-server-python` | `flask` |
+| `auth0-server-python` + `flask` | `flask` |
+| `auth0-server-python` (no Flask web framework) | `server-python` |
 | `auth0-fastapi-api` | `fastapi-api` |
 
 ### Java / Kotlin — check `build.gradle` or `pom.xml`
@@ -152,6 +157,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `build.gradle(.kts)` + `com.auth0.kmp:auth0` (Kotlin Multiplatform module) | `kmp` |
 | `Package.swift` or `.xcodeproj` + Auth0.swift | `swift` |
 | `build.gradle` + `com.auth0.android:auth0` | `android` |
+| `pubspec.yaml` + `auth0_flutter` + developer names/targets Windows desktop | `flutter-windows` |
 | `pubspec.yaml` + `auth0_flutter` + `flutter.web: false` | `flutter-native` |
 | `pubspec.yaml` + `auth0_flutter` + web enabled | `flutter-web` |
 
@@ -177,13 +183,14 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `express` in `package.json` | `express` (variant below) |
 | `fastify` in `package.json` | `fastify` (variant below) |
 | `flask` in `requirements.txt`/`pyproject.toml` | `flask` |
-| `fastapi` in `requirements.txt`/`pyproject.toml` | `fastapi-api` |
+| `fastapi` in `requirements.txt`/`pyproject.toml` | `fastapi-api` (variant below) |
 | `spring-boot` in `pom.xml`/`build.gradle` | `springboot-api` |
 | `laravel/framework` in `composer.json` | `laravel` (variant below) |
 | `composer.json` present (no Laravel) | `php` (variant below) |
 | `go.mod` present + HTTP server/router | `go` |
 | `org.jetbrains.kotlin.multiplatform` plugin + `commonMain` source set (shared Android+iOS module) | `kmp` |
 | `Package.swift` or `.xcodeproj` | `swift` |
+| `pubspec.yaml` (Flutter) + developer names/targets Windows desktop | `flutter-windows` |
 | `pubspec.yaml` (Flutter, web disabled) | `flutter-native` |
 | `pubspec.yaml` (Flutter, web enabled) | `flutter-web` |
 | `*.csproj` referencing MAUI | `maui` |
@@ -208,14 +215,15 @@ request. **Stop at the first match.**
 | Vue (not Nuxt/Ionic) | `vue` |
 | React SPA (not Next.js) | `react` |
 | vanilla JS / plain JS / no framework SPA | `spa-js` |
+| node-auth0 / the `auth0` npm package | `node-auth0` |
 | `@auth0/auth0-server-js` / auth0-server-js / server-side Auth0 session SDK | `auth0-server-js` |
 | `@auth0/auth0-auth-js` / auth0-auth-js / AuthClient / low-level OAuth OIDC | `auth0-auth-js` |
-| node-auth0 / the `auth0` npm package | `node-auth0` |
 | Express (web app / server-rendered) | `express` |
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
 | Flask | `flask` |
-| FastAPI | `fastapi-api` |
+| FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
+| `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
 | Spring Boot | `springboot-api` |
 | Java MVC / servlet | `java-mvc` |
 | ASP.NET Core web app / API | `aspnetcore-auth` / `aspnetcore-api` |
@@ -226,7 +234,7 @@ request. **Stop at the first match.**
 | Kotlin Multiplatform / KMP / shared Android+iOS auth code / `com.auth0.kmp` | `kmp` |
 | Swift / iOS | `swift` |
 | Android / Kotlin | `android` |
-| Flutter (native / web) | `flutter-native` / `flutter-web` |
+| Flutter (native / web / Windows) | `flutter-native` / `flutter-web` / `flutter-windows` |
 | React Native / Expo | `react-native` / `expo` |
 | Ionic (Angular/React/Vue) | `ionic-angular` / `ionic-react` / `ionic-vue` |
 
@@ -239,6 +247,7 @@ pin the variant, choose **intent-first**:
 |---|---|---|---|
 | express | `express` | `express-jwt` | protecting API routes / validating JWTs, no server-rendered UI |
 | fastify | `fastify` | `fastify-api` | resource server / JWT validation only |
+| fastapi | `server-python` | `fastapi-api` | resource server / JWT validation only; a web app with login/logout UI uses `server-python` |
 | php | `php` | `php-api` | building/protecting a PHP API, no web UI |
 | laravel | `laravel` | `laravel-api` | API-only (token guard), no Blade UI |
 | aspnetcore | `aspnetcore-auth` | `aspnetcore-api` | Web API / JWT bearer, no cookie login UI |
