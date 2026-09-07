@@ -1037,6 +1037,13 @@ const { authorizationUrl, codeVerifier } = await authClient.buildAuthorizationUr
 const logoutUrl = await authClient.buildLogoutUrl({ returnTo: 'https://app.example.com' });
 ```
 
+> **Breaking change — both builders are async.** Unlike the manual URL construction common
+> in node-auth0 apps (which was synchronous), both `buildAuthorizationUrl` and `buildLogoutUrl`
+> return `Promise<...>` because they perform OIDC discovery to resolve the authorization and
+> end-session endpoints. Any Express route or helper that calls either method must be made
+> `async` and must `await` the result. A synchronous wrapper will silently return a `Promise`
+> object instead of a URL string.
+
 ---
 
 ### `AuthenticationClient.database.*` → `authClient.database.*`
