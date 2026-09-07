@@ -1,8 +1,10 @@
 # node-auth0 v6 Migration Guide — auth0-auth-js / auth0-server-js
 
-**Applies to:** `auth0` (node-auth0) **v4+** migrating to `@auth0/auth0-auth-js` >= v1.13.0
-and/or `@auth0/auth0-server-js` >= v1.13.0. The Authentication API is stable across node-auth0
-v4-v6; v5 raised the minimum Node.js version to ^20.19.0 but did not change the API surface.
+**Applies to:** `auth0` (node-auth0) **v6** migrating to `@auth0/auth0-auth-js` >= v1.13.0
+and/or `@auth0/auth0-server-js` >= v1.13.0. Apps on v4/v5 must upgrade to v6 before running this
+migration (the Authentication API is stable across v4-v6, so that upgrade is low-risk; note v5
+raised the minimum Node.js to ^20.19.0). The framework router gates this: a non-v6 app is turned
+away with an upgrade message rather than migrated.
 
 **Out of scope:** The `ManagementClient`
 (Management API v2) is also out of scope — it stays on the `auth0` package and is not migrated
@@ -35,7 +37,7 @@ node-auth0's Authentication API.
 
 | Role | Package | Version |
 |---|---|---|
-| Source (being migrated) | `auth0` (node-auth0) | v4+ |
+| Source (being migrated) | `auth0` (node-auth0) | v6 |
 | Target — token layer | `@auth0/auth0-auth-js` | >= v1.13.0 |
 | Target — session layer | `@auth0/auth0-server-js` | >= v1.13.0 |
 

@@ -29,12 +29,23 @@ If the task is migrating an existing app OFF the legacy `auth0` package's
 Authentication API surface (`AuthenticationClient`, `oauth.*`, `database.*`,
 `passwordless.*`, `backchannel.*`, `tokenExchange.*`, id-token validation) to
 `@auth0/auth0-auth-js` / `@auth0/auth0-server-js`, dispatch to the migration
-leaf. `ManagementClient` administration stays on this package and is not part of
-that migration.
+guide below. `ManagementClient` administration stays on this package and is not
+part of that migration.
 
-| Intent | Load |
-|---|---|
-| migrate-node-auth0 | `Read: references/framework-node-auth0/migration.md` |
+**Version gate — check the installed `auth0` major version first.** This
+migration targets node-auth0 **v6**. Read the `auth0` version from the app's
+`package.json` / lockfile. If it is **v4 or v5**, do NOT run the migration —
+return this message and stop:
+
+> This migration guide targets node-auth0 v6. Your app is on node-auth0
+> v{major}. Upgrade to v6 first (its Authentication API surface is stable across
+> v4–v6, so the upgrade is low-risk), then re-run this migration.
+
+Only when the app is on **v6** proceed to the guide:
+
+| Load |
+|---|
+| `Read: references/framework-node-auth0/migration.md` |
 
 ## Critical rules
 

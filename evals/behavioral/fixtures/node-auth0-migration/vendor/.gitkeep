@@ -1,2 +1,0 @@
-# Keeps the vendor/ directory tracked. The SDK tarballs (*.tgz) are gitignored;
-# regenerate them with `npm pack` per the harness README before a local Docker build.
