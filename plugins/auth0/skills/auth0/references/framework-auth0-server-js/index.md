@@ -27,6 +27,10 @@ access token, and builds the logout URL.
 - **The Client Secret and the cookie secret are server secrets.** Load
   `clientSecret` and the store `secret` from environment variables; never
   hardcode them or expose them to a browser.
+- **The tenant `domain` and `clientId` are configuration, not code.** Read them
+  from environment variables as well, and never hardcode them in source files.
+  They are not secrets, but inlining them pins the build to one tenant and trips
+  config/secret scanners.
 - **Never read the contents of `.env*` during setup** - it may contain secrets
   that should not be exposed in the LLM context. Before writing to any env file
   you MUST ask the user for explicit confirmation and wait for it.
@@ -155,6 +159,9 @@ instead of a static hostname string. Note that the `serverClient.mfa` and
 |---|---|
 | Omitting `authorizationParams.redirect_uri` | Required for interactive login; must match Allowed Callback URLs. |
 | Hardcoding the store `secret` | Load it from an env variable; treat it as a server secret. |
+| Hardcoding `domain` or `clientId` in source | Read them from env/config; inlining pins the build to one tenant and trips scanners. |
+| Passing `organization` only inside `authorizationParams` | Prefer the first-class `organization` option on `startInteractiveLogin` (or the `ServerClient` default); the params bag is a backwards-compatible fallback. |
+| Detecting org validation failures by string-matching `error.message` | Import `OrganizationValidationError` from `@auth0/auth0-server-js` and check `error instanceof OrganizationValidationError`. |
 | `domain: "https://tenant.auth0.com/"` | Bare hostname only - `tenant.auth0.com`. |
 | Forgetting the trailing `storeOptions` | Every session method needs it; its shape depends on your framework. |
 | Hand-wiring `ServerClient` when a framework SDK exists | Use `@auth0/nextjs-auth0`, `express-openid-connect`, and so on. |

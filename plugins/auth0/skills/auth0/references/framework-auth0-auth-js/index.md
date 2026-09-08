@@ -30,6 +30,10 @@ password grants, reads a user profile from `/userinfo`, and builds logout URLs.
   you MUST ask the user for explicit confirmation and wait for it.
 - **`domain` must be a bare hostname** - no `https://`, no path, no trailing
   slash.
+- **The tenant `domain` and `clientId` are configuration, not code.** Read them
+  from environment variables and never hardcode them in source files. They are
+  not secrets, but inlining them pins the build to one tenant and trips
+  config/secret scanners.
 - **The PKCE `codeVerifier` is single-use and per-request.** Generate it with
   `buildAuthorizationUrl()`, carry it through the redirect, and pass the same
   value to `getTokenByCode()`. Never reuse one across requests or store it in a
@@ -143,6 +147,7 @@ References).
 | Mistake | Fix |
 |---|---|
 | `domain: "https://tenant.auth0.com/"` | Bare hostname only - `tenant.auth0.com`. |
+| Hardcoding `domain` or `clientId` in source | Read them from env/config; inlining pins the build to one tenant and trips scanners. |
 | Reusing a `codeVerifier` across requests | Generate a new one per `buildAuthorizationUrl()` call. |
 | Calling `getTokenByCode()` without the verifier | Pass `{ codeVerifier }` as the second argument. |
 | Expecting cookies or a session | auth0-auth-js is stateless - use `@auth0/auth0-server-js` for sessions. |
