@@ -151,3 +151,68 @@ that login works before removing the old secret from dependent systems.
 | Callback mismatch after deploy | Canonical URL and Auth0 application URLs | Set `APP_BASE_URL` to the canonical URL and update the allowed callback/logout URLs to match the SDK's configured routes exactly. |
 | Login does not render in Vercel's embedded experience | Iframe embedding | Enable iframe embedding in the Auth0 tenant, then retry before changing application code. |
 | Integration removal has unexpected account impact | Removal warning | Stop and confirm the removal: deleting the integration removes the connected Auth0 account and downgrades the Vercel installation. |
+
+## Auth0 in the v0 preview
+
+The v0 preview runs your app inside a cross-site iframe on an HTTPS origin that
+is neither localhost nor a `VERCEL_URL`. Three common auth failures all trace
+back to that fact. Keep these in mind and the flow works the first time.
+
+### 1. Redirect goes to localhost ("localhost refused to connect")
+
+The SDK builds its login/callback redirect from a base-URL setting that
+defaults to `localhost`. In the preview, `VERCEL_URL` and
+`VERCEL_PROJECT_PRODUCTION_URL` are unset, so anything relying on them falls
+back to localhost. Resolve the app's base URL from the runtime origin and
+include the v0 preview origin (`V0_RUNTIME_URL`) in the fallback chain, ahead of
+the localhost default. Verify by inspecting the actual `redirect_uri` on the
+login redirect, not just that the page compiles.
+
+### 2. State cookie dropped ("The state parameter is invalid")
+
+The SDK stores a short-lived transaction/state cookie during the redirect and
+reads it back on the callback. Default `SameSite=Lax` cookies are not sent on
+the cross-site callback inside the iframe, so validation fails. When served over
+HTTPS (preview and production), set the transaction and session cookies to
+`SameSite=None; Secure`. Keep plain `localhost` HTTP on the safe defaults, since
+`Secure` cookies can't be set over HTTP.
+
+### 3. Login page won't frame ("This content is blocked")
+
+Hosted login pages send frame-busting headers, so they can't render inside the
+preview iframe — no config can override that. Make the login (and logout)
+navigation break out of the iframe: detect when running framed and open the auth
+route in a new top-level tab; otherwise navigate normally. After login completes
+in the top-level context, the framed preview needs a refresh to pick up the new
+session cookie.
+
+### Configuration lives outside the code
+
+Callback/logout URLs, tenant selection, and env var scoping are set in the Auth0
+and Vercel dashboards, not in the app. The Vercel Auth0 integration auto-syncs
+real Vercel deployment domains and owns the `AUTH0_*` env vars, so hand-edited
+values can be overwritten — don't assume env vars alone prove which tenant an
+environment uses; confirm from the dashboard.
+
+Non-Vercel origins are never auto-synced, so walk the user through registering
+them by hand. The one that gets the preview working is the app's **stable v0
+preview URL** (e.g. `https://<project>.v0.build`) — it stays constant across
+rebuilds, so registering it once is what makes login succeed in the preview.
+(Per-deployment Vercel URLs change every build and aren't worth registering by
+hand.) Also register `localhost` for local dev. The app can't do this itself —
+give explicit steps:
+
+1. In the Auth0 dashboard, pick the tenant the app's env vars point at
+   (top-left tenant switcher — there may be separate Development/Staging/
+   Production tenants).
+2. Go to **Applications → Applications** and open the app's client (the
+   integration names it "Created By Vercel"; match it by Client ID if unsure).
+3. On the **Settings** tab, add to the comma-separated lists (use the stable
+   v0 preview origin):
+   - **Allowed Callback URLs**: the full callback path, e.g.
+     `https://<project>.v0.build/auth/callback` (add `http://localhost:3000/...`
+     too for local dev).
+   - **Allowed Logout URLs**: the origin the user returns to, e.g.
+     `https://<project>.v0.build`.
+4. **Save Changes** at the bottom. Give the exact origin — Auth0 matches these
+   URLs exactly, so a missing entry is what causes callback/logout rejections.
