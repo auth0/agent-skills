@@ -179,12 +179,14 @@ HTTPS (preview and production), set the transaction and session cookies to
 
 ### 3. Login page won't frame ("This content is blocked")
 
-Hosted login pages send frame-busting headers, so they can't render inside the
-preview iframe — no config can override that. Make the login (and logout)
-navigation break out of the iframe: detect when running framed and open the auth
-route in a new top-level tab; otherwise navigate normally. After login completes
-in the top-level context, the framed preview needs a refresh to pick up the new
-session cookie.
+Hosted login pages may send frame-busting headers when iframe embedding is not
+enabled. For supported generative UI integrations, configure Auth0's iframe
+embedding setting and Allowed iframe URLs; otherwise open authentication in a
+top-level context. Enabling iframe embedding relaxes clickjacking protection.
+Make the login (and logout) navigation break out of the iframe: detect when
+running framed and open the auth route in a new top-level tab; otherwise
+navigate normally. After login completes in the top-level context, the framed
+preview needs a refresh to pick up the new session cookie.
 
 ### Configuration lives outside the code
 
