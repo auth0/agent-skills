@@ -196,7 +196,7 @@ environment uses; confirm from the dashboard.
 
 Non-Vercel origins are never auto-synced, so walk the user through registering
 them by hand. The one that gets the preview working is the app's **stable v0
-preview URL** (e.g. `https://<project>.v0.build`) — it stays constant across
+preview URL** (`V0_RUNTIME_URL` e.g. `https://<project>.v0.build`) — it stays constant across
 rebuilds, so registering it once is what makes login succeed in the preview.
 (Per-deployment Vercel URLs change every build and aren't worth registering by
 hand.) Also register `localhost` for local dev. The app can't do this itself —
@@ -210,7 +210,7 @@ give explicit steps:
 3. On the **Settings** tab, add to the comma-separated lists (use the stable
    v0 preview origin):
    - **Allowed Callback URLs**: the full callback path, e.g.
-     `https://<project>.v0.build/auth/callback` (add `http://localhost:3000/...`
+     `https://<project>.v0.build/auth/callback` (add `http://localhost:3000/auth/callback`
      too for local dev).
    - **Allowed Logout URLs**: the origin the user returns to, e.g.
      `https://<project>.v0.build`.
