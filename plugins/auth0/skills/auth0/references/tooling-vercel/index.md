@@ -172,10 +172,14 @@ login redirect, not just that the page compiles.
 
 The SDK stores a short-lived transaction/state cookie during the redirect and
 reads it back on the callback. Default `SameSite=Lax` cookies are not sent on
-the cross-site callback inside the iframe, so validation fails. When served over
-HTTPS (preview and production), set the transaction and session cookies to
-`SameSite=None; Secure`. Keep plain `localhost` HTTP on the safe defaults, since
-`Secure` cookies can't be set over HTTP.
+the cross-site callback inside the iframe, so validation fails. When the framed
+preview must remain authenticated, set the session cookie to
+`SameSite=None; Secure`. Keep the transaction cookie at `SameSite=Lax` for
+the top-level callback. Use `SameSite=None; Secure` for the transaction
+cookie only when the callback uses an iframe or `form_post`. Document
+independent CSRF protection for the cross-site session cookie. Keep plain
+`localhost` HTTP on the safe defaults, since `Secure` cookies can't be set over
+HTTP.
 
 ### 3. Login page won't frame ("This content is blocked")
 
