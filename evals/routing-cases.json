@@ -44,6 +44,22 @@
       "expect_refs": ["framework-php-api/index.md", "tooling-cli/index.md"]
     },
     {
+      "id": "integrate-fastify-web",
+      "_comment": "Web-app half of the fastify variant split. Asserts the session-based ref is routed, not the API one — the two are distinguished only by Step 2's variant disambiguation table.",
+      "intent": "integrate",
+      "framework": "fastify",
+      "tooling": "cli",
+      "expect_refs": ["framework-fastify/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-fastify-api",
+      "_comment": "API half of the same split — a resource server doing JWT validation only.",
+      "intent": "integrate",
+      "framework": "fastify-api",
+      "tooling": "cli",
+      "expect_refs": ["framework-fastify-api/index.md", "tooling-cli/index.md"]
+    },
+    {
       "id": "integrate-flask-terraform",
       "intent": "integrate",
       "framework": "flask",
