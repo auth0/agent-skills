@@ -32,20 +32,19 @@ Do NOT use Organizations for consumer apps (B2C). Organizations is a B2B constru
 
 ### Pass organization at login
 
-The org-login shape is protocol-level and identical across every SDK. Send the organization
-identifier on the `/authorize` request, then read `org_id` back off the returned token. Only
-how the SDK takes that identifier differs, and it is one of two modes. Get the exact call from
-the **loaded `framework-{framework}/index.md` reference** (the router loads it alongside this
-file), not from memory:
+The org-login shape is protocol-level: send the organization identifier on the `/authorize`
+request, then read `org_id` back off the returned token. Only how the SDK takes it differs - get
+the exact call from the **loaded `framework-{framework}/index.md` reference**, not from memory,
+preferring the most specific form:
 
-- **As a login argument** - pass `organization` inside the login call's authorization params,
-  e.g. `loginWithRedirect({ authorizationParams: { organization: 'org_xxx' } })`. Some SDKs
-  surface it as a URL param the handler forwards, e.g. `/auth/login?organization=org_xxx`.
-- **As a builder option** - set it on the auth request builder before starting login, e.g.
-  `.organization("org_xxx")` or `.withOrganization("org_xxx")`.
+- **A dedicated `organization` option** (e.g. `startInteractiveLogin({ organization: 'org_xxx' })`,
+  `.organization("org_xxx")`, a client-level default). **Prefer this whenever the SDK has one** -
+  it is the canonical form; the authorization-params bag below is a backwards-compatible fallback.
+- **Inside the authorization parameters** (e.g. `loginWithRedirect({ authorizationParams: { organization: 'org_xxx' } })`).
+  For SDKs with no dedicated option (common for SPA/mobile) this is itself canonical.
+- **As a URL/query param the handler forwards** (e.g. `/login?organization=org_xxx`).
 
-Match the detected SDK to whichever mode its own reference uses; do not infer the mode from the
-SDK's platform.
+Match the detected SDK to the form its own reference documents; do not infer it from the platform.
 
 For richer per-SDK examples (org switching, reading org claims) read the SDK's own file, only
 the named section (from that heading to the next heading of the same or higher level):
@@ -62,6 +61,7 @@ the named section (from that heading to the next heading of the same or higher l
 | `Auth0.swift` | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/advanced-features/organizations.md | `Log in to an organization` |
 | `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/organizations.md | `Organizations` |
 | `auth0-server-python` | https://raw.githubusercontent.com/auth0/auth0-server-python/main/README.md | `#### Organizations` |
+| `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/EXAMPLES.md | `### Logging in to an Organization` |
 
 No matching row? The framework reference loaded alongside this file carries the SDK-specific
 org login syntax; fall back to it plus the protocol shape above. 
@@ -82,16 +82,16 @@ you read depends on *why* you need it:
 
 ### Validate org on the backend
 
-Validate `org_id` on your API to prevent cross-tenant access:
+Validate the access token's `org_id` to prevent cross-tenant access, then segment data by it.
+Per Auth0's guidance, check it against a **known list of organization IDs** or the org implied by
+the request context (e.g. tenant subdomain) - not a single hardcoded default. A fixed
+`!== defaultOrg` check is fine for a single-org app but rejects valid members of other orgs in a
+multi-org app or one accepting cross-org invitations.
 
-```javascript
-// Express example
-app.get('/api/data', checkJwt, (req, res) => {
-  const orgId = req.auth.payload.org_id;
-  if (orgId !== expectedOrgId) {
-    return res.status(403).json({ error: 'Wrong organization' });
-  }
-});
+```text
+// Illustrative - orgId is the org_id claim from the *verified* access token.
+if (!allowedOrgIds.has(orgId)) { /* reject: untrusted organization (e.g. 403) */ }
+// then scope every data lookup by orgId
 ```
 
 ---
@@ -213,16 +213,22 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 
 **Forward the invitation's own `organization` - do not substitute your app's configured default org.** The invite is scoped to the org it was issued for, which may differ from your default.
 
+- Read `invitation` + `organization` off the login request and forward both; only fall back to the default org when no `organization` is present.
+- If you accept cross-org invitations, pass `organization` **per login call** - a client-wide default org is validated against the returned `org_id` at login completion and rejects invites to other orgs.
+
 ---
 
 ## Common mistakes
 
 | Mistake | Fix |
 |---|---|
-| Forgetting `organization` in `authorizationParams` | Always pass the org identifier at login time |
+| Not passing `organization` at login | Pass the org identifier via the SDK's dedicated `organization` option when it has one (preferred); only fall back to the authorization-parameters bag for SDKs that expose no dedicated option |
 | Not forwarding the `invitation` param when accepting an invite | Read `invitation` + `organization` from the callback URL and forward both to `/authorize` |
 | Using your default org for an invitation link | Forward the invite's own `organization` param - it may differ from your configured default |
+| Login route overwriting an incoming `organization` with the default | Forward an `organization` present on the request; only fall back to the default when none is supplied |
+| Pinning a client-wide default org while accepting cross-org invitations | A client-level `organization` is validated against the returned `org_id` at login completion, rejecting invites to other orgs. Pass `organization` per login call instead |
 | Reading `org_id` from the wrong token | Web/client apps read it from the ID token (display); APIs validate it from the access token (authorization) |
+| Validating `org_id` against a single hardcoded org on the backend | Validate against the set of orgs the request may serve - a known list, or the org derived from request context. A fixed `!== defaultOrg` check rejects valid members of other orgs |
 | Hand-decoding a token to read `org_id` | Use the SDK's claim accessor (`getUser()` / `getIdTokenClaims()` / session user) - the claim is already exposed |
 | Mixing up org `id` (org_xxx) and `name` (slug) | `id` for API calls, `name` for display |
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
