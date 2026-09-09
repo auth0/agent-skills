@@ -62,6 +62,7 @@ the named section (from that heading to the next heading of the same or higher l
 | `Auth0.swift` | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/advanced-features/organizations.md | `Log in to an organization` |
 | `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/organizations.md | `Organizations` |
 | `auth0-server-python` | https://raw.githubusercontent.com/auth0/auth0-server-python/main/README.md | `#### Organizations` |
+| `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/EXAMPLES.md | `### Logging in to an Organization` |
 
 No matching row? The framework reference loaded alongside this file carries the SDK-specific
 org login syntax; fall back to it plus the protocol shape above. 
