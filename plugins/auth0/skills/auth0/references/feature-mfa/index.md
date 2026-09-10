@@ -233,6 +233,22 @@ auth0 api put "guardian/factors/email" --data '{"enabled": true}'
 auth0 api put "guardian/policies" --data '["all-applications"]'
 ```
 
+### API Reference (Management API v2)
+
+The endpoints below back the CLI commands above. When unsure about a request body shape
+or response schema, look up the path in the full OAS spec at
+`https://auth0.com/docs/oas/management/v2/management-api-oas.json` — it is the
+authoritative source for accepted methods, required fields, and response shapes.
+Do not infer a payload from a 400/404; read the spec.
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/guardian/factors/phone/message-types` | PUT | Set phone factor message type (`{"message_types":["sms"]}`) |
+| `/guardian/factors/phone/selected-provider` | PUT | Set phone provider (`{"provider":"auth0"}` for built-in) |
+| `/guardian/factors/email` | PUT | Enable/disable email factor |
+| `/guardian/factors/{factorName}` | PUT | Enable/disable a factor by name (`otp`, `sms`, `email`, `push-notification`, `webauthn-roaming`, `webauthn-platform`) |
+| `/guardian/policies` | PUT | Set MFA enforcement policy — body is a bare JSON array: `["all-applications"]` to require, `[]` to make optional |
+
 The full factor set, the `confidence-score` (adaptive) policy, the Terraform
 `auth0_guardian` resource, and MCP coverage are owned by the loaded `tooling-*`
 reference (DEFER ACROSS): the Auth0 MCP server exposes no Guardian/MFA tool, so
