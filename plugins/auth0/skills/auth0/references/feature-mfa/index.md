@@ -262,7 +262,6 @@ which uses the `mfa_token` and the MFA API surface instead:
 | Sending `message_type` or `provider` to `guardian/factors/sms` directly | Returns a 400 — those fields are not accepted on that endpoint | Use `PUT guardian/factors/phone/message-types` for the message type and `PUT guardian/factors/phone/selected-provider` for the provider |
 | Using the Management API to list or remove a user's own factors during the sign-in flow | Forces the app to hold Management API admin scopes and ignores the `mfa_token` the flow already issued | List and challenge through the SDK's MFA client on the `mfa_token`; remove with a post-MFA `remove:authenticators` access token (mfa audience); reserve the Management API for admin / out-of-band |
 | Assuming an already-enrolled factor needs no challenge and jumping straight to verify | Diverges from the SDK's documented enrolled-factor flow and breaks for out-of-band factors (SMS/push), whose challenge is what delivers the code | Challenge the enrolled authenticator, then verify |
-| Verifying factor state with `GET guardian/factors/sms` or `GET guardian/factors/email` | These individual GET endpoints return 404 | Use `GET guardian/factors` (the list endpoint) to verify all factor states at once |
 
 ## Related capabilities
 
