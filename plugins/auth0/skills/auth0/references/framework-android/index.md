@@ -696,6 +696,108 @@ authentication.login(
 
 **Important**: Always call `.validateClaims()` when using `AuthenticationAPIClient` directly.
 
+## Passkey Sign-In and Sign-Up
+
+Passwordless login with a device passkey (fingerprint / screen lock). Three beats:
+(1) get a challenge from Auth0, (2) drive the AndroidX `CredentialManager`, (3) exchange
+the credential for Auth0 tokens. Requires a **custom domain**, the WebAuthn grant enabled on
+the app, the passkey method enabled on the connection, and Digital Asset Links published —
+see the `feature-passkeys` reference. API 28+. Confirm the exact method signatures and result
+types against the `AuthenticationAPIClient.kt` you fetch in the Quick Start workflow.
+
+**Sign-in:**
+
+```kotlin
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetPublicKeyCredentialOption
+import androidx.credentials.PublicKeyCredential
+import com.auth0.android.result.PasskeyChallenge
+import com.auth0.android.result.PublicKeyCredentials
+import com.google.gson.Gson
+
+val authentication = AuthenticationAPIClient(account)
+val credentialManager = CredentialManager.create(context)
+
+// 1. Challenge from Auth0
+authentication.passkeyChallenge(realm = "Username-Password-Authentication")
+    .start(object : Callback<PasskeyChallenge, AuthenticationException> {
+        override fun onSuccess(challenge: PasskeyChallenge) {
+            // 2. Platform authenticator — options come from the challenge, never hand-built
+            val option = GetPublicKeyCredentialOption(Gson().toJson(challenge.authParamsPublicKey))
+            val request = GetCredentialRequest(listOf(option))
+            lifecycleScope.launch {
+                val result = credentialManager.getCredential(context, request)
+                val credential = result.credential as PublicKeyCredential
+                val authResponse = Gson().fromJson(
+                    credential.authenticationResponseJson, PublicKeyCredentials::class.java
+                )
+                // 3. Exchange for Auth0 tokens — MUST chain validateClaims()
+                authentication.signinWithPasskey(
+                    challenge.authSession, authResponse,
+                    realm = "Username-Password-Authentication"
+                )
+                    .validateClaims()
+                    .start(object : Callback<Credentials, AuthenticationException> {
+                        override fun onSuccess(result: Credentials) { manager.saveCredentials(result) }
+                        override fun onFailure(error: AuthenticationException) {
+                            Log.e("Auth0", error.message.orEmpty())
+                        }
+                    })
+            }
+        }
+
+        override fun onFailure(error: AuthenticationException) {
+            Log.e("Auth0", error.message.orEmpty())
+        }
+    })
+```
+
+**Sign-up** registers a new passkey, then exchanges it the same way — `createCredential`
+instead of `getCredential`, and `signupWithPasskey` for the challenge:
+
+```kotlin
+import androidx.credentials.CreatePublicKeyCredentialRequest
+import androidx.credentials.CreatePublicKeyCredentialResponse
+import com.auth0.android.result.PasskeyRegistrationChallenge
+import com.auth0.android.request.UserData
+
+authentication.signupWithPasskey(
+    userData = UserData(email = "newuser@example.com"),
+    realm = "Username-Password-Authentication"
+).start(object : Callback<PasskeyRegistrationChallenge, AuthenticationException> {
+    override fun onSuccess(challenge: PasskeyRegistrationChallenge) {
+        val request = CreatePublicKeyCredentialRequest(Gson().toJson(challenge.authParamsPublicKey))
+        lifecycleScope.launch {
+            val created = credentialManager.createCredential(context, request)
+                    as CreatePublicKeyCredentialResponse
+            val authResponse = Gson().fromJson(
+                created.registrationResponseJson, PublicKeyCredentials::class.java
+            )
+            authentication.signinWithPasskey(
+                challenge.authSession, authResponse,
+                realm = "Username-Password-Authentication"
+            )
+                .validateClaims()
+                .start(object : Callback<Credentials, AuthenticationException> {
+                    override fun onSuccess(result: Credentials) { manager.saveCredentials(result) }
+                    override fun onFailure(error: AuthenticationException) {
+                        Log.e("Auth0", error.message.orEmpty())
+                    }
+                })
+        }
+    }
+
+    override fun onFailure(error: AuthenticationException) {
+        Log.e("Auth0", error.message.orEmpty())
+    }
+})
+```
+
+**Do not** use the removed `PasskeyAuthProvider` / `PasskeyProvider` / `PasskeyManager` wrappers,
+and always chain `.validateClaims()` on `signinWithPasskey` before `.start()` — without it the
+ID token's issuer/audience/nonce/expiry are not validated.
+
 ## Passwordless Authentication
 
 Two-step passwordless flow using email codes:

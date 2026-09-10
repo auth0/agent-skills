@@ -297,6 +297,20 @@
       "framework": "flutter-windows",
       "tooling": "cli",
       "expect_refs": ["framework-flutter-windows/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-passkeys-standalone",
+      "intent": "feature:passkeys",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-passkeys/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-passkeys-react-combo",
+      "intent": "feature:passkeys",
+      "framework": "react",
+      "tooling": "cli",
+      "expect_refs": ["feature-passkeys/index.md", "tooling-cli/index.md", "framework-react/index.md"]
     }
   ]
 }
