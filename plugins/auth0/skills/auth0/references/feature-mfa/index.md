@@ -187,16 +187,21 @@ first, then choose an enforcement path - the two are independent:
   calls `api.multifactor.enable(...)`; do **not** set the `all-applications` policy, or MFA
   becomes mandatory for every application instead of the conditions the Action defines.
 
-The CLI anchor for the tenant-wide path (enable factor, then require the policy):
+The CLI anchor for the tenant-wide path (enable factors, then enforce the policy). SMS requires three separate endpoints — `guardian/factors/sms` does not accept `message_type` or `provider` in its body (returns 400); use the phone sub-endpoints below:
 
 ```bash
-# 1. Enable a factor (otp shown; others: sms, email, push-notification,
-#    webauthn-roaming, webauthn-platform)
+# TOTP / Authenticator app
 auth0 api put "guardian/factors/otp" --data '{"enabled": true}'
 
-# 2. Require MFA tenant-wide. PUT replaces the whole policy list with a bare array;
-#    the wrong verb answers with a 404 that reads like a path/permissions problem.
-#    An empty array means "available but NOT required".
+# SMS — three steps required
+auth0 api put "guardian/factors/sms" --data '{"enabled": true}'
+auth0 api put "guardian/factors/phone/message-types" --data '{"message_types": ["sms"]}'
+auth0 api put "guardian/factors/phone/selected-provider" --data '{"provider": "auth0"}'
+
+# Email
+auth0 api put "guardian/factors/email" --data '{"enabled": true}'
+
+# Enforce MFA for all applications (PUT replaces the whole list; wrong verb returns 404)
 auth0 api put "guardian/policies" --data '["all-applications"]'
 ```
 
@@ -250,6 +255,7 @@ which uses the `mfa_token` and the MFA API surface instead:
 | Preferring SMS by default | SMS is vulnerable to SIM-swap | Prefer TOTP or WebAuthn; treat SMS as a fallback |
 | No recovery codes enabled | Users get locked out when they lose a device | Enable recovery codes during enrollment |
 | Wrong HTTP verb on `guardian/policies` | Returns a misleading 404 | Use `PUT` with a bare JSON array |
+| Sending `message_type` or `provider` to `guardian/factors/sms` directly | Returns a 400 — those fields are not accepted on that endpoint | Use `PUT guardian/factors/phone/message-types` for the message type and `PUT guardian/factors/phone/selected-provider` for the provider |
 | Using the Management API to list or remove a user's own factors during the sign-in flow | Forces the app to hold Management API admin scopes and ignores the `mfa_token` the flow already issued | List and challenge through the SDK's MFA client on the `mfa_token`; remove with a post-MFA `remove:authenticators` access token (mfa audience); reserve the Management API for admin / out-of-band |
 | Assuming an already-enrolled factor needs no challenge and jumping straight to verify | Diverges from the SDK's documented enrolled-factor flow and breaks for out-of-band factors (SMS/push), whose challenge is what delivers the code | Challenge the enrolled authenticator, then verify |
 
