@@ -36,9 +36,9 @@ Every SDK implements the same **three-beat ceremony**, differing only in who dri
 
 **Pick one shape** based on the SDK layer:
 
-- **Browser one-call** (`@auth0/auth0-spa-js`, `@auth0/auth0-react`, `@auth0/nextjs-auth0` client) — a single awaited sign-up / sign-in method runs all three beats internally: it fetches the challenge, decodes the base64url fields, calls `navigator.credentials.*`, serializes the credential, and exchanges it. The app calls one method and handles errors. This is the default for a browser app.
+- **Browser one-call** (`@auth0/auth0-spa-js`, `@auth0/auth0-react`, `@auth0/auth0-vue`, `@auth0/auth0-angular`, `@auth0/nextjs-auth0` client) — a single awaited sign-up / sign-in method runs all three beats internally: it fetches the challenge, decodes the base64url fields, calls `navigator.credentials.*`, serializes the credential, and exchanges it. The app calls one method and handles errors. This is the default for a browser app. (`auth0-vue` / `auth0-angular` wrap `auth0-spa-js`; Angular returns the call as an `Observable`.)
 - **Step-by-step / server-driven** (`@auth0/nextjs-auth0` server actions, `@auth0/auth0-auth-js`, `@auth0/auth0-server-js`, `auth0-server-python`) — the SDK does beats 1 and 3; **the browser** does beat 2 and serializes the credential. The challenge call returns `{auth_session, publicKey}`; the browser runs `navigator.credentials.*`, serializes to base64url; the token-exchange call takes `{auth_session, credential}`. Server SDKs also persist the session.
-- **Native** (`Auth0.swift`, `Auth0.Android`) — the SDK does beats 1 and 3; the OS authenticator (Apple `ASAuthorization*` / AndroidX `CredentialManager`) does beat 2. Store the returned credentials via `CredentialsManager` / `SecureCredentialsManager`.
+- **Native** (`Auth0.swift`, `Auth0.Android`, `react-native-auth0`) — the SDK does beats 1 and 3; the OS authenticator (Apple `ASAuthorization*` / AndroidX `CredentialManager`, or `navigator.credentials.*` on React Native Web) does beat 2. `Auth0.swift` / `Auth0.Android` store the returned credentials via `CredentialsManager` / `SecureCredentialsManager`; `react-native-auth0` exposes the ceremony as three explicit calls (`passkeySignupChallenge` / `passkeyLoginChallenge` → app runs the authenticator → `getTokenByPasskey`).
 
 Before writing code, read the detected SDK's example (see "Example code snippets") — the method names, option structs, and the exact serialization helper are SDK-specific and live there, not in this reference.
 
@@ -64,6 +64,8 @@ SDK-specific symbols — the challenge/exchange method names, the option structs
 |---|---|---|
 | `@auth0/auth0-spa-js` | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/passkeys.md | whole file |
 | `@auth0/auth0-react` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Passkeys` |
+| `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Passkeys` |
+| `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Passkeys` |
 | `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Passkey Authentication` |
 | `auth0-server-python` | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/Passkeys.md | whole file |
 | `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/examples/passkeys.md | whole file |
@@ -71,23 +73,54 @@ SDK-specific symbols — the challenge/exchange method names, the option structs
 | `Auth0.swift` (sign-in) | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/authentication-api/login-passkey.md | whole file |
 | `Auth0.swift` (sign-up) | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/authentication-api/signup-passkey.md | whole file |
 | `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/passkeys.md | whole file |
+| `react-native-auth0` | https://raw.githubusercontent.com/auth0/react-native-auth0/master/EXAMPLES.md | `## Passkeys` |
 
-Redirect-only and resource-server SDKs — `express-openid-connect`, `express-oauth2-jwt-bearer`, `@auth0/auth0-api-js` — expose **no** passkey API. `express-openid-connect` redirects to Universal Login, which handles passkeys itself; the other two operate only after tokens are issued. There is nothing to call in these SDKs.
+Redirect-only and resource-server SDKs expose **no** passkey API. `express-openid-connect` and `@auth0/auth0-fastify` redirect to Universal Login, which handles passkeys itself; `express-oauth2-jwt-bearer`, `@auth0/auth0-fastify-api`, and `@auth0/auth0-api-js` are resource-server libraries that operate only after tokens are issued. There is nothing to call in these SDKs.
 
 ---
 
 ## Tenant Configuration (via chosen tooling)
 
-The Auth0 MCP server exposes **no** passkey-configuration tool, so use the CLI or Terraform (full command syntax lives in your tooling reference). `tooling-cli` and `tooling-terraform` own the custom domain, application grant type, and connection authentication-method configuration.
+The Auth0 MCP server exposes **no** passkey-configuration tool. Configure the tenant with the **auth0 CLI**, and fall back to the **Management API** (via `auth0 api`) for the settings the CLI has no command for — which is most of them (`tooling-cli` owns the full command syntax). Only the custom domain and Allowed Web Origins have a dedicated CLI flag; the rest are **not possible via a dedicated auth0 CLI command** and go through the Management API.
 
-| Requirement | Why it is needed |
-|---|---|
-| A **custom domain** | It serves as the WebAuthn RP ID. The default `*.auth0.com` domain does not work with passkeys. |
-| The **WebAuthn grant type** (`urn:okta:params:oauth:grant-type:webauthn`) enabled on the Auth0 application | The token exchange runs under this grant; without it the exchange is rejected. |
-| The **passkey authentication method** enabled on the database connection | The challenge endpoints reject the request otherwise. |
-| **Web:** the app origin listed under the application's Allowed Web Origins | The browser ceremony fails otherwise. |
-| **iOS:** an Associated Domains capability (`webcredentials:<domain>`) and the app signed with the Team ID configured in the Auth0 app's iOS settings | The OS will not offer the passkey without the domain association. |
-| **Android:** Digital Asset Links (`/.well-known/assetlinks.json`) published | The OS trusts the relying party only when the link is served. |
+| Requirement | Set it with | Why it is needed |
+|---|---|---|
+| A **custom domain** | `auth0 domains create` (CLI) | Serves as the WebAuthn RP ID. The default `*.auth0.com` domain does not work with passkeys. |
+| The **WebAuthn grant type** (`urn:okta:params:oauth:grant-type:webauthn`) on the application | **Management API** — `PATCH clients/<id>`. No CLI: `auth0 apps update --grants` silently drops this URN | The token exchange runs under this grant; without it the exchange is rejected. |
+| The **passkey authentication method** on the database connection | **Management API** — `PATCH connections/<id>`. No CLI: there is no `auth0 connections` command | The challenge endpoints reject the request otherwise. |
+| **Web:** the app origin in the application's **Allowed Web Origins** | `auth0 apps update --web-origins` (CLI) | The browser ceremony fails otherwise. |
+| **iOS:** the app's **Team ID + bundle identifier** in the app's mobile settings | **Management API** — `PATCH clients/<id>` (`mobile.ios`). No CLI flag | Auth0 then hosts `apple-app-site-association` at the custom domain; the OS will not offer the passkey without that domain association. |
+| **Android:** the app's **package name + SHA-256 cert fingerprints** in the app's mobile settings | **Management API** — `PATCH clients/<id>` (`mobile.android`). No CLI flag | Auth0 then hosts `/.well-known/assetlinks.json`; the OS trusts the relying party only when that link is served. |
+
+The CLI does the custom domain and Allowed Web Origins directly; everything else is `auth0 api`:
+
+```bash
+# Custom domain — becomes the WebAuthn RP ID. Verify/activate it before wiring passkeys.
+auth0 domains create --domain login.example.com --type auth0 --policy recommended
+
+# Allowed Web Origins (browser ceremony) — flag maps straight through.
+auth0 apps update <app-id> --web-origins "https://login.example.com"
+
+# WebAuthn grant type on the app. Do NOT use `auth0 apps update --grants`: it understands
+# only the built-in aliases and maps this URN to an empty string, corrupting grant_types.
+# PATCH replaces the array in full — include the grants the app already has.
+auth0 api patch "clients/<app-id>" \
+  --data '{"grant_types":["authorization_code","refresh_token","urn:okta:params:oauth:grant-type:webauthn"]}'
+
+# Passkey authentication method on the database connection — no `auth0 connections` subcommand exists.
+auth0 api patch "connections/<connection-id>" \
+  --data '{"options":{"authentication_methods":{"passkey":{"enabled":true}},"passkey_options":{"challenge_ui":"both","progressive_enrollment_enabled":true,"local_enrollment_enabled":true}}}'
+
+# iOS native passkeys — Auth0 then auto-hosts apple-app-site-association at the custom domain.
+auth0 api patch "clients/<app-id>" \
+  --data '{"mobile":{"ios":{"team_id":"<APPLE_TEAM_ID>","app_bundle_identifier":"<BUNDLE_ID>"}}}'
+
+# Android native passkeys — Auth0 then auto-hosts /.well-known/assetlinks.json.
+auth0 api patch "clients/<app-id>" \
+  --data '{"mobile":{"android":{"app_package_name":"com.example.app","sha256_cert_fingerprints":["SHA256:..."]}}}'
+```
+
+Confirm flags with `auth0 apps update --help` / `auth0 domains --help` rather than inferring them; `auth0 api <method> <path>` is the passthrough for anything without a dedicated subcommand.
 
 ---
 
@@ -104,6 +137,7 @@ The Auth0 MCP server exposes **no** passkey-configuration tool, so use the CLI o
 | Logging or persisting the `auth_session` | It is a short-lived Tier-1 secret; leaking it undermines the ceremony. Keep it in memory only; re-request the challenge if it expires |
 | Android: not chaining `.validateClaims()` on sign-in | Skips ID-token validation (issuer/audience/nonce/expiry); the SDK only warns. Chain `.validateClaims()` before starting the sign-in request |
 | Android: using `PasskeyAuthProvider` / `PasskeyProvider` / `PasskeyManager` | Deprecated (v3) / removed (v4). Use `AuthenticationAPIClient`'s passkey methods with AndroidX `CredentialManager` directly |
+| Enabling the WebAuthn grant with `auth0 apps update --grants` | The CLI understands only built-in grant aliases and silently maps the `urn:okta:params:oauth:grant-type:webauthn` URN to an empty string, corrupting `grant_types`. Set it via `auth0 api patch "clients/<id>"` with the full `grant_types` array (include the app's existing grants) |
 | Hand-building the credential or hardcoding/reusing `rpId` or the challenge | The credential must come from the platform authenticator; the challenge and `rpId` come from the SDK's challenge object. Always drive beat 2 through `navigator.credentials.*` / `ASAuthorization` / `CredentialManager` |
 
 ---
@@ -112,5 +146,5 @@ The Auth0 MCP server exposes **no** passkey-configuration tool, so use the CLI o
 
 - **Base login** — the SDK's setup, token storage, and route protection live in that SDK's `framework-*` reference; passkey sign-in replaces the password step but relies on the same session/token handling.
 - **Self-service passkey management** — adding/removing a signed-in user's passkeys is a My Account surface behind `feature-universal-portals` (and the My Account API), out of scope here.
-- **Tenant setup** — `tooling-cli` and `tooling-terraform` own the custom domain, application grant type, and connection authentication-method configuration.
+- **Tenant setup** — `tooling-cli` owns the custom domain and Allowed Web Origins; the grant type, connection passkey method, and mobile (iOS/Android) app settings have no dedicated CLI command and go through the Management API via `auth0 api` (see Tenant Configuration above).
 - **DPoP** — where supported (`auth0-server-python`, `@auth0/nextjs-auth0`, `@auth0/auth0-auth-js`/`auth0-server-js`), the passkey token exchange can be sender-constrained; see `feature-dpop`.
