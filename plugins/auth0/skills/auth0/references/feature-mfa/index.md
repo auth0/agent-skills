@@ -187,67 +187,25 @@ first, then choose an enforcement path - the two are independent:
   calls `api.multifactor.enable(...)`; do **not** set the `all-applications` policy, or MFA
   becomes mandatory for every application instead of the conditions the Action defines.
 
-The CLI anchor for the tenant-wide path (enable factor(s), then require the policy):
-
-**TOTP / Authenticator app:**
+The CLI anchor for the tenant-wide path (enable factors, then enforce the policy). SMS requires three separate endpoints — `guardian/factors/sms` does not accept `message_type` or `provider` in its body (returns 400); use the phone sub-endpoints below:
 
 ```bash
-# Enable OTP (authenticator app) factor
+# TOTP / Authenticator app
 auth0 api put "guardian/factors/otp" --data '{"enabled": true}'
 
-# Require MFA tenant-wide. PUT replaces the whole policy list with a bare array;
-# the wrong verb answers with a 404 that reads like a path/permissions problem.
-# An empty array means "available but NOT required".
-auth0 api put "guardian/policies" --data '["all-applications"]'
-```
-
-**SMS (phone) factor — three separate endpoints required:**
-
-`guardian/factors/sms` cannot receive `message_type` or `provider` in its body; those
-fields belong on dedicated sub-resources. Sending them to `guardian/factors/sms` returns
-a 400. Use:
-
-```bash
-# 1a. Enable the phone factor
+# SMS — three steps required
 auth0 api put "guardian/factors/sms" --data '{"enabled": true}'
+auth0 api put "guardian/factors/phone/message-types" --data '{"message_types": ["sms"]}'
+auth0 api put "guardian/factors/phone/selected-provider" --data '{"provider": "auth0"}'
 
-# 1b. Set message type (sms, voice, or both) — separate endpoint
-auth0 api put "guardian/factors/phone/message-types" \
-  --data '{"message_types": ["sms"]}'
-
-# 1c. Set the phone provider (auth0 built-in, or twilio/custom)
-auth0 api put "guardian/factors/phone/selected-provider" \
-  --data '{"provider": "auth0"}'
-
-# 2. Require MFA tenant-wide
-auth0 api put "guardian/policies" --data '["all-applications"]'
-```
-
-**Email factor:**
-
-```bash
-# 1. Enable email factor
+# Email
 auth0 api put "guardian/factors/email" --data '{"enabled": true}'
 
-# 2. Require MFA tenant-wide
+# Enforce MFA for all applications (PUT replaces the whole list; wrong verb returns 404)
 auth0 api put "guardian/policies" --data '["all-applications"]'
 ```
 
-### API Reference (Management API v2)
-
-The endpoints below back the CLI commands above. When unsure about a request body shape
-or response schema, look up the path in the full OAS spec at
-`https://auth0.com/docs/oas/management/v2/management-api-oas.json` — it is the
-authoritative source for accepted methods, required fields, and response shapes.
-Do not infer a payload from a 400/404; read the spec.
-
-| Endpoint | Method | Purpose |
-|---|---|---|
-| `/guardian/factors/phone/message-types` | PUT | Set phone factor message type (`{"message_types":["sms"]}`) |
-| `/guardian/factors/phone/selected-provider` | PUT | Set phone provider (`{"provider":"auth0"}` for built-in) |
-| `/guardian/factors/email` | PUT | Enable/disable email factor |
-| `/guardian/factors/{factorName}` | PUT | Enable/disable a factor by name (`otp`, `sms`, `email`, `push-notification`, `webauthn-roaming`, `webauthn-platform`) |
-| `/guardian/policies` | PUT | Set MFA enforcement policy — body is a bare JSON array: `["all-applications"]` to require, `[]` to make optional |
+Full endpoint reference: `https://auth0.com/docs/oas/management/v2/management-api-oas.json`
 
 The full factor set, the `confidence-score` (adaptive) policy, the Terraform
 `auth0_guardian` resource, and MCP coverage are owned by the loaded `tooling-*`
