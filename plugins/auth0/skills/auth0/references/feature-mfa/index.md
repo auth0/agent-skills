@@ -205,7 +205,7 @@ auth0 api put "guardian/factors/email" --data '{"enabled": true}'
 auth0 api put "guardian/policies" --data '["all-applications"]'
 ```
 
-Full endpoint reference: `https://auth0.com/docs/oas/management/v2/management-api-oas.json`
+If unsure about the exact body shape for any Guardian endpoint, look it up in the Management API OAS spec (Guardian paths only — do not load the full spec): `https://auth0.com/docs/oas/management/v2/management-api-oas.json`
 
 The full factor set, the `confidence-score` (adaptive) policy, the Terraform
 `auth0_guardian` resource, and MCP coverage are owned by the loaded `tooling-*`
