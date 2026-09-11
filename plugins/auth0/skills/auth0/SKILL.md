@@ -68,6 +68,15 @@ Pick the closest goal. If the goal is genuinely unclear, ask the developer what 
 > framework. Go to Step 3, load the tooling reference; only ask about a
 > framework if the developer later pivots to integrating auth into an app.
 
+> **Detecting a framework does not by itself mean loading its reference file.**
+> This step only resolves *which* framework is in play, for use as the
+> `{framework}` placeholder in Step 4. Whether `references/framework-{framework}/index.md`
+> actually gets read is decided by the matching intent's block in **Step 4** —
+> some intents (e.g. `feature:mfa`) deliberately omit it because the reference
+> assumes a first-login integration already exists. Do not load the framework
+> file just because a framework was detected; load only what the Step 4 block
+> for your intent lists.
+
 Work top-down. **Stop at the first tier that yields a framework.**
 
 ### Tier 1 — Auth0 SDK already installed (strongest signal)
