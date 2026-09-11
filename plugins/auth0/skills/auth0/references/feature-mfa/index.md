@@ -203,6 +203,9 @@ auth0 api put "guardian/factors/email" --data '{"enabled": true}'
 
 # Enforce MFA for all applications (PUT replaces the whole list; wrong verb returns 404)
 auth0 api put "guardian/policies" --data '["all-applications"]'
+
+# Verify with the list endpoint only — do not GET individual factors, they return 404
+auth0 api get "guardian/factors"
 ```
 
 The full factor set, the `confidence-score` (adaptive) policy, the Terraform
