@@ -94,6 +94,13 @@ if (!allowedOrgIds.has(orgId)) { /* reject: untrusted organization (e.g. 403) */
 // then scope every data lookup by orgId
 ```
 
+For richer per-SDK examples (org switching, reading org claims) read the SDK's own file, only
+the named section (from that heading to the next heading of the same or higher level):
+
+| SDK | Raw example file (markdown) | Find section |
+|---|---|---|
+| `@auth0/auth0-api-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-api-js/README.md | `### 3. Verify the Access Token` |
+
 ---
 
 ## Tenant Configuration (via chosen tooling)

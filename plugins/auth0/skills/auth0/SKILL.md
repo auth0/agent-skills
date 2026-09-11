@@ -94,6 +94,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `express-oauth2-jwt-bearer` | `express-jwt` |
 | `react-native-auth0` + `app.json` or `app.config.js` present | `expo` |
 | `react-native-auth0` (no Expo files) | `react-native` |
+| `@auth0/auth0-api-js` | `auth0-api-js` |
 | `@auth0/auth0-server-js` | `auth0-server-js` |
 | `@auth0/auth0-auth-js` | `auth0-auth-js` |
 | `auth0` (the bare package, not `@auth0/*`) | `node-auth0` |
@@ -216,6 +217,7 @@ request. **Stop at the first match.**
 | React SPA (not Next.js) | `react` |
 | vanilla JS / plain JS / no framework SPA | `spa-js` |
 | node-auth0 / the `auth0` npm package | `node-auth0` |
+| `@auth0/auth0-api-js` / auth0-api-js / low-level resource-server SDK | `auth0-api-js` |
 | `@auth0/auth0-server-js` / auth0-server-js / server-side Auth0 session SDK | `auth0-server-js` |
 | `@auth0/auth0-auth-js` / auth0-auth-js / AuthClient / low-level OAuth OIDC | `auth0-auth-js` |
 | Express (web app / server-rendered) | `express` |
