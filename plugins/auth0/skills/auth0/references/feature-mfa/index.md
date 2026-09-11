@@ -169,7 +169,7 @@ language-neutral mechanic above. Never substitute a web search for "how to do MF
 | `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/examples/mfa.md | whole file |
 | `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
 | `Auth0.swift` (iOS/macOS) | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/mfa-api.md | whole file |
-| `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/authentication-api/mfa-flexible-factors.md | whole file |
+| `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/fix/mfa-flexible-factors-remove-stale-early-access-note/examples/authentication-api/mfa-flexible-factors.md | whole file |
 | `auth0-server-python` (MFA flow) | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/MFA.md | whole file |
 | `auth0-server-python` (step-up) | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/StepUpAuthentication.md | whole file |
 
