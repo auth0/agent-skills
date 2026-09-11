@@ -285,6 +285,13 @@
       "expect_refs": ["framework-auth0-server-js/index.md", "tooling-cli/index.md"]
     },
     {
+      "id": "integrate-auth0-api-js",
+      "intent": "integrate",
+      "framework": "auth0-api-js",
+      "tooling": "cli",
+      "expect_refs": ["framework-auth0-api-js/index.md", "tooling-cli/index.md"]
+    },
+    {
       "id": "feature-mfa-auth0-server-js-combo",
       "intent": "feature:mfa",
       "framework": "auth0-server-js",
