@@ -32,10 +32,14 @@ MFA must be enforced in two independent places; getting either wrong ships a byp
 
 **Pick one mechanic:**
 
-- App redirects to Universal Login (regular web app or SPA) -> **browser step-up** below.
-- App collects credentials itself (a direct-grant or passwordless backend, e.g. `@auth0/auth0-auth-js` / `@auth0/auth0-server-js`) -> **API-driven MFA** below; skip the browser-step-up section.
+- App redirects to Universal Login and enforces via the `amr`/`acr` claim -> **browser step-up** below.
+- App catches an `mfa_required` / `MfaRequiredError` from a token call (`getAccessToken`, `getTokenByPassword`) and drives the challenge itself -> **API-driven MFA** below.
 
-Before writing code, read the detected SDK's example (see "Example code snippets").
+**The SDK's own example decides which mechanic — read it first (see "Example code snippets") and
+follow it.** If the example catches `MfaRequiredError` from `getAccessToken` and calls something
+like `challengeWithPopup`, that SDK is API-driven even though it also does redirect login
+(e.g. `@auth0/nextjs-auth0`) — use that path and ignore the `amr`/`beforeSessionSaved` step-up
+material below. Only treat it as browser step-up if the example itself reads the `amr` claim.
 
 ### The mechanic: browser step-up
 
@@ -72,10 +76,14 @@ not relax it.
 
 ### The mechanic: API-driven MFA (no-redirect flows)
 
-The app collects credentials, so no browser runs the challenge: sign-in returns an
-`mfa_required` error carrying an `mfa_token`. Each step is a method on the SDK's own MFA
-client - get exact names from the SDK's own example ("Example code snippets" below); never hand-roll the token grant
-or the MFA API URLs.
+No browser runs the challenge, so the SDK surfaces an `mfa_required` error carrying an
+`mfa_token`. **What raises that error is SDK-specific — take the trigger from the SDK's own
+example, do not assume a password grant.** Some SDKs raise it from a direct credential sign-in
+(e.g. `getTokenByPassword`); session-managing server SDKs raise it from the normal token
+accessor on an existing session (e.g. `getAccessToken`) when the tenant now requires MFA. Only
+hunt for a password/ROPG login if the example uses one. Each step is a method on the SDK's own
+MFA client - get exact names from the SDK's own example ("Example code snippets" below); never
+hand-roll the token grant or the MFA API URLs.
 
 Recipe (do in order):
 
@@ -96,9 +104,14 @@ Recipe (do in order):
    (its own recovery-code grant, not treated as an OTP). Success returns tokens like an
    ordinary sign-in.
 4. **Self-service management.** List and remove factors through the MFA client, not the
-   Management API. List and challenge use the `mfa_token`; **removal needs a post-MFA access
-   token** (`https://{yourDomain}/mfa/` audience + `remove:authenticators` scope) - the
-   `mfa_token` alone does not authorize the `DELETE`. See "MFA API surface".
+   Management API. **Use the SDK method's own signature from the example** - if its
+   `deleteAuthenticator` takes just the `mfaToken`, that is correct; the SDK handles
+   authorization. The scoped-token detail below is for the *raw* MFA API only: hand-calling
+   `DELETE /mfa/authenticators/{id}` needs a post-MFA access token
+   (`https://{yourDomain}/mfa/` audience + `remove:authenticators` scope) because the
+   `mfa_token` alone does not authorize it - but you are not hand-calling it, the SDK is, so do
+   not go hunting for a scoped token when the example passes only the `mfaToken`. See "MFA API
+   surface".
 
 ### Feature-level symbols
 
@@ -150,7 +163,10 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 ### Example code snippets
 
 **Before writing MFA code:** find the row below matching the detected SDK **and** the flow
-being implemented — for SDKs with both an `(MFA)` and a `(step-up)` row, default to `(step-up)` unless the user explicitly requests the MFA API flow.
+being implemented. For SDKs with both an `(MFA)` and a `(step-up)` row, pick by SDK type:
+browser/SPA SDKs (`auth0-react`, `auth0-vue`, `auth0-angular`) default to `(step-up)`; backend
+SDKs that collect credentials or drive the MFA API server-side (`auth0-server-python`) default
+to `(MFA)`. Only flip on an explicit user request.
 Read ONLY the named section from its URL (from that heading down to the next `## `) - these
 are large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
 If `WebFetch` fails or returns a truncated/summarized result instead of the verbatim code
