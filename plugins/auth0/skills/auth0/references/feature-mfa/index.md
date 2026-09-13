@@ -159,10 +159,13 @@ and read the section from the local file; do not curl upfront when `WebFetch` wo
 No matching row (a backend SDK not listed below), or both fetch paths fail? Fall back to the
 language-neutral mechanic above. Never substitute a web search for "how to do MFA".
 
-The example tracks the SDK version below (latest at time of writing). If the project pins any
-version on the same major line, **trust the example's API surface and write the code** — do not
-re-verify its symbols against the pinned version by fetching SDK source or the code-search API.
-Only if the code genuinely fails to compile, fix the offending symbol then.
+The example tracks the SDK version below (latest at time of writing). The example is
+authoritative for the SDK's API surface: **trust its method names, option keys, and signatures
+and write the code.** Do not re-derive or double-check those symbols against anything else —
+not the installed package (`node_modules`, its `dist`, or `.d.ts`), not the SDK's own source on
+GitHub, not the code-search API, not the docs. That verification loop is the main reason this
+task blows its turn budget without ever writing code. Only if the code you wrote genuinely fails
+to compile, fix the offending symbol then.
 
 Reconcile the pinned version with the one below:
 - **Older patch/minor on the same major line** (pinned `<` the version below) → bump the
