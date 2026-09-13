@@ -153,7 +153,10 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 being implemented — for SDKs with both an `(MFA)` and a `(step-up)` row, default to `(step-up)` unless the user explicitly requests the MFA API flow.
 Read ONLY the named section from its URL (from that heading down to the next `## `) - these
 are large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
-No matching row (a backend SDK not listed below), or the fetch fails? Fall back to the
+If `WebFetch` fails or returns a truncated/summarized result instead of the verbatim code
+(some harnesses cap quoted output), then — and only then — `curl -s <url> -o /tmp/example.md`
+and read the section from the local file; do not curl upfront when `WebFetch` would work.
+No matching row (a backend SDK not listed below), or both fetch paths fail? Fall back to the
 language-neutral mechanic above. Never substitute a web search for "how to do MFA".
 
 | SDK | Raw example file (markdown) | Find section |
