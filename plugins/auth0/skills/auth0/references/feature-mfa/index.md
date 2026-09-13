@@ -164,6 +164,13 @@ version on the same major line, **trust the example's API surface and write the 
 re-verify its symbols against the pinned version by fetching SDK source or the code-search API.
 Only if the code genuinely fails to compile, fix the offending symbol then.
 
+Reconcile the pinned version with the one below:
+- **Older patch/minor on the same major line** (pinned `<` the version below) → bump the
+  dependency up to at least the version below, then follow the example.
+- **Older major line** (the example needs a major upgrade) → **stop and inform the user**; do
+  not upgrade a major version on your own, since it can break unrelated code.
+- **Same or newer** → use as-is.
+
 | SDK | Version | Raw example file (markdown) | Find section |
 |---|---|---|---|
 | `@auth0/auth0-react` (MFA) | `2.24.1` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
