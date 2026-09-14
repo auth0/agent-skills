@@ -85,6 +85,14 @@ hunt for a password/ROPG login if the example uses one. Each step is a method on
 MFA client - get exact names from the SDK's own example ("Example code snippets" below); never
 hand-roll the token grant or the MFA API URLs.
 
+For a **session-managing server SDK** (e.g. `@auth0/auth0-server-js`), the trigger is simply the
+token accessor on the already-signed-in session (`getAccessToken`) throwing the error — you do not
+re-run login and do not need to trace the SDK source to find where it throws; the example's
+try/catch is the contract. Carrying the `mfa_token` across the multi-page challenge (setup page ->
+code page -> verify) is ordinary app state — stash it in your existing session/cookie store — not
+an SDK feature to go looking for. Write the routes against the example's method names; only fix a
+symbol if the code you wrote fails to compile.
+
 Recipe (do in order):
 
 1. **Read the token.** Catch `mfa_required`; read `mfa_token` off it.
@@ -292,6 +300,7 @@ which uses the `mfa_token` and the MFA API surface instead:
 | Sending `message_type` or `provider` to `guardian/factors/sms` directly | Returns a 400 — those fields are not accepted on that endpoint | Use `PUT guardian/factors/phone/message-types` for the message type and `PUT guardian/factors/phone/selected-provider` for the provider |
 | Using the Management API to list or remove a user's own factors during the sign-in flow | Forces the app to hold Management API admin scopes and ignores the `mfa_token` the flow already issued | List and challenge through the SDK's MFA client on the `mfa_token`; remove with a post-MFA `remove:authenticators` access token (mfa audience); reserve the Management API for admin / out-of-band |
 | Assuming an already-enrolled factor needs no challenge and jumping straight to verify | Diverges from the SDK's documented enrolled-factor flow and breaks for out-of-band factors (SMS/push), whose challenge is what delivers the code | Challenge the enrolled authenticator, then verify |
+| Importing popup error classes from the SPA wrapper (`import { PopupCancelledError } from '@auth0/auth0-vue'`) | The `auth0-vue`/`auth0-react`/`auth0-angular` wrappers re-export only the `Mfa*` error classes, not the popup ones, so the build fails on a missing export | Import `PopupCancelledError`/`PopupOpenError`/`PopupTimeoutError` from `@auth0/auth0-spa-js` |
 
 ## Related capabilities
 
