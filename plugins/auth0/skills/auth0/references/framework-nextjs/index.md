@@ -301,6 +301,36 @@ export async function GET() {
 
 ---
 
+### Step-up MFA before a sensitive action
+
+MFA is API-driven here, not a redirect: request the token for the sensitive operation and
+`getAccessToken` throws `MfaRequiredError` when the tenant requires a second factor. Catch it and
+drive the challenge (e.g. `mfa.challengeWithPopup()` or an `/mfa-challenge` route). This is the
+step-up path — you do not read the `amr` claim and do not need a `beforeSessionSaved` hook.
+
+```typescript
+// server-side; from a client component import MfaRequiredError from '@auth0/nextjs-auth0/errors'
+import { MfaRequiredError } from '@auth0/nextjs-auth0/server';
+
+export async function transfer() {
+  try {
+    // requesting the sensitive API audience is what makes Auth0 demand the factor
+    const { token } = await auth0.getAccessToken({ audience: process.env.AUTH0_AUDIENCE, refresh: true });
+    // ...proceed with the transfer using token
+  } catch (e) {
+    if (e instanceof MfaRequiredError) {
+      // send the user through the MFA challenge (client-side mfa.challengeWithPopup), then retry
+    }
+    throw e;
+  }
+}
+```
+
+Get the exact challenge call and options from the SDK's MFA guide (see References); do not grep
+`node_modules`/`dist` for the error class, `getAccessToken` options, or default scopes.
+
+---
+
 ### Silent Authentication
 
 Users remain logged in across sessions automatically with refresh tokens.

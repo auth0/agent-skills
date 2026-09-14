@@ -260,6 +260,31 @@ app.get('/user-info', requiresAuth(), (req, res) => {
 
 ---
 
+### Step-up MFA before a sensitive action
+
+Trigger a fresh factor with `res.oidc.login()` and enforce it by reading `amr` off
+`req.oidc.idTokenClaims` — the full verified ID-token payload. Read claims from
+`idTokenClaims`, not `req.oidc.user`: `user` is subject to `identityClaimFilter` and may drop
+`amr`/`acr`.
+
+```javascript
+const stepUp = { acr_values: 'http://schemas.openid.net/pape/policies/2007/06/multi-factor', max_age: 0 };
+
+app.post('/transfer', requiresAuth(), (req, res) => {
+  const amr = req.oidc.idTokenClaims.amr || [];
+  if (!amr.includes('mfa')) {
+    // Not stepped up yet — send them to complete MFA, then return here.
+    return res.oidc.login({ returnTo: '/transfer', authorizationParams: stepUp });
+  }
+  runTransfer(req, res); // amr proves MFA for this session
+});
+```
+
+`max_age=0` forces a fresh challenge so a live session can't satisfy the step-up silently. A
+frontend check is UX only — always gate server-side on `idTokenClaims`.
+
+---
+
 ### Call External APIs
 
 ```javascript

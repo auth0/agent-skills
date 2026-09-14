@@ -41,6 +41,14 @@ like `challengeWithPopup`, that SDK is API-driven even though it also does redir
 (e.g. `@auth0/nextjs-auth0`) — use that path and ignore the `amr`/`beforeSessionSaved` step-up
 material below. Only treat it as browser step-up if the example itself reads the `amr` claim.
 
+**Two docs, then write — nothing else.** Your only inputs are (1) the SDK's fetched example and
+(2) its `framework-*` reference. The example gives the exact method calls and option-object
+literals; the reference gives the config (env-var names, audience/scope wiring, claims accessor).
+Between them you have everything. Do NOT open `node_modules`/`dist`/`.d.ts`, grep the SDK source,
+or curl the tenant to reconstruct option interfaces, response field names, or config — that
+verification loop is what exhausts the turn budget before any code is written. Full rationale and
+the specific traps under "Example code snippets".
+
 ### The mechanic: browser step-up
 
 Recipe (do in order):
@@ -190,6 +198,16 @@ not the installed package (`node_modules`, its `dist`, or `.d.ts`), not the SDK'
 GitHub, not the code-search API, not the docs. That verification loop is the main reason this
 task blows its turn budget without ever writing code. Only if the code you wrote genuinely fails
 to compile, fix the offending symbol then.
+
+Concretely, do NOT open `.d.ts`/`dist/` to:
+- reconstruct an `*Options` interface (e.g. `EnrollAuthenticatorOptions`, `MfaVerifyOtpOptions`,
+  `TokenByPasswordOptions`) — the example's call site already shows every key; copy the object
+  literal verbatim and let TypeScript infer the type. You do not need the interface name.
+- confirm a response field name (`barcodeUri`, `oobCode`, `recoveryCode`, `mfaToken`) — read it
+  off the example's own destructuring.
+- discover env-var names, default scopes, or the audience/scope wiring, or how a call surfaces
+  `mfa_required` — the framework reference (`framework-*`) documents these; read it, don't grep
+  the SDK. Also do not `curl` the tenant's `/.well-known/openid-configuration` to "verify" config.
 
 Reconcile the pinned version with the one below:
 - **Older patch/minor on the same major line** (pinned `<` the version below) → bump the

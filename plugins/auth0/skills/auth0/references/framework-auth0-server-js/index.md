@@ -136,6 +136,17 @@ const { accessToken } = await serverClient.getAccessToken(storeOptions);
 const logoutUrl = await serverClient.logout({ returnTo }, storeOptions);
 ```
 
+## MFA on an existing session
+
+When the tenant now requires a second factor, `getAccessToken(storeOptions)` on the
+already-signed-in session throws `MfaRequiredError` (import it from `@auth0/auth0-server-js`)
+carrying the `mfa_token`. Catch it and drive the flow through the `serverClient.mfa` sub-client
+(`listAuthenticators` / `enrollAuthenticator` / `challengeAuthenticator` / `verify`). You do not
+re-run login. Carry the `mfa_token` across your setup → code → verify pages in your own
+session/cookie store — it is ordinary app state, not an SDK feature. Get the exact method and
+option shapes from the MFA example (see References); do not read `dist`/`.d.ts` to reconstruct
+them.
+
 ## Storage exports
 
 - `CookieTransactionStore` - holds the short-lived login transaction (state,
