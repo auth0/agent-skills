@@ -30,7 +30,9 @@ Methods on `serverClient.mfa`:
 - `challengeAuthenticator({ mfaToken, challengeType, authenticatorId })` → `{ oobCode, bindingMethod }`; not needed for OTP.
 - `verify(options, storeOptions?)` — `factorType: 'otp'` (pass `otp`), `'oob'` (pass `oobCode` + `bindingCode`), `'recovery-code'` (pass `recoveryCode`); optional `audience`. Returns `{ accessToken, idToken, refreshToken, recoveryCode? }`.
 
-`verify()` persists tokens to the session store (like `completeInteractiveLogin`), so `getSession()`/`getUser()` reflect the authenticated state afterward — no manual write. There is no dedicated `amr` accessor; decode it from the ID token in the returned token set if needed.
+`verify()` persists tokens to the session store (like `completeInteractiveLogin`), so `getSession()`/`getUser()` reflect the authenticated state afterward — no manual write. There is no dedicated `amr` accessor; decode it from the ID token in the returned token set if needed. `getAccessToken(storeOptions)` returns a `TokenSet` (`accessToken`, `idToken`, `expiresAt`, `scope`).
+
+`barcodeUri` is an `otpauth://` string — return it or render it client-side. Don't add a QR library server-side just to display it.
 
 Errors: `isMfaRequiredError` (guard), `MfaListAuthenticatorsError`, `MfaEnrollmentError`, `MfaChallengeError`, `MfaVerifyError` — each exposes `cause.error` and `cause.error_description`.
 

@@ -72,7 +72,18 @@ Options: `audience` (required), `scope`, `acr_values` (defaults to the PAPE MFA 
 
 ## Reading `amr`
 
-v4 persists only a default claim subset. To enforce a specific factor server-side, copy `amr` into the session with a `beforeSessionSaved` hook (`session.user.amr`) — see the `amr` opt-in note in `index.md`.
+v4 persists only a default claim subset, so `amr` is dropped by default. Opt it in on the client with a `beforeSessionSaved` hook — copy the claim from the ID token onto `session.user`, then read `session.user.amr` server-side:
+
+```ts
+export const auth0 = new Auth0Client({
+  async beforeSessionSaved(session, idToken) {
+    const claims = decodeJwt(idToken); // e.g. jose's decodeJwt; idToken is the raw JWT string
+    return { ...session, user: { ...session.user, amr: claims.amr } };
+  },
+});
+```
+
+`session` is `SessionData` (`{ user, tokenSet, internal, ... }`); the hook's return type is the same. `amr` lands at `session.user.amr` and survives to `auth0.getSession()`.
 
 ## Server error classes
 

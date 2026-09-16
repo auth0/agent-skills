@@ -37,6 +37,14 @@ MFA must be enforced in two independent places; getting either wrong ships a byp
 
 Before writing code, read the detected SDK's example (see "Example code snippets").
 
+### Scope — do this, then stop
+
+The deliverable is the **application code**, written from the detected SDK's example file. Write it early; do not spend the task investigating. Specifically:
+
+- **Trust the per-SDK file's method/option names — they are verified against the installed SDK.** Do NOT grep `node_modules`, read `.d.ts`/`.d.cts`/site-packages/SDK source, run the SDK's own test suite, or write throwaway `python -c`/`node -e` probes to confirm a signature. Write the code; inspect the installed package only if a specific line you wrote fails to compile, and then only that line.
+- **Don't add dependencies you weren't asked for.** A `barcode_uri`/`barcodeUri` is a string you can render or return as-is; don't `npm install` a QR library unless the task requires rendering one.
+- You're done when the app code is in place (and, for a JS/TS app, `npm run build` passes if quick). Stop there.
+
 ### The mechanic: browser step-up
 
 Recipe (do in order):
