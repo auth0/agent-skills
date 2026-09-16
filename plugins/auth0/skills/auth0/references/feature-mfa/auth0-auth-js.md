@@ -32,6 +32,8 @@ Methods on `authClient.mfa` (all take `mfaToken`):
 - `verify({ mfaToken, factorType, ... })` → tokens. `factorType: 'otp'` (pass `otp`), `'oob'` (pass `oobCode`, plus `bindingCode` when `bindingMethod === 'prompt'`), `'recovery-code'` (pass `recoveryCode`; the replacement is on `tokens.recoveryCode` — show once).
 - `deleteAuthenticator({ authenticatorId, mfaToken })`.
 
+**Authorization — this SDK simplifies it.** `listAuthenticators` and `deleteAuthenticator` both send the `mfaToken` as the Bearer credential; the SDK does *not* require the separately-scoped `remove:authenticators` access token that `index.md`'s "MFA API surface" describes for the raw REST API. Pass the same `mfaToken` you used for enroll/challenge/verify — do not mint a second token. (The raw-API note in `index.md` applies to hand-rolled `DELETE /mfa/authenticators/{id}` calls, which you should not write when using this SDK.)
+
 `verify` throws `MfaVerifyError` on a bad or expired code.
 
 Source: https://github.com/auth0/auth0-auth-js/blob/main/packages/auth0-auth-js/examples/mfa.md

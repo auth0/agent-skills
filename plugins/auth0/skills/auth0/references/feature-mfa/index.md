@@ -153,8 +153,12 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 Reference column** (the path is relative to the skill root, e.g. `Read: references/feature-mfa/auth0-react.md`).
 That file is required reading — it has the SDK's exact method/option names for the step-up
 and/or MFA API flow, plus the minimum version the feature needs. These files are the trusted
-source; implement directly from them and do NOT fetch from GitHub or web-search "how to do MFA".
-No matching row (a backend SDK not listed)? Fall back to the language-neutral mechanic above.
+source; implement directly from them. The method and option names in them are verified against
+the installed SDK — **do NOT re-verify signatures** by grepping `node_modules`, reading `.d.ts`
+files or SDK source, fetching from GitHub, web-searching "how to do MFA", or querying the
+auth0-docs MCP. Write the code from the file. Only inspect `node_modules` if a specific call
+you wrote fails to compile — and then only that call. No matching row (a backend SDK not
+listed)? Fall back to the language-neutral mechanic above.
 
 **Min version** is the earliest SDK release where the feature shipped; `verify — X+` marks a
 version to confirm against the installed package. If the app pins an older version, upgrade
