@@ -1,0 +1,33 @@
+# Auth0.Android — MFA (API-driven, Flexible Factors Grant)
+
+**Minimum version:** verify — 3.13+. The `mfaClient()` / `MfaApiClient` flexible-factors API landed in 3.13.0; the older `AuthenticationAPIClient` MFA methods were deprecated in 3.14.0 and removed in 4.0.0. Early Access — enable the MFA grant type in Dashboard → Applications → Advanced Settings → Grant Types (contact your Auth0 rep first).
+
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`. Snippets are Kotlin (Java equivalents use getters, e.g. `exception.isMultifactorRequired()`).
+
+**Detect `mfa_required`.** `login()` fails with `AuthenticationException`; check `isMultifactorRequired`, read `mfaRequiredErrorPayload`:
+
+```kotlin
+authentication.login("user@example.com", "password", "Username-Password-Authentication")
+    .validateClaims()
+    .start(object : Callback<Credentials, AuthenticationException> {
+        override fun onFailure(exception: AuthenticationException) {
+            if (exception.isMultifactorRequired) {
+                val mfaToken = exception.mfaRequiredErrorPayload?.mfaToken
+                val requirements = exception.mfaRequiredErrorPayload?.mfaRequirements
+                // requirements?.enroll -> no factors yet; requirements?.challenge -> enrolled
+            }
+        }
+        override fun onSuccess(credentials: Credentials) { }
+    })
+```
+
+**MFA client:** `authentication.mfaClient(mfaToken)` → `MfaApiClient`. All calls take a `Callback` or `.await()` (coroutines). DPoP proof is attached only on the final `verify()` exchange; list/enroll/challenge use the MFA token as a bearer credential.
+
+- **List:** `mfaClient.getAuthenticators(factorsAllowed = requirements.challenge.map { it.type })` → `List<Authenticator>` (`id`, `authenticatorType`). An empty `challenge` list means enrollment is required — don't call this.
+- **Challenge:** `mfaClient.challenge(authenticatorId = "phone|dev_xxxx")` → `Challenge` (`oobCode`, `bindingMethod`).
+- **Enroll:** `mfaClient.enroll(MfaEnrollmentType.Phone("+11234567890"))` / `.Email("…")` / `.Otp` / `.Push`. OTP returns `TotpEnrollmentChallenge` (`secret`, `barcodeUri`, `recoveryCodes`); OOB returns `OobEnrollmentChallenge` (`oobCode`, `bindingMethod`).
+- **Verify** → `Credentials`: `mfaClient.verify(MfaVerificationType.Otp(otp = "123456"))` / `.Oob(oobCode, bindingCode)` (bindingCode optional for push) / `.RecoveryCode(code)`.
+
+Errors: `MfaListAuthenticatorsException`, `MfaEnrollmentException`, `MfaChallengeException`, `MfaVerifyException` — each has `code`, `description`, `statusCode`, `isNetworkError`, `cause`, `getValue(key)`. Branch on `code` (not `description`): `invalid_token` (MFA token expired — restart login), `invalid_grant`/`invalid_oob_code`/`invalid_binding_code` (wrong/expired code), `enrollment_conflict`, `unsupported_challenge_type`.
+
+Source: https://github.com/auth0/Auth0.Android/blob/main/examples/authentication-api/mfa-flexible-factors.md

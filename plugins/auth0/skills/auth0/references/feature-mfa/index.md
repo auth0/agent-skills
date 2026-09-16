@@ -149,29 +149,34 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 
 ### Example code snippets
 
-**Before writing MFA code:** find the row below matching the detected SDK **and** the flow
-being implemented — for SDKs with both an `(MFA)` and a `(step-up)` row, default to `(step-up)` unless the user explicitly requests the MFA API flow.
-Read ONLY the named section from its URL (from that heading down to the next `## `) - these
-are large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
-No matching row (a backend SDK not listed below), or the fetch fails? Fall back to the
-language-neutral mechanic above. Never substitute a web search for "how to do MFA".
+**Before writing MFA code:** find the detected SDK's row below and **`Read:` the file in its
+Reference column** (the path is relative to the skill root, e.g. `Read: references/feature-mfa/auth0-react.md`).
+That file is required reading — it has the SDK's exact method/option names for the step-up
+and/or MFA API flow, plus the minimum version the feature needs. These files are the trusted
+source; implement directly from them and do NOT fetch from GitHub or web-search "how to do MFA".
+No matching row (a backend SDK not listed)? Fall back to the language-neutral mechanic above.
 
-| SDK | Raw example file (markdown) | Find section |
-|---|---|---|
-| `@auth0/auth0-react` (MFA) | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
-| `@auth0/auth0-react` (step-up) | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-vue` (MFA) | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
-| `@auth0/auth0-vue` (step-up) | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-angular` (MFA) | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
-| `@auth0/auth0-angular` (step-up) | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-spa-js` (step-up) | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/step-up-authentication.md | whole file |
-| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/guides/mfa.md | whole file |
-| `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/examples/mfa.md | whole file |
-| `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
-| `Auth0.swift` (iOS/macOS) | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/mfa-api.md | whole file |
-| `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/authentication-api/mfa-flexible-factors.md | whole file |
-| `auth0-server-python` (MFA flow) | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/MFA.md | whole file |
-| `auth0-server-python` (step-up) | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/StepUpAuthentication.md | whole file |
+**Min version** is the earliest SDK release where the feature shipped; `verify — X+` marks a
+version to confirm against the installed package. If the app pins an older version, upgrade
+it first or fall back to the language-neutral mechanic. Several MFA API flows are Early Access
+(noted in the file) and need tenant enablement.
+
+| SDK | Min version | Flow(s) | Reference (Read this file) |
+|---|---|---|---|
+| `@auth0/auth0-react` | 2.14.0 (MFA API) · 2.15.0 (popup step-up) | popup step-up, MFA API | `references/feature-mfa/auth0-react.md` |
+| `@auth0/auth0-vue` | 2.6.0 | popup step-up, MFA API | `references/feature-mfa/auth0-vue.md` |
+| `@auth0/auth0-angular` | 2.9.0 | popup step-up, MFA API | `references/feature-mfa/auth0-angular.md` |
+| `@auth0/auth0-spa-js` | 2.16.0 | popup step-up | `references/feature-mfa/auth0-spa-js.md` |
+| `@auth0/nextjs-auth0` | 4.15.0 (MFA + APIs) · verify — 4.19+ (popup step-up) | step-up, MFA API, popup | `references/feature-mfa/nextjs-auth0.md` |
+| `@auth0/auth0-auth-js` | 1.8.0 | MFA API | `references/feature-mfa/auth0-auth-js.md` |
+| `@auth0/auth0-server-js` | 1.5.0 | MFA API | `references/feature-mfa/auth0-server-js.md` |
+| `Auth0.swift` (iOS/macOS) | verify — 3.0+ | MFA API | `references/feature-mfa/auth0-swift.md` |
+| `Auth0.Android` | verify — 3.13+ | MFA API | `references/feature-mfa/auth0-android.md` |
+| `auth0-server-python` | 1.0.0b10 (MFA API) · 1.0.0b15 (step-up) | step-up, MFA API | `references/feature-mfa/auth0-server-python.md` |
+
+Note: the JS SPA/framework SDKs (`auth0-react`, `auth0-vue`, `auth0-angular`, `auth0-spa-js`)
+drive step-up through the SDK's `interactiveErrorHandler: 'popup'` option, not the
+`acr_values`/`max_age=0` parameters of the language-neutral mechanic above — see the file.
 
 ## Tenant configuration
 
