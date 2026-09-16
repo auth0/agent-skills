@@ -29,7 +29,7 @@ Methods on `authClient.mfa` (all take `mfaToken`):
 - `enrollAuthenticator({ authenticatorTypes, mfaToken, oobChannels?, phoneNumber? })` — OTP: `['otp']` → `{ secret, barcodeUri }`; OOB: `['oob']` + `oobChannels: ['sms']` + `phoneNumber`.
 - `listAuthenticators({ mfaToken })` → `Authenticator[]`.
 - `challengeAuthenticator({ challengeType, mfaToken, authenticatorId? })` — `'oob'` returns `{ oobCode }`.
-- `verify({ mfaToken, factorType, ... })` → tokens. `factorType: 'otp'` (pass `otp`), `'oob'` (pass `oobCode`, plus `bindingCode` when `bindingMethod === 'prompt'`), `'recovery-code'` (pass `recoveryCode`; the replacement is on `tokens.recoveryCode` — show once).
+- `verify({ mfaToken, factorType, ... })` → `TokenResponse` (`{ accessToken, idToken?, refreshToken?, expiresAt, scope?, recoveryCode? }`). `factorType: 'otp'` (pass `otp`), `'oob'` (pass `oobCode`, plus `bindingCode` when `bindingMethod === 'prompt'`), `'recovery-code'` (pass `recoveryCode`; the replacement is on `tokens.recoveryCode` — show once).
 - `deleteAuthenticator({ authenticatorId, mfaToken })`.
 
 **Authorization — this SDK simplifies it.** `listAuthenticators` and `deleteAuthenticator` both send the `mfaToken` as the Bearer credential; the SDK does *not* require the separately-scoped `remove:authenticators` access token that `index.md`'s "MFA API surface" describes for the raw REST API. Pass the same `mfaToken` you used for enroll/challenge/verify — do not mint a second token. (The raw-API note in `index.md` applies to hand-rolled `DELETE /mfa/authenticators/{id}` calls, which you should not write when using this SDK.)
