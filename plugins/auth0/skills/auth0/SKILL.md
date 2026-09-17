@@ -84,6 +84,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `@capacitor/browser` + `@auth0/auth0-vue` | `ionic-vue` |
 | `@auth0/nextjs-auth0` | `nextjs` |
 | `@auth0/auth0-nuxt` | `nuxt` |
+| `@auth0/auth0-react-router` | `react-router` |
 | `@auth0/auth0-react` | `react` |
 | `@auth0/auth0-vue` | `vue` |
 | `@auth0/auth0-angular` | `angular` |
@@ -173,6 +174,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 |---|---|
 | `next` in `package.json` | `nextjs` |
 | `nuxt` in `package.json` | `nuxt` |
+| `react-router` in `package.json` + `react-router.config.ts` present | `react-router` |
 | `@ionic/*` + `@angular/core` | `ionic-angular` |
 | `@ionic/*` + `react` | `ionic-react` |
 | `@ionic/*` + `vue` | `ionic-vue` |
@@ -220,6 +222,7 @@ request. **Stop at the first match.**
 | `@auth0/auth0-api-js` / auth0-api-js / low-level resource-server SDK | `auth0-api-js` |
 | `@auth0/auth0-server-js` / auth0-server-js / server-side Auth0 session SDK | `auth0-server-js` |
 | `@auth0/auth0-auth-js` / auth0-auth-js / AuthClient / low-level OAuth OIDC | `auth0-auth-js` |
+| React Router (framework mode, v7+) / `@auth0/auth0-react-router` | `react-router` |
 | Express (web app / server-rendered) | `express` |
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
