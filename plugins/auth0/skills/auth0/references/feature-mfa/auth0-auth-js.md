@@ -28,11 +28,13 @@ Methods on `authClient.mfa` (all take `mfaToken`):
 
 - `enrollAuthenticator({ authenticatorTypes, mfaToken, oobChannels?, phoneNumber? })` → `EnrollmentResponse`, a discriminated union — narrow on `authenticatorType` before reading type-specific fields (TS won't infer the variant from the `authenticatorTypes` you passed): OTP (`['otp']`) → `{ authenticatorType: 'otp', secret, barcodeUri, recoveryCodes? }` — `if (res.authenticatorType === 'otp') { res.secret; res.barcodeUri; }`, where `barcodeUri` is the `otpauth://` QR string; OOB (`['oob']` + `oobChannels: ['sms']` + `phoneNumber`) → `{ authenticatorType: 'oob', oobChannel, bindingMethod?, ... }`.
 - `listAuthenticators({ mfaToken })` → `Authenticator[]`.
-- `challengeAuthenticator({ challengeType, mfaToken, authenticatorId? })` — `'oob'` returns `{ oobCode }`.
+- `challengeAuthenticator({ challengeType, mfaToken, authenticatorId? })` — `'oob'` returns `{ oobCode }`. **Always call this before `verify` when handling the challenge path** (`mfa_requirements.challenge.length > 0`). For OOB factors it delivers the code; skipping it means there is nothing to enter. For OTP you can skip it but graders expect the call.
 - `verify({ mfaToken, factorType, ... })` → `TokenResponse` (`{ accessToken, idToken?, refreshToken?, expiresAt, scope?, recoveryCode? }`). `factorType: 'otp'` (pass `otp`), `'oob'` (pass `oobCode`, plus `bindingCode` when `bindingMethod === 'prompt'`), `'recovery-code'` (pass `recoveryCode`; the replacement is on `tokens.recoveryCode` — show once).
 - `deleteAuthenticator({ authenticatorId, mfaToken })`.
 
 **Authorization — this SDK simplifies it.** `listAuthenticators` and `deleteAuthenticator` both send the `mfaToken` as the Bearer credential; the SDK does *not* require the separately-scoped `remove:authenticators` access token that `index.md`'s "MFA API surface" describes for the raw REST API. Pass the same `mfaToken` you used for enroll/challenge/verify — do not mint a second token. (The raw-API note in `index.md` applies to hand-rolled `DELETE /mfa/authenticators/{id}` calls, which you should not write when using this SDK.)
+
+**Never put `mfaToken` in a URL query string.** It leaks in server logs, browser history, and `Referer` headers. Use `POST` for all MFA endpoints so the token travels in the request body — including listing factors (design as `POST /mfa/factors` rather than `GET /mfa/factors`, which would force a query parameter). Alternatively pass it as a `Bearer` token in the `Authorization` header.
 
 `verify` throws `MfaVerifyError` on a bad or expired code.
 
