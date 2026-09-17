@@ -13,6 +13,61 @@ export const auth0 = new Auth0Client({ mfaTokenTtl: 300 }); // seconds; matches 
 
 MFA methods are on `auth0.mfa` (server, `@auth0/nextjs-auth0/server`) and the `mfa` named export (client, `@auth0/nextjs-auth0/client`). Errors import from `@auth0/nextjs-auth0/errors`.
 
+## Flow 0 — redirect step-up via Universal Login (use this when the task says "redirect them to step up")
+
+Gate the action on the `amr` claim; when MFA is missing, redirect through v4's login route with the PAPE `acr_values` + `max_age=0` from `index.md`'s shared mechanic. v4 has **no `handleLogin` export** — login is middleware-driven, so pass the params one of two ways (both verified on 4.30.0). Do not grep node_modules to rediscover this.
+
+Step 1 — persist `amr` so the gate can read it. Add the `beforeSessionSaved` hook (see "Reading `amr`" below); without it `session.user.amr` is always undefined and the redirect loops.
+
+Step 2 — trigger the step-up. Either:
+
+**(a) Redirect to `/auth/login` with query params (simplest).** `handleLogin` forwards every query param except `challengeMode`/`returnTo` straight to `/authorize`:
+
+```ts
+import { redirect } from "next/navigation";
+
+const MFA_ACR = "http://schemas.openid.net/pape/policies/2007/06/multi-factor";
+redirect(`/auth/login?acr_values=${encodeURIComponent(MFA_ACR)}&max_age=0&returnTo=/dashboard/transfer`);
+```
+
+**(b) Custom Route Handler calling `auth0.startInteractiveLogin` (type-safe).** Signature: `startInteractiveLogin(options?: StartInteractiveLoginOptions): Promise<NextResponse>`:
+
+```ts
+// app/auth/step-up/route.ts
+import type { NextResponse } from "next/server";
+import type { StartInteractiveLoginOptions } from "@auth0/nextjs-auth0/types";
+import { auth0 } from "@/lib/auth0";
+
+export async function GET(): Promise<NextResponse> {
+  const options: StartInteractiveLoginOptions = {
+    authorizationParameters: {          // AuthorizationParameters from "@auth0/nextjs-auth0/types"
+      acr_values: "http://schemas.openid.net/pape/policies/2007/06/multi-factor",
+      max_age: 0,                       // number (seconds); 0 forces a fresh challenge
+    },
+    returnTo: "/dashboard/transfer",
+  };
+  return auth0.startInteractiveLogin(options); // returns the redirect NextResponse
+}
+```
+
+Step 3 — gate the sensitive action (Server Component or Server Action), enforced server-side:
+
+```ts
+// app/dashboard/transfer/page.tsx
+import { redirect } from "next/navigation";
+import { auth0 } from "@/lib/auth0";
+
+export default async function TransferPage() {
+  const session = await auth0.getSession(); // SessionData | null
+  if (!session?.user.amr?.includes("mfa")) {
+    redirect("/auth/step-up"); // or the /auth/login?... URL from step 2(a)
+  }
+  // render the transfer form; re-check the same amr in the Server Action before moving funds
+}
+```
+
+Step 4 — after Universal Login completes MFA it returns to `returnTo`; `beforeSessionSaved` writes `amr`, the gate now passes, and the transfer runs. A frontend `amr` check is UX only — always enforce on the server.
+
 ## Flow 1 — server-side step-up (Route Handler / Server Action)
 
 Force a refresh so the post-login Action runs and can throw `MfaRequiredError`:
