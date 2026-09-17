@@ -91,7 +91,11 @@ DPoP: if the login that raised `MfaRequiredError` was DPoP-bound, pass the same 
 
 If `verify()` itself raises `MfaRequiredError` (chained factor), that error's `mfa_token` is **raw**, not encrypted.
 
-**Never return `mfa_token`, enrollment secrets (`secret`, `barcode_uri`), or `recovery_code` in JSON HTTP responses.** These are internal flow state — pass `mfa_token` forward via an httpOnly cookie or server-side session; render `barcode_uri`/`secret` in the template once and discard; show `recovery_code` once in the response body only when the user explicitly triggered recovery-code enrollment.
+**`mfa_token` must never appear in an HTTP response** — pass it forward via an httpOnly cookie only.
+
+**`barcode_uri` and `secret` must be returned in the enrollment response** so the client can display the QR code and complete TOTP setup. Return them once, do not store them in a cookie or session.
+
+**`recovery_code`** — return it once in the response when enrollment produces one; do not store it.
 
 **Wire the MFA flow directly into the route handler** that performs the sensitive action — do not put it in a helper function that isn't called from the route. The `/transfer` handler must itself call `get_access_token()`, catch `MfaRequiredError`, and drive the challenge/verify loop (or redirect to an MFA sub-flow) before executing the transfer. A separate `handle_transfer_request` that is never invoked from the route is dead code.
 
