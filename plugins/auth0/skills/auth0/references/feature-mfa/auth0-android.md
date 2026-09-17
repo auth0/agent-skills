@@ -25,7 +25,7 @@ authentication.login("user@example.com", "password", "Username-Password-Authenti
 
 - **List:** `mfaClient.getAuthenticators(factorsAllowed = requirements.challenge.map { it.type })` → `List<Authenticator>` (`id`, `authenticatorType`). An empty `challenge` list means enrollment is required — don't call this.
 - **Challenge:** `mfaClient.challenge(authenticatorId = "phone|dev_xxxx")` → `Challenge` (`oobCode`, `bindingMethod`).
-- **Enroll:** `mfaClient.enroll(MfaEnrollmentType.Phone("+11234567890"))` / `.Email("…")` / `.Otp` / `.Push`. OTP returns `TotpEnrollmentChallenge` (`secret`, `barcodeUri`, `recoveryCodes`); OOB returns `OobEnrollmentChallenge` (`oobCode`, `bindingMethod`).
+- **Enroll:** `mfaClient.enroll(MfaEnrollmentType.Phone("+11234567890"))` / `.Email("…")` / `.Otp` / `.Push`. Returns `EnrollmentChallenge` (sealed base) — branch with `when` on the result to get the concrete subtype: `TotpEnrollmentChallenge` (`secret`, `barcodeUri`, `recoveryCodes`) for OTP; `OobEnrollmentChallenge` (`oobCode`, `bindingMethod`) for OOB. Do **not** type the callback as `Callback<TotpEnrollmentChallenge, …>` — that won't compile; use `Callback<EnrollmentChallenge, MfaEnrollmentException>` and `when`-branch inside.
 - **Verify** → `Credentials`: `mfaClient.verify(MfaVerificationType.Otp(otp = "123456"))` / `.Oob(oobCode, bindingCode)` (bindingCode optional for push) / `.RecoveryCode(code)`.
 
 Enrolled factor — always `challenge` before `verify`; for OOB (SMS/email/push) the challenge is what delivers the code, so skipping it leaves nothing to enter:
