@@ -51,10 +51,14 @@ try {
 }
 ```
 
-- **Enroll:** `mfa.enroll({ mfaToken, factorType })` — `factorType` is `'otp' | 'sms' | 'email' | 'voice' | 'push'`. OTP returns `{ barcodeUri, recoveryCodes }`; `sms`/`voice` need `phoneNumber` (E.164), `email` needs `email`.
-- **Challenge:** `mfa.challenge({ mfaToken, challengeType, authenticatorId })` — `challengeType` is `'otp'` or `'oob'` (all out-of-band). OTP can skip straight to verify; `oob` returns `{ oobCode }`.
-- **List:** `mfa.getAuthenticators(mfaToken)`, `mfa.getEnrollmentFactors(mfaToken)`.
-- **Verify:** `mfa.verify({ mfaToken, otp })`, `mfa.verify({ mfaToken, oobCode, bindingCode })`, or `mfa.verify({ mfaToken, recoveryCode })`. On success the SDK caches the tokens, so later `getAccessTokenSilently()` returns them.
+- **List:** `mfa.getAuthenticators(mfaToken)` → `Authenticator[]`
+  `Authenticator: { id: string, authenticatorType: 'otp'|'oob', oobChannel?: 'sms'|'voice'|'auth0'|'email', active: boolean, name?: string }`
+- **Enrollment options:** `mfa.getEnrollmentFactors(mfaToken)` → `EnrollmentFactor[]` — each has `{ type: string }` (`'otp'`, `'sms'`, `'email'`, etc.).
+- **Enroll:** `mfa.enroll({ mfaToken, factorType })` — `factorType`: `'otp'|'sms'|'email'|'voice'|'push'`. Returns:
+  - OTP → `{ barcodeUri: string, secret: string, recoveryCodes?: string[] }`
+  - OOB → `{ oobCode: string }` (`sms`/`voice` need `phoneNumber` E.164, `email` needs `email`)
+- **Challenge:** `mfa.challenge({ mfaToken, challengeType: 'oob', authenticatorId })` → `{ oobCode: string }` (delivers the OOB code); not needed for OTP.
+- **Verify:** `mfa.verify({ mfaToken, otp: string })`, `mfa.verify({ mfaToken, oobCode, bindingCode? })`, or `mfa.verify({ mfaToken, recoveryCode })` → `void` (tokens cached in SDK; later `getAccessTokenSilently()` returns them).
 
 Errors: `MfaEnrollmentError`, `MfaChallengeError`, `MfaVerifyError` (from `@auth0/auth0-react`).
 

@@ -66,11 +66,12 @@ try {
 
 Methods on `mfa` (each takes `mfaToken`):
 
-- `mfa.getAuthenticators(mfaToken)` — list enrolled.
-- `mfa.getEnrollmentFactors(mfaToken)` — list enrollable factor types.
-- `mfa.enroll({ mfaToken, factorType: 'otp' })` → `{ barcodeUri, secret }`; `factorType: 'sms'` needs `phoneNumber` (E.164).
-- `mfa.challenge({ mfaToken, challengeType, authenticatorId })` → `{ oobCode }` for OOB (SMS/email).
-- `mfa.verify({ mfaToken, otp })` / `({ mfaToken, oobCode, bindingCode })` / `({ mfaToken, recoveryCode })`.
+- `mfa.getAuthenticators(mfaToken)` → `Authenticator[]`
+  `Authenticator: { id: string, authenticatorType: 'otp'|'oob', oobChannel?: 'sms'|'voice'|'auth0'|'email', active: boolean, name?: string }`
+- `mfa.getEnrollmentFactors(mfaToken)` → `EnrollmentFactor[]` — each has `{ type: string }` indicating an enrollable factor (`'otp'`, `'sms'`, `'email'`, etc.).
+- `mfa.enroll({ mfaToken, factorType: 'otp' })` → `{ barcodeUri: string, secret: string, recoveryCodes?: string[] }`; `factorType: 'sms'`/`'voice'` needs `phoneNumber` (E.164) → `{ oobCode: string }`.
+- `mfa.challenge({ mfaToken, challengeType: 'oob', authenticatorId })` → `{ oobCode: string }` (delivers the OOB code); not needed for OTP.
+- `mfa.verify({ mfaToken, otp: string })` / `({ mfaToken, oobCode, bindingCode? })` / `({ mfaToken, recoveryCode })` → `void` (tokens cached in SDK).
 
 **Critical:** `mfa.verify()` does not refresh reactive state. Always follow a successful verify with `await checkSession()` so `isAuthenticated`, `user`, and `idTokenClaims` update.
 

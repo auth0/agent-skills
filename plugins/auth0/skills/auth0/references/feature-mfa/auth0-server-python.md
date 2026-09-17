@@ -44,12 +44,29 @@ except MfaRequiredError as e:
     # e.mfa_requirements has "enroll" or "challenge"
 ```
 
+**Passing `mfa_token` between requests** — use a plain httpOnly cookie, NOT the SDK's transaction/state store (those are for OAuth flow state only):
+
+```python
+# After catching MfaRequiredError — store for the next request
+response.set_cookie(
+    "_mfa_token", mfa_token,
+    httponly=True, samesite="lax", max_age=300, secure=True,
+)
+# On the MFA challenge/verify handler — read it back
+mfa_token = request.cookies.get("_mfa_token")
+# After successful verify
+response.delete_cookie("_mfa_token")
+```
+
 Methods on `server_client.mfa` (dict args; `store_options` optional, required for MCD):
 
-- `list_authenticators({"mfa_token": mfa_token})` → items with `id`, `authenticator_type`, `oob_channel`, `active`.
-- `enroll_authenticator({"mfa_token", "factor_type", ...})` — `factor_type`: `"otp"`/`"sms"`/`"voice"`/`"email"`/`"auth0"`; `sms`/`voice` need `phone_number`, `email` needs `email`. OTP → `barcode_uri`, `secret`; OOB → `oob_code`.
-- `challenge_authenticator({"mfa_token", "factor_type", "authenticator_id"})` → `oob_code`, `expires_in`. For OOB, derive `factor_type` from `authenticator.oob_channel` (not `authenticator_type`).
-- `verify(options, store_options={"request": request, "response": response})` — `options` = `{"mfa_token", <otp | oob_code + binding_code | recovery_code>, "persist": True, "audience": "...", "scope"?}`. `persist=True` writes tokens to the session store — `audience` goes **inside** `options`, `store_options` is a **separate kwarg** (not in the dict). Check `verify_response.recovery_code` — returned on first enrollment or after using one; show once.
+- `list_authenticators({"mfa_token": mfa_token})` → `list[dict]` — each item:
+  `{"id": str, "authenticator_type": "otp"|"oob", "oob_channel": "sms"|"voice"|"auth0"|"email"|None, "active": bool}`
+- `enroll_authenticator({"mfa_token": mfa_token, "factor_type": "otp"|"sms"|"voice"|"email"|"auth0", ...})` — `sms`/`voice` need `phone_number`, `email` needs `email`. Returns:
+  - OTP → `{"barcode_uri": str, "secret": str, "recovery_codes": list[str] | None}`
+  - OOB → `{"oob_code": str, "expires_in": int}`
+- `challenge_authenticator({"mfa_token": mfa_token, "factor_type": str, "authenticator_id": str})` — for OOB, derive `factor_type` from `authenticator["oob_channel"]` (not `authenticator_type`). Returns `{"oob_code": str, "expires_in": int}`.
+- `verify(options, store_options={"request": request, "response": response})` — `options` dict: `{"mfa_token": mfa_token, "persist": True, "audience": "..."}` plus one of `"otp": str`, `"oob_code": str` (+ optional `"binding_code": str`), or `"recovery_code": str`. `persist=True` writes tokens to the session store. `audience` goes **inside** `options`; `store_options` is a **separate kwarg** (not in the dict). `verify` returns an object — check `.recovery_code` on the result: non-`None` only on first enrollment or after a recovery-code verify; show it to the user once.
 
 Push polling: call `verify` with `{"mfa_token", "oob_code"}` in a loop, backing off on `authorization_pending` / `slow_down`.
 

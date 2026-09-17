@@ -101,10 +101,11 @@ On `/mfa`, read the cookie back, re-check `sub === session.user.sub`, drive `aut
 
 All take `{ mfaToken }`:
 
-- `getAuthenticators({ mfaToken })`
-- `enroll({ mfaToken, authenticatorTypes, oobChannels?, phoneNumber?, email? })` — OTP: `["otp"]`; SMS/email/push: `["oob"]` + channel.
-- `challenge({ mfaToken, challengeType, authenticatorId })` — OOB only; returns `oobCode` + `bindingMethod`.
-- `verify({ mfaToken, otp })` / `({ mfaToken, oobCode, bindingCode })` / `({ mfaToken, recoveryCode })`.
+- `getAuthenticators({ mfaToken })` → `Authenticator[]`
+  `Authenticator: { id: string, authenticatorType: 'otp'|'oob', oobChannel?: 'sms'|'voice'|'auth0'|'email', active: boolean }`
+- `enroll({ mfaToken, authenticatorTypes, oobChannels?, phoneNumber?, email? })` — OTP: `["otp"]` → `{ barcodeUri: string, secret: string, recoveryCodes?: string[] }`; OOB: `["oob"]` + `oobChannels` → `{ oobCode: string, bindingMethod?: string }`.
+- `challenge({ mfaToken, challengeType: 'oob', authenticatorId })` → `{ oobCode: string, bindingMethod?: string }` (OOB only — not needed for OTP).
+- `verify({ mfaToken, otp: string })` / `({ mfaToken, oobCode, bindingCode? })` / `({ mfaToken, recoveryCode })` → `void`.
 
 Callable from a Server Component/Action (`auth0.mfa.verify`) or a client component (`import { mfa } from "@auth0/nextjs-auth0/client"`).
 

@@ -66,9 +66,12 @@ this.auth.getAccessTokenSilently().pipe(
 ).subscribe();
 ```
 
-- **Enroll:** `auth.mfa.enroll({ mfaToken, factorType })` — `'otp'` (returns `barcodeUri` + `recoveryCodes`), `'sms'`/`'voice'` (need `phoneNumber`), `'email'` (needs `email`), `'push'` (returns `authenticatorId`).
-- **Challenge:** `auth.mfa.challenge({ mfaToken, challengeType, authenticatorId })` — `'otp'` optional (can skip to verify); `'oob'` required, returns `{ oobCode }`.
-- **Verify:** `auth.mfa.verify({ mfaToken, otp })` / `({ mfaToken, oobCode, bindingCode })` / `({ mfaToken, recoveryCode })`.
+- **List:** `auth.mfa.getAuthenticators(mfaToken)` → `Observable<Authenticator[]>`
+  `Authenticator: { id: string, authenticatorType: 'otp'|'oob', oobChannel?: 'sms'|'voice'|'auth0'|'email', active: boolean, name?: string }`
+- **Enrollment options:** `auth.mfa.getEnrollmentFactors(mfaToken)` → `Observable<EnrollmentFactor[]>` — each has `{ type: string }` (`'otp'`, `'sms'`, `'email'`, etc.).
+- **Enroll:** `auth.mfa.enroll({ mfaToken, factorType })` — `'otp'` → `Observable<{ barcodeUri: string, secret: string, recoveryCodes?: string[] }>`; `'sms'`/`'voice'` (need `phoneNumber`) → `Observable<{ oobCode: string }>`; `'email'` (needs `email`) → `Observable<{ oobCode: string }>`.
+- **Challenge:** `auth.mfa.challenge({ mfaToken, challengeType: 'oob', authenticatorId })` → `Observable<{ oobCode: string }>` (delivers the OOB code); not needed for OTP.
+- **Verify:** `auth.mfa.verify({ mfaToken, otp })` / `({ mfaToken, oobCode, bindingCode })` / `({ mfaToken, recoveryCode })` → `Observable<void>`.
 
 **Critical:** `verify()` does not update auth state. Chain `getAccessTokenSilently()` after a successful verify so `isAuthenticated$`/`user$` update. Recovery-code verify may return a new `recovery_code` — prompt the user to save it.
 

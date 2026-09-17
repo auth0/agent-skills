@@ -23,7 +23,7 @@ authentication.login("user@example.com", "password", "Username-Password-Authenti
     })
 ```
 
-`setAudience` and `setScope` are builder methods on `AuthenticationRequest` (returned by `AuthenticationAPIClient.login()`). **Do not fetch GitHub or read any local cache to verify method names** — all methods in this doc are confirmed against Auth0.Android 4.0.1.
+`setAudience` and `setScope` are builder methods on `AuthenticationRequest` (returned by `AuthenticationAPIClient.login()`). **Do not fetch GitHub, read any local cache, or run `find /` (or any filesystem-wide search) to verify method names** — all methods in this doc are confirmed against Auth0.Android 4.0.1. Write each new Kotlin file completely in a single write — do not write partial content and patch it incrementally.
 
 **MFA client:** `authentication.mfaClient(mfaToken)` → `MfaApiClient`. All calls take a `Callback` or `.await()` (coroutines). DPoP proof is attached only on the final `verify()` exchange; list/enroll/challenge use the MFA token as a bearer credential.
 

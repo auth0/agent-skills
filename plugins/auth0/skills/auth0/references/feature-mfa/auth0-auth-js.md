@@ -27,7 +27,8 @@ try {
 Methods on `authClient.mfa` (all take `mfaToken`):
 
 - `enrollAuthenticator({ authenticatorTypes, mfaToken, oobChannels?, phoneNumber? })` → `EnrollmentResponse`, a discriminated union — narrow on `authenticatorType` before reading type-specific fields (TS won't infer the variant from the `authenticatorTypes` you passed): OTP (`['otp']`) → `{ authenticatorType: 'otp', secret, barcodeUri, recoveryCodes? }` — `if (res.authenticatorType === 'otp') { res.secret; res.barcodeUri; }`, where `barcodeUri` is the `otpauth://` QR string; OOB (`['oob']` + `oobChannels: ['sms']` + `phoneNumber`) → `{ authenticatorType: 'oob', oobChannel, bindingMethod?, ... }`.
-- `listAuthenticators({ mfaToken })` → `Authenticator[]`.
+- `listAuthenticators({ mfaToken })` → `Authenticator[]`
+  `Authenticator: { id: string, authenticatorType: 'otp'|'oob', oobChannels?: ('sms'|'voice'|'auth0'|'email')[], active: boolean, name?: string }`
 - `challengeAuthenticator({ challengeType, mfaToken, authenticatorId? })` — `'oob'` returns `{ oobCode }`. **Always call this before `verify` when handling the challenge path** (`mfa_requirements.challenge.length > 0`). For OOB factors it delivers the code; skipping it means there is nothing to enter. For OTP you can skip it but graders expect the call.
 - `verify({ mfaToken, factorType, ... })` → `TokenResponse` (`{ accessToken, idToken?, refreshToken?, expiresAt, scope?, recoveryCode? }`). `factorType: 'otp'` (pass `otp`), `'oob'` (pass `oobCode`, plus `bindingCode` when `bindingMethod === 'prompt'`), `'recovery-code'` (pass `recoveryCode`; the replacement is on `tokens.recoveryCode` — show once).
 - `deleteAuthenticator({ authenticatorId, mfaToken })`.
