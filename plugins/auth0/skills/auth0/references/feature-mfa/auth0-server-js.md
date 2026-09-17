@@ -11,7 +11,7 @@ import { ServerClient, isMfaRequiredError } from '@auth0/auth0-server-js';
 const serverClient = new ServerClient({ domain, clientId, clientSecret, transactionStore, stateStore });
 ```
 
-**Methods that raise `MfaRequiredError`.** This SDK has **one** entry point for MFA: `getAccessToken`. There is no `loginWithCredentials` or `getTokenByPassword` in `@auth0/auth0-server-js` — those belong to `@auth0/auth0-auth-js` (a different SDK). The user is already signed in via Universal Login; MFA is step-up triggered when the resource server signals it. Narrow the error with `isMfaRequiredError`, read `err.cause.mfa_token`:
+**Methods that raise `MfaRequiredError`.** `getAccessToken` raises `MfaRequiredError` when the resource server signals step-up. The user is already signed in via Universal Login. Narrow the error with `isMfaRequiredError`, read `err.cause.mfa_token`:
 
 ```ts
 try {
