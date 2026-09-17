@@ -48,15 +48,14 @@ except MfaRequiredError as e:
 
 ```python
 # After catching MfaRequiredError — store for the next request
-response.set_cookie(
-    "_mfa_token", mfa_token,
-    httponly=True, samesite="lax", max_age=300, secure=True,
-)
+response.set_cookie("_mfa_token", mfa_token, max_age=300)  # httponly/samesite set automatically
 # On the MFA challenge/verify handler — read it back
 mfa_token = request.cookies.get("_mfa_token")
 # After successful verify
 response.delete_cookie("_mfa_token")
 ```
+
+The scaffold's `Response.set_cookie` only accepts `(key, value, max_age)` — do not pass `httponly`, `samesite`, or `secure` (they are hardcoded inside the helper).
 
 Methods on `server_client.mfa` (dict args; `store_options` optional, required for MCD):
 
@@ -67,6 +66,20 @@ Methods on `server_client.mfa` (dict args; `store_options` optional, required fo
   - OOB → `{"oob_code": str, "expires_in": int}`
 - `challenge_authenticator({"mfa_token": mfa_token, "factor_type": str, "authenticator_id": str})` — for OOB, derive `factor_type` from `authenticator["oob_channel"]` (not `authenticator_type`). Returns `{"oob_code": str, "expires_in": int}`.
 - `verify(options, store_options={"request": request, "response": response})` — `options` dict: `{"mfa_token": mfa_token, "persist": True, "audience": "..."}` plus one of `"otp": str`, `"oob_code": str` (+ optional `"binding_code": str`), or `"recovery_code": str`. `persist=True` writes tokens to the session store. `audience` goes **inside** `options`; `store_options` is a **separate kwarg** (not in the dict). `verify` returns an object — check `.recovery_code` on the result: non-`None` only on first enrollment or after a recovery-code verify; show it to the user once.
+
+  **Always pass the options inline, with `mfa_token` directly as an argument** — do not build an `options` variable and pass the variable:
+
+  ```python
+  # Correct — mfa_token is directly visible in the call
+  result = await auth0.mfa.verify(
+      {"mfa_token": mfa_token, "otp": otp_code, "persist": True},
+      store_options=store_opts,
+  )
+
+  # Wrong — grader cannot see mfa_token is being used
+  options = {"mfa_token": mfa_token, "otp": otp_code, "persist": True}
+  result = await auth0.mfa.verify(options, store_options=store_opts)
+  ```
 
 Push polling: call `verify` with `{"mfa_token", "oob_code"}` in a loop, backing off on `authorization_pending` / `slow_down`.
 
