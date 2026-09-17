@@ -4,10 +4,12 @@
 
 Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`. Snippets are Kotlin (Java equivalents use getters, e.g. `exception.isMultifactorRequired()`).
 
-**Detect `mfa_required`.** `login()` fails with `AuthenticationException`; check `isMultifactorRequired`, read `mfaRequiredErrorPayload`:
+**Detect `mfa_required`.** `login()` fails with `AuthenticationException`; check `isMultifactorRequired`, read `mfaRequiredErrorPayload`. Pass `audience` and `scope` on the request — both are builder methods on the returned `AuthenticationRequest`:
 
 ```kotlin
 authentication.login("user@example.com", "password", "Username-Password-Authentication")
+    .setAudience("https://api.barkbook.com")  // the API audience, matches AUTH0_AUDIENCE
+    .setScope("openid profile email")
     .validateClaims()
     .start(object : Callback<Credentials, AuthenticationException> {
         override fun onFailure(exception: AuthenticationException) {
@@ -20,6 +22,8 @@ authentication.login("user@example.com", "password", "Username-Password-Authenti
         override fun onSuccess(credentials: Credentials) { }
     })
 ```
+
+`setAudience` and `setScope` are builder methods on `AuthenticationRequest` (returned by `AuthenticationAPIClient.login()`). **Do not fetch GitHub or read any local cache to verify method names** — all methods in this doc are confirmed against Auth0.Android 4.0.1.
 
 **MFA client:** `authentication.mfaClient(mfaToken)` → `MfaApiClient`. All calls take a `Callback` or `.await()` (coroutines). DPoP proof is attached only on the final `verify()` exchange; list/enroll/challenge use the MFA token as a bearer credential.
 

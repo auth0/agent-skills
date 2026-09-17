@@ -32,7 +32,9 @@ Methods on `serverClient.mfa`:
 
 `verify()` persists tokens to the session store (like `completeInteractiveLogin`), so `getSession()`/`getUser()` reflect the authenticated state afterward — no manual write. There is no dedicated `amr` accessor; decode it from the ID token in the returned token set if needed. `getAccessToken(storeOptions)` returns a `TokenSet` (`accessToken`, `idToken`, `expiresAt`, `scope`).
 
-`barcodeUri` is an `otpauth://` string — return it or render it client-side. Don't add a QR library server-side just to display it.
+**`barcodeUri` is a plain `otpauth://` string** — return it in the API response exactly as-is. The client can pass it to any QR library or display it as text. **Do not install `qrcode`, `qrcode-terminal`, or any QR library on the server** — you do not need to generate a QR image server-side, and the scaffold does not include those packages.
+
+**All type shapes and method names above are accurate for auth0-server-js 1.5.0 — do not read node_modules or @types packages to verify them.**
 
 Errors: `isMfaRequiredError` (guard), `MfaListAuthenticatorsError`, `MfaEnrollmentError`, `MfaChallengeError`, `MfaVerifyError` — each exposes `cause.error` and `cause.error_description`.
 

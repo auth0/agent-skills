@@ -30,14 +30,19 @@ app.post('/transfer', requiresAuth(), requiresMfa, (req, res) => {
 
 **Verify off `req.oidc.idTokenClaims`, not `req.oidc.user`.** `req.oidc.user` is a *copy* of the ID-token claims with everything in `identityClaimFilter` deleted; `amr` is not in the default filter (so `user.amr` usually works), but a custom `identityClaimFilter` can silently drop it. `req.oidc.idTokenClaims` always carries the full, already-validated claim set — read `amr` there. A frontend check is UX only; this server-side gate is the enforcement.
 
-**Verify the returned session with `afterCallback`.** After Universal Login completes MFA and redirects back, express-openid-connect processes the callback and updates the session. Add an `afterCallback` hook to confirm the new session actually contains MFA evidence before accepting it — this prevents a case where the user abandons MFA but the session is still updated:
+**Verify the returned session with `afterCallback`.** After Universal Login completes MFA and redirects back, express-openid-connect processes the callback and updates the session. Add an `afterCallback` hook to confirm the new session actually contains MFA evidence before accepting it — this prevents a case where the user abandons MFA but the session is still updated.
+
+The `session` argument passed to `afterCallback` is a **plain object** (`Object.assign({}, tokenSet)`) — it has the raw token fields (`id_token`, `access_token`, `token_type`, `expires_at`, `refresh_token`, `sid`) but **no `claims` property**. To read `amr`, decode the `id_token` payload directly (it's already signature-verified at this point — this is safe base64 parsing, not re-verification):
 
 ```js
 const config = {
   // ... other config ...
   afterCallback: (req, res, session) => {
-    // session.claims is the full validated ID-token payload
-    const amr = session.claims?.amr;
+    // Decode the already-verified id_token payload — session.claims does NOT exist
+    const payload = JSON.parse(
+      Buffer.from(session.id_token.split('.')[1], 'base64url').toString()
+    );
+    const amr = payload.amr;
     if (!Array.isArray(amr) || !amr.includes('mfa')) {
       throw new Error('MFA not completed');
     }
@@ -46,6 +51,6 @@ const config = {
 };
 ```
 
-Throwing from `afterCallback` aborts the callback and returns a 401, preventing a bypass where the user completes login without MFA.
+Throwing from `afterCallback` aborts the callback and returns a 401, preventing a bypass where the user completes login without MFA. **Do not read node_modules to verify the session shape** — the structure above is confirmed from the express-openid-connect 2.19.x source (`context.js` lines 403-414).
 
 Source: https://github.com/auth0/express-openid-connect
