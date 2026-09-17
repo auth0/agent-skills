@@ -26,7 +26,7 @@ try {
 
 Methods on `authClient.mfa` (all take `mfaToken`):
 
-- `enrollAuthenticator({ authenticatorTypes, mfaToken, oobChannels?, phoneNumber? })` — OTP: `['otp']` → `{ secret, barcodeUri }`; OOB: `['oob']` + `oobChannels: ['sms']` + `phoneNumber`.
+- `enrollAuthenticator({ authenticatorTypes, mfaToken, oobChannels?, phoneNumber? })` → `EnrollmentResponse`, a discriminated union — narrow on `authenticatorType` before reading type-specific fields (TS won't infer the variant from the `authenticatorTypes` you passed): OTP (`['otp']`) → `{ authenticatorType: 'otp', secret, barcodeUri, recoveryCodes? }` — `if (res.authenticatorType === 'otp') { res.secret; res.barcodeUri; }`, where `barcodeUri` is the `otpauth://` QR string; OOB (`['oob']` + `oobChannels: ['sms']` + `phoneNumber`) → `{ authenticatorType: 'oob', oobChannel, bindingMethod?, ... }`.
 - `listAuthenticators({ mfaToken })` → `Authenticator[]`.
 - `challengeAuthenticator({ challengeType, mfaToken, authenticatorId? })` — `'oob'` returns `{ oobCode }`.
 - `verify({ mfaToken, factorType, ... })` → `TokenResponse` (`{ accessToken, idToken?, refreshToken?, expiresAt, scope?, recoveryCode? }`). `factorType: 'otp'` (pass `otp`), `'oob'` (pass `oobCode`, plus `bindingCode` when `bindingMethod === 'prompt'`), `'recovery-code'` (pass `recoveryCode`; the replacement is on `tokens.recoveryCode` — show once).
