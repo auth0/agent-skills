@@ -55,4 +55,8 @@ DPoP: if the login that raised `MfaRequiredError` was DPoP-bound, pass the same 
 
 If `verify()` itself raises `MfaRequiredError` (chained factor), that error's `mfa_token` is **raw**, not encrypted.
 
+**Never return `mfa_token`, enrollment secrets (`secret`, `barcode_uri`), or `recovery_code` in JSON HTTP responses.** These are internal flow state — pass `mfa_token` forward via an httpOnly cookie or server-side session; render `barcode_uri`/`secret` in the template once and discard; show `recovery_code` once in the response body only when the user explicitly triggered recovery-code enrollment.
+
+**Wire the MFA flow directly into the route handler** that performs the sensitive action — do not put it in a helper function that isn't called from the route. The `/transfer` handler must itself call `get_access_token()`, catch `MfaRequiredError`, and drive the challenge/verify loop (or redirect to an MFA sub-flow) before executing the transfer. A separate `handle_transfer_request` that is never invoked from the route is dead code.
+
 Source: https://github.com/auth0/auth0-server-python/blob/main/examples/MFA.md · https://github.com/auth0/auth0-server-python/blob/main/examples/StepUpAuthentication.md
