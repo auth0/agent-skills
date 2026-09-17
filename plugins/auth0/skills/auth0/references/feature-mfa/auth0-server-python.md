@@ -44,6 +44,10 @@ except MfaRequiredError as e:
     # e.mfa_requirements has "enroll" or "challenge"
 ```
 
+`get_access_token` takes only `store_options` — there is no `audience` parameter on this call. The audience is configured on the `ServerClient` at construction time.
+
+Available exceptions from `auth0_server_python.error`: `MfaRequiredError`. Do not import or catch `MfaChallengeError`, `MfaEnrollmentError`, `MfaListAuthenticatorsError`, or `MfaVerifyError` — these do not exist in this SDK.
+
 **Passing `mfa_token` between requests** — use a plain httpOnly cookie, NOT the SDK's transaction/state store (those are for OAuth flow state only):
 
 ```python
