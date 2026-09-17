@@ -28,6 +28,24 @@ No manual `mfa_required` handling is needed with the popup handler. Read the upd
 
 Without `interactiveErrorHandler`, MFA errors throw to the caller (`MfaRequiredError`) rather than opening a popup — there is no redirect-based step-up variant in v2.16+.
 
-Popup lifecycle errors (import from `@auth0/auth0-spa-js`): `PopupOpenError` (blocked), `PopupCancelledError` (user closed), `PopupTimeoutError`.
+Catch popup lifecycle errors around the `getTokenSilently` call so a dismissed step-up aborts the action cleanly:
+
+```js
+import { PopupCancelledError, PopupOpenError, PopupTimeoutError } from '@auth0/auth0-spa-js';
+
+try {
+  const accessToken = await auth0.getTokenSilently({
+    authorizationParams: { audience: 'https://api.example.com', scope: 'transfer:funds' },
+  });
+  // proceed with the protected action
+} catch (err) {
+  if (err instanceof PopupCancelledError || err instanceof PopupOpenError || err instanceof PopupTimeoutError) {
+    return; // user closed/blocked the popup or it timed out — do not proceed
+  }
+  throw err;
+}
+```
+
+`PopupOpenError` = blocked, `PopupCancelledError` = user closed, `PopupTimeoutError` = timed out.
 
 Source: https://github.com/auth0/auth0-spa-js/blob/main/examples/step-up-authentication.md

@@ -28,6 +28,21 @@ authentication.login("user@example.com", "password", "Username-Password-Authenti
 - **Enroll:** `mfaClient.enroll(MfaEnrollmentType.Phone("+11234567890"))` / `.Email("…")` / `.Otp` / `.Push`. OTP returns `TotpEnrollmentChallenge` (`secret`, `barcodeUri`, `recoveryCodes`); OOB returns `OobEnrollmentChallenge` (`oobCode`, `bindingMethod`).
 - **Verify** → `Credentials`: `mfaClient.verify(MfaVerificationType.Otp(otp = "123456"))` / `.Oob(oobCode, bindingCode)` (bindingCode optional for push) / `.RecoveryCode(code)`.
 
+Enrolled factor — always `challenge` before `verify`; for OOB (SMS/email/push) the challenge is what delivers the code, so skipping it leaves nothing to enter:
+
+```kotlin
+// coroutines: .await() on each Request (or nest Callbacks)
+val mfaClient = authentication.mfaClient(mfaToken)
+val authenticator = mfaClient
+    .getAuthenticators(factorsAllowed = requirements.challenge.map { it.type })
+    .await().first()
+val challenge = mfaClient.challenge(authenticatorId = authenticator.id).await()
+val credentials = when (challenge.challengeType) {
+    "otp" -> mfaClient.verify(MfaVerificationType.Otp(otp = userEnteredCode))
+    else  -> mfaClient.verify(MfaVerificationType.Oob(oobCode = challenge.oobCode!!, bindingCode = userEnteredCode))
+}.await()
+```
+
 Errors: `MfaListAuthenticatorsException`, `MfaEnrollmentException`, `MfaChallengeException`, `MfaVerifyException` — each has `code`, `description`, `statusCode`, `isNetworkError`, `cause`, `getValue(key)`. Branch on `code` (not `description`): `invalid_token` (MFA token expired — restart login), `invalid_grant`/`invalid_oob_code`/`invalid_binding_code` (wrong/expired code), `enrollment_conflict`, `unsupported_challenge_type`.
 
 Source: https://github.com/auth0/Auth0.Android/blob/main/examples/authentication-api/mfa-flexible-factors.md

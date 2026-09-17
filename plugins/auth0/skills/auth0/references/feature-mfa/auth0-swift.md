@@ -8,27 +8,35 @@ Framework-specific surface only. The shared mechanic, tenant config, `amr`/error
 import Auth0
 ```
 
-**Detect `mfa_required`.** `login(…)` fails with `AuthenticationError`; check `isMultifactorRequired`, read the payload:
+**Detect `mfa_required`.** Call `Auth0.authentication().login(usernameOrEmail:password:realmOrConnection:audience:scope:)`; it fails with `AuthenticationError`. Check `isMultifactorRequired` and read the payload (`MFARequiredErrorPayload`):
 
 ```swift
-case .failure(let error) where error.isMultifactorRequired:
-    guard let payload = error.mfaRequiredErrorPayload else { return }
-    let mfaToken = payload.mfaToken
-    // payload.mfaRequirements.enroll / .challenge — [MfaRequirement], each with .type ("otp","phone","push-notification")
+Auth0.authentication()
+    .login(usernameOrEmail: email, password: password,
+           realmOrConnection: "Username-Password-Authentication",
+           audience: "https://api.example.com", scope: "openid profile email")
+    .start { result in
+        guard case .failure(let error) = result, error.isMultifactorRequired,
+              let payload = error.mfaRequiredErrorPayload else { return }
+        let mfaToken = payload.mfaToken
+        // payload.mfaRequirements.enroll / .challenge — [MFAFactor], each with .type
+    }
 ```
 
 **MFA client:** `Auth0.mfa()` (uses `Auth0.plist`) or `Auth0.mfa(session:)`. Returns `MfaClient`; `.domain(_:)` / `.clientId(_:)` modifiers available when not using the plist. All calls return `Request<T>` — finish with `.start { }`, `await .start()`, or the Combine publisher.
 
 ```swift
-// List
-.getAuthenticators(mfaToken: String, factorsAllowed: [String]) -> Request<[MFAAuthenticator]>
-// Enroll
-.enroll(mfaToken: String)                       // OTP / push -> Request<MFAChallenge>
-.enroll(mfaToken: String, phoneNumber: String)  // SMS
+// List -> Request<[Authenticator]>
+//   Authenticator: .id, .type ("otp"|"phone"|"email"…), .authenticatorType?, .oobChannel?, .active, .name?
+.getAuthenticators(mfaToken: String, factorsAllowed: [String])
+// Enroll: OTP -> Request<OTPMFAEnrollmentChallenge> (.secret, .barcodeUri, .recoveryCodes?)
+//         phone/email -> Request<MFAEnrollmentChallenge>
+.enroll(mfaToken: String)                       // OTP (separate push overload)
+.enroll(mfaToken: String, phoneNumber: String)  // SMS / voice
 .enroll(mfaToken: String, email: String)        // email
-// Challenge an enrolled factor
-.challenge(with authenticatorId: String, mfaToken: String) -> Request<MFAChallenge>
-//   MFAChallenge: .challengeType ("oob"|"otp"), .oobCode, .barcodeUri, .secret
+// Challenge an enrolled factor -> Request<MFAChallenge>
+//   MFAChallenge: .challengeType, .oobCode (non-optional), .bindingMethod?
+.challenge(with authenticatorId: String, mfaToken: String)
 // Verify -> Request<Credentials>
 .verify(otp: String, mfaToken: String)
 .verify(oobCode: String, bindingCode: String?, mfaToken: String)

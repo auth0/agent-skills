@@ -47,7 +47,7 @@ async function transferFunds() {
 }
 ```
 
-The `Popup*Error` classes come from `@auth0/auth0-spa-js` (auth0-vue does not re-export them as values). Enforce `transfer:funds` on the API server-side — the client gate is UX only.
+The `Popup*Error` classes come from `@auth0/auth0-spa-js` (auth0-vue does not re-export them as values); `@auth0/auth0-spa-js` is a direct dependency of `@auth0/auth0-vue`, so it is always installed alongside it — import from it directly, no need to add it to `package.json` or check `node_modules`. Enforce `transfer:funds` on the API server-side — the client gate is UX only.
 
 ## Flow 2 — MFA API (custom UI)
 

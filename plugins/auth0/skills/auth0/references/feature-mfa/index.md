@@ -42,6 +42,7 @@ Before writing code, read the detected SDK's example (see "Example code snippets
 The deliverable is the **application code**, written from the detected SDK's example file. Write it early; do not spend the task investigating. Specifically:
 
 - **Trust the per-SDK file's method/option names — they are verified against the installed SDK.** Do NOT grep `node_modules`, read `.d.ts`/`.d.cts`/site-packages/SDK source, run the SDK's own test suite, or write throwaway `python -c`/`node -e` probes to confirm a signature. Write the code; inspect the installed package only if a specific line you wrote fails to compile, and then only that line.
+- **The minimum version in each SDK file is informational.** The scaffold already pins a compatible release, so don't read `node_modules`/`package.json` to confirm the installed version meets it — only `verify — X+` rows call for a check.
 - **Don't add dependencies you weren't asked for.** A `barcode_uri`/`barcodeUri` is a string you can render or return as-is; don't `npm install` a QR library unless the task requires rendering one.
 - You're done when the app code is in place (and, for a JS/TS app, `npm run build` passes if quick). Stop there.
 
@@ -65,7 +66,7 @@ Recipe (do in order):
 | Your context | Verify with |
 |---|---|
 | Session-managing SDK (web app) | The `amr` claim (contains `mfa` when MFA completed) off the SDK's own session / current-user accessor - already validated, so trust it as-is. Accessor name is SDK-specific -> see the SDK's own example ("Example code snippets" below). |
-| Resource API (raw bearer token) | The high-value **scope** (e.g. `transfer:funds`) on the access token, via your *existing* JWT/scope-check middleware - see "Related capabilities". |
+| Resource API (raw bearer token) | The high-value **scope** (e.g. `transfer:funds`) on the access token, via your *existing* JWT/scope-check middleware - see "Related capabilities". For `express-oauth2-jwt-bearer`, **`Read: references/framework-express-jwt/index.md`** and add the step-up scope to the existing `requiredScopes()` as a space-separated string or array (`requiredScopes('write:transfers transfer:funds')`); passing multiple string args (`requiredScopes('a', 'b')`) silently drops all but the first and leaves the gate open. |
 | Frontend | Nothing - treat any `amr` check as UX, never enforcement. |
 
 Notes: a silent token request may instead surface an `mfa_required` error - handle it by
@@ -182,6 +183,7 @@ it first or fall back to the language-neutral mechanic. Several MFA API flows ar
 | `@auth0/nextjs-auth0` | 4.15.0 (MFA + APIs) · verify — 4.19+ (popup step-up) | step-up, MFA API, popup | `references/feature-mfa/nextjs-auth0.md` |
 | `@auth0/auth0-auth-js` | 1.8.0 | MFA API | `references/feature-mfa/auth0-auth-js.md` |
 | `@auth0/auth0-server-js` | 1.5.0 | MFA API | `references/feature-mfa/auth0-server-js.md` |
+| `express-openid-connect` | 2.17.0 | redirect step-up | `references/feature-mfa/express-oidc.md` |
 | `Auth0.swift` (iOS/macOS) | verify — 3.0+ | MFA API | `references/feature-mfa/auth0-swift.md` |
 | `Auth0.Android` | verify — 3.13+ | MFA API | `references/feature-mfa/auth0-android.md` |
 | `auth0-server-python` | 1.0.0b10 (MFA API) · 1.0.0b15 (step-up) | step-up, MFA API | `references/feature-mfa/auth0-server-python.md` |

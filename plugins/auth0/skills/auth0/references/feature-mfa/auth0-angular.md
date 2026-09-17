@@ -27,6 +27,25 @@ provideAuth0({
 })
 ```
 
+Trigger the step-up from a component by requesting the high-value scope; the popup opens automatically and resolves once MFA completes:
+
+```ts
+import { firstValueFrom } from 'rxjs';
+import { PopupCancelledError, PopupTimeoutError } from '@auth0/auth0-angular';
+
+async transferFunds(): Promise<void> {
+  try {
+    await firstValueFrom(this.auth.getAccessTokenSilently({
+      authorizationParams: { audience: 'https://api.example.com/', scope: 'transfer:funds' },
+    }));
+  } catch (err) {
+    if (err instanceof PopupCancelledError || err instanceof PopupTimeoutError) return; // aborted
+    throw err;
+  }
+  // reached only after step-up succeeded
+}
+```
+
 Popup failures: `PopupOpenError`, `PopupCancelledError`, `PopupTimeoutError`.
 
 ## Flow 2 — MFA API (custom UI)
