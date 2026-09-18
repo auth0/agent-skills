@@ -38,4 +38,3 @@ Methods on `serverClient.mfa`:
 
 Errors: `isMfaRequiredError` (guard), `MfaListAuthenticatorsError`, `MfaEnrollmentError`, `MfaChallengeError`, `MfaVerifyError` — each exposes `cause.error` and `cause.error_description`.
 
-Source: https://github.com/auth0/auth0-auth-js/blob/main/packages/auth0-server-js/MFA.md

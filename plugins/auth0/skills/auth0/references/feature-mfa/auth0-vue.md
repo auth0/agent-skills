@@ -71,10 +71,9 @@ Methods on `mfa` (each takes `mfaToken`):
 - `mfa.getEnrollmentFactors(mfaToken)` → `EnrollmentFactor[]` — each has `{ type: string }` indicating an enrollable factor (`'otp'`, `'sms'`, `'email'`, etc.).
 - `mfa.enroll({ mfaToken, factorType: 'otp' })` → `{ barcodeUri: string, secret: string, recoveryCodes?: string[] }`; `factorType: 'sms'`/`'voice'` needs `phoneNumber` (E.164) → `{ oobCode: string }`.
 - `mfa.challenge({ mfaToken, challengeType: 'oob', authenticatorId })` → `{ oobCode: string }` (delivers the OOB code); not needed for OTP.
-- `mfa.verify({ mfaToken, otp: string })` / `({ mfaToken, oobCode, bindingCode? })` / `({ mfaToken, recoveryCode })` → `void` (tokens cached in SDK).
+- `mfa.verify({ mfaToken, otp: string })` / `({ mfaToken, oobCode, bindingCode? })` / `({ mfaToken, recoveryCode })` → token data (cached in SDK). When `recoveryCode` is used, the return value may include a new `recovery_code` — show it to the user once.
 
 **Critical:** `mfa.verify()` does not refresh reactive state. Always follow a successful verify with `await checkSession()` so `isAuthenticated`, `user`, and `idTokenClaims` update.
 
 Errors: `MfaListAuthenticatorsError`, `MfaEnrollmentError`, `MfaChallengeError`, `MfaVerifyError`, `MfaEnrollmentFactorsError`.
 
-Source: https://github.com/auth0/auth0-vue/blob/main/EXAMPLES.md (Multi-Factor Authentication / Step-Up Authentication)

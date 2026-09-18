@@ -39,4 +39,3 @@ Methods on `authClient.mfa` (all take `mfaToken`):
 
 `verify` throws `MfaVerifyError` on a bad or expired code.
 
-Source: https://github.com/auth0/auth0-auth-js/blob/main/packages/auth0-auth-js/examples/mfa.md

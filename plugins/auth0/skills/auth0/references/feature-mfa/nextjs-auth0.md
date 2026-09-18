@@ -83,6 +83,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { MfaRequiredError } from "@auth0/nextjs-auth0/server";
 
+try {
+  const { token } = await auth0.getAccessToken({ audience: "https://my-api", refresh: true });
+  // proceed with token
 } catch (error) {
   if (error instanceof MfaRequiredError) {
     const session = await auth0.getSession();
@@ -95,7 +98,7 @@ import { MfaRequiredError } from "@auth0/nextjs-auth0/server";
 }
 ```
 
-On `/mfa`, read the cookie back, re-check `sub === session.user.sub`, drive `auth0.mfa.*`, then `cookies().delete("mfa_token")` after a successful verify.
+On `/mfa`, read the cookie back, re-check `sub === session.user.sub`, drive `auth0.mfa.*`, then `(await cookies()).delete("mfa_token")` after a successful verify.
 
 ## Flow 2 — MFA management API (`auth0.mfa.*`)
 
@@ -105,7 +108,7 @@ All take `{ mfaToken }`:
   `Authenticator: { id: string, authenticatorType: 'otp'|'oob', oobChannel?: 'sms'|'voice'|'auth0'|'email', active: boolean }`
 - `enroll({ mfaToken, authenticatorTypes, oobChannels?, phoneNumber?, email? })` — OTP: `["otp"]` → `{ barcodeUri: string, secret: string, recoveryCodes?: string[] }`; OOB: `["oob"]` + `oobChannels` → `{ oobCode: string, bindingMethod?: string }`.
 - `challenge({ mfaToken, challengeType: 'oob', authenticatorId })` → `{ oobCode: string, bindingMethod?: string }` (OOB only — not needed for OTP).
-- `verify({ mfaToken, otp: string })` / `({ mfaToken, oobCode, bindingCode? })` / `({ mfaToken, recoveryCode })` → `void`.
+- `verify({ mfaToken, otp: string })` / `({ mfaToken, oobCode, bindingCode? })` / `({ mfaToken, recoveryCode })` → `MfaVerifyResponse` (tokens written to session). When `recoveryCode` is used, the response may include a new `recovery_code` — show it to the user once.
 
 Callable from a Server Component/Action (`auth0.mfa.verify`) or a client component (`import { mfa } from "@auth0/nextjs-auth0/client"`).
 
@@ -144,5 +147,3 @@ export const auth0 = new Auth0Client({
 ## Server error classes
 
 `MfaRequiredError`, `MfaTokenNotFoundError`, `MfaTokenExpiredError`, `MfaTokenInvalidError`, `MfaGetAuthenticatorsError`, `MfaEnrollmentError`, `MfaChallengeError`, `MfaVerifyError` (from `@auth0/nextjs-auth0/errors`).
-
-Source: https://github.com/auth0/nextjs-auth0/blob/main/guides/mfa.md

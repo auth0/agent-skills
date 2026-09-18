@@ -48,5 +48,3 @@ val credentials = when (challenge.challengeType) {
 ```
 
 Errors: `MfaListAuthenticatorsException`, `MfaEnrollmentException`, `MfaChallengeException`, `MfaVerifyException` — each has `code`, `description`, `statusCode`, `isNetworkError`, `cause`, `getValue(key)`. Branch on `code` (not `description`): `invalid_token` (MFA token expired — restart login), `invalid_grant`/`invalid_oob_code`/`invalid_binding_code` (wrong/expired code), `enrollment_conflict`, `unsupported_challenge_type`.
-
-Source: https://github.com/auth0/Auth0.Android/blob/main/examples/authentication-api/mfa-flexible-factors.md

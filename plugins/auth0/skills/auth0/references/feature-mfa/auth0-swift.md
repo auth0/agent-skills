@@ -56,4 +56,3 @@ Auth0.mfa()
 
 Errors (all conform to `Auth0APIError`, with `.code`, `.statusCode`, `.isNetworkError`, `.isRetryable`, `.cause`): `MfaListAuthenticatorsError`, `MfaEnrollmentError`, `MfaChallengeError`, `MFAVerifyError`. At the login stage: `isMultifactorRequired`, `isMultifactorEnrollRequired`, `isMultifactorCodeInvalid`, `isMultifactorTokenInvalid`.
 
-Source: https://github.com/auth0/Auth0.swift/blob/master/examples/mfa-api.md

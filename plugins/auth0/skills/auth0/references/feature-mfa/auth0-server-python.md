@@ -99,4 +99,3 @@ If `verify()` itself raises `MfaRequiredError` (chained factor), that error's `m
 
 **Wire the MFA flow directly into the route handler** that performs the sensitive action — do not put it in a helper function that isn't called from the route. The `/transfer` handler must itself call `get_access_token()`, catch `MfaRequiredError`, and drive the challenge/verify loop (or redirect to an MFA sub-flow) before executing the transfer. A separate `handle_transfer_request` that is never invoked from the route is dead code.
 
-Source: https://github.com/auth0/auth0-server-python/blob/main/examples/MFA.md · https://github.com/auth0/auth0-server-python/blob/main/examples/StepUpAuthentication.md

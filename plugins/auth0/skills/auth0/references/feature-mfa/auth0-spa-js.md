@@ -48,4 +48,3 @@ try {
 
 `PopupOpenError` = blocked, `PopupCancelledError` = user closed, `PopupTimeoutError` = timed out.
 
-Source: https://github.com/auth0/auth0-spa-js/blob/main/examples/step-up-authentication.md

@@ -31,7 +31,7 @@ Trigger the step-up from a component by requesting the high-value scope; the pop
 
 ```ts
 import { firstValueFrom } from 'rxjs';
-import { PopupCancelledError, PopupTimeoutError } from '@auth0/auth0-angular';
+import { PopupOpenError, PopupCancelledError, PopupTimeoutError } from '@auth0/auth0-angular';
 
 async transferFunds(): Promise<void> {
   try {
@@ -39,7 +39,7 @@ async transferFunds(): Promise<void> {
       authorizationParams: { audience: 'https://api.example.com/', scope: 'transfer:funds' },
     }));
   } catch (err) {
-    if (err instanceof PopupCancelledError || err instanceof PopupTimeoutError) return; // aborted
+    if (err instanceof PopupOpenError || err instanceof PopupCancelledError || err instanceof PopupTimeoutError) return; // aborted
     throw err;
   }
   // reached only after step-up succeeded
@@ -61,7 +61,7 @@ this.auth.getAccessTokenSilently().pipe(
         ? this.auth.mfa.getEnrollmentFactors(mfaToken)
         : this.auth.mfa.getAuthenticators(mfaToken);
     }
-    return EMPTY;
+    return throwError(() => error);
   })
 ).subscribe();
 ```
@@ -71,10 +71,8 @@ this.auth.getAccessTokenSilently().pipe(
 - **Enrollment options:** `auth.mfa.getEnrollmentFactors(mfaToken)` → `Observable<EnrollmentFactor[]>` — each has `{ type: string }` (`'otp'`, `'sms'`, `'email'`, etc.).
 - **Enroll:** `auth.mfa.enroll({ mfaToken, factorType })` — `'otp'` → `Observable<{ barcodeUri: string, secret: string, recoveryCodes?: string[] }>`; `'sms'`/`'voice'` (need `phoneNumber`) → `Observable<{ oobCode: string }>`; `'email'` (needs `email`) → `Observable<{ oobCode: string }>`.
 - **Challenge:** `auth.mfa.challenge({ mfaToken, challengeType: 'oob', authenticatorId })` → `Observable<{ oobCode: string }>` (delivers the OOB code); not needed for OTP.
-- **Verify:** `auth.mfa.verify({ mfaToken, otp })` / `({ mfaToken, oobCode, bindingCode })` / `({ mfaToken, recoveryCode })` → `Observable<void>`.
+- **Verify:** `auth.mfa.verify({ mfaToken, otp })` / `({ mfaToken, oobCode, bindingCode })` / `({ mfaToken, recoveryCode })` → `Observable<TokenEndpointResponse>` (tokens cached in SDK). When `recoveryCode` is used, the emission may include a new `recovery_code` — show it to the user once.
 
 **Critical:** `verify()` does not update auth state. Chain `getAccessTokenSilently()` after a successful verify so `isAuthenticated$`/`user$` update. Recovery-code verify may return a new `recovery_code` — prompt the user to save it.
 
 Errors: `MfaRequiredError`, `MfaVerifyError`, `MfaChallengeError`, `MfaEnrollmentError`, `MfaListAuthenticatorsError`, `MfaEnrollmentFactorsError`.
-
-Source: https://github.com/auth0/auth0-angular/blob/main/EXAMPLES.md (Multi-Factor Authentication / Step-Up Authentication)

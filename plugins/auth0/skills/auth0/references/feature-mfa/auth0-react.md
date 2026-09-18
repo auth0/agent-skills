@@ -58,8 +58,6 @@ try {
   - OTP → `{ barcodeUri: string, secret: string, recoveryCodes?: string[] }`
   - OOB → `{ oobCode: string }` (`sms`/`voice` need `phoneNumber` E.164, `email` needs `email`)
 - **Challenge:** `mfa.challenge({ mfaToken, challengeType: 'oob', authenticatorId })` → `{ oobCode: string }` (delivers the OOB code); not needed for OTP.
-- **Verify:** `mfa.verify({ mfaToken, otp: string })`, `mfa.verify({ mfaToken, oobCode, bindingCode? })`, or `mfa.verify({ mfaToken, recoveryCode })` → `void` (tokens cached in SDK; later `getAccessTokenSilently()` returns them).
+- **Verify:** `mfa.verify({ mfaToken, otp: string })`, `mfa.verify({ mfaToken, oobCode, bindingCode? })`, or `mfa.verify({ mfaToken, recoveryCode })` → token data (cached in SDK; later `getAccessTokenSilently()` returns them). When `recoveryCode` is used, the return value may include a new `recovery_code` — show it to the user once.
 
 Errors: `MfaEnrollmentError`, `MfaChallengeError`, `MfaVerifyError` (from `@auth0/auth0-react`).
-
-Source: https://github.com/auth0/auth0-react/blob/main/EXAMPLES.md (Multi-Factor Authentication / Step-Up Authentication)

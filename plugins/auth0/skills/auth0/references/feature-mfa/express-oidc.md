@@ -24,6 +24,10 @@ function requiresMfa(req, res, next) {
 app.post('/transfer', requiresAuth(), requiresMfa, (req, res) => {
   // reached only after MFA — re-check req.oidc.idTokenClaims.amr before moving funds
 });
+// Note: returnTo uses req.originalUrl. After MFA, Auth0 redirects the browser back via GET.
+// A POST /transfer with a request body cannot be replayed by a redirect — store the pending
+// action server-side (session or signed cookie) before calling res.oidc.login(), and read it
+// back on the GET resume rather than re-reading req.body.
 ```
 
 `login(options)` returns `Promise<void>` and issues the redirect itself — don't also call `res.redirect`. After Universal Login completes MFA it returns to `returnTo`, the gate re-runs, and `amr` now includes `mfa`.
@@ -35,16 +39,22 @@ app.post('/transfer', requiresAuth(), requiresMfa, (req, res) => {
 The `session` argument passed to `afterCallback` is a **plain object** (`Object.assign({}, tokenSet)`) — it has the raw token fields (`id_token`, `access_token`, `token_type`, `expires_at`, `refresh_token`, `sid`) but **no `claims` property**. To read `amr`, decode the `id_token` payload directly (it's already signature-verified at this point — this is safe base64 parsing, not re-verification):
 
 ```js
+const MFA_ACR = 'http://schemas.openid.net/pape/policies/2007/06/multi-factor';
+
 const config = {
   // ... other config ...
   afterCallback: (req, res, session) => {
+    // afterCallback fires on every OIDC callback — scope this check to step-up transactions only.
     // Decode the already-verified id_token payload — session.claims does NOT exist
     const payload = JSON.parse(
       Buffer.from(session.id_token.split('.')[1], 'base64url').toString()
     );
-    const amr = payload.amr;
-    if (!Array.isArray(amr) || !amr.includes('mfa')) {
-      throw new Error('MFA not completed');
+    // Only enforce MFA when the step-up ACR was requested; skip for normal logins
+    if (payload.acr === MFA_ACR) {
+      const amr = payload.amr;
+      if (!Array.isArray(amr) || !amr.includes('mfa')) {
+        throw new Error('MFA not completed');
+      }
     }
     return session;
   },
@@ -52,5 +62,3 @@ const config = {
 ```
 
 Throwing from `afterCallback` aborts the callback and returns a 401, preventing a bypass where the user completes login without MFA. **Do not read node_modules to verify the session shape** — the structure above is confirmed from the express-openid-connect 2.19.x source (`context.js` lines 403-414).
-
-Source: https://github.com/auth0/express-openid-connect
