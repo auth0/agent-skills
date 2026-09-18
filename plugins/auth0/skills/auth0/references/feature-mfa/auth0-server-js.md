@@ -2,7 +2,7 @@
 
 **Minimum version:** 1.5.0. MFA is Early Access and requires **static domain** config (not available in resolver/MCD mode).
 
-Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`.
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference.
 
 Standard `ServerClient` with `transactionStore` + `stateStore`; the MFA sub-client is `serverClient.mfa` (present only on static-domain instances):
 

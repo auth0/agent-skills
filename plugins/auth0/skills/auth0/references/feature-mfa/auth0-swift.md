@@ -2,7 +2,7 @@
 
 **Minimum version:** verify — 3.0+. The `Auth0.mfa()` / `MfaClient` flexible-factors API is a 3.0 introduction (3.0.1/3.0.2 ship fixes to its types); the pre-3.0 MFA methods on `AuthenticationClient` were removed in 3.0.
 
-Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`. `Auth0`, `MfaClient`, and all MFA types ship in the single `Auth0` module — no submodule import.
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference. `Auth0`, `MfaClient`, and all MFA types ship in the single `Auth0` module — no submodule import.
 
 ```swift
 import Auth0

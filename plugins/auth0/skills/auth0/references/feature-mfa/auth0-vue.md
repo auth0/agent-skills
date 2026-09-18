@@ -2,7 +2,7 @@
 
 **Minimum version:** 2.6.0.
 
-Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`.
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference.
 
 Access everything through `useAuth0()` (Composition API) or `this.$auth0` (Options API):
 

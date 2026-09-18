@@ -2,7 +2,7 @@
 
 **Minimum version:** 1.0.0b17. In this line every `mfa.*` method decrypts the token internally — pass the encrypted `mfa_token` as-is, never pre-decrypt. Step-up (redirect) flow: 1.0.0b15+.
 
-Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`. `store_options` is always `{"request": request, "response": response}` (the raw framework objects your transaction/state store reads cookies from).
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference. `store_options` is always `{"request": request, "response": response}` (the raw framework objects your transaction/state store reads cookies from).
 
 **The scaffold already provides everything you need.** `auth0_client.py` creates a pre-configured `auth0 = ServerClient(...)` with `CookieTransactionStore` and `CookieStateStore` from `stores.py`. Import `auth0` and call `auth0.mfa.*` directly — do **not** create a new `ServerClient`, do not read `stores.py` internals, and do **not** read site-packages to understand the store interface. All MFA method signatures below are accurate for auth0-server-python 1.0.0b17 — do not verify in site-packages.
 

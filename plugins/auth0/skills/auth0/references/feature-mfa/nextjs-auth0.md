@@ -2,7 +2,7 @@
 
 **Minimum version:** 4.15.0 for base MFA + the MFA management APIs; reactive popup step-up (`mfa.challengeWithPopup`) landed later (verify — 4.19+; the changelog names it `stepUpWithPopup`, the guide `challengeWithPopup`, so confirm the method name against the installed version).
 
-Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`.
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference.
 
 Singleton client (`lib/auth0.ts`):
 
@@ -15,7 +15,7 @@ MFA methods are on `auth0.mfa` (server, `@auth0/nextjs-auth0/server`) and the `m
 
 ## Flow 0 — redirect step-up via Universal Login (use this when the task says "redirect them to step up")
 
-Gate the action on the `amr` claim; when MFA is missing, redirect through v4's login route with the PAPE `acr_values` + `max_age=0` from `index.md`'s shared mechanic. v4 has **no `handleLogin` export** — login is middleware-driven, so pass the params one of two ways (both verified on 4.30.0). Do not grep node_modules to rediscover this.
+Gate the action on the `amr` claim; when MFA is missing, redirect through v4's login route with the PAPE `acr_values` + `max_age=0` (see the shared MFA reference). v4 has **no `handleLogin` export** — login is middleware-driven, so pass the params one of two ways (both verified on 4.30.0). Do not grep node_modules to rediscover this.
 
 Step 1 — persist `amr` so the gate can read it. Add the `beforeSessionSaved` hook (see "Reading `amr`" below); without it `session.user.amr` is always undefined and the redirect loops.
 

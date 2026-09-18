@@ -2,7 +2,7 @@
 
 **Minimum version:** verify — 3.13+. The `mfaClient()` / `MfaApiClient` flexible-factors API landed in 3.13.0; the older `AuthenticationAPIClient` MFA methods were deprecated in 3.14.0 and removed in 4.0.0. Early Access — enable the MFA grant type in Dashboard → Applications → Advanced Settings → Grant Types (contact your Auth0 rep first).
 
-Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`. Snippets are Kotlin (Java equivalents use getters, e.g. `exception.isMultifactorRequired()`).
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference. Snippets are Kotlin (Java equivalents use getters, e.g. `exception.isMultifactorRequired()`).
 
 **Detect `mfa_required`.** `login()` fails with `AuthenticationException`; check `isMultifactorRequired`, read `mfaRequiredErrorPayload`. Pass `audience` and `scope` on the request — both are builder methods on the returned `AuthenticationRequest`:
 

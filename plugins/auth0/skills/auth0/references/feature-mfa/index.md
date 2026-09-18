@@ -66,7 +66,7 @@ Recipe (do in order):
 | Your context | Verify with |
 |---|---|
 | Session-managing SDK (web app) | The `amr` claim (contains `mfa` when MFA completed) off the SDK's own session / current-user accessor - already validated, so trust it as-is. Accessor name is SDK-specific -> see the SDK's own example ("Example code snippets" below). |
-| Resource API (raw bearer token) | The high-value **scope** (e.g. `transfer:funds`) on the access token, via your *existing* JWT/scope-check middleware - see "Related capabilities". For `express-oauth2-jwt-bearer`, **`Read: references/framework-express-jwt/index.md`** and add the step-up scope to the existing `requiredScopes()` as a space-separated string or array (`requiredScopes('write:transfers transfer:funds')`); passing multiple string args (`requiredScopes('a', 'b')`) silently drops all but the first and leaves the gate open. |
+| Resource API (raw bearer token) | The high-value **scope** (e.g. `transfer:funds`) on the access token, via your *existing* JWT/scope-check middleware - see "Related capabilities". For `express-oauth2-jwt-bearer`, read the express-jwt skill reference and add the step-up scope to the existing `requiredScopes()` as a space-separated string or array (`requiredScopes('write:transfers transfer:funds')`); passing multiple string args (`requiredScopes('a', 'b')`) silently drops all but the first and leaves the gate open. |
 | Frontend | Nothing - treat any `amr` check as UX, never enforcement. |
 
 Notes: a silent token request may instead surface an `mfa_required` error - handle it by

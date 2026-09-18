@@ -2,7 +2,7 @@
 
 **Minimum version:** 2.14.0 for the MFA API (no-redirect) flow; 2.15.0 for popup step-up. The MFA API flow requires Early Access enablement on the tenant.
 
-Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md` — this file is the SDK's exact API.
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference — this file is the SDK's exact API.
 
 This SDK offers two independent flows; pick one:
 

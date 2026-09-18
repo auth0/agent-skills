@@ -2,7 +2,7 @@
 
 **Minimum version:** 2.16.0 (2.17.0 adds iframe-based silent step-up).
 
-Framework-specific surface only. The shared mechanic, tenant config, and `amr`/error tables live in `index.md`. This SDK covers browser step-up; for the no-redirect MFA API in a plain JS backend, use `@auth0/auth0-auth-js`.
+Framework-specific surface only. The shared mechanic, tenant config, and `amr`/error tables live in the shared MFA reference. This SDK covers browser step-up; for the no-redirect MFA API in a plain JS backend, use `@auth0/auth0-auth-js`.
 
 This SDK does **not** trigger step-up with `acr_values`/`max_age`. Step-up is driven by the resource server signalling MFA on a token request: set `interactiveErrorHandler: 'popup'` on the client and `getTokenSilently` opens a Universal Login popup automatically, resolving the token once MFA completes.
 

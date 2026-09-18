@@ -2,7 +2,7 @@
 
 **Minimum version:** 1.8.0 (foundational enroll/list/challenge/delete landed in 1.4.0; `mfa.verify`, which completes the flow, arrived in 1.8.0).
 
-Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`. This is the no-redirect flow — the app collects credentials, catches `mfa_required`, and drives the MFA client.
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference. This is the no-redirect flow — the app collects credentials, catches `mfa_required`, and drives the MFA client.
 
 ```ts
 import { AuthClient, isMfaRequiredError } from '@auth0/auth0-auth-js';
@@ -33,7 +33,7 @@ Methods on `authClient.mfa` (all take `mfaToken`):
 - `verify({ mfaToken, factorType, ... })` → `TokenResponse` (`{ accessToken, idToken?, refreshToken?, expiresAt, scope?, recoveryCode? }`). `factorType: 'otp'` (pass `otp`), `'oob'` (pass `oobCode`, plus `bindingCode` when `bindingMethod === 'prompt'`), `'recovery-code'` (pass `recoveryCode`; the replacement is on `tokens.recoveryCode` — show once).
 - `deleteAuthenticator({ authenticatorId, mfaToken })`.
 
-**Authorization — this SDK simplifies it.** `listAuthenticators` and `deleteAuthenticator` both send the `mfaToken` as the Bearer credential; the SDK does *not* require the separately-scoped `remove:authenticators` access token that `index.md`'s "MFA API surface" describes for the raw REST API. Pass the same `mfaToken` you used for enroll/challenge/verify — do not mint a second token. (The raw-API note in `index.md` applies to hand-rolled `DELETE /mfa/authenticators/{id}` calls, which you should not write when using this SDK.)
+**Authorization — this SDK simplifies it.** `listAuthenticators` and `deleteAuthenticator` both send the `mfaToken` as the Bearer credential; the SDK does *not* require the separately-scoped `remove:authenticators` access token described for the raw REST API. Pass the same `mfaToken` you used for enroll/challenge/verify — do not mint a second token.
 
 **Never put `mfaToken` in a URL query string.** It leaks in server logs, browser history, and `Referer` headers. Use `POST` for all MFA endpoints so the token travels in the request body — including listing factors (design as `POST /mfa/factors` rather than `GET /mfa/factors`, which would force a query parameter). Alternatively pass it as a `Bearer` token in the `Authorization` header.
 

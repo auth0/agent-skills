@@ -2,7 +2,7 @@
 
 **Minimum version:** 2.11.0. The MFA API flow is Early Access — confirm tenant enablement before shipping. `AuthConfig` extends `Auth0ClientOptions` from `@auth0/auth0-spa-js` (peer dep ^2.21.0 in 2.11.0), so `interactiveErrorHandler` (added in spa-js 2.16.0) is a valid `provideAuth0()` key via inheritance — it is not a direct property of `AuthConfig` but works correctly at runtime.
 
-Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`.
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference.
 
 Everything lives on `AuthService` (constructor DI). All types import from `@auth0/auth0-angular`. Calls return Observables — compose with RxJS.
 

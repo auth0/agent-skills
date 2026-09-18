@@ -2,7 +2,7 @@
 
 **Minimum version:** 2.17.0.
 
-Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in `index.md`. This SDK is redirect-only — it has no MFA API client; step-up goes through Universal Login.
+Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference. This SDK is redirect-only — it has no MFA API client; step-up goes through Universal Login.
 
 Trigger step-up with `res.oidc.login()` (aliased on the request as `req.oidc.login()`) — pass the PAPE `acr_values` and `max_age: 0` under `authorizationParams`, and a `returnTo` for where Auth0 sends the user after MFA completes:
 
