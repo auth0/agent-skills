@@ -1,6 +1,6 @@
 # Agent Plugin Architecture
 
-This repository provides one canonical Auth0 skill distributed through Claude Code, Cursor, OpenAI/Codex, and the portable Agent Plugins package format. The OpenAI package is also usable by ChatGPT desktop through the universal plugin directory.
+This repository provides one canonical Auth0 skill distributed through Claude Code, Cursor, OpenAI/Codex, Antigravity, Gemini CLI, and the portable Agent Plugins package format. The OpenAI package is also usable by ChatGPT desktop through the universal plugin directory.
 
 ## Architecture Overview
 
@@ -74,6 +74,9 @@ auth0/agent-skills/
 │       │   └── plugin.json       # Cursor plugin config
 │       ├── .codex-plugin/
 │       │   └── plugin.json       # Codex plugin config
+│       ├── .antigravity-plugin/
+│       │   └── plugin.json       # Antigravity plugin config
+│       ├── gemini-extension.json # Gemini CLI extension manifest
 │       ├── README.md
 │       └── skills/
 │           └── auth0/                 # The single unified skill
@@ -134,6 +137,27 @@ package does not include `mcp.json` because it does not bundle an MCP server.
 - Plugin description
 - Skills are auto-discovered from the `skills/` directory
 
+### plugins/auth0/.antigravity-plugin/plugin.json
+
+**Purpose**: Antigravity-specific plugin manifest.
+
+Antigravity's manifest schema only permits `name` and `description`
+(`additionalProperties: false`), so this file cannot carry the version,
+author, or keyword fields the other manifests do. Install locally with
+`agy plugin install plugins/auth0` — skills are auto-discovered from the
+`skills/` directory.
+
+### plugins/auth0/gemini-extension.json
+
+**Purpose**: Gemini CLI extension manifest.
+
+Gemini CLI requires `gemini-extension.json` at the extension root (unhidden,
+unlike the other clients' dot-folder manifests), sitting alongside `skills/`.
+`gemini extensions install <github-url>` expects the manifest at the target
+repository's root, so it cannot install this plugin directly from this repo's
+GitHub URL — install from a local clone instead:
+`gemini extensions install ./plugins/auth0`.
+
 ---
 
 ## Installation Methods
@@ -176,6 +200,18 @@ Load `plugins/auth0` as a plugin directory using the client's install flow.
 Agent Plugins defines the portable package format, not a universal install
 command.
 
+### Antigravity
+
+```bash
+agy plugin install plugins/auth0
+```
+
+### Gemini CLI
+
+```bash
+gemini extensions install ./plugins/auth0
+```
+
 ---
 
 ## Use Cases
@@ -193,7 +229,9 @@ no per-framework skill to pick.
 
 Edit the relevant marketplace and plugin manifests. For OpenAI/Codex, update
 `.agents/plugins/marketplace.json` and `plugins/auth0/.codex-plugin/plugin.json`.
-For Agent Plugins, update `plugins/auth0/plugin.json`.
+For Agent Plugins, update `plugins/auth0/plugin.json`. For Antigravity, update
+`plugins/auth0/.antigravity-plugin/plugin.json` (description only — no version
+field). For Gemini CLI, update `plugins/auth0/gemini-extension.json`.
 
 ### Create Release
 
