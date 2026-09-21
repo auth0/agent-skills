@@ -46,26 +46,30 @@ preferring the most specific form:
 
 Match the detected SDK to the form its own reference documents; do not infer it from the platform.
 
-For richer per-SDK examples (org switching, reading org claims) read the SDK's own file, only
-the named section (from that heading to the next heading of the same or higher level):
+Get the exact call from the per-SDK reference below — **`Read:` the file for the detected SDK**.
+Each carries that SDK's exact org-login option, invitation forwarding, and `org_id` accessor,
+verified against the installed SDK. Implement directly from it: do NOT fetch from GitHub, grep
+`node_modules`/`.d.ts`/site-packages, or web-search to re-verify a signature. Min version is
+informational (the scaffold pins a compatible release). No matching row? Fall back to the
+protocol shape above plus the loaded `framework-{framework}/index.md`. Never hand-roll the
+authorize URL or decode the token by hand.
 
-| SDK | Raw example file (markdown) | Find section |
+| SDK | Min version | Read this file |
 |---|---|---|
-| `@auth0/auth0-react` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Use with Auth0 organizations` |
-| `@auth0/auth0-spa-js` | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/organizations.md | `## Organizations` |
-| `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Organizations` |
-| `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Organizations` |
-| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Passing authorization parameters` |
-| `express-openid-connect` | https://raw.githubusercontent.com/auth0/express-openid-connect/master/EXAMPLES.md | `9. Validate Claims from an ID token before logging a user in` |
-| `react-native-auth0` | https://raw.githubusercontent.com/auth0/react-native-auth0/master/EXAMPLES.md | `## Organizations` |
-| `Auth0.swift` | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/advanced-features/organizations.md | `Log in to an organization` |
-| `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/organizations.md | `Organizations` |
-| `auth0-server-python` | https://raw.githubusercontent.com/auth0/auth0-server-python/main/README.md | `#### Organizations` |
-| `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/EXAMPLES.md | `### Logging in to an Organization` |
-
-No matching row? The framework reference loaded alongside this file carries the SDK-specific
-org login syntax; fall back to it plus the protocol shape above. 
-Never hand-roll the authorize URL or decode the token by hand.
+| `@auth0/auth0-react` | 2.x | `Read: references/feature-organizations/auth0-react.md` |
+| `@auth0/auth0-spa-js` | 2.x | `Read: references/feature-organizations/auth0-spa-js.md` |
+| `@auth0/auth0-vue` | 2.x | `Read: references/feature-organizations/auth0-vue.md` |
+| `@auth0/auth0-angular` | 2.x | `Read: references/feature-organizations/auth0-angular.md` |
+| `@auth0/nextjs-auth0` | 4.x | `Read: references/feature-organizations/nextjs-auth0.md` |
+| `express-openid-connect` | 2.x | `Read: references/feature-organizations/express-oidc.md` |
+| `react-native-auth0` | 5.x | `Read: references/feature-organizations/react-native-auth0.md` |
+| `Auth0.swift` | 2.x/3.x | `Read: references/feature-organizations/auth0-swift.md` |
+| `Auth0.Android` | 2.x/3.x | `Read: references/feature-organizations/auth0-android.md` |
+| `@auth0/auth0-server-js` | 1.x | `Read: references/feature-organizations/auth0-server-js.md` |
+| `@auth0/auth0-auth-js` | 1.x | `Read: references/feature-organizations/auth0-auth-js.md` |
+| `auth0-server-python` | 1.0.0bXX | `Read: references/feature-organizations/auth0-server-python.md` |
+| `@auth0/auth0-api-js` (API) | 1.x | `Read: references/feature-organizations/auth0-api-js.md` |
+| `express-oauth2-jwt-bearer` (API) | 1.x | `Read: references/feature-organizations/express-oauth2-jwt-bearer.md` |
 
 ### Reading the organization back
 
@@ -94,12 +98,9 @@ if (!allowedOrgIds.has(orgId)) { /* reject: untrusted organization (e.g. 403) */
 // then scope every data lookup by orgId
 ```
 
-For richer per-SDK examples (org switching, reading org claims) read the SDK's own file, only
-the named section (from that heading to the next heading of the same or higher level):
-
-| SDK | Raw example file (markdown) | Find section |
-|---|---|---|
-| `@auth0/auth0-api-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-api-js/README.md | `### 3. Verify the Access Token` |
+For the API side (`@auth0/auth0-api-js`, `express-oauth2-jwt-bearer`), `Read:` that SDK's file
+from the per-SDK table above — it shows how to require and enforce `org_id` on the verified
+access token.
 
 ---
 
