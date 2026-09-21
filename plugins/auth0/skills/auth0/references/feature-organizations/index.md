@@ -50,11 +50,12 @@ Get the exact call from the per-SDK reference below — **`Read:` the file for t
 Each carries that SDK's exact org-login option, invitation forwarding, and `org_id` accessor,
 verified against the installed SDK. Implement directly from it: do NOT fetch from GitHub, grep
 `node_modules`/`.d.ts`/site-packages, or web-search to re-verify a signature. Min version is the
-release the feature landed in — for the newer server SDKs (`auth0-server-js`, `auth0-auth-js`,
-`auth0-api-js`, `auth0-server-python`) it lands mid-`1.x`, so an older install won't have it; the
-scaffold pins a compatible release. No matching row? Fall back to the protocol shape above plus
-the loaded `framework-{framework}/index.md`. Never hand-roll the authorize URL or decode the
-token by hand.
+release the feature landed in — **check the installed version (`package.json`/lockfile,
+`Package.swift`, Gradle, `pyproject.toml`) meets it before implementing**, and upgrade if it
+falls short. It matters most for the newer server SDKs (`auth0-server-js`, `auth0-auth-js`,
+`auth0-api-js`, `auth0-server-python`), where organizations lands mid-`1.x`, so an older install
+won't have it. No matching row? Fall back to the protocol shape above plus the loaded
+`framework-{framework}/index.md`. Never hand-roll the authorize URL or decode the token by hand.
 
 | SDK | Min version | Read this file |
 |---|---|---|
