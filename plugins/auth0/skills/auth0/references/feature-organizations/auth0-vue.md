@@ -1,6 +1,6 @@
 # @auth0/auth0-vue — Organizations
 
-**Minimum version:** 2.0.0 (organizations supported across the 2.x line).
+**Minimum version:** 2.0.0 — organizations is supported since the initial 2.x release; `org_name` support was added in 2.3.0.
 
 Framework-specific surface only. The protocol shape, invitation flow, `org_id`-reading
 guidance, tenant config, and common mistakes live in the shared Organizations reference. Public

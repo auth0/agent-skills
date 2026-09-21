@@ -1,6 +1,6 @@
 # @auth0/auth0-api-js — Organizations (API side)
 
-**Minimum version:** 1.0.0 (organizations supported across the current 1.x line).
+**Minimum version:** 1.3.0 (organization-claim support was added in 1.3.0 — earlier 1.x releases do not have it).
 
 Framework-specific surface only. The protocol shape, `org_id`-reading guidance, tenant config,
 and common mistakes live in the shared Organizations reference. This SDK **verifies** access

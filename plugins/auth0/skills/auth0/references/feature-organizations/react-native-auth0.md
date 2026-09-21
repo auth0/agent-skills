@@ -1,6 +1,6 @@
 # react-native-auth0 — Organizations
 
-**Minimum version:** 5.0.0 (organizations supported across the current 5.x line).
+**Minimum version:** organizations has been supported since 2.8.0; this reference documents the current 5.x API (`authorize`, `useAuth0`, `invitationUrl`), so target 5.0.0.
 
 Framework-specific surface only. The protocol shape, invitation flow, `org_id`-reading
 guidance, tenant config, and common mistakes live in the shared Organizations reference. This is

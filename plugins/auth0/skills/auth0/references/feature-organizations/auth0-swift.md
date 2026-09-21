@@ -1,6 +1,6 @@
 # Auth0.swift — Organizations
 
-**Minimum version:** 2.0.0 (organizations supported across the 2.x/3.x lines).
+**Minimum version:** organizations has been supported since 1.32.0; this reference documents the current 2.x/3.x API, so target 2.0.0.
 
 Framework-specific surface only. The protocol shape, invitation flow, `org_id`-reading
 guidance, tenant config, and common mistakes live in the shared Organizations reference. Org

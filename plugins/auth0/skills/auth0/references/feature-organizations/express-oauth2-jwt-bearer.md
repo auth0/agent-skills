@@ -1,6 +1,6 @@
 # express-oauth2-jwt-bearer — Organizations (API side)
 
-**Minimum version:** 1.6.0 (`claimEquals`/`claimCheck` available across the 1.x line).
+**Minimum version:** 1.0.0 (`claimEquals`/`claimCheck` have existed since the SDK's first release; current major is 1.x).
 
 Framework-specific surface only. The protocol shape, `org_id`-reading guidance, tenant config,
 and common mistakes live in the shared Organizations reference. This SDK **validates** bearer

@@ -1,6 +1,6 @@
 # auth0-server-python — Organizations
 
-**Minimum version:** 1.0.0b10 (organizations supported across the current 1.0.0bXX beta line).
+**Minimum version:** 1.0.0b11 (organization support landed in 1.0.0b11 — not present in 1.0.0b10 or earlier betas).
 
 Framework-specific surface only. The protocol shape, invitation flow, `org_id`-reading
 guidance, tenant config, and common mistakes live in the shared Organizations reference.

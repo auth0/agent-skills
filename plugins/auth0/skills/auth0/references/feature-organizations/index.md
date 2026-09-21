@@ -49,10 +49,12 @@ Match the detected SDK to the form its own reference documents; do not infer it 
 Get the exact call from the per-SDK reference below — **`Read:` the file for the detected SDK**.
 Each carries that SDK's exact org-login option, invitation forwarding, and `org_id` accessor,
 verified against the installed SDK. Implement directly from it: do NOT fetch from GitHub, grep
-`node_modules`/`.d.ts`/site-packages, or web-search to re-verify a signature. Min version is
-informational (the scaffold pins a compatible release). No matching row? Fall back to the
-protocol shape above plus the loaded `framework-{framework}/index.md`. Never hand-roll the
-authorize URL or decode the token by hand.
+`node_modules`/`.d.ts`/site-packages, or web-search to re-verify a signature. Min version is the
+release the feature landed in — for the newer server SDKs (`auth0-server-js`, `auth0-auth-js`,
+`auth0-api-js`, `auth0-server-python`) it lands mid-`1.x`, so an older install won't have it; the
+scaffold pins a compatible release. No matching row? Fall back to the protocol shape above plus
+the loaded `framework-{framework}/index.md`. Never hand-roll the authorize URL or decode the
+token by hand.
 
 | SDK | Min version | Read this file |
 |---|---|---|
@@ -61,15 +63,15 @@ authorize URL or decode the token by hand.
 | `@auth0/auth0-vue` | 2.x | `Read: references/feature-organizations/auth0-vue.md` |
 | `@auth0/auth0-angular` | 2.x | `Read: references/feature-organizations/auth0-angular.md` |
 | `@auth0/nextjs-auth0` | 4.x | `Read: references/feature-organizations/nextjs-auth0.md` |
-| `express-openid-connect` | 2.x | `Read: references/feature-organizations/express-oidc.md` |
+| `express-openid-connect` | 2.x/3.x | `Read: references/feature-organizations/express-oidc.md` |
 | `react-native-auth0` | 5.x | `Read: references/feature-organizations/react-native-auth0.md` |
 | `Auth0.swift` | 2.x/3.x | `Read: references/feature-organizations/auth0-swift.md` |
-| `Auth0.Android` | 2.x/3.x | `Read: references/feature-organizations/auth0-android.md` |
-| `@auth0/auth0-server-js` | 1.x | `Read: references/feature-organizations/auth0-server-js.md` |
-| `@auth0/auth0-auth-js` | 1.x | `Read: references/feature-organizations/auth0-auth-js.md` |
-| `auth0-server-python` | 1.0.0bXX | `Read: references/feature-organizations/auth0-server-python.md` |
-| `@auth0/auth0-api-js` (API) | 1.x | `Read: references/feature-organizations/auth0-api-js.md` |
-| `express-oauth2-jwt-bearer` (API) | 1.x | `Read: references/feature-organizations/express-oauth2-jwt-bearer.md` |
+| `Auth0.Android` | 2.x–4.x | `Read: references/feature-organizations/auth0-android.md` |
+| `@auth0/auth0-server-js` | 1.9.0 | `Read: references/feature-organizations/auth0-server-js.md` |
+| `@auth0/auth0-auth-js` | 1.10.0 | `Read: references/feature-organizations/auth0-auth-js.md` |
+| `auth0-server-python` | 1.0.0b11 | `Read: references/feature-organizations/auth0-server-python.md` |
+| `@auth0/auth0-api-js` (API) | 1.3.0 | `Read: references/feature-organizations/auth0-api-js.md` |
+| `express-oauth2-jwt-bearer` (API) | 1.0.0 | `Read: references/feature-organizations/express-oauth2-jwt-bearer.md` |
 
 ### Reading the organization back
 

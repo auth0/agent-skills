@@ -1,6 +1,6 @@
 # express-openid-connect — Organizations
 
-**Minimum version:** 2.0.0 (organizations supported across the 2.x line).
+**Minimum version:** 2.0.0 — `organization` is forwarded via `authorizationParams`, so it works across the 2.x and 3.x lines with no dedicated feature version to gate on.
 
 Framework-specific surface only. The protocol shape, invitation flow, `org_id`-reading
 guidance, tenant config, and common mistakes live in the shared Organizations reference. This is

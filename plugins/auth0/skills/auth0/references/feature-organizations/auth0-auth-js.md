@@ -1,6 +1,6 @@
 # @auth0/auth0-auth-js — Organizations
 
-**Minimum version:** 1.0.0 (organizations supported across the current 1.x line).
+**Minimum version:** 1.10.0 (ID-token organization-claim validation was added in 1.10.0 — earlier 1.x releases do not have it).
 
 Framework-specific surface only. The protocol shape, invitation flow, `org_id`-reading
 guidance, tenant config, and common mistakes live in the shared Organizations reference. This is

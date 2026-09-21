@@ -1,6 +1,6 @@
 # @auth0/auth0-spa-js — Organizations
 
-**Minimum version:** 2.0.0 (organizations supported across the 2.x line).
+**Minimum version:** 2.0.0 — organizations first shipped in the 1.x line and is supported across the entire 2.x line.
 
 Framework-specific surface only. The protocol shape, invitation flow, `org_id`-reading
 guidance, tenant config, and common mistakes live in the shared Organizations reference. This

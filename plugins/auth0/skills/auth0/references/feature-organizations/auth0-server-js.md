@@ -1,6 +1,6 @@
 # @auth0/auth0-server-js — Organizations
 
-**Minimum version:** 1.0.0 (organizations supported across the current 1.x line).
+**Minimum version:** 1.9.0 (organization support was added in 1.9.0 — earlier 1.x releases do not have it).
 
 Framework-specific surface only. The protocol shape, invitation flow, `org_id`-reading
 guidance, tenant config, and common mistakes live in the shared Organizations reference. This is

@@ -1,6 +1,6 @@
 # @auth0/auth0-react — Organizations
 
-**Minimum version:** 2.0.0 (organizations supported across the 2.x line).
+**Minimum version:** 2.0.0 — organizations first landed in 1.4.0 and is supported across the entire 2.x line.
 
 Framework-specific surface only. The protocol shape, invitation flow, `org_id`-reading
 guidance, tenant config, and common mistakes live in the shared Organizations reference. This
