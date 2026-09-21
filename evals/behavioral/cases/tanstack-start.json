@@ -19,6 +19,9 @@
         "Protects a route with requireAuth",
         "Auth0 domain dev-example.auth0.com written to an env file",
         "Client ID abc123def456ghi789jkl012 written to an env file",
+        "Session-encryption secret (AUTH0_SECRET) written to an env file",
+        "App base URL (APP_BASE_URL) written to an env file",
+        "Client secret written to an env file",
         "Does not use the wrong Auth0 SDK (SPA / Next.js / Express)",
         "Uses the free-function server API, not instance methods (no auth0.getSession())",
         "Solution correctly integrates Auth0 server-side session authentication in TanStack Start",
@@ -83,6 +86,24 @@
       "file_pattern": "**/.env*",
       "value": "abc123def456ghi789jkl012",
       "description": "Client ID written to an env file"
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/.env*",
+      "value": "AUTH0_SECRET=",
+      "description": "Session-encryption secret written to an env file"
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/.env*",
+      "value": "APP_BASE_URL=",
+      "description": "App base URL written to an env file"
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/.env*",
+      "value": "AUTH0_CLIENT_SECRET",
+      "description": "Client secret (value or placeholder) written to an env file"
     },
     {
       "type": "not_contains_any",

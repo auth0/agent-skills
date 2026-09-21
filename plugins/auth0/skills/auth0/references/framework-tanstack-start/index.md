@@ -5,9 +5,9 @@ Add authentication to a TanStack Start (React) application using `@auth0/auth0-t
 
 ## Prerequisites
 
-- A TanStack Start (React) app — `@tanstack/react-start` and `@tanstack/react-router` `^1.0.0`
+- A TanStack Start (React) app — `@tanstack/react-start`, `@tanstack/react-router`, and `@tanstack/start-server-core` `^1.0.0`
 - React 18 or 19 (`react` and `react-dom` `^18.0.0` or `^19.0.0`)
-- Node.js 20+
+- Node.js 20+ (current LTS; the SDK itself declares no `engines` constraint)
 - An Auth0 account and a **Regular Web Application**. If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`) — see the Setup Guide section below.
 
 ## When NOT to Use
@@ -140,6 +140,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 })
 ```
 
+> The snippet above shows only the Auth0 wiring. A real TanStack Start root also
+> renders the document shell (`<html>`/`<body>` with `<HeadContent />` and
+> `<Scripts />`). Wrap the existing shell's `<Outlet />` in `<Auth0Provider>`
+> rather than replacing the shell.
+
 ### 6. Add sign-in / sign-out UI
 
 There is no drop-in sign-in button: login is a full-page redirect to Auth0 Universal Login. Start it with `useLogin()` (which accepts an optional `returnTo`), and end it with `useLogout()`. `SignedIn` / `SignedOut` render conditionally on auth state.
@@ -236,7 +241,7 @@ Visit `http://localhost:3000`, click **Log in**, complete Universal Login, and c
 - `src/router.tsx` — seed `context: { auth0: auth0RouterContext }`, export `getRouter`
 - `src/routes/__root.tsx` — `beforeLoad: auth0BeforeLoad()` + wrap in `<Auth0Provider>`
 
-**Client hooks (`/client`):** `useAuth0`, `useUser`, `useOrg`, `useLogin`, `useLogout`, `useMfa`
+**Client hooks (`/client`):** `useAuth0`, `useUser`, `useOrg`, `useLogin`, `useLogout`
 
 **Client components (`/client`):** `SignedIn`, `SignedOut`, `HasOrg`, `AuthReady`, `AuthLoading`
 
@@ -426,14 +431,30 @@ If you only need the user: `const user = (await getSession(auth0))?.user`.
 `useOrg()` reads the current organization and `requireOrg('org_x')` guards routes by organization. The two flows that require re-authentication — switching organizations and accepting an invitation — return the Auth0 authorization URL, and the caller issues the redirect.
 
 ```typescript
+import { redirect } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
 import { switchOrg, acceptOrgInvitation } from '@auth0/auth0-tanstack-start-react/server'
+import { auth0 } from './auth.server'
 
-// Switch to a different organization, then redirect to the returned URL.
-const url = await switchOrg(auth0, { organization: 'org_xyz', returnTo: '/' })
+// Both return the Auth0 authorization URL. `redirect({ href })` takes a string,
+// so stringify the returned URL object with .toString().
 
-// Accept an invitation. The invite link looks like:
-// /invite?organization=org_abc&invitation=inv_xyz
-const url2 = await acceptOrgInvitation(auth0, { organization, invitation })
+// Switch to a different organization.
+export const switchOrganization = createServerFn({ method: 'POST' })
+  .inputValidator((organization: string) => organization)
+  .handler(async ({ data: organization }) => {
+    const url = await switchOrg(auth0, { organization, returnTo: '/' })
+    throw redirect({ href: url.toString() })
+  })
+
+// Accept an invitation. organization + invitation come from the invite link's
+// query params, e.g. /invite?organization=org_abc&invitation=inv_xyz.
+export const acceptInvitation = createServerFn({ method: 'POST' })
+  .inputValidator((data: { organization: string; invitation: string }) => data)
+  .handler(async ({ data }) => {
+    const url = await acceptOrgInvitation(auth0, data)
+    throw redirect({ href: url.toString() })
+  })
 ```
 
 The existing session is replaced atomically when the user completes the new login, so the old organization session cannot leak into the new one.
@@ -650,12 +671,12 @@ if [ -z "$APP_ID" ]; then
     --callbacks "http://localhost:3000/auth/callback" \
     --logout-urls "http://localhost:3000" \
     --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+    --json-compact | jq -r '.client_id')
 fi
 
 # Get credentials
-AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
 
 # Generate the session-encryption secret (at least 32 bytes)
 AUTH0_SECRET=$(openssl rand -hex 32)
