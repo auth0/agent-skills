@@ -55,9 +55,11 @@ checking `claims.org_id`) is an acceptable, good-practice way to enforce members
 
 ## Security
 
-Confidential client. Keep the issuer/client ID/secret in env vars (`ISSUER_BASE_URL`,
-`CLIENT_ID`, `CLIENT_SECRET`), never hardcoded in source. Do not use the API bearer-token SDK
-(`express-oauth2-jwt-bearer`) or Passport here.
+Confidential client. Keep **every** tenant value in env vars, never as a string literal in a
+`.js`/`.ts` file: the issuer/client ID/secret (`ISSUER_BASE_URL`, `CLIENT_ID`, `CLIENT_SECRET`)
+**and the API `audience`** if you request one for an access token (read it from e.g.
+`process.env.AUDIENCE`, do not write `audience: 'api.example.com'` inline). Do not use the API
+bearer-token SDK (`express-oauth2-jwt-bearer`) or Passport here.
 
 All method names above are accurate for express-openid-connect 2.x — do not read `node_modules`
 to re-verify them.

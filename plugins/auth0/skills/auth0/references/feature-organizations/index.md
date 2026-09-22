@@ -121,7 +121,7 @@ if (!allowedOrgIds.has(orgId)) { /* reject: untrusted organization (e.g. 403) */
 // then scope every data lookup by orgId
 ```
 
-For the API side (`@auth0/auth0-api-js`, `express-oauth2-jwt-bearer`), `Read:` that SDK's file
+For the API side `Read:` that SDK's file
 from the per-SDK table above — it shows how to require and enforce `org_id` on the verified
 access token.
 

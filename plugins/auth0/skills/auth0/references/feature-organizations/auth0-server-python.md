@@ -50,9 +50,11 @@ org_id = user.get("org_id")
 
 ## Security
 
-Keep the client secret in `.env`, never in source. Do not decode tokens by hand (`jwt.decode`,
-`base64.b64decode`) — read claims through the SDK. Do not import the `auth0` Management SDK for
-this (wrong package).
+**NEVER put the Auth0 client secret (or domain/client ID/audience) in a `.py` file** - not as a
+string literal, a module constant, or a default argument. Read them from the environment
+(`os.environ` / `.env`) only; a secret committed in source is a leaked credential. Do not decode
+tokens by hand (`jwt.decode`, `base64.b64decode`) — read claims through the SDK. Do not import the
+`auth0` Management SDK for this (wrong package).
 
 All method names above are accurate for auth0-server-python 1.0.0bXX — do not read site-packages
 to re-verify them.
