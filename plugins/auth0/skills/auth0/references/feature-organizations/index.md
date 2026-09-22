@@ -57,6 +57,12 @@ falls short. It matters most for the newer server SDKs (`auth0-server-js`, `auth
 won't have it. No matching row? Fall back to the protocol shape above plus the loaded
 `framework-{framework}/index.md`. Never hand-roll the authorize URL or decode the token by hand.
 
+**Wire the change into the project's existing files.** Edit the app's real login/callback/route
+and config files in place; do not scaffold extra `README`, `SETUP`, `NOTES`, `CHECKLIST`, or
+`*-summary` documents to "explain" the integration - they are not part of the task and dilute the
+diff. Keep the change minimal and focused on what makes org login, invitation acceptance, and
+`org_id` enforcement work.
+
 | SDK | Min version | Read this file |
 |---|---|---|
 | `@auth0/auth0-react` | 2.x | `Read: references/feature-organizations/auth0-react.md` |
@@ -94,6 +100,20 @@ Per Auth0's guidance, check it against a **known list of organization IDs** or t
 the request context (e.g. tenant subdomain) - not a single hardcoded default. A fixed
 `!== defaultOrg` check is fine for a single-org app but rejects valid members of other orgs in a
 multi-org app or one accepting cross-org invitations.
+
+This is [Auth0's documented guidance](https://auth0.com/docs/manage-users/organizations/using-tokens#validate-tokens):
+do **both** - check `org_id` against a known list of organization IDs (or the org implied by request
+context) *and* segment data by `org_id`. A valid token proves the user is a member of *some* org,
+not that it is an org your app is meant to serve, so confirming the org is expected is a real
+security check, not a redundant one.
+
+**Keep that known list in sync with every org your app serves.** The failure to avoid is an
+allow-list seeded with only your default org (or a single `ALLOWED_ORG_IDS` holding just it) while
+the app onboards other orgs - for example through invitations. A user who accepts a valid
+invitation to a different org then arrives with a legitimate token and gets a 403. When you start
+serving a new org, add it to the accepted set; source the list from your own org records, not a
+single hardcoded default. Only an app that deliberately serves *every* org in the tenant can drive
+the check from `org_id` presence plus data segmentation alone.
 
 ```text
 // Illustrative - orgId is the org_id claim from the *verified* access token.
@@ -240,6 +260,9 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | Pinning a client-wide default org while accepting cross-org invitations | A client-level `organization` is validated against the returned `org_id` at login completion, rejecting invites to other orgs. Pass `organization` per login call instead |
 | Reading `org_id` from the wrong token | Web/client apps read it from the ID token (display); APIs validate it from the access token (authorization) |
 | Validating `org_id` against a single hardcoded org on the backend | Validate against the set of orgs the request may serve - a known list, or the org derived from request context. A fixed `!== defaultOrg` check rejects valid members of other orgs |
+| An allow-list seeded with only the default org while the app onboards others (e.g. via invitations) | Auth0's guidance is to check `org_id` against a known list of org IDs *and* segment by `org_id`. Keep that list in sync with every org served, sourced from org records - not a single hardcoded default that 403s valid members of newly-added orgs |
+| Comparing `org_id` against an env var that can be `undefined` | Guarantee the required org id: give it a literal fallback (`process.env.ACME_ORG_ID ?? 'org_xxx'`) or validate env vars at startup. An unset var makes the check compare against `undefined` and silently breaks enforcement |
+| Scaffolding extra README/SETUP/summary files for the integration | Wire the change into the project's existing login/callback/route/config files; keep the diff minimal |
 | Hand-decoding a token to read `org_id` | Use the SDK's claim accessor (`getUser()` / `getIdTokenClaims()` / session user) - the claim is already exposed |
 | Mixing up org `id` (org_xxx) and `name` (slug) | `id` for API calls, `name` for display |
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
