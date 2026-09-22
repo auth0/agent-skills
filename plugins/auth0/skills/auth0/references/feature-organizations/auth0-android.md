@@ -50,9 +50,13 @@ val orgId = JWT(credentials.idToken).getClaim("org_id").asString()
 
 Public mobile client: **no `client_secret`**. Let `SecureCredentialsManager` (or
 `CredentialsManager`) store tokens; do not persist access/ID/refresh tokens by hand in plain
-`SharedPreferences`. Storing app state such as a pending organization is fine. Keep the client
-ID/domain in `strings.xml`, not in Kotlin source. Do not add `auth0-java` (that is a server-side
-SDK).
+`SharedPreferences`. Storing app state such as a pending organization is fine. Do not add
+`auth0-java` (that is a server-side SDK).
+
+**NEVER put the Auth0 client ID or domain in a `.kt` file** - not as a string literal, a constant,
+or a `BuildConfig` default. They belong in `res/values/strings.xml` (e.g.
+`R.string.com_auth0_domain` / `R.string.com_auth0_client_id`) and are read from there via
+`Auth0.getInstance(context)` or resource lookups.
 
 All method names above are accurate for Auth0.Android 2.x/3.x — do not read the SDK source to
 re-verify them.
