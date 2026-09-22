@@ -95,35 +95,21 @@ you read depends on *why* you need it:
 
 ### Validate org on the backend
 
-Validate the access token's `org_id` to prevent cross-tenant access, then segment data by it.
-Per Auth0's guidance, check it against a **known list of organization IDs** or the org implied by
-the request context (e.g. tenant subdomain) - not a single hardcoded default. A fixed
-`!== defaultOrg` check is fine for a single-org app but rejects valid members of other orgs in a
-multi-org app or one accepting cross-org invitations.
+What you do here depends on the app type - applying the wrong one is a real defect:
 
-This is [Auth0's documented guidance](https://auth0.com/docs/manage-users/organizations/using-tokens#validate-tokens):
-do **both** - check `org_id` against a known list of organization IDs (or the org implied by request
-context) *and* segment data by `org_id`. A valid token proves the user is a member of *some* org,
-not that it is an org your app is meant to serve, so confirming the org is expected is a real
-security check, not a redundant one.
+- **A resource API validating access tokens:** enforce `org_id` on the *verified access token*. Per
+  [Auth0's guidance](https://auth0.com/docs/manage-users/organizations/using-tokens#validate-tokens),
+  check it against a **known list of the org IDs the API serves** (or the org implied by request
+  context) *and* segment data by `org_id`. A valid token proves membership in *some* org, not that
+  it is one your API serves. Read the detected SDK's file from the per-SDK table above for the exact
+  enforcement call.
+- **A login / session app:** read `org_id` from the session / ID token to display the org and to
+  **segment data** by it. Do **not** add a post-login allow-list that rejects a signed-in user whose
+  `org_id` is not the default - the user already authenticated into that org, so gating the session
+  or its routes 403s anyone who accepted an invitation to another org.
 
-**Keep that known list in sync with every org your app serves.** The failure to avoid is an
-allow-list seeded with only your default org (or a single `ALLOWED_ORG_IDS` holding just it) while
-the app onboards other orgs - for example through invitations. A user who accepts a valid
-invitation to a different org then arrives with a legitimate token and gets a 403. When you start
-serving a new org, add it to the accepted set; source the list from your own org records, not a
-single hardcoded default. Only an app that deliberately serves *every* org in the tenant can drive
-the check from `org_id` presence plus data segmentation alone.
-
-```text
-// Illustrative - orgId is the org_id claim from the *verified* access token.
-if (!allowedOrgIds.has(orgId)) { /* reject: untrusted organization (e.g. 403) */ }
-// then scope every data lookup by orgId
-```
-
-For the API side `Read:` that SDK's file
-from the per-SDK table above — it shows how to require and enforce `org_id` on the verified
-access token.
+Wherever a known list is used, source it from your org records and keep it in sync with every org
+served - a list seeded with only the default org 403s the first invited member.
 
 ---
 
@@ -260,7 +246,8 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | Pinning a client-wide default org while accepting cross-org invitations | A client-level `organization` is validated against the returned `org_id` at login completion, rejecting invites to other orgs. Pass `organization` per login call instead |
 | Reading `org_id` from the wrong token | Web/client apps read it from the ID token (display); APIs validate it from the access token (authorization) |
 | Validating `org_id` against a single hardcoded org on the backend | Validate against the set of orgs the request may serve - a known list, or the org derived from request context. A fixed `!== defaultOrg` check rejects valid members of other orgs |
-| An allow-list seeded with only the default org while the app onboards others (e.g. via invitations) | Auth0's guidance is to check `org_id` against a known list of org IDs *and* segment by `org_id`. Keep that list in sync with every org served, sourced from org records - not a single hardcoded default that 403s valid members of newly-added orgs |
+| Gating a login/session app on an org allow-list | The allow-list is an access-token check for APIs, not a session gate. A signed-in user already authenticated into their org; rejecting a non-default `org_id` blocks invited members. Read `org_id` from the session and segment data by it |
+| On an API, an allow-list seeded with only the default org | Keep the served-org list sourced from your org records and in sync with every org served; a list holding just the default 403s the first invited member |
 | Comparing `org_id` against an env var that can be `undefined` | Guarantee the required org id: give it a literal fallback (`process.env.ACME_ORG_ID ?? 'org_xxx'`) or validate env vars at startup. An unset var makes the check compare against `undefined` and silently breaks enforcement |
 | Scaffolding extra README/SETUP/summary files for the integration | Wire the change into the project's existing login/callback/route/config files; keep the diff minimal |
 | Hand-decoding a token to read `org_id` | Use the SDK's claim accessor (`getUser()` / `getIdTokenClaims()` / session user) - the claim is already exposed |
