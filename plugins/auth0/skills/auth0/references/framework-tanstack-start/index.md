@@ -7,7 +7,7 @@ Add authentication to a TanStack Start (React) application using `@auth0/auth0-t
 
 - A TanStack Start (React) app — `@tanstack/react-start`, `@tanstack/react-router`, and `@tanstack/start-server-core` `^1.0.0`
 - React 18 or 19 (`react` and `react-dom` `^18.0.0` or `^19.0.0`)
-- Node.js 20+ (current LTS; the SDK itself declares no `engines` constraint)
+- Node.js 20+ (the SDK declares no `engines` constraint; Node.js 24 is the current Active LTS)
 - An Auth0 account and a **Regular Web Application**. If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`) — see the Setup Guide section below.
 
 ## When NOT to Use
@@ -210,19 +210,20 @@ npm run dev
 
 Visit `http://localhost:3000`, click **Log in**, complete Universal Login, and confirm you land back on the protected route with a session.
 
-## Common Mistakes
+## Common Mistakes & Issues
 
-| Mistake | Fix |
+| Problem | Fix |
 |---|---|
-| Importing `auth0Middleware` from `/server` in `start.ts` | Import from `/server/middleware` — the `/server` barrel pulls server-only code into the client-compiled `start.ts` and import-protection rejects it. |
+| Importing `auth0Middleware` from `/server` in `start.ts` (server-only / import-protection error) | Import from `/server/middleware` — the `/server` barrel pulls server-only code into the client-compiled `start.ts` and import-protection rejects it. |
 | Passing your `auth.server` instance to `auth0Middleware()` | Call `auth0Middleware()` with **no arguments**. It reads its own config from the environment; passing the instance reintroduces a server-only import into `start.ts`. |
-| Expecting `auth0Server({ ... })` options to change the `/auth/*` endpoints | `auth0Middleware()` runs on its own env-only config, so `trustProxy`, a `routes` override, an `appBaseUrl` allow-list, or `excludedClaims` must reach it too — set them in the environment, or pass them to **both** `auth0Server(...)` and `auth0Middleware(...)`. |
+| `auth0Server({ ... })` options don't change the `/auth/*` endpoints (e.g. `trustProxy` / `routes` set but `/auth/*` behaves as before) | `auth0Middleware()` runs on its own env-only config, so `trustProxy`, a `routes` override, an `appBaseUrl` allow-list, or `excludedClaims` must reach it too — set them in the environment, or pass them to **both** `auth0Server(...)` and `auth0Middleware(...)`. |
 | Router export not named `getRouter` | TanStack Start requires the router module to export a function named exactly `getRouter`. |
+| Guard always redirects even when signed in | `context.auth0` is `unresolved` — `auth0Middleware` isn't registered in `start.ts`, or `Auth0Provider` / `auth0BeforeLoad()` isn't wired into the root route. |
 | Prefixing server env vars with `VITE_` | `AUTH0_*` and `APP_BASE_URL` are server-side; a `VITE_` prefix leaks them to the browser bundle. |
-| `AUTH0_SECRET` missing or under 32 bytes | Generate with `openssl rand -hex 32`; it encrypts the session cookie. |
+| `AUTH0_SECRET` missing or under 32 bytes (session not persisting) | Generate with `openssl rand -hex 32`; it encrypts the session cookie. |
 | `AUTH0_DOMAIN` includes `https://` | Use the bare domain, e.g. `your-tenant.auth0.com`, with no scheme. |
-| App created as SPA type in Auth0 | Must be a **Regular Web Application** (it uses a client secret and server-side sessions). |
-| Callback URL not registered | Add `http://localhost:3000/auth/callback` to Allowed Callback URLs, and `http://localhost:3000` to Allowed Logout URLs. |
+| App created as SPA type in Auth0 (client secret rejected) | Must be a **Regular Web Application** (it uses a client secret and server-side sessions). |
+| Callback URL not registered / "The redirect URI is wrong" | Add `http://localhost:3000/auth/callback` to Allowed Callback URLs and `http://localhost:3000` to Allowed Logout URLs, and ensure `APP_BASE_URL` matches the browser's origin. Behind a per-request proxy, set `trustProxy`. |
 | Trying to read a token in the browser | Tokens stay on the server. Call a server function that reads the token and returns only the data (see the Integration Patterns section). |
 
 ## Related Capabilities
@@ -580,17 +581,6 @@ import {
 } from '@auth0/auth0-tanstack-start-react/testing'
 ```
 
-## Common Issues
-
-| Issue | Solution |
-|---|---|
-| "The redirect URI is wrong" / callback mismatch | Ensure the Auth0 app has `http://localhost:3000/auth/callback` in Allowed Callback URLs and `APP_BASE_URL` matches the browser's origin. Behind a per-request proxy, set `trustProxy`. |
-| Import-protection / server-only module error building `start.ts` | Import `auth0Middleware` from `/server/middleware`, not `/server`, and call it with no arguments. |
-| Guard always redirects even when signed in | `context.auth0` is `unresolved` — `auth0Middleware` isn't registered in `start.ts`, or `Auth0Provider` / `auth0BeforeLoad()` isn't wired into the root route. |
-| Session not persisting | `AUTH0_SECRET` must be set and at least 32 bytes (`openssl rand -hex 32`). |
-| `trustProxy`/`routes` set but `/auth/*` behaves as before | Those options must also reach `auth0Middleware()` — set them via environment, or pass to both instances. |
-| Client secret rejected | The Auth0 app must be a Regular Web Application, not a SPA. |
-
 ## Security Considerations
 
 - **Never commit env files** — add `.env` to `.gitignore`; the file holds the client secret and `AUTH0_SECRET`.
@@ -734,7 +724,7 @@ openssl rand -hex 32
 
 ### Step 3: Configure the Auth0 Application
 
-Via the Auth0 CLI:
+Register the app's callback and logout URLs with the Auth0 CLI:
 
 ```bash
 auth0 login
@@ -742,13 +732,6 @@ auth0 apps create --name "My TanStack Start App" --type regular \
   --callbacks "http://localhost:3000/auth/callback" \
   --logout-urls "http://localhost:3000"
 ```
-
-Via the Dashboard:
-1. Create a **Regular Web Application**.
-2. Configure:
-   - Allowed Callback URLs: `http://localhost:3000/auth/callback`
-   - Allowed Logout URLs: `http://localhost:3000`
-3. Copy Domain, Client ID, and Client Secret into `.env`.
 
 ## Environment variables
 
