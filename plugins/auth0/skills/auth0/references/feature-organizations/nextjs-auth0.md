@@ -43,8 +43,10 @@ middleware (`middleware.ts` or `proxy.ts` — both are valid in Next.js 16) **fo
 <a href={`/auth/login?invitation=${invitation}&organization=${organization}`}>Accept invite</a>
 ```
 
-Do not reject a valid invitation because its `organization` differs from your default — forward
-the invite's own org.
+"Forwarded automatically" does not mean "nothing to build": you must still create the
+invitation-acceptance entry point (a link or landing route) that carries the incoming
+`invitation` and `organization` params into `/auth/login`. Do not reject a valid invitation
+because its `organization` differs from your default — forward the invite's own org.
 
 ## Reading the organization back
 
@@ -55,7 +57,12 @@ import { auth0 } from '@/lib/auth0';
 
 const session = await auth0.getSession(); // Server Component, Server Action, or Route Handler
 const orgId = session?.user.org_id;
+const orgName = session?.user.org_name; // human-readable name, when the tenant sets one
 ```
+
+To show a human-readable organization name, read `org_name` from the session (present when the
+tenant assigns names) rather than hardcoding a display string mapped from the `org_id`. Use
+`org_id` for any membership/authorization check.
 
 ## Security
 

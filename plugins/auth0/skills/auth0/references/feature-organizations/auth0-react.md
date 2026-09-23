@@ -49,8 +49,13 @@ accept cross-org invitations.
 ```jsx
 const { user, getIdTokenClaims } = useAuth0();
 const orgId = user?.org_id;
+const orgName = user?.org_name; // human-readable name, when the tenant sets one
 // or: const claims = await getIdTokenClaims(); claims?.org_id;
 ```
+
+To display a human-readable organization name, read `org_name` from the claim (present when the
+tenant assigns names) rather than hardcoding a display string mapped from the `org_id`. Use
+`org_id` for any membership check.
 
 ## Security
 

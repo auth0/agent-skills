@@ -30,20 +30,28 @@ the configured default. Never reject a valid invitation because its org differs 
 
 ## Validation + reading org back
 
-Pass `organization` to `getTokenByCode` (as the `organization` option) so the SDK validates the
-`org_id` claim of the returned ID token, and handle `OrganizationValidationError` (imported from
+Exchange the code with `getTokenByCode`, passing the full callback URL plus the persisted
+`codeVerifier` **and** the `organization` option in the same options object, so the SDK validates
+the `org_id` claim of the returned ID token. Handle `OrganizationValidationError` (imported from
 `@auth0/auth0-auth-js`) when the claim is missing or mismatched:
 
 ```ts
 import { OrganizationValidationError } from '@auth0/auth0-auth-js';
 
 try {
-  const tokens = await authClient.getTokenByCode(code, { organization: 'org_barkbook_acme' });
-  // read org_id from the returned ID token claims
+  const tokens = await authClient.getTokenByCode(callbackUrl, {
+    codeVerifier,                       // the PKCE verifier persisted from buildAuthorizationUrl
+    organization: 'org_barkbook_acme',  // validates org_id on the returned ID token
+  });
+  const orgId = tokens.claims?.org_id;
+  const orgName = tokens.claims?.org_name; // human-readable name, when the tenant sets one
 } catch (err) {
   if (err instanceof OrganizationValidationError) { /* reject / re-auth */ }
 }
 ```
+
+Use this Authorization Code flow for org login. Do **not** reach for `getTokenByPassword` (ROPC)
+to add organizations — it is not the org login path and does not carry `authorizationParams`.
 
 ## Security
 

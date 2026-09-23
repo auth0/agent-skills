@@ -48,7 +48,12 @@ filtered copy and a custom `identityClaimFilter` can drop the claim:
 
 ```js
 const orgId = req.oidc.idTokenClaims?.org_id; // or req.oidc.user.org_id if the filter keeps it
+const orgName = req.oidc.idTokenClaims?.org_name; // human-readable name, when the tenant sets one
 ```
+
+To show a human-readable organization name, read `org_name` from the claim (present when the
+tenant assigns names) rather than hardcoding a display string mapped from the `org_id`. Use
+`org_id` for any membership check.
 
 Validating `org_id` in an `afterCallback` hook (decoding the already-verified `id_token` and
 checking `claims.org_id`) is an acceptable, good-practice way to enforce membership.
