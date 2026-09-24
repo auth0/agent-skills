@@ -1,76 +1,52 @@
 # @auth0/nextjs-auth0 v4 — Organizations
 
-**Minimum version:** 4.0.0. This SDK is **v4** — middleware + `Auth0Client` from
-`@auth0/nextjs-auth0/server`, routes under `/auth/*`. The v3 patterns (`handleAuth`,
-`withPageAuthRequired`, `/api/auth/*`, `AUTH0_ISSUER_BASE_URL`) are gone.
+The Next.js-specific Organizations guide now ships **inside** the SDK package, pinned to the
+installed version. This file bootstraps it: make sure the SDK is new enough, then read the
+guide from `node_modules`. The protocol shape, invitation flow, tenant config, and common
+mistakes stay in the shared Organizations reference (`references/feature-organizations/index.md`).
 
-Framework-specific surface only. The protocol shape, invitation flow, `org_id`-reading
-guidance, tenant config, and common mistakes live in the shared Organizations reference.
+## Bootstrap
 
-Two things are different here from the SPA SDKs:
+1. `@auth0/nextjs-auth0` should already be installed (organizations layer onto an existing
+   login). If it isn't, run the `integrate` intent first.
+2. Read and follow `node_modules/@auth0/nextjs-auth0/skills/nextjs-auth0/organizations/SKILL.md`.
+   It is the source of truth and carries the exact option/claim names for the installed version.
+3. If that path does **not** exist, the installed version predates bundled skills. Upgrade:
+   `npm install @auth0/nextjs-auth0@latest`, then re-check the path.
+4. If it still isn't there (upgrade blocked, offline), use the Fallback below.
 
-- The v4 key is **`authorizationParameters`** (full word), not the v3 `authorizationParams`.
-- There is **no `organization` env var** — `AUTH0_ORGANIZATION` does not exist. Set it on the
-  client or as a login-URL query param.
+## Fallback
 
-## Org-scoped login
+Only if the in-package skill above is unavailable. Condensed; the in-package skill is more
+complete and version-accurate. This SDK is **v4** — middleware + `Auth0Client` from
+`@auth0/nextjs-auth0/server`, routes under `/auth/*`. Two v4 specifics:
 
-Client-wide default on the `Auth0Client` constructor:
+- The key is **`authorizationParameters`** (full word), not the v3 `authorizationParams`.
+- There is **no `organization` env var** (`AUTH0_ORGANIZATION` does not exist) and no top-level
+  `organization` option — set it inside `authorizationParameters`, or as a login-URL query param.
+
+**Org-scoped login** — client-wide default on the constructor:
 
 ```ts
 // lib/auth0.ts
-import { Auth0Client } from '@auth0/nextjs-auth0/server';
-
 export const auth0 = new Auth0Client({
-  authorizationParameters: { organization: 'org_barkbook_acme' },
+  authorizationParameters: { organization: 'org_abc123' },
 });
 ```
 
 …or per login as a query param the middleware forwards to `/authorize`:
+`<a href="/auth/login?organization=org_abc123">Log in</a>`.
 
-```tsx
-<a href="/auth/login?organization=org_barkbook_acme">Log in</a>
-```
+**Accepting an invitation** — point the user at `/auth/login` carrying both params; the
+middleware forwards them automatically (`invitation` rides through as an untyped param):
+`/auth/login?invitation=<ticket>&organization=<org_id>`. Build the acceptance entry point, and
+forward the invite's **own** `organization` — do not substitute your default org.
 
-## Accepting an invitation
+**Reading the organization back** — `org_id` is on `session.user` automatically in v4 (no JWT
+decode): `const orgId = (await auth0.getSession())?.user.org_id`. Use `org_id` for any
+membership/authorization check; on an API, validate it from the verified access token against
+the set of orgs the request may serve, not a single hardcoded default.
 
-Point the user at `/auth/login` with the `invitation` and `organization` query params. The v4
-middleware (`middleware.ts` or `proxy.ts` — both are valid in Next.js 16) **forwards these to
-`/authorize` automatically**; no manual extraction is needed:
-
-```tsx
-// invite link: /auth/login?invitation={ticket}&organization={org_id}
-<a href={`/auth/login?invitation=${invitation}&organization=${organization}`}>Accept invite</a>
-```
-
-"Forwarded automatically" does not mean "nothing to build": you must still create the
-invitation-acceptance entry point (a link or landing route) that carries the incoming
-`invitation` and `organization` params into `/auth/login`. Do not reject a valid invitation
-because its `organization` differs from your default — forward the invite's own org.
-
-## Reading the organization back
-
-`org_id` is on `session.user` automatically in v4 — **no JWT decode**. Read it server-side:
-
-```ts
-import { auth0 } from '@/lib/auth0';
-
-const session = await auth0.getSession(); // Server Component, Server Action, or Route Handler
-const orgId = session?.user.org_id;
-const orgName = session?.user.org_name; // human-readable name, when the tenant sets one
-```
-
-To show a human-readable organization name, read `org_name` from the session (present when the
-tenant assigns names) rather than hardcoding a display string mapped from the `org_id`. Use
-`org_id` for any membership/authorization check.
-
-## Security
-
-This is a confidential server-side client. Do **not** expose Auth0 tokens or `org_id` to the
-browser — do not return them from Server Components as props to Client Components, do not embed
-them in client state, and do not send them in a JSON response. Keep the client ID/secret/domain
-in env vars, never in source.
-
-Do **not** use the SPA APIs here (`loginWithRedirect`, `getIdTokenClaims`, `useOrganization`) —
-this is a server SDK. All names above are accurate for nextjs-auth0 v4 — do not grep
-`node_modules` or read `.d.ts` files to re-verify them.
+**Security** — confidential server-side client. Do not expose Auth0 tokens or `org_id` to the
+browser (no props to Client Components, no client state, no JSON responses). Do not use the SPA
+APIs (`loginWithRedirect`, `getIdTokenClaims`, `useOrganization`) — this is a server SDK.

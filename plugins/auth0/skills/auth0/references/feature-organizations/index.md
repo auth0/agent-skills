@@ -49,7 +49,9 @@ Match the detected SDK to the form its own reference documents; do not infer it 
 Get the exact call from the per-SDK reference below — **`Read:` the file for the detected SDK**.
 Each carries that SDK's exact org-login option, invitation forwarding, and `org_id` accessor,
 verified against the installed SDK. Implement directly from it: do NOT fetch from GitHub, grep
-`node_modules`/`.d.ts`/site-packages, or web-search to re-verify a signature. Min version is the
+`node_modules`/`.d.ts`/site-packages, or web-search to re-verify a signature. (Exception: if
+the per-SDK file tells you to read a bundled `SKILL.md` under `node_modules/…/skills/`, do —
+that is a curated guide the package ships, not signature-probing.) Min version is the
 release the feature landed in — **check the installed version (`package.json`/lockfile,
 `Package.swift`, Gradle, `pyproject.toml`) meets it before implementing**, and upgrade if it
 falls short. It matters most for the newer server SDKs (`auth0-server-js`, `auth0-auth-js`,
