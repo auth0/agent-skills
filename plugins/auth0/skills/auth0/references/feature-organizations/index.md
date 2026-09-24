@@ -118,6 +118,13 @@ served - a list seeded with only the default org 403s the first invited member.
 The Auth0 MCP server exposes **no** organizations tool, so use the CLI or Terraform (full
 command syntax lives in your tooling reference).
 
+When the task is to configure the tenant itself (not wire an SDK into an app), the deliverable
+is the **mutated tenant**, not a guide to it. Run each `auth0` command directly as its own step,
+and read state back after each mutation to confirm it landed. Do **not** bundle the whole setup
+into a single script you run once (`bash setup.sh`), and do **not** emit setup scripts, `README`,
+or summary files describing commands for a human to run later - a wrapped or unrun script leaves
+the tenant unchanged and hides which step failed.
+
 | Operation | CLI | Terraform |
 |---|---|---|
 | Create an organization | `auth0 orgs create --name <slug> --display "<Name>"` | `auth0_organization` |
@@ -131,6 +138,30 @@ Verify subcommands with `auth0 commands orgs --detailed` and read flag names off
 rather than inferring them; use `auth0 api` for anything without a dedicated subcommand.
 Reading connections back returns a **bare array**, so use `jq '.[]'`, not
 `jq '.enabled_connections[]'`.
+
+### Application (client) organization settings
+
+Two settings control whether and how an app uses organization login. They live on the
+**application (client)**, not on the organization, and are set with
+`auth0 api patch "clients/<client-id>"`:
+
+| Field | Values | Meaning |
+|---|---|---|
+| `organization_usage` | `deny` / `allow` / `require` | Whether a login may (`allow`) or **must** (`require`) carry an organization. `require` forbids any login without one |
+| `organization_require_behavior` | `no_prompt` / `pre_login_prompt` / `post_login_prompt` | How the org is resolved when one is required. `pre_login_prompt` makes the user pick the org **before** entering credentials |
+
+Map the intent to the pair - do not assume the `allow`/`no_prompt` invitation default (below) is
+the only option:
+
+- "No login outside an organization" -> `organization_usage: require`
+- "Choose the organization up front, before credentials" -> `organization_require_behavior: pre_login_prompt`
+- Accept invitations, but org is otherwise optional -> `organization_usage: allow` with `organization_require_behavior: no_prompt`
+
+```bash
+# Org-only login with an up-front org selector - set both fields in one PATCH.
+auth0 api patch "clients/<client-id>" \
+  --data '{"organization_usage":"require","organization_require_behavior":"pre_login_prompt"}'
+```
 
 ### Finding or creating a login connection
 
@@ -149,12 +180,14 @@ auth0 api post connections --data '{"name":"<connection-name>","strategy":"auth0
 auth0 api post "organizations/<org-id>/enabled_connections" \
   --data '{"connection_id":"<con-id>","assign_membership_on_login":true}'
 
-# Enable it for each app that will use it - status false disables. Max 50 per call.
+# Check which apps already have this connection enabled.
+auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
+
+# ONLY if the app is not already listed above: enable the connection for it.
+# This is a separate setting from org login (see note below), so skip it on a
+# connection the tenant already had enabled for the app. status false disables; max 50 per call.
 auth0 api patch "connections/<con-id>/clients" \
   --data '[{"client_id":"<client-id>","status":true}]'
-
-# Read back which apps are enabled.
-auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
 ```
 
 Both connection reads are checkpoint-paginated (`take` defaults to 50): omit `from` on the
@@ -180,6 +213,8 @@ a link, authenticates, and becomes a member.
 
 ```bash
 # 1. Without this: "The specified client_id (...) does not allow organizations."
+#    allow/no_prompt is the minimum for invitations; for org-only login use
+#    require/pre_login_prompt instead (see "Application (client) organization settings").
 auth0 api patch "clients/<client-id>" \
   --data '{"organization_usage":"allow","organization_require_behavior":"no_prompt"}'
 
@@ -261,6 +296,7 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | Guessing a `auth0 orgs` subcommand for membership, roles, or connections | Verify with `auth0 commands orgs --detailed`, and use `auth0 api post organizations/...` for whatever has no dedicated subcommand |
 | Prefixing `auth0 api` paths with `/api/v2/` | Paths are relative to the API root. `/api/v2/organizations/...` returns 404 |
 | Inviting before setting `organization_usage` on the app and `default_redirection_uri` on the tenant | Both are hard 400s. Configure them first (see Invitation flow) |
+| Leaving `organization_usage` at `allow` when the app must reject non-org logins | `allow` permits both; use `require` to forbid any login without an organization, with `pre_login_prompt` to choose the org before credentials |
 | Letting `auth0 orgs invitations create` send a live email | `--send-email` defaults to `true`. Pass `--send-email=false` |
 
 ---
