@@ -37,6 +37,21 @@ Load the `plugins/auth0` directory using the client's plugin install flow.
 [Agent Plugins](https://agent-plugins.org/) defines the portable package format,
 not a universal install command.
 
+**Via Antigravity:**
+
+```bash
+agy plugin install plugins/auth0
+```
+
+**Via Gemini CLI:**
+
+Install from a local clone — `gemini extensions install` expects a manifest at
+the repository root, and this manifest lives at `plugins/auth0/`:
+
+```bash
+gemini extensions install ./plugins/auth0
+```
+
 ## Skills
 
 | Skill | Description | Documentation |
