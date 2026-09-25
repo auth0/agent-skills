@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, SSO, Organizations, RBAC, custom domains, Universal Portals for hosted account and organization self-service, or Universal Login branding. Also use to audit a tenant's health, security, and plan fit (CheckMate), to debug why an auth flow fails, to migrate from another auth provider, or to set up the Vercel native integration. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
+description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, passwordless passkey login (WebAuthn), SSO, Organizations, RBAC, custom domains, Universal Portals for hosted account and organization self-service, or Universal Login branding. Also use to audit a tenant's health, security, and plan fit (CheckMate), to debug why an auth flow fails, to migrate from another auth provider, or to set up the Vercel native integration. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -39,7 +39,8 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
 | Add login, signup, sign-in, "let users log in / create accounts" to an app, or otherwise add and use an Auth0 SDK in an app or script | **integrate** |
-| Require a second step after the password — a one-time code, SMS or email code, authenticator app, passkey, fingerprint/face (biometric), or security key; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
+| Require a second step **after** the password — a one-time code, SMS or email code, authenticator app, or a passkey/fingerprint/face/security key used as an *additional* factor; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
+| Let users sign up or sign in with a passkey, fingerprint, or Face ID **instead of** a password — passwordless WebAuthn as the primary credential — or let a signed-in user add a passkey to their account. *Auth0: passkeys, WebAuthn, passwordless login.* | **feature:passkeys** |
 | Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
 | Deploy a hosted self-service portal for profile, passkeys, MFA, or organization details instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
 | Serve the login page from your own web address (e.g. `login.example.com`, `auth.company.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
@@ -300,6 +301,13 @@ Use references/tooling-{tooling}/index.md for all Auth0 tenant configuration ste
 ```
 Read: references/feature-mfa/index.md
 Read: references/tooling-{tooling}/index.md
+```
+
+### feature:passkeys
+```
+Read: references/feature-passkeys/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
 ```
 
 ### feature:organizations
