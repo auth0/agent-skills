@@ -228,7 +228,8 @@ auth0 apps create --name "My SPA" --type spa \
   --auth-method None \
   --callbacks "http://localhost:3000" \
   --logout-urls "http://localhost:3000" \
-  --origins "http://localhost:3000"
+  --origins "http://localhost:3000" \
+  --grants "authorization_code,refresh_token"
 
 auth0 apps list
 auth0 apps show <client-id> -r          # -r reveals the client secret
@@ -238,6 +239,13 @@ auth0 apps session-transfer show <client-id>
 ```
 
 App types: `spa`, `regular`, `m2m`, `native`, `resource_server`
+
+**Always pass `--grants` explicitly for `spa`, `native`, and `regular` apps.** When
+`--grants` is omitted the CLI applies its built-in defaults, and those defaults
+still include the legacy `implicit` grant — which Auth0 no longer recommends.
+Follow current best practice with `--grants "authorization_code,refresh_token"`
+(add `client_credentials` only when a `regular` web app genuinely needs it). `m2m`
+apps default to `client_credentials` alone, which is already correct.
 
 ### APIs — Manage API Resources
 
