@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "auth0",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Add Auth0 authentication to any app — login, MFA, SSO, Organizations, RBAC, ACUL, custom domains, and branding. Debug auth errors, validate JWTs, manage token lifecycles, and migrate from Clerk, Firebase, or Cognito. Covers React, Next.js, Vue, Nuxt, Angular, Express, Flask, Spring Boot, Go, Swift, Android, Flutter, Laravel, PHP, ASP.NET Core, React Native, Expo, Ionic, .NET MAUI, and more.",
   "author": {
     "name": "Auth0",
