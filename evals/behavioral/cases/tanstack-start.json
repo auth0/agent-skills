@@ -1,0 +1,138 @@
+{
+  "slug": "tanstack-start",
+  "origin_skill": "auth0-tanstack-start-react",
+  "skill_name": "auth0-tanstack-start-react",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Auth0 authentication to a TanStack Start (React) web application using the @auth0/auth0-tanstack-start-react SDK. Include login, logout, and a protected route (a /dashboard page).\n\n**Auth0 Credentials:**\n- Domain: `dev-example.auth0.com`\n- Client ID: `abc123def456ghi789jkl012`\n- Client Secret: `YOUR_AUTH0_CLIENT_SECRET`",
+      "expected_output": "Working TanStack Start web app with Auth0 server-side session login, callback, logout, and a protected route",
+      "expectations": [
+        "Auth0 SDK (@auth0/auth0-tanstack-start-react) present in project",
+        "Creates a server instance from the /server entry point",
+        "Auth0 server instance created via auth0Server()",
+        "Imports the request middleware from the /server/middleware entry point (client-safe, not the /server barrel)",
+        "Registers auth0Middleware() in requestMiddleware",
+        "Root route seeds auth context with auth0BeforeLoad()",
+        "Wraps the app in Auth0Provider",
+        "Router module exports getRouter",
+        "Protects a route with requireAuth",
+        "Auth0 domain dev-example.auth0.com written to an env file",
+        "Client ID abc123def456ghi789jkl012 written to an env file",
+        "Session-encryption secret (AUTH0_SECRET) written to an env file",
+        "App base URL (APP_BASE_URL) written to an env file",
+        "Client secret written to an env file",
+        "Does not use the wrong Auth0 SDK (SPA / Next.js / Express)",
+        "Uses the free-function server API, not instance methods (no auth0.getSession())",
+        "Solution correctly integrates Auth0 server-side session authentication in TanStack Start",
+        "At least 2 skill-specific advanced patterns present (middleware entry-point separation, free-function server API, tokens-stay-on-server via server functions, getRouter + auth0RouterContext wiring)"
+      ]
+    }
+  ],
+  "graders": [
+    {
+      "type": "contains",
+      "value": "@auth0/auth0-tanstack-start-react",
+      "description": "Auth0 SDK (@auth0/auth0-tanstack-start-react) present in project"
+    },
+    {
+      "type": "contains",
+      "value": "@auth0/auth0-tanstack-start-react/server",
+      "description": "Creates a server instance from the /server entry point"
+    },
+    {
+      "type": "contains",
+      "value": "auth0Server(",
+      "description": "Auth0 server instance created via auth0Server()"
+    },
+    {
+      "type": "contains",
+      "value": "@auth0/auth0-tanstack-start-react/server/middleware",
+      "description": "Imports the request middleware from the /server/middleware entry point (client-safe, not the /server barrel)"
+    },
+    {
+      "type": "contains",
+      "value": "auth0Middleware(",
+      "description": "Registers auth0Middleware() in requestMiddleware"
+    },
+    {
+      "type": "contains",
+      "value": "auth0BeforeLoad(",
+      "description": "Root route seeds auth context with auth0BeforeLoad()"
+    },
+    {
+      "type": "contains",
+      "value": "Auth0Provider",
+      "description": "Wraps the app in Auth0Provider"
+    },
+    {
+      "type": "contains",
+      "value": "getRouter",
+      "description": "Router module exports getRouter"
+    },
+    {
+      "type": "contains",
+      "value": "requireAuth(",
+      "description": "Protects a route with requireAuth"
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/.env*",
+      "value": "dev-example.auth0.com",
+      "description": "Auth0 domain written to an env file"
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/.env*",
+      "value": "abc123def456ghi789jkl012",
+      "description": "Client ID written to an env file"
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/.env*",
+      "value": "AUTH0_SECRET=",
+      "description": "Session-encryption secret written to an env file"
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/.env*",
+      "value": "APP_BASE_URL=",
+      "description": "App base URL written to an env file"
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/.env*",
+      "value": "AUTH0_CLIENT_SECRET",
+      "description": "Client secret (value or placeholder) written to an env file"
+    },
+    {
+      "type": "not_contains_any",
+      "values": [
+        "@auth0/nextjs-auth0",
+        "@auth0/auth0-react",
+        "@auth0/auth0-spa-js",
+        "express-openid-connect"
+      ],
+      "description": "Does not use the wrong Auth0 SDK (SPA / Next.js / Express)"
+    },
+    {
+      "type": "not_contains",
+      "value": "auth0.getSession",
+      "description": "Uses the free-function server API, not instance methods (no auth0.getSession())"
+    },
+    {
+      "type": "judge",
+      "question": "Does the solution correctly integrate Auth0 into a TanStack Start (React) web application with: (1) a server instance created with auth0Server() imported from @auth0/auth0-tanstack-start-react/server, (2) auth0Middleware() registered in requestMiddleware in the start entry (start.ts), imported from @auth0/auth0-tanstack-start-react/server/middleware, (3) the root route calling auth0BeforeLoad() and wrapping the app in Auth0Provider, (4) a router module exporting getRouter and seeding router context with auth0RouterContext, (5) at least one route protected with requireAuth in beforeLoad, and (6) the Auth0 domain and client ID written to an env file (not prefixed with VITE_)?",
+      "examples": "PASS: Creates auth.server.ts with auth0Server(), registers auth0Middleware() imported from /server/middleware in start.ts, the root route uses auth0BeforeLoad() and Auth0Provider, router.tsx exports getRouter seeding auth0RouterContext, a dashboard route uses requireAuth, and .env holds the domain and client id.\nPASS: Uses free-function server helpers such as getSession(auth0), protects routes with requireAuth, and imports the middleware from /server/middleware.\nFAIL: Uses @auth0/auth0-react or @auth0/nextjs-auth0 instead of @auth0/auth0-tanstack-start-react.\nFAIL: Imports auth0Middleware from /server (not /server/middleware) or passes it the auth0Server instance.\nFAIL: The router module does not export getRouter, or the root route omits auth0BeforeLoad()/Auth0Provider.",
+      "framework": "tanstack-start",
+      "description": "correctness-judge: Solution correctly integrates Auth0 server-side session authentication in TanStack Start"
+    },
+    {
+      "type": "judge",
+      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like auth0Server, Auth0Provider, or useUser). Look for at least 2 of: (1) auth0Middleware imported from the @auth0/auth0-tanstack-start-react/server/middleware entry point and called with no arguments (never the /server barrel, never passed the auth0Server instance), (2) the free-function server API where helpers take the instance as the first argument, e.g. getSession(auth0) or getAccessToken(auth0), rather than instance methods like auth0.getSession(), (3) server functions that keep tokens on the server — reading the token in a *.server module and returning only data, e.g. a dynamic import() of a .server file inside createServerFn().handler(), (4) the router module exporting getRouter and seeding context with auth0RouterContext together with auth0BeforeLoad() on the root route. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
+      "examples": "PASS: Imports auth0Middleware from @auth0/auth0-tanstack-start-react/server/middleware and calls auth0Middleware() with no args, AND reads the session with getSession(auth0).\nPASS: Uses getAccessToken(auth0) inside a *.server module reached via a dynamic import in createServerFn().handler(), AND exports getRouter seeding auth0RouterContext.\nFAIL: Imports auth0Middleware from @auth0/auth0-tanstack-start-react/server and passes it the auth0Server instance.\nFAIL: Only a basic provider plus useUser, with no middleware entry-point separation, no free-function server calls, and no getRouter/auth0RouterContext wiring.",
+      "framework": "tanstack-start",
+      "description": "skill-attribution-judge: At least 2 skill-specific advanced patterns present (middleware entry-point separation, free-function server API, tokens-stay-on-server, getRouter wiring)"
+    }
+  ]
+}
