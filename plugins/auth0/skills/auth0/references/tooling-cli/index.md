@@ -12,8 +12,6 @@ machine-readable in agent mode) over this page for the exact current flags.
 ## Contents
 
 - [Before You Start: Authenticate](#before-you-start-authenticate)
-- [Agent Mode](#agent-mode) — what the CLI does automatically for you, and how output works
-- [Reading Output and Errors](#reading-output-and-errors) — the JSON error envelope
 - [Structured Input and Output: `--schema` / `--data` / `--query`](#structured-input-and-output---schema----data----query)
 - [Output Flag Rules](#output-flag-rules)
 - [Value Syntax Rules](#value-syntax-rules)
@@ -22,9 +20,12 @@ machine-readable in agent mode) over this page for the exact current flags.
 - [Command Overview](#command-overview)
 - [Piping to `jq`](#piping-to-jq)
 
-For the exhaustive failure-class list and the full per-command interactive
-behavior, read `references/tooling-cli/agent-mode.md` — reach for it when you
-need to classify an error precisely.
+**Agent mode, output, and error handling live in one place.** How agent mode is
+enabled and forced and everything it changes, the JSON error envelope and
+failure-class reference, destructive-command `--force` handling, interactive and
+browser-command behavior, and the rules for reading stdout vs stderr are all in
+`references/tooling-cli/agent-mode.md` — read it before running commands in an
+agent session.
 
 ---
 
@@ -38,115 +39,10 @@ auth0 login --domain <tenant>.auth0.com --client-id <id> --client-secret "$AUTH0
 ```
 
 Machine login (client credentials) is the recommended method for non-interactive
-environments and for Private Cloud tenants — it needs no browser. Switch tenants
-with `auth0 tenants use <domain>`, or target one command at a time with the
-global `--tenant` flag.
-
-In agent mode, `auth0 login` (device flow) prints
-`{"verification_uri","user_code","expires_in","interval"}` on stdout, then blocks
-until a human completes it and prints `{"logged_in":true,"tenant":...,"domain":...}`.
-It also sets the newly authenticated tenant as the default. Because it blocks on
-a human, prefer client-credentials login in automation. `auth0 login` and
-`auth0 logout` do not accept output flags.
-
----
-
-## Agent Mode
-
-The CLI has an agent mode that is **auto-enabled when it detects an AI agent is
-running it**. When it is on, the CLI:
-
-- prints **JSON** on stdout (adds a trailing newline; streams emit **NDJSON** —
-  one compact object per line, never a JSON array),
-- disables interactive prompts,
-- disables colors,
-- keeps **stderr clean** — human banners, section headers, and progress notices
-  are suppressed, so on success stderr is empty,
-- returns a **JSON error envelope** on stderr when a command fails (see below),
-- renders `--help` as a **JSON tree** instead of prose.
-
-Force it on or off when auto-detection gets it wrong:
-
-```bash
-auth0 --agent-mode ...           # force it on
-auth0 --agent-mode=false ...     # force it off for one command
-AUTH0_AGENT_MODE=false auth0 ... # force it off via environment
-```
-
-Because agent mode is on by default in an agent session, the output is *already*
-JSON — **do not reflexively append `--json` to every command.** It is redundant,
-and on the action-style commands that don't define the flag it makes the command
-fail outright.
-
-### Destructive commands require `--force`
-
-Agent mode disables prompts, so instead of silently deleting, destructive
-commands **refuse to run** without `--force`:
-
-```text
-this is a destructive command; re-run with --force to proceed without a confirmation prompt
-```
-
-This applies to every `delete` and `revoke` across resources, and to
-`auth0 api delete`. Treat the refusal as a confirmation checkpoint — confirm the
-intent, then re-run with `--force`:
-
-```bash
-auth0 apps delete <client-id> --force
-auth0 api delete "actions/actions/<action-id>" --force
-```
-
-### Interactive and browser commands
-
-Commands that genuinely need a browser or a TTY editor (e.g.
-`auth0 universal-login customize`, `auth0 acul dev`) **fail fast** in agent mode
-with an `unsupported_in_agent_mode` usage error instead of hanging; for advanced
-Universal Login rendering use `auth0 acul config ...` non-interactively. Browser
-openers that can still help emit a URL as JSON instead (e.g. `auth0 test login`
-prints `{"login_url":"..."}`). The full per-command list is in
-[`agent-mode.md`](agent-mode.md).
-
----
-
-## Reading Output and Errors
-
-On **success**, the command exits `0`, prints JSON on stdout, and leaves stderr
-empty. Pipe stdout straight into `jq`:
-
-```bash
-auth0 apps list | jq -r '.[0].client_id'
-```
-
-On **failure**, the command writes a single-line **JSON error envelope** to
-stderr and exits non-zero:
-
-```json
-{"error":{"code":"not_found","reason":"not_found","message":"API request failed: Not Found","status":404}}
-```
-
-**Classify failures by `error.code`, not by the exit code** (exit is `1` for
-almost every failure). `code` is a stable class; use it to decide what to do:
-
-| `code` | Meaning | Typical fix |
-|--------|---------|-------------|
-| `auth` | 401/403, not logged in, missing scopes | `auth0 login --scopes "<scope>"` |
-| `validation` | bad input / body / 400·410·415·422 | fix the payload; use `--schema` |
-| `not_found` | 404 — wrong path, id, or **wrong HTTP verb** | check the resource/verb |
-| `conflict` | 409 — already exists / state clash | reconcile, then retry |
-| `rate_limit` | 429 | back off and retry |
-| `network` | DNS/TLS/timeout, no API response | check connectivity, retry |
-| `api` | ≥500 server error | retry; likely transient |
-| `usage` | bad flag / unknown command | read `--help` |
-
-The full envelope fields, the complete class and `reason` enumeration, the
-HTTP-status mapping, and the exit-code model are in
-[`agent-mode.md`](agent-mode.md).
-
-**Don't merge stderr into stdout.** `2>&1 | jq` folds the error envelope into your
-data stream on failure. Read stdout for data, and check the exit code / stderr for
-the envelope separately. Don't reflexively add `2>/dev/null` either — it throws
-away the envelope and leaves you with empty output and no reason why. Silence
-stderr only when probing an optional resource whose absence you expect.
+environments and for Private Cloud tenants — it needs no browser and, unlike the
+device flow, doesn't block on a human. Switch tenants with
+`auth0 tenants use <domain>`, or target one command at a time with the global
+`--tenant` flag. `auth0 login` and `auth0 logout` take no output flags.
 
 ---
 
@@ -752,8 +648,7 @@ auth0 roles list | jq '.[].name'
 
 If `jq` reports `parse error: Invalid numeric literal`, you're most likely feeding
 it human output because agent mode wasn't detected — force `--agent-mode`. Read
-data from stdout only; don't `2>&1` the error envelope into your data stream (see
-[Reading Output and Errors](#reading-output-and-errors)).
+data from stdout only; don't `2>&1` the error envelope into your data stream.
 
 Outside an agent session, add the flag explicitly on commands that define it:
 

@@ -1,95 +1,110 @@
 # Auth0 CLI — Agent Mode Deep Reference
 
-Read this when you need to classify a failure precisely or understand exactly
-what agent mode changes; for everyday use, the main CLI command reference is
-enough.
+How agent mode works, and how to read the CLI's output and errors. This is the
+single source for agent-mode behavior — the main command reference routes here
+rather than repeating it, so read this before running commands in an agent
+session.
+
+---
+
+## What agent mode is
+
+The CLI has an agent mode that is **auto-enabled when it detects an AI agent is
+running it**. When it is on, the CLI:
+
+- prints **JSON** on stdout (adds a trailing newline; streams emit **NDJSON** —
+  one compact object per line, never a JSON array),
+- disables interactive prompts,
+- disables colors,
+- keeps **stderr clean** — human banners, section headers, and progress notices
+  are suppressed, so on success stderr is empty,
+- returns a **JSON error envelope** on stderr when a command fails (below),
+- renders `--help` as a **JSON tree** instead of prose.
+
+Force it on or off when auto-detection gets it wrong:
+
+```bash
+auth0 --agent-mode ...           # force it on
+auth0 --agent-mode=false ...     # force it off for one command
+AUTH0_AGENT_MODE=false auth0 ... # force it off via environment
+```
+
+Because agent mode is on by default in an agent session, the output is *already*
+JSON — **do not reflexively append `--json` to every command.** It is redundant,
+and on the action-style commands that don't define the flag it makes the command
+fail outright.
+
+**Defaulting is soft.** `--json` is defaulted true *unless* `--json`,
+`--json-compact`, or `--csv` was set explicitly; `--no-input` and `--no-color`
+default true the same way. An explicit flag always wins, so you can still ask for
+CSV or pretty JSON inside an agent session. `--help`, `help`, and a bare namespace
+render the JSON help tree.
+
+---
+
+## Destructive commands require `--force`
+
+Agent mode disables prompts, so instead of silently deleting, destructive
+commands **refuse to run** without `--force`:
+
+```text
+this is a destructive command; re-run with --force to proceed without a confirmation prompt
+```
+
+This applies to every `delete` and `revoke` across resources, and to
+`auth0 api delete`. Treat the refusal as a confirmation checkpoint — confirm the
+intent, then re-run with `--force`:
+
+```bash
+auth0 apps delete <client-id> --force
+auth0 api delete "actions/actions/<action-id>" --force
+```
+
+The refusal is returned **unwrapped** — it surfaces as
+`{"error":{"code":"unknown","reason":"unclassified","message":"this is a destructive command; ..."}}`,
+so don't key off the class; any `delete` / `revoke` simply needs `--force`.
 
 ---
 
 ## The JSON error envelope
 
-Every failure in JSON/agent mode prints **one compact JSON line to stderr** and
-exits non-zero. stdout is left clean for any partial result.
+On **success** a command exits `0`, prints JSON on stdout, and leaves stderr
+empty. On **failure** it prints **one compact JSON line to stderr** and exits
+non-zero, leaving stdout clean for any partial result:
 
 ```json
-{"error":{"code":"...","reason":"...","message":"...","status":404,"details":{...}}}
+{"error":{"code":"not_found","reason":"not_found","message":"API request failed: Not Found","status":404}}
 ```
 
 | Field | Always present | Meaning |
 |-------|:---:|---------|
-| `error.code` | ✅ | Coarse, **stable failure class** (table below) |
+| `error.code` | ✅ | Coarse, **stable failure class** — branch on this (table below) |
 | `error.message` | ✅ | Single-line human-readable message |
-| `error.reason` | — | Finer sub-classification; may grow over time |
+| `error.reason` | — | Finer, open-ended sub-classification (`flag_parse`, `not_logged_in`, `missing_scopes`, `rate_limited`, `unsupported_in_agent_mode`, …); a hint, not a value to branch on |
 | `error.status` | — | HTTP status, when the failure came from the Management API |
-| `error.details` | — | Structured extras: field-level validation errors, or `{"suggestions":[...]}` for a mistyped command |
+| `error.details` | — | Structured extras — a field-level validation array (`[{"field","error"}]`), or `{"suggestions":[...]}` for a mistyped command |
 
-### Failure classes (`error.code`)
+**Classify failures by `error.code`, not the exit code** — exit codes are
+collapsed (`0` = success, `130` = interrupted, `1` = *every* other failure), so
+the status tells you *that* it failed and the envelope tells you *why*:
 
-The complete set: `none`, `usage`, `auth`, `validation`, `not_found`,
-`conflict`, `rate_limit`, `api`, `network`, `unknown`.
+| `code` | HTTP / local trigger | What it means → typical fix |
+|--------|----------------------|------------------------------|
+| `auth` | 401, 403 | not logged in / missing scopes → `auth0 login --scopes "<scope>"` |
+| `validation` | 400, 410, 415, 422; bad `--data` body (local) | fix the payload; `--schema` shows the shape |
+| `not_found` | 404 | wrong path, id, or **HTTP verb** → check the resource/verb |
+| `conflict` | 409 | already exists / state clash → reconcile, then retry |
+| `rate_limit` | 429 | back off and retry |
+| `api` | ≥ 500 | server error → retry; likely transient |
+| `network` | transport/DNS/TLS/timeout, no response | check connectivity, retry |
+| `usage` | flag-parse / unknown command (local) | read `--help` |
+| `unknown` | anything else | inspect `message` |
+| `none` | success | — |
 
-HTTP status → class mapping:
-
-| HTTP | `code` |
-|------|--------|
-| 401, 403 | `auth` |
-| 400, 410, 415, 422 | `validation` |
-| 404 | `not_found` |
-| 409 | `conflict` |
-| 429 | `rate_limit` |
-| ≥ 500 | `api` |
-| (transport/DNS/TLS/timeout, no response) | `network` |
-| anything else | `unknown` |
-
-Local (pre-request) failures are also classified: a flag-parse or unknown-command
-error is `usage`; a bad `--data` body is `validation`.
-
-### `reason` values
-
-`reason` is a finer, open-ended sub-classification — e.g. `flag_parse`,
-`not_logged_in`, `missing_scopes`, `invalid_request`, `rate_limited`,
-`unsupported_in_agent_mode`. The set grows over time, so **match on `code` for
-stable logic and treat `reason` as a hint**, not a value to branch on.
-
-### Detecting success vs failure
-
-- **Exit code is the primary signal**, but it's collapsed: `0` = success,
-  `130` = interrupted (Ctrl-C), `1` = **every** other failure. The class is *not*
-  in the exit code — read `error.code`.
-- On **success**, stderr is empty. On **failure**, stderr holds exactly one JSON
-  line whose reserved `error` key discriminates it, so even a merged stream stays
-  parseable — but prefer reading stdout and stderr separately.
-
-### Examples
-
-```json
-{"error":{"code":"usage","reason":"flag_parse","message":"unknown flag: --foo"}}
-{"error":{"code":"not_found","reason":"not_found","message":"API request failed: Not Found","status":404}}
-{"error":{"code":"validation","reason":"invalid_request","message":"schema validation failed:\n1. ...","details":[{"field":"...","error":"..."}],"status":400}}
-{"error":{"code":"usage","reason":"...","message":"unknown command \"lst\" for \"auth0 actions\"","details":{"suggestions":["list"]}}}
-```
-
-**Gotcha:** the destructive-command refusal is returned unwrapped, so it surfaces
-as `{"error":{"code":"unknown","reason":"unclassified","message":"this is a destructive command; re-run with --force to proceed without a confirmation prompt"}}`.
-Don't key off the class here — any `delete`/`revoke` needs `--force` in agent mode.
-
----
-
-## What agent mode changes
-
-The everyday CLI reference lists the observable effects. What that summary
-doesn't spell out — the mechanics and edge cases:
-
-- **Defaulted, not forced.** `--json` is defaulted true *unless* `--json`,
-  `--json-compact`, or `--csv` was set explicitly; `--no-input` and `--no-color`
-  are defaulted true the same way. An explicit flag always wins, so you can still
-  ask for CSV or pretty JSON inside an agent session.
-- **Stream shape.** JSON stdout gets a trailing newline; streaming commands (e.g.
-  `auth0 logs tail`) emit **NDJSON** — one compact object per line, never an array.
-- **JSON help.** `--help`, `help`, and a bare namespace render a machine-readable
-  JSON help tree instead of prose.
-- **Failures and interactive commands.** Failures print the JSON error envelope
-  above to stderr; interactive/browser commands fail fast or emit a URL (below).
+Read data from stdout and the envelope from stderr — **don't merge them.**
+`2>&1 | jq` folds the envelope into your data stream on failure; `2>/dev/null`
+throws it away and leaves you with empty output and no reason why. Silence stderr
+only when probing an optional resource whose absence you expect.
 
 ---
 
@@ -111,7 +126,8 @@ Two behaviors:
   `{"manage_url":...}`, `{"builder_url":...}`, `{"docs_url":...}`.
 - `auth0 login` (device flow) emits `{"verification_uri","user_code","expires_in","interval"}`,
   polls to completion, then `{"logged_in":true,"tenant":...,"domain":...}`, and
-  sets the tenant as default.
+  sets the tenant as default. Because it blocks on a human, prefer
+  client-credentials login in automation.
 - `auth0 test login` emits `{"login_url":...}` and waits for the browser callback
   (bounded by a timeout, so it aborts cleanly instead of hanging).
 - `auth0 terraform generate` emits `{"output_dir","status",...}` (with an optional
@@ -138,17 +154,11 @@ output. (`auth0 api` has `--json`/`--json-compact` but no `--csv`.)
 
 ## Structured-input flags by resource
 
-Three flags let an agent drive a resource with JSON instead of hand-building every
-named flag — the reliable path when a body is large or nested. **They are defined
-only on the top-level resource commands that manage a Management API object, not
-on every command**, so check this table (or `<command> --help`) before assuming a
-resource takes them:
-
-- `--data` — the JSON body for `create` / `update`. Accepts inline JSON, `@file`,
-  or stdin.
-- `--schema` — prints the JSON schema for that command's body, so you can see the
-  exact shape before writing `--data`.
-- `--query` — a JSON **object** of query parameters for a `list` command.
+`--data` / `--schema` (on `create` / `update`) and `--query` / `--schema` (on
+`list`) are documented in the command reference's Structured Input section.
+**They are defined only on the top-level resource commands that manage a
+Management API object, not on every command** — this table (or `<command>
+--help`) says which:
 
 | Resource | `--data` / `--schema` (create/update) | `--query` / `--schema` (list) |
 |----------|:---:|:---:|
@@ -163,6 +173,6 @@ its named flags, or fall back to `auth0 api` with `--data @file` as the JSON-bod
 escape hatch.
 
 Two `--query` flags share a name but differ: on a `list` command it's a JSON
-object of query params, whereas on `auth0 api` `-q`/`--query` is a repeatable raw
-`key=value` URL parameter (`-q from=20240101 -q to=20240131`). Don't pass a JSON
-object to `auth0 api -q`.
+object of query params, whereas on `auth0 api` `-q` / `--query` is a repeatable
+raw `key=value` URL parameter (`-q from=20240101 -q to=20240131`). Don't pass a
+JSON object to `auth0 api -q`.
