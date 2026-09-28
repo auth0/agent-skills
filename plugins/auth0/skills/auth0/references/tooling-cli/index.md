@@ -23,8 +23,8 @@ machine-readable in agent mode) over this page for the exact current flags.
 - [Piping to `jq`](#piping-to-jq)
 
 For the exhaustive failure-class list and the full per-command interactive
-behavior, see [`agent-mode.md`](agent-mode.md) — read it when you need to classify
-an error precisely.
+behavior, read `references/tooling-cli/agent-mode.md` — reach for it when you
+need to classify an error precisely.
 
 ---
 
@@ -96,19 +96,15 @@ auth0 apps delete <client-id> --force
 auth0 api delete "actions/actions/<action-id>" --force
 ```
 
-### Interactive and browser commands fail fast
+### Interactive and browser commands
 
-Commands that genuinely need a browser or a TTY editor **fail immediately** in
-agent mode with a `usage` error whose `reason` is `unsupported_in_agent_mode`,
-rather than hanging:
-
-- `auth0 universal-login customize`, `auth0 universal-login templates update`
-- `auth0 acul dev`
-
-For advanced Universal Login rendering, use `auth0 acul config ...`
-non-interactively instead. Browser-opening commands that *can* still be useful
-emit a URL as JSON instead of launching a browser — e.g. `auth0 test login`
-prints `{"login_url":"..."}` and waits for a human to complete the callback.
+Commands that genuinely need a browser or a TTY editor (e.g.
+`auth0 universal-login customize`, `auth0 acul dev`) **fail fast** in agent mode
+with an `unsupported_in_agent_mode` usage error instead of hanging; for advanced
+Universal Login rendering use `auth0 acul config ...` non-interactively. Browser
+openers that can still help emit a URL as JSON instead (e.g. `auth0 test login`
+prints `{"login_url":"..."}`). The full per-command list is in
+[`agent-mode.md`](agent-mode.md).
 
 ---
 
@@ -128,16 +124,8 @@ stderr and exits non-zero:
 {"error":{"code":"not_found","reason":"not_found","message":"API request failed: Not Found","status":404}}
 ```
 
-- `code` is a **stable failure class**: `usage`, `auth`, `validation`,
-  `not_found`, `conflict`, `rate_limit`, `api`, `network`, or `unknown`.
-- `message` is always present; `reason` is a finer sub-classification;
-  `status` (HTTP status) and `details` (e.g. field-level validation errors, or
-  `{"suggestions":[...]}` for a mistyped command) appear when relevant.
-
-**Classify failures by `error.code`, not by the exit code.** Exit codes are
-collapsed for script back-compat: `0` = success, `130` = interrupted, and `1`
-for *every* other failure. So the exit status tells you *that* it failed, and the
-envelope tells you *why*. Common `code` → action:
+**Classify failures by `error.code`, not by the exit code** (exit is `1` for
+almost every failure). `code` is a stable class; use it to decide what to do:
 
 | `code` | Meaning | Typical fix |
 |--------|---------|-------------|
@@ -150,8 +138,9 @@ envelope tells you *why*. Common `code` → action:
 | `api` | ≥500 server error | retry; likely transient |
 | `usage` | bad flag / unknown command | read `--help` |
 
-The full failure-class and `reason` enumeration with the complete HTTP mapping is
-in [`agent-mode.md`](agent-mode.md).
+The full envelope fields, the complete class and `reason` enumeration, the
+HTTP-status mapping, and the exit-code model are in
+[`agent-mode.md`](agent-mode.md).
 
 **Don't merge stderr into stdout.** `2>&1 | jq` folds the error envelope into your
 data stream on failure. Read stdout for data, and check the exit code / stderr for
@@ -294,11 +283,10 @@ auth0 commands --flat | grep -i organization
 
 ### Structured `--help`
 
-In agent mode, `--help` returns a JSON object per command rather than prose:
-`path`, `name`, `short`, `description`, `usage`, `example`, `runnable`,
-`requiresAuth`, and a `flags` array carrying each flag's `name`, `shorthand`,
-`usage`, `type`, and `default`. Outside agent mode, combine `--help --json` for
-the same output.
+In agent mode, `--help` returns a JSON object per command rather than prose —
+its usage and examples, whether it's runnable and needs auth, and a `flags` array
+(each flag's name, type, and default). Outside agent mode, combine `--help --json`
+for the same output.
 
 ```bash
 auth0 apps update --help | jq -r '.[0].flags[].name'
@@ -361,21 +349,12 @@ auth0 apps create --name "My SPA" --type spa \
   --origins "http://localhost:3000"
 
 auth0 apps show <client-id> -r          # -r reveals the client secret
-auth0 apps update <client-id> --callbacks "http://localhost:3000,https://myapp.com"
-auth0 apps delete <client-id> --force
 ```
 
 App types: `spa`, `regular`, `m2m`, `native`, `resource_server`.
 
-**Session transfer** (native-to-web SSO) lives under `apps session-transfer`:
-
-```bash
-auth0 apps session-transfer show <client-id>
-auth0 apps session-transfer update <client-id> \
-  --can-create-token=true --allowed-auth-methods "cookie,query" \
-  --enforce-device-binding ip \
-  --delegation-allow-delegated-access=true --delegation-enforce-device-binding=asn
-```
+**Session transfer** (native-to-web SSO) lives under `apps session-transfer`
+(`show` / `update`); run `auth0 apps session-transfer update --help` for its flags.
 
 ### APIs — Manage API Resources
 
@@ -388,7 +367,6 @@ auth0 apis create --name "My API" --identifier "https://api.myapp.com" \
   --enforce-policies --token-dialect access_token_authz
 
 auth0 apis list --query '{"identifiers":["https://api.myapp.com"]}'
-auth0 apis scopes list <api-id>
 ```
 
 `--token-dialect` is one of `access_token`, `access_token_authz`,
@@ -405,8 +383,6 @@ step that makes a `client_credentials` flow work.
 ```bash
 auth0 client-grants create --client-id <client-id> --audience <api-identifier> \
   --scopes "read:data,write:data"
-auth0 client-grants list
-auth0 client-grants organizations list <grant-id>
 ```
 
 ### Connections — Identity Sources
@@ -416,14 +392,10 @@ A connection is *which* login methods a tenant offers; `enabled-clients` control
 which applications may use each connection.
 
 ```bash
-auth0 connections list
 auth0 connections create --data '{"name":"my-db","strategy":"auth0"}'
-auth0 connections show <connection-id>
 auth0 connections update <connection-id> --data @patch.json
-auth0 connections enabled-clients show <connection-id>
 auth0 connections enabled-clients update <connection-id> \
   --data '[{"client_id":"<id>","status":true}]'
-auth0 connections delete <connection-id> --force
 ```
 
 Strategies include `auth0` (database), `google-oauth2`, `samlp`, `oidc`, `waad`,
@@ -439,8 +411,6 @@ auth0 users search-by-email user@example.com
 auth0 users create --connection-name "Username-Password-Authentication" \
   --email "test@example.com" --password "$USER_PASSWORD"
 auth0 users create --data '{"connection":"Username-Password-Authentication","email":"test@example.com"}'
-auth0 users show <user-id>
-auth0 users blocks list <email>
 auth0 users blocks unblock <email>
 auth0 users import --connection-name "Username-Password-Authentication" \
   --users '[...]' --upsert
@@ -466,15 +436,9 @@ Inspect and revoke a user's live sessions and refresh tokens. Use these when a
 user must lose access immediately rather than at token expiry.
 
 ```bash
-auth0 users sessions list <user-id>
 auth0 users sessions delete <user-id>          # deletes ALL of the user's sessions
-auth0 users refresh-tokens list <user-id>
 auth0 users refresh-tokens delete <user-id>    # deletes ALL of the user's refresh tokens
-
-auth0 sessions show <session-id>
-auth0 sessions revoke <session-id>
-auth0 refresh-tokens show <token-id>
-auth0 refresh-tokens revoke <token-id>
+auth0 sessions revoke <session-id>             # revoke one; refresh-tokens revoke <token-id> likewise
 ```
 
 ### Roles — Manage RBAC Roles
@@ -485,7 +449,6 @@ Create roles, assign permissions, and assign roles to users.
 auth0 roles create --name "editor" --description "Can edit content"
 auth0 roles permissions add <role-id> --api-id <api-id> --permissions "read:data,write:data"
 auth0 users roles assign <user-id> --roles <role-id>
-auth0 users roles show <user-id>
 ```
 
 ### Guardian — Multi-Factor Authentication
@@ -493,12 +456,9 @@ auth0 users roles show <user-id>
 Manage the tenant MFA policy, enrollment tickets, and factor providers natively.
 
 ```bash
-auth0 guardian policies show
 auth0 guardian policies set --policy all-applications     # or: confidence-score, or --none
 auth0 guardian factors list
 auth0 guardian factors set                                # enable/disable a factor
-auth0 guardian factors phone set-provider
-auth0 guardian factors push set-fcmv1
 auth0 guardian enrollments create-ticket --user-id "auth0|123" \
   --factor push-notification --send-email
 ```
@@ -513,12 +473,8 @@ Manage organizations for B2B SaaS scenarios. Alias: `auth0 orgs`.
 ```bash
 auth0 orgs create --name "acme-corp" --display "Acme Corporation" \
   --logo "https://acme.com/logo.png" --accent "#FF6600"
-auth0 orgs list
-auth0 orgs members list <org-id>
-auth0 orgs roles list <org-id>
 auth0 orgs invitations create --org-id <org-id> --invitee-email "new@acme.com" \
   --inviter-name "Admin" --client-id <id> --roles <role-id> --send-email=false
-auth0 orgs invitations list --org-id <org-id>
 ```
 
 Adding members, assigning org-scoped roles, and enabling a connection on an org
@@ -563,9 +519,7 @@ effect.
 
 ```bash
 auth0 actions modules create
-auth0 actions modules list
-auth0 actions modules versions publish <module-id>
-auth0 actions modules versions rollback <module-id>
+auth0 actions modules versions publish <module-id>       # then rollback <module-id> to revert
 # attach a module to an action (both UUIDs required, flag repeatable):
 auth0 actions create --name a --trigger post-login \
   --module "module_id=<uuid>,module_version_id=<uuid>"
@@ -578,16 +532,12 @@ auth0 actions create --name a --trigger post-login \
 vault.
 
 ```bash
-auth0 forms list
 auth0 forms create --name "Signup Survey"
 auth0 forms create --data @form.json
-auth0 forms export <form-id>
 auth0 forms import --data @form.json
 
-auth0 flows list
 auth0 flows create --name "My Flow" --actions-file ./flow.json
 auth0 flows executions list <flow-id>
-auth0 flows vault connections list
 auth0 flows vault connections create
 ```
 
@@ -612,11 +562,8 @@ deliveries.
 
 ```bash
 auth0 event-streams create
-auth0 event-streams list
 auth0 event-streams deliveries list <stream-id>
-auth0 event-streams stats <stream-id>
 auth0 event-streams redeliver <stream-id>
-auth0 event-streams subscribe <stream-id>
 ```
 
 ### Network ACLs — Restrict Tenant Traffic
@@ -625,10 +572,8 @@ A rule is supplied as a single `--rule` JSON object combining an `action`, a
 `scope`, and a match construct.
 
 ```bash
-auth0 network-acl list
 auth0 network-acl create -d "Deny all" -p 7 --active true \
   --rule '{"action":{"block":true},"scope":"tenant","match_all":true}'
-auth0 network-acl show <acl-id>
 auth0 network-acl update <acl-id> --rule '{...}'
 ```
 
@@ -661,11 +606,9 @@ auth0 apps create --allow-any-profile-of-type custom_authentication,on_behalf_of
 ### Email and Phone Providers
 
 ```bash
-auth0 email provider create
-auth0 email provider show
+auth0 email provider create                 # show / update likewise
 auth0 email templates update <template>
 auth0 phone provider create
-auth0 phone provider list
 ```
 
 ### Domains — Custom Domains
@@ -673,7 +616,6 @@ auth0 phone provider list
 ```bash
 auth0 domains create --domain "auth.myapp.com" --type "auth0_managed_certs"
 auth0 domains verify <domain-id>
-auth0 domains default show
 auth0 domains default set <domain-id>       # pick the tenant's default custom domain
 ```
 
@@ -691,7 +633,6 @@ non-interactive advanced rendering (ACUL), use `auth0 acul config ...`.
 ### Test — Verify Login Flows and Tokens
 
 ```bash
-auth0 test login <client-id>
 auth0 test login <client-id> --audience "https://api.myapp.com" --scopes "openid profile email"
 auth0 test token --audience "https://api.myapp.com" --scopes "read:data"
 auth0 test token <client-id> --audience "https://api.myapp.com" --organization <org-id>   # M2M for an org
@@ -721,7 +662,6 @@ remain for fetching sample apps.
 auth0 protection brute-force-protection update --enabled true
 auth0 protection breached-password-detection update --enabled true
 auth0 protection bot-detection update --bot-detection-level medium
-auth0 protection suspicious-ip-throttling ips check <ip>
 auth0 protection suspicious-ip-throttling ips unblock <ip>
 ```
 
@@ -730,7 +670,6 @@ auth0 protection suspicious-ip-throttling ips unblock <ip>
 ```bash
 auth0 logs streams create datadog     # subcommand per provider
 auth0 logs streams create http        # custom webhook
-auth0 logs streams list
 ```
 
 Supported: `eventbridge`, `eventgrid`, `http`, `datadog`, `splunk`, `sumo`.
@@ -757,9 +696,7 @@ pass that name to `--resources`. In agent mode this command prints a
 ### Agent Skills — Install This Skill Elsewhere
 
 ```bash
-auth0 agent skills install                          # prompts for target assistants
-auth0 agent skills install --agent claude-code,cursor
-auth0 agent skills install --agent all --force
+auth0 agent skills install                          # prompts; or --agent claude-code,cursor / --agent all --force
 ```
 
 Installs the Auth0 skill into AI coding assistants (via `npx skills@...`; needs

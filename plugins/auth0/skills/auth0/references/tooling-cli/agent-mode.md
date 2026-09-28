@@ -1,8 +1,8 @@
 # Auth0 CLI — Agent Mode Deep Reference
 
 Read this when you need to classify a failure precisely or understand exactly
-what agent mode changes. For everyday use, the summary in [`index.md`](index.md)
-is enough.
+what agent mode changes; for everyday use, the main CLI command reference is
+enough.
 
 ---
 
@@ -46,15 +46,10 @@ error is `usage`; a bad `--data` body is `validation`.
 
 ### `reason` values
 
-Finer than `code`. Current values include: `none`, `flag_parse`, `required_flag`,
-`not_logged_in`, `no_config`, `session_expired`, `token_malformed`,
-`missing_scopes`, `auth_failed`, `local_validation`, `unauthorized`, `forbidden`,
-`invalid_request`, `not_found`, `conflict`, `gone`, `unsupported_media_type`,
-`rate_limited`, `server_error`, `transport`, `unclassified`, plus call-site
-reasons like `invalid_flag_value`, `malformed_json`, `missing_input`,
-`invalid_body`, `insufficient_scope`, `unsupported_in_agent_mode`,
-`missing_required_flags`. Match on `code` for stable logic; treat `reason` as a
-hint.
+`reason` is a finer, open-ended sub-classification — e.g. `flag_parse`,
+`not_logged_in`, `missing_scopes`, `invalid_request`, `rate_limited`,
+`unsupported_in_agent_mode`. The set grows over time, so **match on `code` for
+stable logic and treat `reason` as a hint**, not a value to branch on.
 
 ### Detecting success vs failure
 
@@ -82,7 +77,7 @@ Don't key off the class here — any `delete`/`revoke` needs `--force` in agent 
 
 ## What agent mode changes
 
-[`index.md`](index.md#agent-mode) lists the observable effects. What that summary
+The everyday CLI reference lists the observable effects. What that summary
 doesn't spell out — the mechanics and edge cases:
 
 - **Defaulted, not forced.** `--json` is defaulted true *unless* `--json`,
