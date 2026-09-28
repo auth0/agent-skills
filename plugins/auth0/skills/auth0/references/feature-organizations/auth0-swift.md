@@ -50,8 +50,11 @@ let orgId = jwt.claim(name: "org_id").string
 
 Public mobile client: **no `client_secret`**. Let `CredentialsManager` store tokens; do not
 persist access/ID/refresh tokens by hand in `UserDefaults` or the Keychain. Storing app state
-such as a pending organization is fine. Keep the client ID/domain in `Auth0.plist`, not in
-source.
+such as a pending organization is fine.
+
+**NEVER put the Auth0 client ID or domain in a `.swift` file** - not as a string literal, a
+constant, or a default argument. They belong in `Auth0.plist` (`ClientId` / `Domain` keys) and are
+picked up automatically by the parameterless `Auth0.webAuth()` / `Auth0.authentication()`.
 
 All method names above are accurate for Auth0.swift 2.x/3.x — do not read the SDK source to
 re-verify them.

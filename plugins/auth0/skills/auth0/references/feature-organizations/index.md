@@ -57,6 +57,12 @@ falls short. It matters most for the newer server SDKs (`auth0-server-js`, `auth
 won't have it. No matching row? Fall back to the protocol shape above plus the loaded
 `framework-{framework}/index.md`. Never hand-roll the authorize URL or decode the token by hand.
 
+**Wire the change into the project's existing files.** Edit the app's real login/callback/route
+and config files in place; do not scaffold extra `README`, `SETUP`, `NOTES`, `CHECKLIST`, or
+`*-summary` documents to "explain" the integration - they are not part of the task and dilute the
+diff. Keep the change minimal and focused on what makes org login, invitation acceptance, and
+`org_id` enforcement work.
+
 | SDK | Min version | Read this file |
 |---|---|---|
 | `@auth0/auth0-react` | 2.x | `Read: references/feature-organizations/auth0-react.md` |
@@ -89,21 +95,21 @@ you read depends on *why* you need it:
 
 ### Validate org on the backend
 
-Validate the access token's `org_id` to prevent cross-tenant access, then segment data by it.
-Per Auth0's guidance, check it against a **known list of organization IDs** or the org implied by
-the request context (e.g. tenant subdomain) - not a single hardcoded default. A fixed
-`!== defaultOrg` check is fine for a single-org app but rejects valid members of other orgs in a
-multi-org app or one accepting cross-org invitations.
+What you do here depends on the app type - applying the wrong one is a real defect:
 
-```text
-// Illustrative - orgId is the org_id claim from the *verified* access token.
-if (!allowedOrgIds.has(orgId)) { /* reject: untrusted organization (e.g. 403) */ }
-// then scope every data lookup by orgId
-```
+- **A resource API validating access tokens:** enforce `org_id` on the *verified access token*. Per
+  [Auth0's guidance](https://auth0.com/docs/manage-users/organizations/using-tokens#validate-tokens),
+  check it against a **known list of the org IDs the API serves** (or the org implied by request
+  context) *and* segment data by `org_id`. A valid token proves membership in *some* org, not that
+  it is one your API serves. Read the detected SDK's file from the per-SDK table above for the exact
+  enforcement call.
+- **A login / session app:** read `org_id` from the session / ID token to display the org and to
+  **segment data** by it. Do **not** add a post-login allow-list that rejects a signed-in user whose
+  `org_id` is not the default - the user already authenticated into that org, so gating the session
+  or its routes 403s anyone who accepted an invitation to another org.
 
-For the API side (`@auth0/auth0-api-js`, `express-oauth2-jwt-bearer`), `Read:` that SDK's file
-from the per-SDK table above — it shows how to require and enforce `org_id` on the verified
-access token.
+Wherever a known list is used, source it from your org records and keep it in sync with every org
+served - a list seeded with only the default org 403s the first invited member.
 
 ---
 
@@ -111,6 +117,13 @@ access token.
 
 The Auth0 MCP server exposes **no** organizations tool, so use the CLI or Terraform (full
 command syntax lives in your tooling reference).
+
+When the task is to configure the tenant itself (not wire an SDK into an app), the deliverable
+is the **mutated tenant**, not a guide to it. Run each `auth0` command directly as its own step,
+and read state back after each mutation to confirm it landed. Do **not** bundle the whole setup
+into a single script you run once (`bash setup.sh`), and do **not** emit setup scripts, `README`,
+or summary files describing commands for a human to run later - a wrapped or unrun script leaves
+the tenant unchanged and hides which step failed.
 
 | Operation | CLI | Terraform |
 |---|---|---|
@@ -125,6 +138,30 @@ Verify subcommands with `auth0 commands orgs --detailed` and read flag names off
 rather than inferring them; use `auth0 api` for anything without a dedicated subcommand.
 Reading connections back returns a **bare array**, so use `jq '.[]'`, not
 `jq '.enabled_connections[]'`.
+
+### Application (client) organization settings
+
+Two settings control whether and how an app uses organization login. They live on the
+**application (client)**, not on the organization, and are set with
+`auth0 api patch "clients/<client-id>"`:
+
+| Field | Values | Meaning |
+|---|---|---|
+| `organization_usage` | `deny` / `allow` / `require` | Whether a login may (`allow`) or **must** (`require`) carry an organization. `require` forbids any login without one |
+| `organization_require_behavior` | `no_prompt` / `pre_login_prompt` / `post_login_prompt` | How the org is resolved when one is required. `pre_login_prompt` makes the user pick the org **before** entering credentials |
+
+Map the intent to the pair - do not assume the `allow`/`no_prompt` invitation default (below) is
+the only option:
+
+- "No login outside an organization" -> `organization_usage: require`
+- "Choose the organization up front, before credentials" -> `organization_require_behavior: pre_login_prompt`
+- Accept invitations, but org is otherwise optional -> `organization_usage: allow` with `organization_require_behavior: no_prompt`
+
+```bash
+# Org-only login with an up-front org selector - set both fields in one PATCH.
+auth0 api patch "clients/<client-id>" \
+  --data '{"organization_usage":"require","organization_require_behavior":"pre_login_prompt"}'
+```
 
 ### Finding or creating a login connection
 
@@ -143,12 +180,14 @@ auth0 api post connections --data '{"name":"<connection-name>","strategy":"auth0
 auth0 api post "organizations/<org-id>/enabled_connections" \
   --data '{"connection_id":"<con-id>","assign_membership_on_login":true}'
 
-# Enable it for each app that will use it - status false disables. Max 50 per call.
+# Check which apps already have this connection enabled.
+auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
+
+# ONLY if the app is not already listed above: enable the connection for it.
+# This is a separate setting from org login (see note below), so skip it on a
+# connection the tenant already had enabled for the app. status false disables; max 50 per call.
 auth0 api patch "connections/<con-id>/clients" \
   --data '[{"client_id":"<client-id>","status":true}]'
-
-# Read back which apps are enabled.
-auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
 ```
 
 Both connection reads are checkpoint-paginated (`take` defaults to 50): omit `from` on the
@@ -174,6 +213,8 @@ a link, authenticates, and becomes a member.
 
 ```bash
 # 1. Without this: "The specified client_id (...) does not allow organizations."
+#    allow/no_prompt is the minimum for invitations; for org-only login use
+#    require/pre_login_prompt instead (see "Application (client) organization settings").
 auth0 api patch "clients/<client-id>" \
   --data '{"organization_usage":"allow","organization_require_behavior":"no_prompt"}'
 
@@ -240,6 +281,10 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | Pinning a client-wide default org while accepting cross-org invitations | A client-level `organization` is validated against the returned `org_id` at login completion, rejecting invites to other orgs. Pass `organization` per login call instead |
 | Reading `org_id` from the wrong token | Web/client apps read it from the ID token (display); APIs validate it from the access token (authorization) |
 | Validating `org_id` against a single hardcoded org on the backend | Validate against the set of orgs the request may serve - a known list, or the org derived from request context. A fixed `!== defaultOrg` check rejects valid members of other orgs |
+| Gating a login/session app on an org allow-list | The allow-list is an access-token check for APIs, not a session gate. A signed-in user already authenticated into their org; rejecting a non-default `org_id` blocks invited members. Read `org_id` from the session and segment data by it |
+| On an API, an allow-list seeded with only the default org | Keep the served-org list sourced from your org records and in sync with every org served; a list holding just the default 403s the first invited member |
+| Comparing `org_id` against an env var that can be `undefined` | Guarantee the required org id: give it a literal fallback (`process.env.ACME_ORG_ID ?? 'org_xxx'`) or validate env vars at startup. An unset var makes the check compare against `undefined` and silently breaks enforcement |
+| Scaffolding extra README/SETUP/summary files for the integration | Wire the change into the project's existing login/callback/route/config files; keep the diff minimal |
 | Hand-decoding a token to read `org_id` | Use the SDK's claim accessor (`getUser()` / `getIdTokenClaims()` / session user) - the claim is already exposed |
 | Mixing up org `id` (org_xxx) and `name` (slug) | `id` for API calls, `name` for display |
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
@@ -251,6 +296,7 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | Guessing a `auth0 orgs` subcommand for membership, roles, or connections | Verify with `auth0 commands orgs --detailed`, and use `auth0 api post organizations/...` for whatever has no dedicated subcommand |
 | Prefixing `auth0 api` paths with `/api/v2/` | Paths are relative to the API root. `/api/v2/organizations/...` returns 404 |
 | Inviting before setting `organization_usage` on the app and `default_redirection_uri` on the tenant | Both are hard 400s. Configure them first (see Invitation flow) |
+| Leaving `organization_usage` at `allow` when the app must reject non-org logins | `allow` permits both; use `require` to forbid any login without an organization, with `pre_login_prompt` to choose the org before credentials |
 | Letting `auth0 orgs invitations create` send a live email | `--send-email` defaults to `true`. Pass `--send-email=false` |
 
 ---

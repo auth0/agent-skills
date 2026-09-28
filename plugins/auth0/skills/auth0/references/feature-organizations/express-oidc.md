@@ -48,16 +48,23 @@ filtered copy and a custom `identityClaimFilter` can drop the claim:
 
 ```js
 const orgId = req.oidc.idTokenClaims?.org_id; // or req.oidc.user.org_id if the filter keeps it
+const orgName = req.oidc.idTokenClaims?.org_name; // human-readable name, when the tenant sets one
 ```
+
+To show a human-readable organization name, read `org_name` from the claim (present when the
+tenant assigns names) rather than hardcoding a display string mapped from the `org_id`. Use
+`org_id` for any membership check.
 
 Validating `org_id` in an `afterCallback` hook (decoding the already-verified `id_token` and
 checking `claims.org_id`) is an acceptable, good-practice way to enforce membership.
 
 ## Security
 
-Confidential client. Keep the issuer/client ID/secret in env vars (`ISSUER_BASE_URL`,
-`CLIENT_ID`, `CLIENT_SECRET`), never hardcoded in source. Do not use the API bearer-token SDK
-(`express-oauth2-jwt-bearer`) or Passport here.
+Confidential client. Keep **every** tenant value in env vars, never as a string literal in a
+`.js`/`.ts` file: the issuer/client ID/secret (`ISSUER_BASE_URL`, `CLIENT_ID`, `CLIENT_SECRET`)
+**and the API `audience`** if you request one for an access token (read it from e.g.
+`process.env.AUDIENCE`, do not write `audience: 'api.example.com'` inline). Do not use the API
+bearer-token SDK (`express-oauth2-jwt-bearer`) or Passport here.
 
 All method names above are accurate for express-openid-connect 2.x — do not read `node_modules`
 to re-verify them.
