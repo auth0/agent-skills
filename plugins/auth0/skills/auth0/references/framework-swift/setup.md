@@ -312,11 +312,3 @@ xcodebuild build -scheme YOUR_SCHEME -destination "platform=iOS Simulator,name=i
 - [ ] App builds without errors
 - [ ] `import Auth0` resolves without errors in Swift files
 
----
-
-
----
-
-## Major Version Migration
-
-
