@@ -187,6 +187,14 @@ it first or fall back to the language-neutral mechanic. Several MFA API flows ar
 | `Auth0.swift` (iOS/macOS) | verify — 3.0+ | MFA API | `references/feature-mfa/auth0-swift.md` |
 | `Auth0.Android` | verify — 3.13+ | MFA API | `references/feature-mfa/auth0-android.md` |
 | `auth0-server-python` | 1.0.0b10 (MFA API) · 1.0.0b15 (step-up) | step-up, MFA API | `references/feature-mfa/auth0-server-python.md` |
+| `Auth0.OidcClient.*` (.NET native/desktop) | 4.4.0 | client-initiated step-up | `references/feature-mfa/oidc-client-net.md` |
+| `go-jwt-middleware` (Go, resource server) | v2.2.1 | API-side scope gate | `references/feature-mfa/go-jwt-middleware.md` |
+| `Auth0.AspNetCore.Authentication.Api` (resource server) | 1.0.1 | API-side scope gate | `references/feature-mfa/aspnetcore-api.md` |
+| Spring Security resource server (Java) | Spring Boot 3.3 / Security 6 | API-side scope gate | `references/feature-mfa/spring-security-api.md` |
+
+Note: the resource-server rows (`go-jwt-middleware`, `Auth0.AspNetCore.Authentication.Api`, Spring
+Security) do not run MFA — the API enforces the step-up **scope** the tenant issues post-MFA, gating a
+sensitive route on it. `Auth0.OidcClient.*` is a native client that triggers step-up via `acr_values`.
 
 Note: the JS SPA/framework SDKs (`auth0-react`, `auth0-vue`, `auth0-angular`, `auth0-spa-js`)
 drive step-up through the SDK's `interactiveErrorHandler: 'popup'` option, not the
