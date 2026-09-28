@@ -8,8 +8,6 @@
 
 **Tech Stack:** Markdown reference files; Python validators (`check_router_reachability.py`, `check_routing_evals.py`); `validate-skill.sh`; `uvx skillsaw --strict`. No application code.
 
-**Spec:** `docs/superpowers/specs/2026-09-28-skill-scaling-and-sourcing-design.md` (read it alongside this plan).
-
 ## Global Constraints
 
 - **Depth-3 tree (CI-enforced).** Every reference is `references/<name>/index.md`. A hub `index.md` may name **only** leaves in its own directory, as the literal substring `references/<name>/<leaf>.md`. Leaves and index-only files are **sinks**: they may contain **no** `.md` link (existing or dead) and no cross-group `references/*/*.md` reference. No stray `references/*.md` flat files.
