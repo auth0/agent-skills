@@ -96,6 +96,11 @@ references/framework-<name>/
 ```
 
 Rules for splitting a large reference into a leaf group:
+- **Trim before you split.** Apply the [sourcing
+  discipline](./docs/architecture.md#sourcing-discipline-what-stays-inline-vs-delegates)
+  first — delegate REFERENCE tables and CONCEPTUAL prose to pointer blocks — so
+  you carve what remains instead of relocating duplication into leaves. Extract
+  any agent-only rule out of an offloaded table before deleting it.
 - **Leaves are document sections**, not intents (`integrate`, `api-reference`,
   `patterns`, `setup`, `migration`, …). Feature references split by sub-topic
   (`guide`, `api-reference`, `advanced`, `examples`).
@@ -122,6 +127,31 @@ leaf group — a global note in Step 4 tells the agent to follow the `index.md`'
 dispatch table to a leaf if it has one. The reachability and routing-eval
 checkers resolve a leaf-group slug automatically; you don't edit `SKILL.md`'s
 routing tables.
+
+### Framework-reference template
+Framework references (`framework-<name>/`) share one shape so adding a framework
+is "fill the template." When a framework reference grows into a leaf group, use
+this fixed skeleton — copy it, fill the slots, and let the sourcing discipline
+decide what stays inline:
+
+| Leaf | Contents | Slots |
+|---|---|---|
+| `index.md` (hub) | Critical rules · When NOT to use · Prerequisites · Quick Start (install via *{pkg mgr}* + callback config + minimal login/logout) · Common Mistakes · **dispatch table** · pointer block | `{language}`, `{framework}`, `{pkg mgr}` |
+| `setup.md` | Full tenant + SDK install/config (CLI automated + manual, all package managers) | `{pkg mgr}`, `{SDK pkg}` |
+| `patterns.md` | Route protection, session, token handling, error handling, org login | `{SDK pkg}` |
+| `api-reference.md` | The few must-know symbols inline; delegate the rest via the pointer block | `{SDK repo}` |
+| `migration.md` | **Only if** a major-version migration exists | `{SDK repo}` |
+
+`framework-swift/` is the worked example. **Feature references are
+capability-shaped, not language-shaped** — they do not use this skeleton; they
+split by sub-topic (`api`, `screens`, `advanced`, `examples`). `feature-branding/`
+is the worked example.
+
+**Reachability leaf format & single-hop routing.** A leaf is reachable iff the
+hub `index.md` names it as the literal `` `Read: references/<group>/<leaf>.md` ``.
+Keep dispatch-table first cells as multi-word phrases (never a bare single token
+like `integrate`) so existing single-hop routing cases keep passing; add a
+two-hop routing case only when a router intent maps 1:1 to a leaf.
 
 ### Validate
 ```bash
