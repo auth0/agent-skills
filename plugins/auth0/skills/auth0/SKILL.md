@@ -4,7 +4,7 @@ description: Use when adding, fixing, or improving how an app authenticates user
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
-  version: '2.2.0'
+  version: '2.3.0'
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
@@ -85,6 +85,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `@capacitor/browser` + `@auth0/auth0-vue` | `ionic-vue` |
 | `@auth0/nextjs-auth0` | `nextjs` |
 | `@auth0/auth0-nuxt` | `nuxt` |
+| `@auth0/auth0-tanstack-start-react` | `tanstack-start` |
 | `@auth0/auth0-react` | `react` |
 | `@auth0/auth0-vue` | `vue` |
 | `@auth0/auth0-angular` | `angular` |
@@ -174,6 +175,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 |---|---|
 | `next` in `package.json` | `nextjs` |
 | `nuxt` in `package.json` | `nuxt` |
+| `@tanstack/react-start` in `package.json` | `tanstack-start` |
 | `@ionic/*` + `@angular/core` | `ionic-angular` |
 | `@ionic/*` + `react` | `ionic-react` |
 | `@ionic/*` + `vue` | `ionic-vue` |
@@ -213,6 +215,7 @@ request. **Stop at the first match.**
 |---|---|
 | Next.js / `next` | `nextjs` |
 | Nuxt | `nuxt` |
+| TanStack Start (React) | `tanstack-start` |
 | Angular (not Ionic) | `angular` |
 | Vue (not Nuxt/Ionic) | `vue` |
 | React SPA (not Next.js) | `react` |
