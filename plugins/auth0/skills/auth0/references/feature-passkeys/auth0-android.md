@@ -6,6 +6,14 @@ Framework-specific surface only. The shared 3-step mechanic, the tenant configur
 
 Auth0.Android is **high-level for the token exchange**; you drive the platform WebAuthn ceremony with AndroidX **Credential Manager** (`androidx.credentials.CredentialManager`). Pattern: **Auth0 challenge → Credential Manager ceremony → Auth0 signin/signup/enroll with the credential**.
 
+The Credential Manager classes below are **not** bundled with the Auth0 SDK — the passkey code will not compile without them:
+
+```groovy
+// app/build.gradle (the Auth0 SDK, minSdk, and coroutines already come from the base Android setup)
+implementation 'androidx.credentials:credentials:1.3.0'
+implementation 'androidx.credentials:credentials-play-services-auth:1.3.0'
+```
+
 ## Login (assertion / get)
 
 ```kotlin
@@ -19,9 +27,13 @@ val challenge = authentication.passkeyChallenge("{realm}").await()
 val option = GetPublicKeyCredentialOption(Gson().toJson(challenge.authParamsPublicKey))
 val request = GetCredentialRequest(listOf(option))
 val result = credentialManager.getCredential(context, request)
-val authResponse = (result.credential as PublicKeyCredential).authenticationResponseJson
+// authenticationResponseJson is a String; signinWithPasskey's authResponse is a PublicKeyCredentials — parse it.
+val authResponse = Gson().fromJson(
+    (result.credential as PublicKeyCredential).authenticationResponseJson,
+    PublicKeyCredentials::class.java,
+)
 
-// signinWithPasskey(authSession, authResponse, realm?, organization?) → AuthenticationRequest
+// signinWithPasskey(authSession: String, authResponse: PublicKeyCredentials, realm?, organization?) → AuthenticationRequest
 val credentials = authentication
     .signinWithPasskey(challenge.authSession, authResponse, "{realm}")
     .validateClaims()          // REQUIRED — without it ID-token claim validation is silently skipped
@@ -39,7 +51,8 @@ val challenge = authentication.signupWithPasskey(userData, "{realm}").await()   
 // Credential Manager registration ceremony (create):
 val createRequest = CreatePublicKeyCredentialRequest(Gson().toJson(challenge.authParamsPublicKey))
 val created = credentialManager.createCredential(context, createRequest) as CreatePublicKeyCredentialResponse
-val regResponse = created.registrationResponseJson
+// registrationResponseJson is a String; parse it into the PublicKeyCredentials signinWithPasskey expects.
+val regResponse = Gson().fromJson(created.registrationResponseJson, PublicKeyCredentials::class.java)
 
 val credentials = authentication
     .signinWithPasskey(challenge.authSession, regResponse, "{realm}")   // reuse the signup challenge's session
@@ -54,11 +67,12 @@ The user is already logged in. Enrollment uses the **same create ceremony as sig
 
 ```kotlin
 // 1. Exchange the stored refresh token for a My-Account-audience token.
-//    The audience is built from account.getDomainUrl() internally; the scope is required.
-val apiCreds = credentialsManager.getApiCredentials(
-    audience = "https://${account.domainUrl}/me",
+//    Use the suspend awaitApiCredentials (getApiCredentials is the callback variant, not awaitable).
+//    Audience is the My Account API for your CUSTOM domain: https://<custom-domain>/me/ — no double scheme.
+val apiCreds = credentialsManager.awaitApiCredentials(
+    audience = "https://YOUR_CUSTOM_DOMAIN/me/",
     scope = "create:me:authentication_methods",
-).await()
+)
 
 // 2. Build the My Account client with that token and request an enrollment challenge.
 val myAccount = MyAccountAPIClient(account, apiCreds.accessToken)
@@ -67,7 +81,7 @@ val challenge = myAccount.passkeyEnrollmentChallenge().await()   // → PasskeyE
 // 3. Registration ceremony (create) — same as signup.
 val createRequest = CreatePublicKeyCredentialRequest(Gson().toJson(challenge.authParamsPublicKey))
 val created = credentialManager.createCredential(context, createRequest) as CreatePublicKeyCredentialResponse
-val credential = /* parse created.registrationResponseJson into PublicKeyCredentials */
+val credential = Gson().fromJson(created.registrationResponseJson, PublicKeyCredentials::class.java)
 
 // 4. Complete enrollment.
 val method = myAccount.enroll(credential, challenge).await()   // → PasskeyAuthenticationMethod
@@ -87,4 +101,4 @@ val method = myAccount.enroll(credential, challenge).await()   // → PasskeyAut
 - Use `createCredential()` for signup/enrollment and `getCredential()` for login — do not cross them; both yield a `PublicKeyCredentials`.
 - The **Digital Asset Links** file must be published and verified on the custom domain, or Credential Manager refuses the ceremony.
 - Persist login/signup `Credentials` via `SecureCredentialsManager`/`CredentialsManager`, never by hand in `SharedPreferences`.
-- `signinWithPasskey()` can fail with an MFA-required error — continue with the MFA flow (see the hub, then `feature-mfa`).
+- Handling MFA is **optional** and only needed if the tenant layers a second factor on passkey login — most tasks don't ask for it, so don't add the branch reflexively. If you do, the error is an `AuthenticationException` whose `isMultifactorRequired` is true (code `mfa_required`); continue with the MFA flow (see the hub, then `feature-mfa`). **Do not invent an MFA error class** — Auth0.Android surfaces this on `AuthenticationException`, not a dedicated type.
