@@ -158,6 +158,7 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 | Hand-rolling the REST calls (`/passkey/challenge`, `/me/v1/authentication-methods`) | The SDK owns those paths and the base64url reshaping; a hand-rolled call drifts | Call the SDK challenge/enroll methods — never construct the endpoints yourself |
 | Android: removed `PasskeyAuthProvider` / `PasskeyProvider` / `PasskeyManager` wrappers | Removed in Auth0.Android `4.0.0` | Use `AuthenticationAPIClient` + `MyAccountAPIClient` + AndroidX CredentialManager |
 | Android: Play Services FIDO (`com.google.android.gms.fido`) or server `auth0-java` for the ceremony | Wrong layer — not the mobile passkey path | Drive the ceremony with AndroidX `CredentialManager`; exchange via `AuthenticationAPIClient` |
+| Returning the token-exchange result (raw tokens / server-side session state) in the HTTP response, or logging it | Leaks Auth0 access / ID / refresh tokens to the client | Let the SDK persist the session in its state store; respond with success/redirect only and read claims server-side |
 
 ## References
 [Auth0 passkeys documentation](https://auth0.com/docs/authenticate/database-connections/passkeys)
