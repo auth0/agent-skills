@@ -113,7 +113,7 @@ Letting an *already-authenticated* user add a passkey uses the My Account API (t
 - Requires a **Multi-Resource Refresh Token (MRRT)** policy so the app can obtain that token alongside its API token.
 - Two steps: `POST /me/v1/authentication-methods {type:"passkey"}` for the challenge → run the WebAuthn *registration* ceremony → `POST /me/v1/authentication-methods/{id}/verify`.
 
-Only some SDKs expose enrollment directly (`nextjs-auth0`, `react-native-auth0`, `Auth0.swift`); their leaf files document it. For the others, enrollment is a hosted-portal concern — see `feature-universal-portals`.
+Only some SDKs expose enrollment directly (`nextjs-auth0`, `react-native-auth0`, `Auth0.swift` via `myAccount(...)`, `Auth0.Android` via `MyAccountAPIClient`); their leaf files document it. For the others, enrollment is a hosted-portal concern — see `feature-universal-portals`.
 
 ## MFA interplay and errors
 
@@ -142,7 +142,7 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 | `@auth0/auth0-auth-js` | 1.7.0 | signup, login | `references/feature-passkeys/auth0-auth-js.md` |
 | `auth0-server-python` | 1.0.0b13 | signup, login | `references/feature-passkeys/auth0-server-python.md` |
 | `Auth0.swift` (iOS/macOS/visionOS) | 2.12.0 · 2.13.0 (enrollment) | signup, login, enrollment | `references/feature-passkeys/auth0-swift.md` |
-| `Auth0.Android` | 3.2.0 | signup, login | `references/feature-passkeys/auth0-android.md` |
+| `Auth0.Android` | 4.0.0 · 3.8.0 (enrollment) | signup, login, enrollment | `references/feature-passkeys/auth0-android.md` |
 | `react-native-auth0` | 5.7.0 | signup, login, enrollment | `references/feature-passkeys/react-native-auth0.md` |
 
 ## Common mistakes
@@ -155,6 +155,9 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 | Using a public client for the server token exchange | Server SDK passkey token exchange requires client authentication | Use a confidential client (`clientSecret` / private-key JWT / mTLS) per the leaf |
 | Treating a passkey as a second factor | Passkeys here are the primary credential; the MFA reference covers the second-factor case | For step-up, use `feature-mfa`; for passwordless primary login, use this reference |
 | Reusing a signup challenge for login (or vice-versa) | Registration and assertion are different ceremonies | Use the signup challenge with `create()` and the login challenge with `get()` |
+| Hand-rolling the REST calls (`/passkey/challenge`, `/me/v1/authentication-methods`) | The SDK owns those paths and the base64url reshaping; a hand-rolled call drifts | Call the SDK challenge/enroll methods — never construct the endpoints yourself |
+| Android: removed `PasskeyAuthProvider` / `PasskeyProvider` / `PasskeyManager` wrappers | Removed in Auth0.Android `4.0.0` | Use `AuthenticationAPIClient` + `MyAccountAPIClient` + AndroidX CredentialManager |
+| Android: Play Services FIDO (`com.google.android.gms.fido`) or server `auth0-java` for the ceremony | Wrong layer — not the mobile passkey path | Drive the ceremony with AndroidX `CredentialManager`; exchange via `AuthenticationAPIClient` |
 
 ## References
 [Auth0 passkeys documentation](https://auth0.com/docs/authenticate/database-connections/passkeys)

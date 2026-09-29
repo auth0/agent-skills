@@ -68,9 +68,43 @@ let credentials = try await Auth0
 
 Both calls use `login(passkey:challenge:connection:audience:scope:organization:)` (all but `passkey` and `challenge` optional) and return `Credentials`.
 
-## Enrollment (add a passkey — My Account API)
+## Enrollment (add a passkey to a signed-in account — My Account API)
 
-Requires an access token with `create:me:authentication_methods` and the My Account audience (see the hub's Enrollment section). Use the My Account API client to request an enrollment challenge, run the Apple registration ceremony, then confirm — registering the new passkey against the signed-in account.
+The user is already logged in. Enrollment runs the **same Apple registration ceremony as signup** but goes through the My Account API client with a My-Account-scoped token — it does **not** mint a new `Credentials`.
+
+```swift
+import Auth0
+import AuthenticationServices
+
+// 1. Exchange the stored credentials for a My-Account-audience token.
+let apiCredentials = try await credentialsManager.apiCredentials(
+    forAudience: "https://\(domain)/me",
+    scope: "create:me:authentication_methods")
+
+// 2. Enrollment challenge via the My Account API client.
+let myAccount = Auth0.myAccount(token: apiCredentials.accessToken)
+let challenge = try await myAccount
+    .authenticationMethods
+    .passkeyEnrollmentChallenge()
+// challenge: relyingPartyId, challengeData, userName, userId, authenticationSession
+
+// 3. Apple registration ceremony (create) — same as signup.
+let provider = ASAuthorizationPlatformPublicKeyCredentialProvider(
+    relyingPartyIdentifier: challenge.relyingPartyId)
+let request = provider.createCredentialRegistrationRequest(
+    challenge: challenge.challengeData,
+    name: challenge.userName,
+    userID: challenge.userId)
+// run request via ASAuthorizationController → newPasskey credential
+
+// 4. Complete enrollment against the signed-in account.
+let method = try await myAccount
+    .authenticationMethods
+    .enroll(passkey: newPasskey, challenge: challenge)
+```
+
+- `credentialsManager.apiCredentials(forAudience:scope:)` mints the `https://<domain>/me` token with `create:me:authentication_methods` — not the plain login access token.
+- `Auth0.myAccount(token:)` → `.authenticationMethods.passkeyEnrollmentChallenge(...)` → the challenge; `.enroll(passkey:challenge:)` completes it. No new `Credentials` are returned.
 
 ## SDK-specific gotchas
 
