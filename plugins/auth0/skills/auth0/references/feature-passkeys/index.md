@@ -141,7 +141,7 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 | `@auth0/auth0-server-js` | 1.7.0 | signup, login | `references/feature-passkeys/auth0-server-js.md` |
 | `@auth0/auth0-auth-js` | 1.7.0 | signup, login | `references/feature-passkeys/auth0-auth-js.md` |
 | `auth0-server-python` | 1.0.0b13 | signup, login | `references/feature-passkeys/auth0-server-python.md` |
-| `Auth0.swift` (iOS/macOS/visionOS) | 2.12.0 · 2.13.0 (enrollment) | signup, login, enrollment | `references/feature-passkeys/auth0-swift.md` |
+| `Auth0.swift` (iOS/macOS/visionOS) | 3.0.0 · 2.13.0 (enrollment) | signup, login, enrollment | `references/feature-passkeys/auth0-swift.md` |
 | `Auth0.Android` | 4.0.0 · 3.8.0 (enrollment) | signup, login, enrollment | `references/feature-passkeys/auth0-android.md` |
 | `react-native-auth0` | 5.7.0 | signup, login, enrollment | `references/feature-passkeys/react-native-auth0.md` |
 

@@ -1,6 +1,6 @@
 # Auth0.swift — Passkeys
 
-**Minimum version:** passkey signup/login via the Authentication API shipped in **`2.12.0`**; `organization` support in **`2.14.0`**; optional additional signup properties (e.g. `userMetadata`) in **`2.20.0`**; My Account passkey **enrollment** in **`2.13.0`**. Requires **iOS 16.6+ / macOS 13.5+ / visionOS 1.0+** and the **Associated Domains** capability (`webcredentials:{yourCustomDomain}`).
+**Minimum version:** `3.0.0` — target the current **3.x** major (latest `3.1.0`). The passkey API is unchanged since it shipped on the 2.x line, so these snippets are identical across `2.12.0`+ and `3.x`: passkey signup/login shipped in **`2.12.0`**, My Account passkey **enrollment** in **`2.13.0`**, `organization` support in **`2.14.0`**, extra signup properties (e.g. `userMetadata`) in **`2.20.0`**. Every passkey method is gated `@available(iOS 16.6, macOS 13.5, visionOS 1.0, *)`, and you need the **Associated Domains** capability (`webcredentials:{yourCustomDomain}`). **v3 changes that touch this code:** `CredentialsManager` storage/read methods now *throw* instead of returning `Bool`/`nil` (use `try`), and `login(passkey:challenge:)` returns `any TokenRequestable` (call sites unchanged).
 
 Framework-specific surface only. The shared 3-step mechanic, the tenant configuration (custom domain + passkey grant + connection auth method), the feature-level protocol symbols, and the MFA-interplay error semantics live in `feature-passkeys/index.md` — do not restate them here.
 
@@ -109,6 +109,6 @@ let method = try await myAccount
 ## SDK-specific gotchas
 
 - The **Associated Domains** entitlement (`webcredentials:{yourCustomDomain}`) must point at the verified custom domain; without it the OS refuses the ceremony.
-- Store the returned `Credentials` via `CredentialsManager` for reuse.
+- Store the returned `Credentials` via `CredentialsManager` for reuse. On the 3.x line the store/read methods **throw** (they no longer return `Bool`/`nil`), so wrap them in `try` and handle the error.
 - The `connection` must be a database connection with the passkey authentication method enabled.
 - `login(passkey:...)` can throw when the tenant requires MFA — continue with the MFA flow (see the hub, then `feature-mfa`).
