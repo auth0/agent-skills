@@ -6,6 +6,22 @@ Framework-specific surface only. The shared 3-step mechanic, the tenant configur
 
 Auth0.swift is **high-level for the token exchange** but you drive the platform WebAuthn ceremony with Apple's `AuthenticationServices` (`ASAuthorizationPlatformPublicKeyCredentialProvider`). The pattern: **Auth0 challenge → Apple ceremony → Auth0 login with the credential**.
 
+## Prerequisites (app-side)
+
+Passkeys will not work without an OS-level domain association — this is not optional and the SDK cannot do it for you:
+
+- Add the **Associated Domains** capability to the app entitlements with a `webcredentials:` entry for the **custom domain** (the WebAuthn relying party), e.g. in `App.entitlements`:
+
+  ```xml
+  <key>com.apple.developer.associated-domains</key>
+  <array>
+      <string>webcredentials:auth.yourcustomdomain.com</string>
+  </array>
+  ```
+
+  Without this entry `ASAuthorizationController` refuses the ceremony at runtime. The domain here must match the `Domain` in `Auth0.plist` and the tenant's custom domain.
+- Deployment target **iOS 16.6+ / macOS 13.5+ / visionOS 1.0+** (every passkey method is gated on it).
+
 ## Signup
 
 ```swift
