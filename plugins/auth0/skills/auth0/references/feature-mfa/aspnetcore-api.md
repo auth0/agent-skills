@@ -14,10 +14,7 @@ using Auth0.AspNetCore.Authentication.Api;
 builder.Services.AddAuth0ApiAuthentication(options =>
 {
     options.Domain = builder.Configuration["Auth0:Domain"];
-    options.JwtBearerOptions = new JwtBearerOptions
-    {
-        Audience = builder.Configuration["Auth0:Audience"],
-    };
+    options.Audience = builder.Configuration["Auth0:Audience"];
 });
 
 var issuer = $"https://{builder.Configuration["Auth0:Domain"]}/";

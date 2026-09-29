@@ -6,7 +6,7 @@ Framework-specific surface only. The shared mechanic, tenant config, `amr`/error
 
 There is no MFA-specific method — do **not** invent `LoginWithMfaAsync` / `RequestMfaAsync` or an `Auth0.OidcClient.Mfa` package. Step-up is requested through the extra authorization parameters passed to `LoginAsync`. Do not drop down to the raw `IdentityModel.OidcClient`, and do not use the ASP.NET web-app SDK `Auth0.AspNetCore.Authentication` — this is a desktop app.
 
-Extra authorization parameters are passed as an **anonymous object** to `LoginAsync` (the same shape the scaffold already uses for `audience`). To force step-up, add `acr_values` (the PAPE multi-factor policy) and `max_age = 0` for a fresh challenge, then read the `acr`/`amr` claim off `LoginResult.User` (a `ClaimsPrincipal`) and only transfer when MFA is confirmed:
+Extra authorization parameters are passed as an **anonymous object** to `LoginAsync` (the same shape the scaffold already uses for `audience`). To force step-up, add `acr_values` (the PAPE multi-factor policy) and `max_age = "0"` for a fresh challenge, then read the `acr`/`amr` claim off `LoginResult.User` (a `ClaimsPrincipal`) and only transfer when MFA is confirmed:
 
 ```csharp
 private const string MfaAcr = "http://schemas.openid.net/pape/policies/2007/06/multi-factor";
@@ -18,7 +18,7 @@ private async void TransferButton_Click(object sender, RoutedEventArgs e)
     {
         audience = _audience,
         acr_values = MfaAcr,
-        max_age = 0,
+        max_age = "0",
     });
 
     if (result.IsError)

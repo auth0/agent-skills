@@ -190,7 +190,7 @@ it first or fall back to the language-neutral mechanic. Several MFA API flows ar
 | `Auth0.OidcClient.*` (.NET native/desktop) | 4.4.0 | client-initiated step-up | `references/feature-mfa/oidc-client-net.md` |
 | `go-jwt-middleware` (Go, resource server) | v2.2.1 | API-side scope gate | `references/feature-mfa/go-jwt-middleware.md` |
 | `Auth0.AspNetCore.Authentication.Api` (resource server) | 1.0.1 | API-side scope gate | `references/feature-mfa/aspnetcore-api.md` |
-| Spring Security resource server (Java) | Spring Boot 3.3 / Security 6 | API-side scope gate | `references/feature-mfa/spring-security-api.md` |
+| `spring-boot-starter-oauth2-resource-server` (Java) | Spring Boot 3.3 / Security 6 | API-side scope gate | `references/feature-mfa/spring-security-api.md` |
 
 Note: the resource-server rows (`go-jwt-middleware`, `Auth0.AspNetCore.Authentication.Api`, Spring
 Security) do not run MFA — the API enforces the step-up **scope** the tenant issues post-MFA, gating a

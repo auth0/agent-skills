@@ -17,7 +17,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authorize -> authorize
                 // GET /api/balance — requires the read:balance scope.
-                .requestMatchers("/api/balance").hasAuthority("SCOPE_read:balance")
+                .requestMatchers(HttpMethod.GET, "/api/balance").hasAuthority("SCOPE_read:balance")
                 // POST /api/transfers — requires BOTH write:transfers and the
                 // step-up scope transfer:funds.
                 .requestMatchers(HttpMethod.POST, "/api/transfers")
@@ -32,6 +32,6 @@ public class SecurityConfig {
 }
 ```
 
-`allOf` / `hasAuthority` come from `AuthorizationManagers` / `AuthorityAuthorizationManager` (`import static ...access.AuthorizationManagers.allOf;` and `...access.AuthorityAuthorizationManager.hasAuthority;`). Equivalent options: a `@PreAuthorize("hasAuthority('SCOPE_write:transfers') and hasAuthority('SCOPE_transfer:funds')")` on the controller method, or two chained `requestMatchers`. Whichever you pick, keep the existing `SCOPE_write:transfers` requirement and apply the `transfer:funds` gate **only** to `POST /api/transfers` — leave `GET /api/balance` on `SCOPE_read:balance`.
+`allOf` / `hasAuthority` come from `AuthorizationManagers` / `AuthorityAuthorizationManager` (`import static ...access.AuthorizationManagers.allOf;` and `...access.AuthorityAuthorizationManager.hasAuthority;`). Equivalent option: a `@PreAuthorize("hasAuthority('SCOPE_write:transfers') and hasAuthority('SCOPE_transfer:funds')")` on the controller method. Whichever you pick, keep the existing `SCOPE_write:transfers` requirement and apply the `transfer:funds` gate **only** to `POST /api/transfers` — leave `GET /api/balance` on `SCOPE_read:balance`.
 
 Set the issuer (`spring.security.oauth2.resourceserver.jwt.issuer-uri`, `https://<domain>/`) and `audiences` in `application.yml`, never hardcoded in source.

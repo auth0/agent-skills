@@ -48,7 +48,7 @@ func requireScope(scope string, next http.Handler) http.Handler {
 Wire the validator with `validator.WithCustomClaims(func() validator.CustomClaims { return &CustomClaims{} })`, then chain `requireScope` inside `middleware.CheckJWT`. To add the step-up gate, require **both** scopes on the transfer route — keep the existing `write:transfers` check and add `transfer:funds` (chain `requireScope` twice, or check both in one guard):
 
 ```go
-mux.Handle("/api/transfers", middleware.CheckJWT(
+mux.Handle("POST /api/transfers", middleware.CheckJWT(
 	requireScope("write:transfers",
 		requireScope("transfer:funds", http.HandlerFunc(transferHandler)))))
 ```
