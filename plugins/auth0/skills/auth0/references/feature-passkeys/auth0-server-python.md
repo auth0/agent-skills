@@ -9,14 +9,16 @@ Framework-specific surface only. The shared 3-step mechanic, the tenant configur
 ## Signup / Login
 
 ```python
+import os
 from auth0_server_python.auth_server.server_client import ServerClient
 from auth0_server_python.auth_types import PasskeyUserProfile, PasskeyAuthResponse
 
+# Read config from the environment (.env) — never hard-code the domain/secret.
 server_client = ServerClient(
-    domain="{yourCustomDomain}",      # custom domain, not *.auth0.com
-    client_id="{yourClientId}",
-    client_secret="{yourClientSecret}",  # see "client auth" below
-    secret="{yourSessionSecret}",
+    domain=os.environ["AUTH0_DOMAIN"],            # custom domain, not *.auth0.com
+    client_id=os.environ["AUTH0_CLIENT_ID"],
+    client_secret=os.environ["AUTH0_CLIENT_SECRET"],  # see "client auth" below
+    secret=os.environ["AUTH0_SESSION_SECRET"],
     # state_store / transaction_store as configured
 )
 
@@ -32,7 +34,7 @@ login_challenge = await server_client.passkey_login_challenge(
     # optional: username (conditional-UI hint), connection, organization, store_options
 )
 
-# --- client runs the WebAuthn ceremony with authn_params_public_key ---
+# --- client runs the WebAuthn ceremony with authn_params_public_key (see "Browser ceremony" below) ---
 
 # Token exchange → PasskeyLoginResult
 result = await server_client.signin_with_passkey(
@@ -42,7 +44,11 @@ result = await server_client.signin_with_passkey(
     ),
     # optional: store_options, connection, organization, scope, audience, dpop_key
 )
-# tokens / user claims live inside result.state_data (e.g. result.state_data["user"])
+# signin_with_passkey() persists the session (tokens) into the state store for you.
+# result.state_data is that persisted session — it holds the raw access / ID /
+# refresh tokens. NEVER serialise it into an HTTP response body and NEVER log it;
+# doing so leaks credentials to the client. Respond with a success flag or a
+# redirect, and read user claims server-side from result.state_data["user"].
 ```
 
 - `passkey_signup_challenge(user_profile=..., ...)` → `PasskeySignupChallengeResponse`.
@@ -51,11 +57,21 @@ result = await server_client.signin_with_passkey(
 
 All three are `async` — `await` them. The credential is passed as `authn_response=PasskeyAuthResponse(...)`; there is **no** separate `credential` param.
 
+## Browser ceremony (required — the server SDK does not run it)
+
+`auth0-server-python` only issues the challenge and runs the token exchange, so a
+working web app **must** also ship client-side JS for the WebAuthn ceremony
+(`navigator.credentials.create()` / `.get()`) — a server-only solution never
+closes the loop. base64url-decode `authn_params_public_key.challenge` and
+`.user.id` before the ceremony and re-encode the credential's binary fields before
+POSTing them back into `PasskeyAuthResponse` (signup returns `attestationObject`;
+login returns `authenticatorData` + `signature` + `userHandle`).
+
 ## Data classes (from `auth0_server_python.auth_types`)
 
 - `PasskeyUserProfile` — the signup identity; all optional: `email`, `name`, `username`, `phone_number`, `given_name`, `family_name`, `nickname`, `picture`.
 - `PasskeyAuthResponse` — the WebAuthn credential posted back: `id: str`, `raw_id: str` (alias `rawId`), `type: str`, `response: dict[str, str]`, optional `authenticator_attachment`, `client_extension_results`.
-- `PasskeyLoginResult` — single field `state_data: dict[str, Any]`; the tokens and user claims live inside it (`result.state_data["user"]`).
+- `PasskeyLoginResult` — single field `state_data: dict[str, Any]`; this is the SDK-persisted session, so it carries the raw access / ID / refresh tokens alongside the user claims (`result.state_data["user"]`). Treat it as server-only: read claims from it, but never return it in a response body or write it to logs.
 
 ## Client authentication
 
@@ -68,6 +84,6 @@ The three methods raise `PasskeyError` (a subclass of `Auth0Error`); its code co
 ## SDK-specific gotchas
 
 - Carry the challenge's `auth_session` through to `signin_with_passkey`.
-- `authn_params_public_key` is the WebAuthn options the client ceremony consumes — pass it through unchanged.
+- `authn_params_public_key` is a Pydantic model (`PasskeyPublicKeyOptions`) whose WebAuthn fields carry camelCase aliases (`rpId`, `pubKeyCredParams`, `authenticatorSelection`, `userVerification`). When you serialise it to JSON for the browser, dump it with `by_alias=True` (`authn_params_public_key.model_dump(mode="json", by_alias=True)`); a plain `model_dump()` emits snake_case keys that `navigator.credentials.create()`/`.get()` silently ignores, so the ceremony fails. Otherwise pass the values through unchanged.
 - For DPoP-bound tokens pass `dpop_key` (an EC P-256 JWK) to `signin_with_passkey`.
 - The `domain` must be the verified custom domain.

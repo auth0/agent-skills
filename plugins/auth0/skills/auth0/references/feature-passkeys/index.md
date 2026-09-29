@@ -155,6 +155,7 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 | Using a public client for the server token exchange | Server SDK passkey token exchange requires client authentication | Use a confidential client (`clientSecret` / private-key JWT / mTLS) per the leaf |
 | Treating a passkey as a second factor | Passkeys here are the primary credential; the MFA reference covers the second-factor case | For step-up, use `feature-mfa`; for passwordless primary login, use this reference |
 | Reusing a signup challenge for login (or vice-versa) | Registration and assertion are different ceremonies | Use the signup challenge with `create()` and the login challenge with `get()` |
+| Returning the token-exchange result (raw tokens / server-side session state) in the HTTP response, or logging it | Leaks Auth0 access / ID / refresh tokens to the client | Let the SDK persist the session in its state store; respond with success/redirect only and read claims server-side |
 
 ## References
 [Auth0 passkeys documentation](https://auth0.com/docs/authenticate/database-connections/passkeys)
