@@ -1,8 +1,9 @@
 # go-jwt-middleware — Organizations (API side)
 
-**Minimum version:** `github.com/auth0/go-jwt-middleware/v3` — the `org_id`/`org_name` registered
-claims and `WithRegisteredClaimsValidator` are on the v3 line (target v3.0.0+; this reference
-documents the current v3.3.0 API).
+**Minimum version:** `github.com/auth0/go-jwt-middleware/v3` v3.3.0+ — the `OrgID`/`OrgName` fields on
+`RegisteredClaims` were added in v3.3.0 (v3.2.0 and earlier have no such fields, so the example below
+will not compile against them). `WithRegisteredClaimsValidator` is on the v3 line; this reference
+documents the current v3.3.0 API.
 
 Framework-specific surface only. The protocol shape, `org_id`-reading guidance, tenant config, and
 common mistakes live in the shared Organizations reference. This SDK **validates** bearer tokens on
@@ -21,8 +22,11 @@ jwtValidator, err := validator.New(
     validator.WithIssuer(issuerURL.String()),
     validator.WithAudience(os.Getenv("AUTH0_AUDIENCE")),
     // Reject a token whose org_id is missing or not one this API serves.
+    // Fail closed: an unset ACME_ORG_ID and an absent org_id both deserialize
+    // to "", so guard against empty on either side before accepting a match.
     validator.WithRegisteredClaimsValidator(func(claims validator.RegisteredClaims) error {
-        if claims.OrgID != os.Getenv("ACME_ORG_ID") {
+        expectedOrgID := os.Getenv("ACME_ORG_ID")
+        if expectedOrgID == "" || claims.OrgID == "" || claims.OrgID != expectedOrgID {
             return errors.New("token is not for a served organization")
         }
         return nil

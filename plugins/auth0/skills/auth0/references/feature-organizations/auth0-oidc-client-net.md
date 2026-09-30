@@ -1,8 +1,8 @@
 # auth0-oidc-client-net - Organizations
 
-**Minimum version:** `Auth0.OidcClient.Core` 4.0.0+ (MAUI 1.0.0+). Organization login works through
-`LoginAsync` extra-parameters across the current major line; pick the package for your platform and
-use its latest release:
+**Minimum version:** Organizations support was added in `Auth0.OidcClient.Core` 3.2.0, and org login
+has worked through `LoginAsync` extra-parameters ever since (MAUI package floor 1.0.0+). 4.x is the
+current major line and is recommended; pick the package for your platform and use its latest release:
 
 | Package | Platform |
 |---|---|

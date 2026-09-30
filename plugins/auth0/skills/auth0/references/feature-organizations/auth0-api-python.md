@@ -45,7 +45,12 @@ Map both `VerifyAccessTokenError` cases to a `401`/`403`. For a multi-org API, c
 `verify_access_token` returns the claims as a dict — read `org_id` straight off it:
 
 ```python
-claims = await api_client.verify_access_token(access_token=access_token)
+# required_claims=["org_id"] guarantees the key is present, so indexing it
+# below cannot raise KeyError on a token that lacks the claim.
+claims = await api_client.verify_access_token(
+    access_token=access_token,
+    required_claims=["org_id"],
+)
 org_id = claims["org_id"]  # "org_barkbook_acme"
 ```
 
