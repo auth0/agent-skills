@@ -31,7 +31,7 @@ signup_challenge = await server_client.passkey_signup_challenge(
 
 # Login challenge → PasskeyLoginChallengeResponse (same fields)
 login_challenge = await server_client.passkey_login_challenge(
-    # optional: username (conditional-UI hint), connection, organization, store_options
+    # optional: connection, organization, store_options
 )
 
 # --- client runs the WebAuthn ceremony with authn_params_public_key (see "Browser ceremony" below) ---
@@ -44,11 +44,12 @@ result = await server_client.signin_with_passkey(
     ),
     # optional: store_options, connection, organization, scope, audience, dpop_key
 )
-# signin_with_passkey() persists the session (tokens) into the state store for you.
-# result.state_data is that persisted session — it holds the raw access / ID /
-# refresh tokens. NEVER serialise it into an HTTP response body and NEVER log it;
-# doing so leaks credentials to the client. Respond with a success flag or a
-# redirect, and read user claims server-side from result.state_data["user"].
+# signin_with_passkey() persists the session into the state store. state_data is
+# that session — it holds the raw tokens, so never log it or return it in a response.
+# Close the loop: read the identity from result (don't discard it).
+user = result.state_data["user"]      # OIDC claims: user["sub"], user["email"], ...
+# Later requests: re-read via the SDK, never decode a token by hand.
+#   user = await server_client.get_user(store_options={"request": request, "response": response})
 ```
 
 - `passkey_signup_challenge(user_profile=..., ...)` → `PasskeySignupChallengeResponse`.
