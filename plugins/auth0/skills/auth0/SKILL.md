@@ -309,6 +309,7 @@ Read: references/tooling-{tooling}/index.md
 ### feature:passkeys
 ```
 Read: references/feature-passkeys/index.md
+Then Read the detected SDK's passkey leaf from the hub's "Example code snippets" table (e.g. nextjs → references/feature-passkeys/nextjs-auth0.md, react → references/feature-passkeys/auth0-react.md) — the leaf has the exact API surface and the required ceremony; do not implement from framework-{framework}/index.md alone.
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 ```
