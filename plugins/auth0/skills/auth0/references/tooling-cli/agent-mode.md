@@ -42,6 +42,40 @@ render the JSON help tree.
 
 ---
 
+## Authenticating without the keychain (agents, CI, sandboxes)
+
+`auth0 login` persists credentials to the OS keychain and a config file. A
+sandbox or CI box often has neither, so set **`AUTH0_CLI_AUTH_MODE=env`** to
+authenticate purely from environment variables — nothing is written to disk or
+the keychain, and the resolved token is held in memory for that one command:
+
+- `AUTH0_DOMAIN` — the tenant domain (e.g. `tenant.us.auth0.com`), always required.
+- `AUTH0_API_TOKEN` — a pre-minted Management API token, **or**
+- `AUTH0_CLIENT_ID` + `AUTH0_CLIENT_SECRET` — client credentials the CLI exchanges
+  for a token on *every* invocation. For repeated calls, mint one token yourself
+  and pass `AUTH0_API_TOKEN` instead.
+
+```bash
+AUTH0_CLI_AUTH_MODE=env AUTH0_DOMAIN=tenant.us.auth0.com \
+  AUTH0_API_TOKEN="$TOKEN" auth0 apps list
+```
+
+The mode is **opt-in on purpose** — the `AUTH0_*` vars are shared with the
+Terraform provider and scaffolded sample apps, so their mere presence never
+silently replaces a saved login or switches tenants. In this mode the tenant is
+fixed by `AUTH0_DOMAIN`; a `--tenant` pointing elsewhere fails rather than
+targeting the wrong tenant. An incomplete or malformed configuration fails with
+an `auth` error and a `reason` such as `env_auth_incomplete`,
+`env_auth_invalid_domain`, `env_auth_tenant_conflict`, or `env_auth_exchange_failed`
+— it never falls back to a saved login.
+
+When a normal `auth0 login` can't persist because the keychain is unreadable or
+the config isn't writable (a read-only sandbox), the CLI fails with an `auth`
+error (`reason: stored_token_unavailable` or `config_not_writable`) that points
+you at this env mode.
+
+---
+
 ## Destructive commands require `--force`
 
 Agent mode disables prompts, so instead of silently deleting, destructive
@@ -148,17 +182,15 @@ device-code flow.
 **Per-command (local)** — only where the command defines them:
 `--json`, `--json-compact`, `--csv`, `--force`, `--data`, `--query`, `--schema`,
 `--reveal-secrets`. Not every command exposes JSON/CSV — only those that produce
-output. (`auth0 api` has `--json`/`--json-compact` but no `--csv`.)
+output.
 
 ---
 
 ## Structured-input flags by resource
 
-`--data` / `--schema` (on `create` / `update`) and `--query` / `--schema` (on
-`list`) are documented in the command reference's Structured Input section.
-**They are defined only on the top-level resource commands that manage a
-Management API object, not on every command** — this table (or `<command>
---help`) says which:
+`--data` / `--schema` drive `create` / `update`; `--query` / `--schema` drive
+`list`. **They are defined only on the commands that manage a Management API
+object, not on every command** — this table (or `<command> --help`) says which:
 
 | Resource | `--data` / `--schema` (create/update) | `--query` / `--schema` (list) |
 |----------|:---:|:---:|
@@ -172,7 +204,15 @@ outside the ✅ rows (e.g. `orgs`, `client-grants`) has no structured input — 
 its named flags, or fall back to `auth0 api` with `--data @file` as the JSON-body
 escape hatch.
 
+Several **configuration commands** accept structured input beyond the classic
+resources — custom domains, email templates, universal-login (including prompts),
+ACUL config, and log listing among them. Coverage per command varies (an `update`
+may take only `--data` / `--schema`, a `list` only `--query` / `--schema`), so
+confirm with `<command> --help` rather than assuming.
+
 Two `--query` flags share a name but differ: on a `list` command it's a JSON
 object of query params, whereas on `auth0 api` `-q` / `--query` is a repeatable
-raw `key=value` URL parameter (`-q from=20240101 -q to=20240131`). Don't pass a
-JSON object to `auth0 api -q`.
+raw `key=value` URL parameter. Each `-q` value is one parameter and a
+comma-separated value stays intact (`-q "fields=a,b,c"` → `fields=a,b,c`);
+repeat the flag to send a parameter more than once (`-q from=20240101 -q
+to=20240131`). Don't pass a JSON object to `auth0 api -q`.

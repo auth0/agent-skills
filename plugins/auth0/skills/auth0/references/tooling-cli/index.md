@@ -3,9 +3,9 @@
 Use the Auth0 CLI when the project has no Terraform infrastructure and no active
 MCP session. This is the default tooling.
 
-Install with: `brew install auth0`. This reference assumes **v1.36.0 or newer**
-(the release that introduced agent mode, the JSON error envelope, native
-connections commands, and the `--schema`/`--data`/`--query` flags); run
+Install with: `brew install auth0`. This reference assumes a recent release
+(**v1.37.0 or newer**) with agent mode, the JSON error envelope, native resource
+commands, and the `--schema`/`--data`/`--query` structured-input flags; run
 `auth0 --version` to check, and prefer `auth0 commands` / `--help` (both
 machine-readable in agent mode) over this page for the exact current flags.
 
@@ -21,9 +21,10 @@ machine-readable in agent mode) over this page for the exact current flags.
 - [Piping to `jq`](#piping-to-jq)
 
 **Agent mode, output, and error handling live in one place.** How agent mode is
-enabled and forced and everything it changes, the JSON error envelope and
-failure-class reference, destructive-command `--force` handling, interactive and
-browser-command behavior, and the rules for reading stdout vs stderr are all in
+enabled and forced and everything it changes, keychain-less env authentication
+for sandboxes and CI, the JSON error envelope and failure-class reference,
+destructive-command `--force` handling, interactive and browser-command behavior,
+and the rules for reading stdout vs stderr are all in
 `references/tooling-cli/agent-mode.md` — read it before running commands in an
 agent session.
 
@@ -44,6 +45,12 @@ device flow, doesn't block on a human. Switch tenants with
 `auth0 tenants use <domain>`, or target one command at a time with the global
 `--tenant` flag. `auth0 login` and `auth0 logout` take no output flags.
 
+In a sandbox or CI box with no OS keychain and no writable config, don't use
+`auth0 login` at all — authenticate from environment variables by setting
+`AUTH0_CLI_AUTH_MODE=env`, which persists nothing to disk. See the env-auth
+section of
+[`agent-mode.md`](agent-mode.md#authenticating-without-the-keychain-agents-ci-sandboxes).
+
 ---
 
 ## Structured Input and Output: `--schema` / `--data` / `--query`
@@ -52,14 +59,10 @@ A machine-first way to drive the native resource commands, so you rarely have to
 drop to raw `auth0 api` or hand-build long flag lists. `--data` and `--schema`
 drive `create` / `update`; `--query` and `--schema` drive `list`.
 
-**These flags live only on the top-level resource commands that manage a
-Management API object — not on every command.** `apps`, `apis`, `roles`,
-`actions`, and `connections` take all three; `users` and `forms` take
-`--data` / `--schema`; a few (notably `orgs` and `client-grants`) take none, so
-use their named flags or `auth0 api` instead. For the exact per-resource matrix,
-see the table in
-[`agent-mode.md`](agent-mode.md#structured-input-flags-by-resource); when unsure
-about one command, check `<command> --help`.
+**Not every command defines these** — coverage is per-command. For the exact
+resource-by-resource matrix, see
+[`agent-mode.md`](agent-mode.md#structured-input-flags-by-resource); when unsure,
+check `<command> --help`.
 
 **`--schema`** prints the request payload schema for a command and exits. Use it
 to construct a valid body without guessing field names:
@@ -123,9 +126,9 @@ interactive ones: `delete`, `open`, `revoke`, `unblock`, `login`, `logout`, plus
 - `auth0 logs tail` — only takes `--filter` and `--number` (streams NDJSON in agent mode)
 - `auth0 users import` — only `--connection-name`, `--users`, `--upsert`, `--template`, `--email-results`
 - `auth0 roles permissions add` / `remove`
-- `auth0 terraform generate` — emits a `{"output_dir","status",...}` result in agent mode
-- `auth0 universal-login customize` / `templates update` / `prompts update` (fail fast in agent mode)
-- `auth0 acul init` / `acul dev` / `acul config set`
+- `auth0 terraform generate` — prints a JSON result in agent mode
+- `auth0 universal-login customize` / `templates update` — interactive editors
+- `auth0 acul init` / `acul dev`
 
 When unsure, don't guess — ask the CLI:
 
@@ -196,7 +199,9 @@ auth0 apps update --help | jq -r '.[0].flags[].name'
 |-------------------|---------------|
 | Discovering which command to run | `auth0 commands --flat` |
 | Checking a command's flags | `auth0 <command> --help` |
+| Looking up Auth0 documentation | `auth0 docs search "<term>"` |
 | Building a request body without guessing fields | `auth0 apps create --schema` (only on resources that support it — see Structured Input) |
+| **Integrating an app with Auth0 (add login/API)** | **`auth0 qs setup`** — auto-detects the framework, creates the app/API, writes config |
 | Setting up a new project | `auth0 apps create --type spa` (see App types below) |
 | Scaffolding an app + API for a framework | `auth0 quickstarts setup --app --framework <fw>` |
 | Need a client ID or secret | `auth0 apps show <id> -r` |
@@ -251,6 +256,10 @@ App types: `spa`, `regular`, `m2m`, `native`, `resource_server`.
 
 **Session transfer** (native-to-web SSO) lives under `apps session-transfer`
 (`show` / `update`); run `auth0 apps session-transfer update --help` for its flags.
+
+**Organization behavior** for a B2B app is set on `create` / `update` with
+`--organization-usage`, `--organization-require-behavior`, and
+`--organization-discovery-methods`.
 
 ### APIs — Manage API Resources
 
@@ -350,6 +359,7 @@ auth0 users roles assign <user-id> --roles <role-id>
 ### Guardian — Multi-Factor Authentication
 
 Manage the tenant MFA policy, enrollment tickets, and factor providers natively.
+Alias: `auth0 mfa`.
 
 ```bash
 auth0 guardian policies set --policy all-applications     # or: confidence-score, or --none
@@ -520,10 +530,12 @@ auth0 domains default set <domain-id>       # pick the tenant's default custom d
 ```bash
 auth0 ul update --accent "#FF6600" --background "#FFFFFF" \
   --logo "https://myapp.com/logo.png"
+auth0 ul update --data @branding.json           # or drive it with a JSON body
 ```
 
-`auth0 ul customize`, `templates update`, and `prompts update` are interactive
-editors — they define no output flags and **fail fast in agent mode**. For
+`auth0 ul update` and `auth0 ul prompts update` are non-interactive and take
+`--data` / `--schema`. `auth0 ul customize` and `templates update` are
+interactive editors that fail fast in agent mode (see agent-mode.md); for
 non-interactive advanced rendering (ACUL), use `auth0 acul config ...`.
 
 ### Test — Verify Login Flows and Tokens
@@ -537,20 +549,38 @@ auth0 test token <client-id> --audience "https://api.myapp.com" --organization <
 In agent mode `test login` prints `{"login_url":"..."}` and waits for the browser
 callback rather than opening a browser.
 
-### Quickstarts — Scaffold a Project
+### Quickstarts — Integrate an App with Auth0
 
-Auto-detect a project, create the matching Auth0 app and/or API, and write a
-config file (`.env` etc.).
+**`auth0 qs setup` (alias for `auth0 quickstarts setup`) is the fastest way to
+wire a project up to Auth0** — reach for it whenever someone wants to "add Auth0"
+or "add login" to an app rather than hand-creating a client and copying values.
+It auto-detects the project's framework, creates the matching Auth0 application
+and/or API, and writes the config file the SDK reads (`.env` and framework
+equivalents) with the tenant domain, client ID, and — when an API is created —
+its audience already filled in.
+
+Three workflows:
 
 ```bash
-auth0 quickstarts setup --app --type spa --framework react --build-tool vite --port 5173
-auth0 quickstarts setup --api --linked-app-id <client-id> \
+# App only — auto-detects the framework in the current directory:
+auth0 qs setup --app --type spa --framework react --build-tool vite --port 5173
+
+# API + a new app to call it:
+auth0 qs setup --api --app --type regular --framework express --identifier "https://my-api"
+
+# API linked to an existing app (skips app creation):
+auth0 qs setup --api --linked-app-id <client-id> \
   --identifier "https://my-api" --scopes "read:data,write:data"
 ```
 
+Run it with no flags for a guided setup; `--app` / `--api` choose what to create,
+and at least one is required in `--no-input`/agent mode. `--type` is `spa`,
+`regular`, `native`, or `m2m`; other useful flags are `--name`, `--port`, and
+`--callback-url` / `--logout-url` / `--web-origin-url` (app), plus `--identifier`,
+`--scopes`, `--signing-alg`, `--token-lifetime`, and `--offline-access` (API).
 Framework/build-tool coverage includes React, Vue, Next.js, Express, Fastify,
-JHipster, and Vite/Webpack/CRA. `quickstarts download` and `quickstarts list`
-remain for fetching sample apps.
+JHipster, and Vite/Webpack/CRA. `auth0 qs download` and `auth0 qs list` remain for
+fetching sample apps.
 
 ### Attack Protection — Security Hardening
 
@@ -585,9 +615,9 @@ token-exchange profiles, prompt screens, and more (e.g. `auth0_flow`, `auth0_for
 `auth0_token_exchange_profile`, `auth0_prompt_screen_partial`). Run
 `auth0 terraform generate --help` for the complete list. CIMD clients are emitted
 automatically as `auth0_client_cimd` when generating `auth0_client`; you don't
-pass that name to `--resources`. In agent mode this command prints a
-`{"output_dir","status",...}` result (`status` is one of `generated`,
-`plan_failed`, `terraform_install_failed`, `credentials_missing`).
+pass that name to `--resources`. In agent mode this command prints a JSON result
+instead of progress text — see
+[`agent-mode.md`](agent-mode.md#interactive-and-browser-commands-in-agent-mode).
 
 ### Agent Skills — Install This Skill Elsewhere
 
@@ -597,6 +627,22 @@ auth0 agent skills install                          # prompts; or --agent claude
 
 Installs the Auth0 skill into AI coding assistants (via `npx skills@...`; needs
 Node.js).
+
+### Docs — Search Auth0 Documentation
+
+Look up official Auth0 documentation from the terminal without leaving the
+session. Alias: `auth0 docs find`.
+
+```bash
+auth0 docs search "custom domains"
+auth0 docs search "refresh token" --json
+auth0 docs search rules --json-compact | jq '.[] | {title, url}'
+```
+
+Each result carries a `title`, `type`, `url`, `snippet`, and `score`. In agent
+mode the `url` is the page's raw-markdown source, so you can fetch it directly;
+`--open` (open a result in a browser) is rejected in agent mode — search without
+it and read a result's `url`.
 
 ### Raw API Mode — Direct Management API Access
 
