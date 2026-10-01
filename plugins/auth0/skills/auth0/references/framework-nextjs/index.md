@@ -9,7 +9,7 @@ bootstraps it: make sure `@auth0/nextjs-auth0` is installed, then read the guide
 1. Is `@auth0/nextjs-auth0` a dependency? Check `package.json` and `node_modules`.
    - **If not installed:** install it with the project's package manager (pnpm/yarn/npm —
      match the lockfile): `npm install @auth0/nextjs-auth0`.
-2. Read and follow `node_modules/@auth0/nextjs-auth0/skills/nextjs-auth0/SKILL.md`. That is
+2. Read and follow `node_modules/@auth0/nextjs-auth0/skills/SKILL.md`. That is
    the source of truth for the installed SDK version — prefer it over anything here.
 3. If that path does **not** exist, the installed version predates bundled skills. Run
    `npm install @auth0/nextjs-auth0@latest` and re-check the path.
