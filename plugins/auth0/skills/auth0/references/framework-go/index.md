@@ -479,6 +479,8 @@ Built-in proof-of-possession token binding per RFC 9449. See the Integration Gui
 
 ## References
 
+Run `auth0 docs search "go"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Go API Quickstart](https://auth0.com/docs/quickstart/backend/golang/interactive)
 - [SDK GitHub Repository](https://github.com/auth0/go-jwt-middleware)
 - [Go Package Documentation](https://pkg.go.dev/github.com/auth0/go-jwt-middleware/v3)

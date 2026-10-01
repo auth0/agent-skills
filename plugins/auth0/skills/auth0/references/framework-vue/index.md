@@ -146,6 +146,8 @@ For full DPoP setup, ask for DPoP token binding (feature:dpop).
 
 ## References
 
+Run `auth0 docs search "vue"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Vue SDK Documentation](https://auth0.com/docs/libraries/auth0-vue)
 - [Auth0 Vue Quickstart](https://auth0.com/docs/quickstart/spa/vuejs)
 - [SDK GitHub Repository](https://github.com/auth0/auth0-vue)

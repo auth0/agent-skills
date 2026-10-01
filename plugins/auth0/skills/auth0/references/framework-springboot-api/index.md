@@ -221,6 +221,8 @@ Built-in proof-of-possession token binding per RFC 9449. See the Integration Gui
 
 ## References
 
+Run `auth0 docs search "spring boot"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Java Spring Security API Quickstart](https://auth0.com/docs/quickstart/backend/java-spring-security5)
 - [SDK GitHub Repository](https://github.com/auth0/auth0-auth-java)
 - [Spring Security Documentation](https://docs.spring.io/spring-security/reference/)

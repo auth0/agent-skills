@@ -189,6 +189,8 @@ const response = await fetch('https://your-api.example.com/data', {
 
 ## References
 
+Run `auth0 docs search "single page application"` for the latest Auth0 docs on this topic.
+
 - [Auth0 SPA JS SDK Documentation](https://auth0.com/docs/libraries/auth0-spa-js)
 - [Auth0 Vanilla JS Quickstart](https://auth0.com/docs/quickstart/spa/vanillajs)
 - [SDK GitHub Repository](https://github.com/auth0/auth0-spa-js)

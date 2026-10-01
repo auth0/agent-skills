@@ -706,6 +706,8 @@ auth0 apps list --json-compact | jq '.[] | {client_id, name}'
 
 ## References
 
+Run `auth0 docs search "auth0 cli"` for the latest Auth0 docs on this topic.
+
 - [Auth0 CLI Documentation](https://auth0.github.io/auth0-cli/)
 - [`agent-mode.md`](agent-mode.md) — full failure-class list, the structured-input matrix by resource, per-command interactive behavior
 - [Auth0 Management API v2](https://auth0.com/docs/api/management/v2)

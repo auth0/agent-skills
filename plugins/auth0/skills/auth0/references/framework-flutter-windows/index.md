@@ -544,6 +544,8 @@ app.get('/callback', (req, res) => {
 
 ## References
 
+Run `auth0 docs search "flutter"` for the latest Auth0 docs on this topic.
+
 - [auth0_flutter on pub.dev](https://pub.dev/packages/auth0_flutter)
 - [auth0_flutter GitHub](https://github.com/auth0/auth0-flutter)
 - [Example Windows runner (main.cpp)](https://github.com/auth0/auth0-flutter/blob/main/auth0_flutter/example/windows/runner/main.cpp)
