@@ -4,7 +4,7 @@
 
 Framework-specific surface only. The shared 3-step mechanic, the tenant configuration (custom domain + passkey grant + connection auth method), the feature-level protocol symbols, and the MFA-interplay error semantics live in `feature-passkeys/index.md` — do not restate them here.
 
-`auth0-auth-js` is the **low-level building-block** SDK: no session storage, no framework glue. It gives you the challenge and the token exchange; you run `navigator.credentials.*` yourself and you own where the tokens go.
+`auth0-auth-js` is the **low-level building-block** SDK: no session storage, no framework glue. The `AuthClient` holds your `clientSecret`, so it runs **server-side** — it issues the challenge and runs the token exchange there; the WebAuthn ceremony (`navigator.credentials.*`) runs in the browser and the credential is posted back to your server. You own where the tokens go.
 
 ## Signup / Login
 
@@ -37,7 +37,7 @@ const tokens = await authClient.passkey.getTokenByPasskey({ authSession, /* cred
 ## SDK-specific gotchas
 
 - **`register` / `challenge` accept only a client secret** on a confidential client (they reject private-key-JWT and mTLS); public clients call them with `clientId` alone. Only `getTokenByPasskey` supports the full set (client secret, private-key JWT, or mTLS) — a public client cannot complete it. If you configure private-key-JWT or mTLS *only*, `register` / `challenge` will fail.
-- This SDK stores nothing — persist the returned tokens and the `authSession` yourself.
+- This SDK stores nothing — persist the returned tokens and the `authSession` yourself. `getTokenByPasskey` hands back the **raw token set** (access / ID / refresh); keep it server-side — never return it in a response body or write it to logs.
 - Use the registration challenge with `navigator.credentials.create()` and the login challenge with `.get()`.
 - `passkey.getTokenByPasskey()` can surface `mfa_required` (throws `PasskeyGetTokenError`; narrow with `isMfaRequiredError`) — continue via `authClient.mfa` (see the hub, then `feature-mfa`).
 - The `domain` must be the verified custom domain.

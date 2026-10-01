@@ -76,13 +76,13 @@ The full connection-attribute config, the passkey policy, and the Terraform/MCP 
 
 ## Feature-level symbols
 
-Protocol-level names identical across every SDK — what a grader asserts and what the app must get right:
+Protocol-level concepts common to every SDK — what a grader asserts and what the app must get right. The concept is shared, but a few names vary by SDK (called out in the row); match the spelling the SDK's own leaf file uses:
 
 | Symbol | Meaning |
 |---|---|
 | `urn:okta:params:oauth:grant-type:webauthn` | The passkey grant the credential is exchanged for tokens on |
 | `authSession` | Opaque session string returned by the challenge; passed back to the token exchange |
-| `authnParamsPublicKey` / `publicKey` | The WebAuthn public-key options (challenge, rpId, user) the authenticator consumes |
+| `authnParamsPublicKey` / `authParamsPublicKey` / `publicKey` | The WebAuthn public-key options (challenge, rpId, user) the authenticator consumes — web/server SDKs spell it `authnParamsPublicKey`, the native SDKs (Auth0.Android, react-native-auth0) spell it `authParamsPublicKey` (no "n"), raw REST uses `publicKey` |
 | `clientDataJSON` | Part of the browser credential response (both create and get) |
 | `attestationObject` | Registration (signup) credential response field |
 | `authenticatorData` + `signature` + `userHandle` | Assertion (login) credential response fields |
@@ -113,7 +113,7 @@ Letting an *already-authenticated* user add a passkey uses the My Account API (t
 - Requires a **Multi-Resource Refresh Token (MRRT)** policy so the app can obtain that token alongside its API token.
 - Two steps: `POST /me/v1/authentication-methods {type:"passkey"}` for the challenge → run the WebAuthn *registration* ceremony → `POST /me/v1/authentication-methods/{id}/verify`.
 
-Only some SDKs expose enrollment directly (`nextjs-auth0`, `react-native-auth0`, `Auth0.swift` via `myAccount(...)`, `Auth0.Android` via `MyAccountAPIClient`); their leaf files document it. For the others, enrollment is a hosted-portal concern — see `feature-universal-portals`.
+Only some SDKs expose enrollment directly (`nextjs-auth0`, `react-native-auth0`, `Auth0.swift`); their leaf files document it. For the others, enrollment is a hosted-portal concern — see `feature-universal-portals`.
 
 ## MFA interplay and errors
 
@@ -133,6 +133,7 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 
 | SDK | Min version | Flow(s) | Reference (Read this file) |
 |---|---|---|---|
+
 | `@auth0/auth0-react` | 2.18.0 | signup, login | `references/feature-passkeys/auth0-react.md` |
 | `@auth0/auth0-vue` | 2.8.0 | signup, login | `references/feature-passkeys/auth0-vue.md` |
 | `@auth0/auth0-angular` | 2.10.0 | signup, login | `references/feature-passkeys/auth0-angular.md` |
@@ -141,8 +142,8 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 | `@auth0/auth0-server-js` | 1.7.0 | signup, login | `references/feature-passkeys/auth0-server-js.md` |
 | `@auth0/auth0-auth-js` | 1.7.0 | signup, login | `references/feature-passkeys/auth0-auth-js.md` |
 | `auth0-server-python` | 1.0.0b13 | signup, login | `references/feature-passkeys/auth0-server-python.md` |
-| `Auth0.swift` (iOS/macOS/visionOS) | 3.0.0 · 2.13.0 (enrollment) | signup, login, enrollment | `references/feature-passkeys/auth0-swift.md` |
-| `Auth0.Android` | 4.0.0 · 3.8.0 (enrollment) | signup, login, enrollment | `references/feature-passkeys/auth0-android.md` |
+| `Auth0.swift` (iOS/macOS/visionOS) | 2.12.0 · 2.13.0 (enrollment) | signup, login, enrollment | `references/feature-passkeys/auth0-swift.md` |
+| `Auth0.Android` | 3.2.0 | signup, login | `references/feature-passkeys/auth0-android.md` |
 | `react-native-auth0` | 5.7.0 | signup, login, enrollment | `references/feature-passkeys/react-native-auth0.md` |
 
 ## Common mistakes
@@ -155,9 +156,6 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 | Using a public client for the server token exchange | Server SDK passkey token exchange requires client authentication | Use a confidential client (`clientSecret` / private-key JWT / mTLS) per the leaf |
 | Treating a passkey as a second factor | Passkeys here are the primary credential; the MFA reference covers the second-factor case | For step-up, use `feature-mfa`; for passwordless primary login, use this reference |
 | Reusing a signup challenge for login (or vice-versa) | Registration and assertion are different ceremonies | Use the signup challenge with `create()` and the login challenge with `get()` |
-| Hand-rolling the REST calls (`/passkey/challenge`, `/me/v1/authentication-methods`) | The SDK owns those paths and the base64url reshaping; a hand-rolled call drifts | Call the SDK challenge/enroll methods — never construct the endpoints yourself |
-| Android: removed `PasskeyAuthProvider` / `PasskeyProvider` / `PasskeyManager` wrappers | Removed in Auth0.Android `4.0.0` | Use `AuthenticationAPIClient` + `MyAccountAPIClient` + AndroidX CredentialManager |
-| Android: Play Services FIDO (`com.google.android.gms.fido`) or server `auth0-java` for the ceremony | Wrong layer — not the mobile passkey path | Drive the ceremony with AndroidX `CredentialManager`; exchange via `AuthenticationAPIClient` |
 | Returning the token-exchange result (raw tokens / server-side session state) in the HTTP response, or logging it | Leaks Auth0 access / ID / refresh tokens to the client | Let the SDK persist the session in its state store; respond with success/redirect only and read claims server-side |
 
 ## References
