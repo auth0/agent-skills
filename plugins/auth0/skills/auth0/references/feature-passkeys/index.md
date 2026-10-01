@@ -133,6 +133,7 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 
 | SDK | Min version | Flow(s) | Reference (Read this file) |
 |---|---|---|---|
+
 | `@auth0/auth0-react` | 2.18.0 | signup, login | `references/feature-passkeys/auth0-react.md` |
 | `@auth0/auth0-vue` | 2.8.0 | signup, login | `references/feature-passkeys/auth0-vue.md` |
 | `@auth0/auth0-angular` | 2.10.0 | signup, login | `references/feature-passkeys/auth0-angular.md` |
