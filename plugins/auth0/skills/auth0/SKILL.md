@@ -46,6 +46,7 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
 | Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
+| Trade an external or partner identity provider's token (a legacy system token, an MCP/agent token, a token from another IdP) for Auth0 tokens without an interactive login. *Auth0: Custom Token Exchange (CTE), RFC 8693 token exchange, subject_token.* | **feature:custom-token-exchange** |
 | Audit a tenant for security/config issues, report, then optionally fix findings. *Auth0: tenant audit, CheckMate.* | **audit** |
 | Check if a tenant is healthy and on the right plan — two scores + a recommendation. *Auth0: health check.* | **healthcheck** |
 | Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
@@ -343,6 +344,13 @@ Read: references/feature-dpop/index.md
 Read: references/tooling-{tooling}/index.md
 If a SPA framework is detected (vue/react/angular/spa-js): Read references/framework-{framework}/index.md
 DPoP is SPA-only (no SSR: Next.js/Nuxt) — feature-dpop/index.md states the exclusion.
+```
+
+### feature:custom-token-exchange
+```
+Read: references/feature-custom-token-exchange/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
 ```
 
 ### guidance
