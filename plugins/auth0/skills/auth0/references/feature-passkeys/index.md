@@ -76,13 +76,13 @@ The full connection-attribute config, the passkey policy, and the Terraform/MCP 
 
 ## Feature-level symbols
 
-Protocol-level names identical across every SDK — what a grader asserts and what the app must get right:
+Protocol-level concepts common to every SDK — what a grader asserts and what the app must get right. The concept is shared, but a few names vary by SDK (called out in the row); match the spelling the SDK's own leaf file uses:
 
 | Symbol | Meaning |
 |---|---|
 | `urn:okta:params:oauth:grant-type:webauthn` | The passkey grant the credential is exchanged for tokens on |
 | `authSession` | Opaque session string returned by the challenge; passed back to the token exchange |
-| `authnParamsPublicKey` / `publicKey` | The WebAuthn public-key options (challenge, rpId, user) the authenticator consumes |
+| `authnParamsPublicKey` / `authParamsPublicKey` / `publicKey` | The WebAuthn public-key options (challenge, rpId, user) the authenticator consumes — web/server SDKs spell it `authnParamsPublicKey`, the native SDKs (Auth0.Android, react-native-auth0) spell it `authParamsPublicKey` (no "n"), raw REST uses `publicKey` |
 | `clientDataJSON` | Part of the browser credential response (both create and get) |
 | `attestationObject` | Registration (signup) credential response field |
 | `authenticatorData` + `signature` + `userHandle` | Assertion (login) credential response fields |
@@ -133,6 +133,7 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 
 | SDK | Min version | Flow(s) | Reference (Read this file) |
 |---|---|---|---|
+
 | `@auth0/auth0-react` | 2.18.0 | signup, login | `references/feature-passkeys/auth0-react.md` |
 | `@auth0/auth0-vue` | 2.8.0 | signup, login | `references/feature-passkeys/auth0-vue.md` |
 | `@auth0/auth0-angular` | 2.10.0 | signup, login | `references/feature-passkeys/auth0-angular.md` |
