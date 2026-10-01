@@ -304,6 +304,13 @@
       "framework": "flutter-windows",
       "tooling": "cli",
       "expect_refs": ["framework-flutter-windows/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-tanstack-start",
+      "intent": "integrate",
+      "framework": "tanstack-start",
+      "tooling": "cli",
+      "expect_refs": ["framework-tanstack-start/index.md", "tooling-cli/index.md"]
     }
   ]
 }
