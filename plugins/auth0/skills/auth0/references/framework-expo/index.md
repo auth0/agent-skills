@@ -248,6 +248,8 @@ Common build failures, when you do run a native build:
 
 ## References
 
+Run `auth0 docs search "expo"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Expo Quickstart](https://auth0.com/docs/quickstart/native/react-native-expo/interactive)
 - [react-native-auth0 GitHub Repository](https://github.com/auth0/react-native-auth0)
 - [react-native-auth0 API Documentation](https://auth0.github.io/react-native-auth0/)

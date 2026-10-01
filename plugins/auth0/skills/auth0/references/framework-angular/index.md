@@ -173,6 +173,8 @@ ng serve
 
 ## References
 
+Run `auth0 docs search "angular"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Angular SDK Documentation](https://auth0.com/docs/libraries/auth0-angular)
 - [Auth0 Angular Quickstart](https://auth0.com/docs/quickstart/spa/angular)
 - [SDK GitHub Repository](https://github.com/auth0/auth0-angular)

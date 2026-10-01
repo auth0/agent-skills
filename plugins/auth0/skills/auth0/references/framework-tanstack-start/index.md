@@ -252,6 +252,8 @@ Visit `http://localhost:3000`, click **Log in**, complete Universal Login, and c
 
 ## References
 
+Run `auth0 docs search "tanstack start"` for the latest Auth0 docs on this topic.
+
 - [Auth0 TanStack Start quickstart](https://auth0.com/docs/quickstart/webapp/tanstack-start)
 - [SDK GitHub repository](https://github.com/auth0/auth0-tanstack-start-react)
 - [SDK examples & enterprise walkthroughs](https://github.com/auth0/auth0-tanstack-start-react/blob/main/EXAMPLES.md)

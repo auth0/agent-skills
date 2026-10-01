@@ -197,6 +197,8 @@ Built-in proof-of-possession token binding per RFC 9449. See the DPoP Support se
 
 ## References
 
+Run `auth0 docs search "asp.net core api"` for the latest Auth0 docs on this topic.
+
 - [Auth0 ASP.NET Core Web API Quickstart](https://auth0.com/docs/quickstart/backend/aspnet-core-webapi)
 - [SDK GitHub Repository](https://github.com/auth0/aspnetcore-api)
 - [API Documentation](https://auth0.github.io/aspnetcore-api)

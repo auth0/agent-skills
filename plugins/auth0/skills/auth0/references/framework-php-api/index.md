@@ -495,6 +495,8 @@ $token = $auth0->decode(
 
 ## References
 
+Run `auth0 docs search "php api"` for the latest Auth0 docs on this topic.
+
 - [auth0/auth0-php on Packagist](https://packagist.org/packages/auth0/auth0-php)
 - [auth0/auth0-PHP on GitHub](https://github.com/auth0/auth0-PHP)
 - [Auth0 PHP API Quickstart](https://auth0.com/docs/quickstart/backend/php)

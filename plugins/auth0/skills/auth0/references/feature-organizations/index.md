@@ -304,3 +304,7 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 ## Multi-tenant architecture
 
 For broader B2B SaaS architecture guidance (tenant isolation models, when to use one Auth0 organization per customer vs. shared connections), the router loads the multi-tenant pattern guidance alongside this file for architecture questions.
+
+## References
+
+Run `auth0 docs search "organizations"` for the latest Auth0 docs on this topic.

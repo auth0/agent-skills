@@ -295,6 +295,8 @@ For a business portal, add a page whose section children include `page:component
 
 ## Sources
 
+Run `auth0 docs search "universal portals"` for the latest Auth0 docs on this topic.
+
 - https://auth0.com/docs/customize/portals/overview
 - https://auth0.com/docs/customize/portals/quickstart
 - https://auth0.com/docs/api/management/v2

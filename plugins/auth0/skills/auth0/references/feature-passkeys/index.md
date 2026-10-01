@@ -159,5 +159,8 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 | Returning the token-exchange result (raw tokens / server-side session state) in the HTTP response, or logging it | Leaks Auth0 access / ID / refresh tokens to the client | Let the SDK persist the session in its state store; respond with success/redirect only and read claims server-side |
 
 ## References
+
+Run `auth0 docs search "passkeys"` for the latest Auth0 docs on this topic.
+
 [Auth0 passkeys documentation](https://auth0.com/docs/authenticate/database-connections/passkeys)
 [WebAuthn / passkey grant](https://auth0.com/docs/get-started/applications/passkeys)

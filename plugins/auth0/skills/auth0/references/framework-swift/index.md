@@ -287,6 +287,8 @@ private let auth = AuthenticationService()
 
 ## References
 
+Run `auth0 docs search "swift sdk"` for the latest Auth0 docs on this topic.
+
 - [Auth0.swift GitHub](https://github.com/auth0/Auth0.swift)
 - [iOS/macOS Quickstart](https://auth0.com/docs/quickstart/native/ios-swift)
 - [Auth0.swift API Documentation](https://auth0.github.io/Auth0.swift/documentation/auth0/)

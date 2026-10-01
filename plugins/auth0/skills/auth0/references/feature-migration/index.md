@@ -204,6 +204,8 @@ All of this lives in the one `auth0` skill — just describe what you need (e.g.
 
 ## References
 
+Run `auth0 docs search "bulk user import"` for the latest Auth0 docs on this topic.
+
 - [Auth0 User Migration Documentation](https://auth0.com/docs/manage-users/user-migration)
 - [Bulk User Import](https://auth0.com/docs/manage-users/user-migration/bulk-user-imports)
 - [Password Hash Algorithms](https://auth0.com/docs/manage-users/user-migration/bulk-user-imports#password-hashing-algorithms)
