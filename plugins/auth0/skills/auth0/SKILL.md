@@ -112,6 +112,7 @@ bare-SDK row.
 | `auth0-server-python` + `flask` | `flask` |
 | `auth0-server-python` (no Flask web framework) | `server-python` |
 | `auth0-fastapi-api` | `fastapi-api` |
+| `auth0-api-python` | `api-python` |
 
 ### Java / Kotlin — check `build.gradle` or `pom.xml`
 
@@ -230,6 +231,7 @@ request. **Stop at the first match.**
 | Flask | `flask` |
 | FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
 | `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
+| `auth0-api-python` / Python API JWT validator (resource server / `verify_access_token`) | `api-python` |
 | Spring Boot | `springboot-api` |
 | Java MVC / servlet | `java-mvc` |
 | ASP.NET Core web app / API | `aspnetcore-auth` / `aspnetcore-api` |
