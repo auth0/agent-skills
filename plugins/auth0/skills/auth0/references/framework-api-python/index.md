@@ -13,7 +13,7 @@ Import: `from auth0_api_python import ApiClient, ApiClientOptions, VerifyAccessT
 Instantiate:
 
 ```python
-ApiClient(ApiClientOptions(domain=AUTH0_DOMAIN, audience=AUTH0_AUDIENCE))
+client = ApiClient(ApiClientOptions(domain=AUTH0_DOMAIN, audience=AUTH0_AUDIENCE))
 ```
 
 `verify_access_token(access_token)` and `verify_request(headers)` are async — always `await` them. On error, `VerifyAccessTokenError.get_status_code()` returns `401`.

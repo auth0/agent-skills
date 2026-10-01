@@ -1,6 +1,6 @@
 # auth0-api-python — MFA (API-side scope gate)
 
-**Minimum version:** `auth0-api-python>=0.1.0`.
+**Minimum version:** `auth0-api-python>=1.0.0b10`. Only `1.0.0` pre-releases are published (`1.0.0b1`–`1.0.0b10`); there is no stable release yet, so install with a pre-release-aware spec (e.g. `pip install "auth0-api-python>=1.0.0b10"` or `--pre`).
 
 Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference. This is a **resource-server** SDK: it does not run MFA. The tenant issues the step-up scope (e.g. `transfer:funds`) only after the user completes MFA, and the API's job is to enforce that a caller lacking that scope is rejected.
 
@@ -64,4 +64,4 @@ async def transfer_funds(authorization: str = Header(...)):
 
 Apply the `transfer:funds` gate **only** to the sensitive endpoint — leave `GET /api/balance` requiring only `read:balance` (no MFA step-up needed).
 
-**Note:** `auth0-api-python` has no `EXAMPLES.md` in the repo at the time of writing — this file is the authoritative reference for the scope-gate pattern.
+**Note:** the SDK's own `EXAMPLES.md` covers `verify_access_token` and `verify_request` usage, but this file remains the authoritative reference for the MFA scope-gate pattern.

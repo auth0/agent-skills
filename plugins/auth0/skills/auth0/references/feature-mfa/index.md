@@ -186,13 +186,13 @@ it first or fall back to the language-neutral mechanic. Several MFA API flows ar
 | `express-openid-connect` | 2.17.0 | redirect step-up | `references/feature-mfa/express-oidc.md` |
 | `Auth0.swift` (iOS/macOS) | verify — 3.0+ | MFA API | `references/feature-mfa/auth0-swift.md` |
 | `Auth0.Android` | verify — 3.13+ | MFA API | `references/feature-mfa/auth0-android.md` |
-| `react-native-auth0` | verify — 5.0+ | MFA API | `references/feature-mfa/react-native-auth0.md` |
+| `react-native-auth0` | 5.10.0 | MFA API | `references/feature-mfa/react-native-auth0.md` |
 | `auth0-server-python` | 1.0.0b10 (MFA API) · 1.0.0b15 (step-up) | step-up, MFA API | `references/feature-mfa/auth0-server-python.md` |
 | `Auth0.OidcClient.*` (.NET native/desktop) | 4.4.0 | client-initiated step-up | `references/feature-mfa/oidc-client-net.md` |
 | `go-jwt-middleware` (Go, resource server) | v2.2.1 | API-side scope gate | `references/feature-mfa/go-jwt-middleware.md` |
 | `Auth0.AspNetCore.Authentication.Api` (resource server) | 1.0.1 | API-side scope gate | `references/feature-mfa/aspnetcore-api.md` |
 | `spring-boot-starter-oauth2-resource-server` (Java) | Spring Boot 3.3 / Security 6 | API-side scope gate | `references/feature-mfa/spring-security-api.md` |
-| `auth0-api-python` (Python resource server) | 0.1.0 | API-side scope gate | `references/feature-mfa/auth0-api-python.md` |
+| `auth0-api-python` (Python resource server) | 1.0.0b10 | API-side scope gate | `references/feature-mfa/auth0-api-python.md` |
 
 Note: the resource-server rows (`go-jwt-middleware`, `Auth0.AspNetCore.Authentication.Api`, Spring
 Security, `auth0-api-python`) do not run MFA — the API enforces the step-up **scope** the tenant issues post-MFA, gating a

@@ -1,23 +1,27 @@
 # react-native-auth0 — MFA (API-driven, Flexible Factors Grant)
 
-**Minimum version:** verify — 5.0+. The `mfa` sub-client API landed in v5; `auth.loginWithOTP`, `auth.loginWithOOB`, `auth.loginWithRecoveryCode`, and `auth.multifactorChallenge` (on the `auth` sub-client, NOT `mfa`) were deprecated in v5 and will be removed in v6. Early Access — enable the MFA grant type in Dashboard → Applications → Advanced Settings → Grant Types (contact your Auth0 rep first).
+**Minimum version:** 5.10.0+. The `mfa` sub-client API landed in v5.10.0; the legacy direct step-up methods `authorizeWithOTP`, `authorizeWithOOB`, `authorizeWithRecoveryCode`, and `sendMultifactorChallenge` (exposed on the hook, NOT on `mfa`) were deprecated in v5.11.0 in favour of the `mfa.*` client. Early Access — enable the MFA grant type in Dashboard → Applications → Advanced Settings → Grant Types (contact your Auth0 rep first).
 
 Framework-specific surface only. The shared mechanic, tenant config, `amr`/error tables, and MFA API endpoints live in the shared MFA reference.
 
-**Detect `mfa_required`.** Catch the `AuthError` thrown by `auth.passwordRealm()`. There is no dedicated class for the `mfa_required` condition on the native path — inspect `error.json` directly. The `mfa_token` is at `error.json.mfa_token`:
+**Detect `mfa_required`.** Catch the `AuthError` thrown by `loginWithPasswordRealm()`. There is no dedicated class for the `mfa_required` condition on the native path — inspect the error directly. The condition is signalled by `error.code === 'mfa_required'` (or `error.json.error === 'mfa_required'`), and the `mfa_token` is at `error.json.mfa_token`:
 
 ```typescript
 import { useAuth0 } from 'react-native-auth0';
 
-const { authorize, mfa } = useAuth0();
+const { loginWithPasswordRealm, mfa } = useAuth0();
 
 try {
-  await auth.passwordRealm(email, password, 'Username-Password-Authentication', {
+  await loginWithPasswordRealm({
+    username: email,
+    password,
+    realm: 'Username-Password-Authentication',
     audience: 'https://api.example.com',
     scope: 'openid profile email',
   });
+  // loginWithPasswordRealm persists credentials automatically before it resolves.
 } catch (error: any) {
-  if (error?.json?.error === 'mfa_required') {
+  if (error?.code === 'mfa_required' || error?.json?.error === 'mfa_required') {
     const mfaToken: string = error.json.mfa_token;
     // proceed to challenge or enroll
   }
@@ -71,13 +75,14 @@ if (!activeAuthenticator) {
     });
   }
 
-  // Persist credentials securely — never store in component state
-  await credentialsManager.saveCredentials(credentials);
+  // mfa.verify() via the hook persists the returned Credentials automatically before it resolves —
+  // no manual save needed. To persist explicitly (e.g. when driving the raw client), use the hook's
+  // top-level saveCredentials(credentials); there is no credentialsManager on the hook.
 }
 ```
 
-**Security:** `oobCode` is ephemeral — keep it in component state only for the duration of the challenge/verify exchange, never persisted. Store final `Credentials` via `credentialsManager.saveCredentials()`, not in local storage or AsyncStorage.
+**Security:** `oobCode` is ephemeral — keep it in component state only for the duration of the challenge/verify exchange, never persisted. The hook persists the final `Credentials` for you when you use `mfa.verify()` (or `loginWithPasswordRealm()`); if you persist explicitly, use the hook's top-level `saveCredentials()`, never local storage or AsyncStorage.
 
-**Do NOT use** the deprecated `auth` sub-client MFA methods (`auth.loginWithOTP`, `auth.loginWithOOB`, `auth.loginWithRecoveryCode`, `auth.multifactorChallenge`) — they are removed in v6.
+**Do NOT use** the deprecated direct step-up methods on the hook (`authorizeWithOTP`, `authorizeWithOOB`, `authorizeWithRecoveryCode`, `sendMultifactorChallenge`) — deprecated in v5.11.0 in favour of the `mfa.*` client.
 
 **Note on `amr`/`acr`:** these claims are not exposed on the `Auth0User` object returned by the hook. They are available only in `idTokenProtocolClaims` if you need them. Do not check `user.amr` — it will be `undefined`.
