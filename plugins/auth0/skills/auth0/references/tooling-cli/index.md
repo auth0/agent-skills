@@ -318,19 +318,20 @@ changes into its existing `options` rather than sending a bare object.
 | `options.*` field | Type | Values | Default | Set it when |
 |---|---|---|---|---|
 | `authentication_methods.passkey.enabled` | boolean | `true` / `false` | — | always — this is what turns passkeys on for the connection |
-| `passkey_options.progressive_enrollment_enabled` | boolean | `true` / `false` | `true` | you want existing users nudged to enroll a passkey after a password login (the "over time" ask) |
-| `passkey_options.local_enrollment_enabled` | boolean | `true` / `false` | `true` | **only when explicitly asked** — prompts local-passkey creation on new devices during cross-device passkey use |
+| `passkey_options.progressive_enrollment_enabled` | boolean | `true` / `false` | `true` | you need to **turn it off** — default is `true` (nudge is already on); omit to keep the default |
+| `passkey_options.local_enrollment_enabled` | boolean | `true` / `false` | `true` | **only when explicitly asked** — default is `true`; omit unless the task explicitly asks to control local/cross-device enrollment |
 | `passkey_options.challenge_ui` | string | `both` / `autofill` / `button` | — | choosing how the passkey prompt is surfaced at login |
 
 **Set only the fields the task calls for.** `progressive_enrollment_enabled`
-and `local_enrollment_enabled` both already default to `true`, so adding
-`local_enrollment_enabled` when it wasn't requested is redundant config churn —
-leave it out unless the task explicitly asks for local / cross-device enrollment.
+and `local_enrollment_enabled` both already default to `true`, so setting either
+of them to `true` unprompted is redundant config churn — omit both unless the
+task explicitly asks to change enrollment behavior.
 
 ```bash
-# Merge the passkey fields into the connection's existing options; do not clobber
-# unrelated settings (password rules, MFA, etc.).
-auth0 connections update <connection-id> --data '{"options":{"authentication_methods":{"passkey":{"enabled":true}},"passkey_options":{"progressive_enrollment_enabled":true,"challenge_ui":"both"}}}'
+# Read the connection first, then merge only the passkey fields the task requires.
+# auth0 api get connections/<id>
+auth0 connections update <connection-id> \
+  --data '{"options":{"authentication_methods":{"passkey":{"enabled":true}}}}'
 ```
 
 ### Users — Manage Users
