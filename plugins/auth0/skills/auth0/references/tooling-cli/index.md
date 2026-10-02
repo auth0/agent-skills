@@ -318,7 +318,7 @@ changes into its existing `options` rather than sending a bare object.
 | `options.*` field | Type | Values | Default | Set it when |
 |---|---|---|---|---|
 | `authentication_methods.passkey.enabled` | boolean | `true` / `false` | — | always — this is what turns passkeys on for the connection |
-| `passkey_options.progressive_enrollment_enabled` | boolean | `true` / `false` | `true` | you need to **turn it off** — default is `true` (nudge is already on); omit to keep the default |
+| `passkey_options.progressive_enrollment_enabled` | boolean | `true` / `false` | `true` | task explicitly asks for or against enrollment nudging — default is `true` (nudge is on); omit when the task is silent about it |
 | `passkey_options.local_enrollment_enabled` | boolean | `true` / `false` | `true` | **only when explicitly asked** — default is `true`; omit unless the task explicitly asks to control local/cross-device enrollment |
 | `passkey_options.challenge_ui` | string | `both` / `autofill` / `button` | — | choosing how the passkey prompt is surfaced at login |
 
