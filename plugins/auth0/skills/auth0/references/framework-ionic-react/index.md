@@ -190,6 +190,8 @@ All of this lives in the one `auth0` skill — just describe what you need (e.g.
 
 ## References
 
+Run `auth0 docs search "ionic react"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Ionic React Quickstart](https://auth0.com/docs/quickstart/native/ionic-react/interactive)
 - [Auth0 React SDK GitHub](https://github.com/auth0/auth0-react)
 - [Auth0 React SDK API Reference](https://auth0.github.io/auth0-react/)

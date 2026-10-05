@@ -148,6 +148,8 @@ Quick index; each entry references the canonical treatment in the relevant secti
 
 ## References
 
+Run `auth0 docs search "custom domains"` for the latest Auth0 docs on this topic.
+
 This file contains all custom domain guidance inline. Sections: Setup · Troubleshoot · Manage · Remove · Health Check · DNS Providers (Cloudflare, Route 53, Azure, Manual) · API Reference · Examples.
 
 ## External Docs

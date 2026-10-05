@@ -1,6 +1,6 @@
 # auth0
 
-Auth0 skills for setting up authentication, migrating from other providers, implementing Multi-Factor Authentication (MFA), framework-specific SDK integrations and CLI.
+Auth0 skills for setting up authentication, migrating from other providers, implementing Multi-Factor Authentication (MFA) and passwordless passkey (WebAuthn) login, framework-specific SDK integrations and CLI.
 
 ## Installation
 

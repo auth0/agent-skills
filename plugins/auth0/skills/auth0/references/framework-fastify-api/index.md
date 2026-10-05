@@ -166,6 +166,8 @@ curl http://localhost:3001/api/private \
 
 ## References
 
+Run `auth0 docs search "fastify api"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Fastify API Documentation](https://auth0.com/docs/quickstart/backend/fastify)
 - [SDK GitHub Repository](https://github.com/auth0/auth0-fastify)
 - [Access Tokens Guide](https://auth0.com/docs/secure/tokens/access-tokens)

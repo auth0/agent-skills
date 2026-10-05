@@ -306,6 +306,34 @@ auth0 connections enabled-clients update <connection-id> \
 Strategies include `auth0` (database), `google-oauth2`, `samlp`, `oidc`, `waad`,
 `ad`, `oauth2`, and more.
 
+#### Enabling passkeys on a database connection
+
+Passkeys are a **connection authentication method**, configured under the
+connection's `options` — enable the method, then tune `passkey_options`. (This
+is distinct from Guardian WebAuthn, which is an MFA factor, not a connection
+method.) `--data` on `connections update` replaces `options` **wholesale**, so
+read the connection first (`auth0 api get connections/<id>`) and merge your
+changes into its existing `options` rather than sending a bare object.
+
+| `options.*` field | Type | Values | Default | Set it when |
+|---|---|---|---|---|
+| `authentication_methods.passkey.enabled` | boolean | `true` / `false` | — | always — this is what turns passkeys on for the connection |
+| `passkey_options.progressive_enrollment_enabled` | boolean | `true` / `false` | `true` | task explicitly asks for or against enrollment nudging — default is `true` (nudge is on); omit when the task is silent about it |
+| `passkey_options.local_enrollment_enabled` | boolean | `true` / `false` | `true` | **only when explicitly asked** — default is `true`; omit unless the task explicitly asks to control local/cross-device enrollment |
+| `passkey_options.challenge_ui` | string | `both` / `autofill` / `button` | — | choosing how the passkey prompt is surfaced at login |
+
+**Set only the fields the task calls for.** `progressive_enrollment_enabled`
+and `local_enrollment_enabled` both already default to `true`, so setting either
+of them to `true` unprompted is redundant config churn — omit both unless the
+task explicitly asks to change enrollment behavior.
+
+```bash
+# Read the connection first, then merge only the passkey fields the task requires.
+# auth0 api get connections/<id>
+auth0 connections update <connection-id> \
+  --data '{"options":{"authentication_methods":{"passkey":{"enabled":true}}}}'
+```
+
 ### Users — Manage Users
 
 Create, search, inspect, import, and manage users in your tenant.
@@ -705,6 +733,8 @@ auth0 apps list --json-compact | jq '.[] | {client_id, name}'
 ---
 
 ## References
+
+Run `auth0 docs search "auth0 cli"` for the latest Auth0 docs on this topic.
 
 - [Auth0 CLI Documentation](https://auth0.github.io/auth0-cli/)
 - [`agent-mode.md`](agent-mode.md) — full failure-class list, the structured-input matrix by resource, per-command interactive behavior
