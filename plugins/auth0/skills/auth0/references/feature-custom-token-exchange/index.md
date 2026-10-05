@@ -90,21 +90,73 @@ state back after each mutation to confirm it landed. Do not bundle the setup int
 setup.sh`, and do not emit setup scripts or summary files describing commands for a human to run
 later — an unrun script leaves the tenant unchanged.
 
-The prerequisites are ordered — each later step needs an id from an earlier one:
+### The Custom Token Exchange Action
 
-| Step | Operation | Command |
-|---|---|---|
-| 1 | Enable CTE on the client | `auth0 apps update <client-id> --allow-any-profile-of-type custom_authentication --is-first-party=true` |
-| 2 | Create the Custom Token Exchange Action | `auth0 actions create --trigger custom-token-exchange --name "<name>" --code "<js>"` |
-| 3 | Create the token-exchange profile | `auth0 token-exchange create --name <name> --subject-token-type <non-reserved-uri> --action-id <id-from-step-2> --type custom_authentication` |
-| 4 | Execute the exchange | protocol-level `POST /oauth/token` — no dedicated verb; `auth0 api post "oauth/token" --data '{...}'` or any HTTP client |
+The profile runs an `onExecuteCustomTokenExchange` Action that validates the subject token and
+resolves (or provisions) the Auth0 user it represents. Minimal shape — read the incoming token from
+`event.transaction.subject_token`, reject a bad one, otherwise set the user:
+
+```js
+exports.onExecuteCustomTokenExchange = async (event, api) => {
+  const subjectToken = event.transaction.subject_token;
+
+  // Validate however your external issuer requires; reject on failure and return.
+  if (!isValidSubjectToken(subjectToken)) {
+    api.access.rejectInvalidSubjectToken('Invalid subject token');
+    return;
+  }
+
+  // Resolve/provision the user. Positional args: connection name, user profile, behavior.
+  api.authentication.setUserByConnection(
+    'Username-Password-Authentication',
+    {
+      user_id: '<stable id derived from the subject token>',
+      email: '<email from the subject token>',
+      email_verified: true,
+      name: '<name>',
+      nickname: '<nickname>',
+    },
+    { creationBehavior: 'create_if_not_exists', updateBehavior: 'none' },
+  );
+};
+```
+
+The connection must be enabled for the client. `rejectInvalidSubjectToken(reason)` is how you fail a
+bad token — do not throw.
+
+### Provisioning steps
+
+The steps are ordered — each later one needs an id from an earlier one. Run each command on its own
+and read the result back; do not bundle them into a `setup.sh`.
+
+```bash
+# 1. Enable CTE on the client (the public SPA/native client, or the M2M app that calls /oauth/token)
+auth0 apps update <client-id> --allow-any-profile-of-type custom_authentication
+auth0 apps show <client-id> --json          # confirm token_exchange.allow_any_profile_of_type
+
+# 2. Create the Action, then DEPLOY it — an undeployed Action never runs
+auth0 actions create --trigger custom-token-exchange --name "Custom Token Exchange" --code "$(cat action.js)"
+auth0 actions deploy <action-id>             # <action-id> comes from the create output
+auth0 actions show <action-id> --json        # confirm "deployed": true
+
+# 3. Create the profile that maps the subject-token type to the Action (after the Action exists)
+auth0 token-exchange create --name "<name>" --subject-token-type <non-reserved-uri> --action-id <action-id> --type custom_authentication
+auth0 token-exchange show <profile-id> --json
+
+# 4. Execute the exchange (protocol-level — no dedicated verb)
+auth0 api post "oauth/token" --data '{"grant_type":"urn:ietf:params:oauth:grant-type:token-exchange","subject_token":"<token>","subject_token_type":"<uri>","audience":"<api-id>"}'
+```
 
 Notes:
-- The Action **must** call `api.authentication.setUserByConnection(...)` to resolve/provision the user; it may call `api.access.rejectInvalidSubjectToken(reason)` to reject a bad token.
-- The profile is created **after** the Action — `--action-id` references it. Creating the profile first fails.
-- `--type` only accepts `custom_authentication` (CTE). `on_behalf_of_token_exchange` is a different (OBO) profile type and is out of scope here.
-- `subject_token_type` on the profile: 8–100 chars, a valid URI, no reserved prefix, unique per tenant (409 on duplicate).
-- Authorizing the M2M app for the Management API (to run these) and the "Allow Skip User Consent" setting have no dedicated verbs — use `auth0 api post "client-grants"` and `auth0 api patch "resource-servers/<mgmt-api-id>"`.
+- `auth0 apps update` has **no** `--is-first-party` or `--oidc-conformant` flag. Apps created in your
+  own tenant are already first-party; if you must set either on an existing client, patch it:
+  `auth0 api patch "clients/<id>" --data '{"is_first_party":true,"oidc_conformant":true}'`.
+- `--type` only accepts `custom_authentication` (CTE). `on_behalf_of_token_exchange` is a different
+  (OBO) profile type and is out of scope here.
+- `subject_token_type`: 8–100 chars, a valid URI, no reserved prefix, unique per tenant (409 on duplicate).
+- Authorizing the M2M app for the Management API (to run these) and the "Allow Skip User Consent"
+  setting have no dedicated verbs — use `auth0 api post "client-grants"` and
+  `auth0 api patch "resource-servers/<mgmt-api-id>"`.
 
 Verify subcommands and flag names with `auth0 token-exchange --help` and `auth0 actions --help`
 rather than inferring them; use `auth0 api` for anything without a dedicated subcommand.
@@ -116,6 +168,7 @@ rather than inferring them; use `auth0 api` for anything without a dedicated sub
 | Mistake | Fix |
 |---|---|
 | Hand-rolling the `/oauth/token` token-exchange POST | Call the SDK's CTE method — it builds the grant, types the response, and wires the session. Hand-rolling bypasses all three |
+| Creating the Action but never deploying it | A newly created Action is a draft; the profile binds it but it won't run until `auth0 actions deploy <action-id>` |
 | Using a reserved `subject_token_type` namespace | The type URI must not be `urn:ietf:*`, `urn:auth0:*`, `urn:okta:*`, `*auth0.com`, or `*okta.com`. Reserved types are rejected at profile creation and by some SDKs |
 | Prefixing the subject token with `"Bearer "` | Pass the raw token as `subject_token`; the SDK rejects a `"Bearer "` prefix |
 | Sending a `client_secret` from a public client | SPA / mobile / native clients send `client_id` only. A secret in a public client is a leak |

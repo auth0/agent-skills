@@ -416,7 +416,8 @@ auth0 actions list --query '{"triggerId":"post-login"}'
 ```
 
 Triggers: `post-login`, `credentials-exchange`, `pre-user-registration`,
-`post-user-registration`, `post-change-password`, `send-phone-message`.
+`post-user-registration`, `post-change-password`, `send-phone-message`,
+`custom-token-exchange`.
 
 **Important:** You must `deploy` after creating or updating for changes to take
 effect.
