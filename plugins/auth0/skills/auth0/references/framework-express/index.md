@@ -163,6 +163,8 @@ Visit `http://localhost:3000` and test the login flow.
 
 ## References
 
+Run `auth0 docs search "express"` for the latest Auth0 docs on this topic.
+
 - [Express OpenID Connect Documentation](https://auth0.com/docs/libraries/express-openid-connect)
 - [Auth0 Express Quickstart](https://auth0.com/docs/quickstart/webapp/express)
 - [SDK GitHub Repository](https://github.com/auth0/express-openid-connect)

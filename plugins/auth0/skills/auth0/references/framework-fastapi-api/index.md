@@ -236,6 +236,8 @@ claims["scope"]         # space-separated scopes
 
 ## References
 
+Run `auth0 docs search "fastapi"` for the latest Auth0 docs on this topic.
+
 - [auth0-fastapi-api GitHub](https://github.com/auth0/auth0-fastapi-api)
 - [auth0-fastapi-api on PyPI](https://pypi.org/project/auth0-fastapi-api/)
 - [Auth0 FastAPI API Quickstart](https://auth0.com/docs/quickstart/backend/fastapi)

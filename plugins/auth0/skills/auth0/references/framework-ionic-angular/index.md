@@ -306,6 +306,8 @@ Ionic with Capacitor uses the **Web Auth** method for authentication:
 
 ## References
 
+Run `auth0 docs search "ionic angular"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Angular SDK — GitHub](https://github.com/auth0/auth0-angular)
 - [Auth0 Ionic Angular Quickstart](https://auth0.com/docs/quickstart/native/ionic-angular)
 - [Auth0 Angular SDK — API Reference](https://auth0.github.io/auth0-angular/)

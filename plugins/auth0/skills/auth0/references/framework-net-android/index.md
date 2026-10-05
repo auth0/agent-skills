@@ -244,6 +244,8 @@ protected override async void OnNewIntent(Intent intent)
 
 ## References
 
+Run `auth0 docs search ".net android"` for the latest Auth0 docs on this topic.
+
 - [.NET Android & iOS Quickstart](https://auth0.com/docs/quickstart/native/net-android-ios)
 - [GitHub Repository](https://github.com/auth0/auth0-oidc-client-net)
 - [NuGet Package — Auth0.OidcClient.AndroidX](https://www.nuget.org/packages/Auth0.OidcClient.AndroidX)

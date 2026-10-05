@@ -304,5 +304,8 @@ which uses the `mfa_token` and the MFA API surface instead:
   before layering MFA.
 
 ## References
+
+Run `auth0 docs search "multi-factor authentication"` for the latest Auth0 docs on this topic.
+
 [Auth0 MFA docs](https://auth0.com/docs/secure/multi-factor-authentication)
 [Step-Up Authentication](https://auth0.com/docs/secure/multi-factor-authentication/step-up-authentication).
