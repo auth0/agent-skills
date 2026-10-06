@@ -203,7 +203,7 @@ Save `client_id` (NOT the secret) to the state file.
 
 ### About the CheckMate CLI itself
 
-CheckMate for Auth0 (`@auth0/auth0-checkmate`) is a command-line utility that performs configuration checks on your Auth0 tenant, validating key settings and generating a detailed audit report. It requires Node.js v20.18.3 or higher and a valid Auth0 tenant.
+CheckMate for Auth0 (`@auth0/auth0-checkmate`) is Auth0's official first-party tenant-audit CLI, published by Auth0 Inc. under the `@auth0` npm organisation scope. It performs configuration checks on your Auth0 tenant, validating key settings and generating a detailed audit report. It requires Node.js v20.18.3 or higher and a valid Auth0 tenant.
 
 It makes use of the Auth0 Management API, which consumes the tenant's rate limits — use it thoughtfully to avoid throttling. Its usage is visible in the tenant's log events in several ways: the `User-Agent` HTTP header (`${packageName}/${packageVersion}`, e.g. `@auth0/auth0-checkmate/1.4.0`, unless the client modifies it), the `client_name` and `scopes` assigned when configuring initial access, and `seccft` events (successful exchange of an access token for a client-credentials grant) in Auth0 logs.
 
