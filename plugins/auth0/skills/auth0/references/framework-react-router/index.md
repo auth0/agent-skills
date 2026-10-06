@@ -37,6 +37,8 @@ AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
 AUTH0_SESSION_SECRET=<openssl rand -base64 32>
 AUTH0_APP_BASE_URL=http://localhost:5173
+# Required when calling APIs with getAccessToken():
+# AUTH0_AUDIENCE=https://your-api-identifier
 ```
 
 In Auth0 Dashboard, set for the application (Regular Web Application type):
@@ -88,12 +90,12 @@ export default [
 
 ```tsx
 // app/root.tsx
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router'
 import { Auth0Provider } from '@auth0/auth0-react-router'
 import { rootAuthLoader } from '@auth0/auth0-react-router/server'
-import { auth0 } from './auth0.server'
 import type { Route } from './+types/root'
 
-export const loader = ({ request }: Route.LoaderArgs) => rootAuthLoader(auth0, request)
+export const loader = ({ request }: Route.LoaderArgs) => rootAuthLoader(request)
 
 export default function Root() {
   return (
@@ -160,7 +162,7 @@ Visit `http://localhost:5173/auth/login` — should redirect to Auth0 Universal 
 | `AUTH0_SESSION_SECRET` fewer than 32 characters | `openssl rand -base64 32`; store in `.env`, add `.env` to `.gitignore` |
 | Callback URL mismatch after login | Add `http://localhost:5173/auth/callback` to Allowed Callback URLs in Dashboard |
 | 404 on `/auth/login` | Confirm `auth.$.tsx` exists and is registered in `app/routes.ts` |
-| `rootAuthLoader` returns `undefined` | Ensure root route exports `loader = ({ request }) => rootAuthLoader(auth0, request)` and its id is `root` |
+| `rootAuthLoader` returns `undefined` | Ensure root route exports `loader = ({ request }) => rootAuthLoader(request)` and its id is `root` |
 | `Auth0Provider` crashes on first render | Import from `@auth0/auth0-react-router` (not `/server`) for client components |
 | `useUser` returns `null` after login | `rootAuthLoader` not wired or `id: 'root'` missing on the layout route |
 | Mixed RWA + SPA env vars | Use either `AUTH0_*` (RWA) or `VITE_AUTH0_*` (SPA), never both at once |
@@ -229,7 +231,7 @@ VITE_AUTH0_CLIENT_ID=your_spa_client_id
 - `@auth0/auth0-react-router/testing` — mock factories for unit tests
 
 **Key server helpers:**
-- `rootAuthLoader(auth0, request)` — root loader; decrypts session for client hydration
+- `rootAuthLoader(request)` — root loader; decrypts session for client hydration
 - `handleAuth(auth0, request)` — auth route dispatcher (login / callback / logout)
 - `requireSession(request)` — get session or redirect to `/auth/login`
 - `getSession(request)` — get session or `null` (no redirect)
