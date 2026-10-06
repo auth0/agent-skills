@@ -201,6 +201,8 @@ curl -v -X OPTIONS http://localhost:3000/api/private \
 
 ## References
 
+Run `auth0 docs search "express api"` for the latest Auth0 docs on this topic.
+
 - [express-oauth2-jwt-bearer on npm](https://www.npmjs.com/package/express-oauth2-jwt-bearer)
 - [GitHub: auth0/node-oauth2-jwt-bearer](https://github.com/auth0/node-oauth2-jwt-bearer)
 - [Auth0 Node.js API Quickstart](https://auth0.com/docs/quickstart/backend/nodejs/interactive)

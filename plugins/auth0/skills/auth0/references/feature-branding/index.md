@@ -162,6 +162,8 @@ For the extended list (theme field requirements, Brandfetch ToS, homepage-only e
 
 ## References
 
+Run `auth0 docs search "customize login page"` for the latest Auth0 docs on this topic.
+
 This file contains all branding guidance inline. Sections: Brand My Tenant · Change Specific Settings · Match Brand Voice · Rollback · Check Setup · API Reference · Examples.
 
 Related capabilities:

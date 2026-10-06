@@ -176,6 +176,8 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 ## References
 
+Run `auth0 docs search "auth0 android"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Android SDK Documentation](https://auth0.com/docs/libraries/auth0-android)
 - [Auth0 Android GitHub Repository](https://github.com/auth0/auth0-android)
 - [Android SDK Javadoc](https://auth0.com/docs/references/android)

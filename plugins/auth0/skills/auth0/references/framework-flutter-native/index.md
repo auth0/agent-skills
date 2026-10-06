@@ -429,6 +429,8 @@ For complete patterns with Riverpod, Bloc, biometrics, and advanced scenarios, s
 
 ## References
 
+Run `auth0 docs search "flutter"` for the latest Auth0 docs on this topic.
+
 - [auth0_flutter on pub.dev](https://pub.dev/packages/auth0_flutter)
 - [auth0_flutter GitHub](https://github.com/auth0/auth0-flutter)
 - [Flutter Quickstart (Native)](https://auth0.com/docs/quickstart/native/flutter)

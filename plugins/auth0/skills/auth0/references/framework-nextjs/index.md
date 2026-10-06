@@ -251,6 +251,8 @@ Visit `http://localhost:3000` and test the login flow.
 
 ## References
 
+Run `auth0 docs search "nextjs"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Next.js SDK Documentation](https://auth0.com/docs/libraries/nextjs)
 - [Auth0 Next.js Quickstart](https://auth0.com/docs/quickstart/webapp/nextjs)
 - [SDK GitHub Repository](https://github.com/auth0/nextjs-auth0)

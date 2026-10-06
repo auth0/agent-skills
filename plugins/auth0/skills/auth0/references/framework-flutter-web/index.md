@@ -369,6 +369,8 @@ For complete patterns with Riverpod, Bloc, and advanced scenarios, see the Integ
 
 ## References
 
+Run `auth0 docs search "flutter web"` for the latest Auth0 docs on this topic.
+
 - [auth0_flutter on pub.dev](https://pub.dev/packages/auth0_flutter)
 - [auth0_flutter GitHub](https://github.com/auth0/auth0-flutter)
 - [Flutter Web Quickstart](https://auth0.com/docs/quickstart/spa/flutter)

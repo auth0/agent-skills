@@ -338,6 +338,8 @@ if user is None:
 
 ## References
 
+Run `auth0 docs search "flask"` for the latest Auth0 docs on this topic.
+
 - [auth0-server-python on PyPI](https://pypi.org/project/auth0-server-python/)
 - [auth0-server-python GitHub](https://github.com/auth0/auth0-server-python)
 - [Auth0 Flask Quickstart](https://auth0.com/docs/quickstart/webapp/python)

@@ -237,6 +237,8 @@ All of this lives in the one `auth0` skill — just describe what you need (e.g.
 
 ## References
 
+Run `auth0 docs search "ionic vue"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Ionic Vue Quickstart](https://auth0.com/docs/quickstart/native/ionic-vue/interactive)
 - [Auth0 Vue SDK GitHub](https://github.com/auth0/auth0-vue)
 - [Auth0 Vue SDK API Reference](https://auth0.github.io/auth0-vue/)

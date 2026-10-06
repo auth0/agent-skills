@@ -150,6 +150,8 @@ npm start    # CRA
 
 ## References
 
+Run `auth0 docs search "react"` for the latest Auth0 docs on this topic.
+
 - [Auth0 React SDK Documentation](https://auth0.com/docs/libraries/auth0-react)
 - [Auth0 React SDK GitHub](https://github.com/auth0/auth0-react)
 - [Auth0 React Quickstart](https://auth0.com/docs/quickstart/spa/react)
