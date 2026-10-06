@@ -1,6 +1,6 @@
 # @auth0/auth0-react — Custom Token Exchange
 
-**Minimum version:** 2.13.0 (`loginWithCustomTokenExchange` / `customTokenExchange` on `useAuth0()`; the `exchangeToken` alias, added 2.10.0, is deprecated).
+**Minimum version:** 2.13.0 for `loginWithCustomTokenExchange`; the session-free `customTokenExchange` requires **2.17.0**. (The `exchangeToken` alias, added 2.10.0, is deprecated.)
 
 Framework-specific surface only. The protocol shape, token-type rules, security invariants, tenant
 config, and common mistakes live in the shared Custom Token Exchange reference. This SDK delegates
@@ -13,11 +13,11 @@ hook** — calling the spa-js client directly bypasses React's auth-state dispat
 ```jsx
 import { useAuth0 } from '@auth0/auth0-react';
 
-function TokenExchange() {
+function TokenExchange({ externalToken }) {
   const { loginWithCustomTokenExchange } = useAuth0();
 
-  const handleExchange = async (externalToken) => {
-    const tokenResponse = await loginWithCustomTokenExchange({
+  const handleExchange = async () => {
+    await loginWithCustomTokenExchange({
       subject_token: externalToken,
       subject_token_type: 'urn:your-company:legacy-system-token', // non-reserved URI
       audience: 'https://api.example.com/',
@@ -25,13 +25,16 @@ function TokenExchange() {
     });
     // isAuthenticated / user update via the SDK's state dispatch
   };
+
+  return <button onClick={handleExchange}>Sign in with partner token</button>;
 }
 ```
 
 ## Exchange without side effects
 
-`customTokenExchange` (also from `useAuth0()`) returns the tokens without updating the session or
-`isAuthenticated` / `user` — for acting-on-behalf-of cases where you only need the tokens:
+`customTokenExchange` (also from `useAuth0()`, react **2.17.0+**) returns the tokens without
+updating the session or `isAuthenticated` / `user` — for acting-on-behalf-of cases where you only
+need the tokens:
 
 ```jsx
 const { customTokenExchange } = useAuth0();

@@ -26,7 +26,7 @@ Do NOT reach for CTE when a standard login (Authorization Code, native social, M
 
 Two SDK surfaces exist and are distinct:
 - **Client-side CTE** — a client (SPA, mobile, server web app, M2M) exchanges an external token for *its own* Auth0 tokens. This is every SDK below except `auth0-api-python`.
-- **Server-side / on-behalf-of CTE** — a resource server exchanges a token for a downstream token. Only `auth0-api-python` exposes this.
+- **Server-side profile exchange** — a resource server exchanges a caller-supplied `subject_token` via `get_token_by_exchange_profile`. Only `auth0-api-python` exposes this. Its `get_token_on_behalf_of` / OBO method is a different, out-of-scope flow.
 
 ---
 
@@ -57,7 +57,7 @@ No matching row below? CTE has no generic fallback — it is SDK-specific; do no
 | `@auth0/auth0-auth-js` | 1.2.0 | `Read: references/feature-custom-token-exchange/auth0-auth-js.md` |
 | `@auth0/auth0-server-js` | 1.6.0 | `Read: references/feature-custom-token-exchange/auth0-server-js.md` |
 | `auth0-server-python` | 1.0.0b8 | `Read: references/feature-custom-token-exchange/auth0-server-python.md` |
-| `auth0-api-python` (API / OBO) | 1.0.0b6 | `Read: references/feature-custom-token-exchange/auth0-api-python.md` |
+| `auth0-api-python` (API / server-side) | 1.0.0b6 | `Read: references/feature-custom-token-exchange/auth0-api-python.md` |
 | `Auth0.swift` | 2.14.0 | `Read: references/feature-custom-token-exchange/auth0-swift.md` |
 | `Auth0.Android` | 3.3.0 | `Read: references/feature-custom-token-exchange/auth0-android.md` |
 | `react-native-auth0` | 5.4.0 | `Read: references/feature-custom-token-exchange/react-native-auth0.md` |
@@ -77,7 +77,7 @@ These hold across every SDK; the per-SDK leaf repeats the ones specific to its c
 - The `subject_token` is **transport-only** — passed in the request body, never logged and never persisted by the SDK or your code.
 - Tokens are stored only via the SDK's own secure store (CredentialsManager / Keychain / Keystore / StateStore / session), never ad hoc in `localStorage`, `sessionStorage`, a cookie, or a file.
 - Never send a `"Bearer "`-prefixed `subject_token` — it is the raw token, not an HTTP header value.
-- Never hand-roll the `/oauth/token` token-exchange POST; it bypasses the SDK's validation, token typing, and session wiring.
+- In application code, never hand-roll the `/oauth/token` token-exchange POST; it bypasses the SDK's validation, token typing, and session wiring. (The one-off CLI/curl check in Provisioning step 4 is tenant verification, not application code.)
 
 ---
 
@@ -100,7 +100,8 @@ resolves (or provisions) the Auth0 user it represents. Minimal shape — read th
 exports.onExecuteCustomTokenExchange = async (event, api) => {
   const subjectToken = event.transaction.subject_token;
 
-  // Validate however your external issuer requires; reject on failure and return.
+  // Validate the subject token however your external issuer requires (signature,
+  // issuer, audience, expiry). `isValidSubjectToken` is your own helper — define it.
   if (!isValidSubjectToken(subjectToken)) {
     api.access.rejectInvalidSubjectToken('Invalid subject token');
     return;
@@ -112,7 +113,7 @@ exports.onExecuteCustomTokenExchange = async (event, api) => {
     {
       user_id: '<stable id derived from the subject token>',
       email: '<email from the subject token>',
-      email_verified: true,
+      email_verified: false, // set true only from a verified-email claim in the subject token
       name: '<name>',
       nickname: '<nickname>',
     },
@@ -143,9 +144,21 @@ auth0 actions show <action-id> --json        # confirm "deployed": true
 auth0 token-exchange create --name "<name>" --subject-token-type <non-reserved-uri> --action-id <action-id> --type custom_authentication
 auth0 token-exchange show <profile-id> --json
 
-# 4. Execute the exchange (protocol-level — no dedicated verb)
-auth0 api post "oauth/token" --data '{"grant_type":"urn:ietf:params:oauth:grant-type:token-exchange","subject_token":"<token>","subject_token_type":"<uri>","audience":"<api-id>"}'
+# 4. (Optional) Verify by executing the exchange. This calls the Authentication API's
+#    /oauth/token, which `auth0 api` CANNOT reach — that command only talks to the
+#    Management API — so use a direct HTTP client. Confidential/M2M clients authenticate
+#    with HTTP Basic (client_id:client_secret); public clients send client_id in the body.
+curl -s -X POST "https://<tenant-domain>/oauth/token" \
+  -u "<client-id>:<client-secret>" \
+  -H "content-type: application/x-www-form-urlencoded" \
+  --data-urlencode "grant_type=urn:ietf:params:oauth:grant-type:token-exchange" \
+  --data-urlencode "subject_token=<token>" \
+  --data-urlencode "subject_token_type=<uri>" \
+  --data-urlencode "audience=<api-id>"
 ```
+
+The tenant setup (steps 1–3) is the deliverable; step 4 only confirms it works and is not
+always runnable in a given environment.
 
 Notes:
 - `auth0 apps update` has **no** `--is-first-party` or `--oidc-conformant` flag. Apps created in your
@@ -159,7 +172,9 @@ Notes:
   `auth0 api patch "resource-servers/<mgmt-api-id>"`.
 
 Verify subcommands and flag names with `auth0 token-exchange --help` and `auth0 actions --help`
-rather than inferring them; use `auth0 api` for anything without a dedicated subcommand.
+rather than inferring them; use `auth0 api` for Management API calls without a dedicated
+subcommand. `auth0 api` reaches the Management API only — Authentication API calls like
+`/oauth/token` need a direct HTTP client.
 
 ---
 

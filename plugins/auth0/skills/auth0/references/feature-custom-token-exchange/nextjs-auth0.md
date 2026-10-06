@@ -23,12 +23,13 @@ export async function POST(req: NextRequest) {
 
   const result = await auth0.customTokenExchange({
     subjectToken: body.subjectToken,
-    subjectTokenType: body.subjectTokenType, // non-reserved URI, 10–100 chars
+    subjectTokenType: body.subjectTokenType, // non-reserved URI, 8–100 chars
     audience: body.audience,
     scope: body.scope,
   });
 
-  return NextResponse.json({ accessToken: result.accessToken });
+  // Use result.accessToken in a server-side call here; do not return it to the browser.
+  return NextResponse.json({ ok: true });
 }
 ```
 

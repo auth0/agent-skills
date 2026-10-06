@@ -26,9 +26,10 @@ authentication
     })
 ```
 
-Signature (`@JvmOverloads`): `customTokenExchange(subjectTokenType: String, subjectToken: String,
-organization: String? = null, actorToken: ActorToken? = null): AuthenticationRequest`. Use
-`.await()` for the coroutine form instead of `.start(Callback)`.
+Signature at 3.3.0: `customTokenExchange(subjectTokenType: String, subjectToken: String):
+AuthenticationRequest`. An `@JvmOverloads` overload adding `organization` and `actorToken` arrived
+in 3.19.0 — `actorToken` is the delegation/impersonation path, out of scope here. Use `.await()`
+for the coroutine form instead of `.start(Callback)`.
 
 > `.validateClaims()` is marked mandatory in the KDoc. The basic snippet in the SDK's own example
 > file omits it — add it anyway.

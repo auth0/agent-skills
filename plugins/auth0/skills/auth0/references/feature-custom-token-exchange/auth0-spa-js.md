@@ -1,6 +1,6 @@
 # @auth0/auth0-spa-js — Custom Token Exchange
 
-**Minimum version:** 2.14.0 (`loginWithCustomTokenExchange` / `customTokenExchange`; the earlier `exchangeToken` alias is deprecated).
+**Minimum version:** 2.14.0 for `loginWithCustomTokenExchange`; the session-free `customTokenExchange` requires **2.20.0**. (The earlier `exchangeToken` alias is deprecated.)
 
 Framework-specific surface only. The protocol shape, the token-type rules, the security
 invariants, tenant config, and the common mistakes live in the shared Custom Token Exchange
@@ -31,9 +31,10 @@ const user = await auth0.getUser(); // the user is now signed in
 
 ## Exchange without side effects
 
-`customTokenExchange` returns the same `TokenEndpointResponse` but does **not** touch the session
-and discards any `refresh_token` — use it when you only need the tokens (e.g. one principal acting
-for another), not a signed-in state:
+`customTokenExchange` (spa-js **2.20.0+**) returns the same `TokenEndpointResponse` but does
+**not** touch the session — use it when you only need the tokens (e.g. one principal acting for
+another), not a signed-in state. With `useRefreshTokensWorker` enabled the worker strips any
+`refresh_token`; otherwise the raw response may include one, so discard it yourself:
 
 ```js
 const tokenResponse = await auth0.customTokenExchange({
