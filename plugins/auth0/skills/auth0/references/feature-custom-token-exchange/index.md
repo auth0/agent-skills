@@ -102,7 +102,7 @@ exports.onExecuteCustomTokenExchange = async (event, api) => {
 
   // Validate the subject token however your external issuer requires (signature,
   // issuer, audience, expiry). `isValidSubjectToken` is your own helper — define it.
-  if (!isValidSubjectToken(subjectToken)) {
+  if (!(await isValidSubjectToken(subjectToken))) {
     api.access.rejectInvalidSubjectToken('Invalid subject token');
     return;
   }
@@ -145,16 +145,21 @@ auth0 token-exchange create --name "<name>" --subject-token-type <non-reserved-u
 auth0 token-exchange show <profile-id> --json
 
 # 4. (Optional) Verify by executing the exchange. This calls the Authentication API's
-#    /oauth/token, which `auth0 api` CANNOT reach — that command only talks to the
-#    Management API — so use a direct HTTP client. Confidential/M2M clients authenticate
-#    with HTTP Basic (client_id:client_secret); public clients send client_id in the body.
-curl -s -X POST "https://<tenant-domain>/oauth/token" \
-  -u "<client-id>:<client-secret>" \
+#    /oauth/token, which `auth0 api` CANNOT reach (it only talks to the Management API),
+#    so use a direct HTTP client. Keep the client secret and subject token out of argv and
+#    shell history by feeding them through a curl config on stdin, and discard the response
+#    body — the HTTP status is all you need to confirm the exchange works.
+curl -s -o /dev/null -w '%{http_code}\n' -X POST "https://<tenant-domain>/oauth/token" \
   -H "content-type: application/x-www-form-urlencoded" \
   --data-urlencode "grant_type=urn:ietf:params:oauth:grant-type:token-exchange" \
-  --data-urlencode "subject_token=<token>" \
   --data-urlencode "subject_token_type=<uri>" \
-  --data-urlencode "audience=<api-id>"
+  --data-urlencode "audience=<api-id>" \
+  --config - <<'EOF'
+user = "<client-id>:<client-secret>"
+data-urlencode = "subject_token=<token>"
+EOF
+# Public client (no secret): drop the `user` line and instead add
+#   data-urlencode = "client_id=<client-id>"
 ```
 
 The tenant setup (steps 1–3) is the deliverable; step 4 only confirms it works and is not
