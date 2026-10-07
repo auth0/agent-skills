@@ -871,23 +871,6 @@ fi
 auth0 qs setup --app --framework vue --type spa --port 5173
 
 echo "✅ Auth0 configuration complete!"
-
-# Manual alternative (if you need custom URL configuration):
-# APP_NAME="${PWD##*/}-vue-app"
-# APP_ID=$(auth0 apps create \
-#   --name "$APP_NAME" \
-#   --type spa \
-#   --auth-method none \
-#   --callbacks "http://localhost:5173,http://localhost:3000" \
-#   --logout-urls "http://localhost:5173,http://localhost:3000" \
-#   --origins "http://localhost:5173,http://localhost:3000" \
-#   --web-origins "http://localhost:5173,http://localhost:3000" \
-#   --json-compact | jq -r '.client_id')
-# AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
-# cat >> .env << EOF
-# VITE_AUTH0_DOMAIN=$AUTH0_DOMAIN
-# VITE_AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
-# EOF
 ```
 
 #### PowerShell Script (Windows)

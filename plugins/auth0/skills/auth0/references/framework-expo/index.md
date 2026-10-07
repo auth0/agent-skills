@@ -1030,12 +1030,12 @@ If using refresh token rotation, configure a token overlap period of at least **
 >
 > 4. **Enable database connection** for the new client:
 >    ```bash
->    auth0 api get "connections" --query "name=Username-Password-Authentication" --no-input
+>    auth0 connections list --query '{"name":"Username-Password-Authentication"}' --no-input
 >    ```
 >    Parse the response to extract the connection `id` as `CONNECTION_ID`. If it doesn't exist, create it and parse `id` from the create response as `CONNECTION_ID` instead:
 >
 >    ```bash
->    auth0 api post "connections" --data '{"strategy":"auth0","name":"Username-Password-Authentication"}' --no-input
+>    auth0 connections create --name "Username-Password-Authentication" --strategy auth0 --no-input
 >    ```
 >
 >    Then enable it for the client, using the `CONNECTION_ID` found above (existing) or just created:

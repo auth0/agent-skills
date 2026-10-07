@@ -1081,7 +1081,7 @@ Extract `client_id` from the JSON output.
 #### Step A5: Enable Username-Password-Authentication connection
 
 ```bash
-auth0 api get connections
+auth0 connections list --query '{"name":"Username-Password-Authentication"}'
 ```
 
 Parse the JSON array to find the connection with `"name": "Username-Password-Authentication"`.
@@ -1089,7 +1089,7 @@ Parse the JSON array to find the connection with `"name": "Username-Password-Aut
 - **If it doesn't exist**, create it and parse `id` from the response as `CONNECTION_ID`:
 
   ```bash
-  auth0 api post connections --data '{"strategy":"auth0","name":"Username-Password-Authentication"}'
+  auth0 connections create --name "Username-Password-Authentication" --strategy auth0
   ```
 
 - Then enable it for the new client, using the `CONNECTION_ID` found above (existing) or

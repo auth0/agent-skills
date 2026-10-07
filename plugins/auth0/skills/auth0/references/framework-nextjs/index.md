@@ -728,43 +728,10 @@ if ! auth0 tenants list &> /dev/null; then
   auth0 login
 fi
 
-# Create/select app
-auth0 apps list
-read -p "Enter app ID (or Enter to create new): " APP_ID
-
 # Fastest path — auto-detects framework, creates the Auth0 app, and writes .env:
 auth0 qs setup --app --framework nextjs --type regular
 
 echo "✅ Auth0 configuration complete!"
-
-# Manual alternative (if you need custom URL configuration):
-# APP_ID=$(auth0 apps create \
-#   --name "${PWD##*/}-nextjs" \
-#   --type regular \
-#   --callbacks "http://localhost:3000/auth/callback" \
-#   --logout-urls "http://localhost:3000" \
-#   --json-compact | jq -r '.client_id')
-# AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
-# AUTH0_SECRET=$(openssl rand -hex 32)
-# AUTH0_CLIENT_SECRET=$(auth0 apps show "$APP_ID" --reveal-secrets --json-compact | jq -r '.client_secret')
-#
-# if [ -f .env.local ]; then
-#   TARGET_FILE=".env.local"
-# elif [ -f .env ]; then
-#   TARGET_FILE=".env"
-# else
-#   TARGET_FILE=".env.local"
-# fi
-#
-# cat >> "$TARGET_FILE" << ENVEOF
-# AUTH0_SECRET=$AUTH0_SECRET
-# APP_BASE_URL=http://localhost:3000
-# AUTH0_DOMAIN=$AUTH0_DOMAIN
-# AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
-# AUTH0_CLIENT_SECRET=$AUTH0_CLIENT_SECRET
-# ENVEOF
-
-echo "✅ Auth0 credentials written to $TARGET_FILE"
 ```
 
 After the script runs, ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.

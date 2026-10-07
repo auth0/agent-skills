@@ -21,7 +21,7 @@
     {
       "id": 2,
       "prompt": "I need to create an 'editor' role in my Auth0 tenant and assign it to a user whose email is jane@example.com. How do I do this with the CLI?",
-      "expected_output": "Should use the dedicated auth0 roles create command (NOT raw API mode) to create the role, auth0 users search to find the user ID, and auth0 users roles assign to assign the role. The CLI has built-in roles and users roles subcommands \u2014 the response must NOT claim these don't exist or suggest using auth0 api as a workaround.",
+      "expected_output": "Should use the dedicated auth0 roles create command (NOT raw API mode) to create the role, auth0 users search to find the user ID, and auth0 users roles assign to assign the role. The CLI has built-in roles and users roles subcommands the response must NOT claim these don't exist or suggest using auth0 api as a workaround.",
       "files": [],
       "assertions": [
         "Uses auth0 roles create --name editor --description ... to create the role",

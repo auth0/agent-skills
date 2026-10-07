@@ -55,7 +55,7 @@ Checks to run in parallel (no chat output during checks):
 | CLI installed | `auth0 --version` | version or missing |
 | Tenant session | `auth0 tenants list --json` | first tenant or none |
 | CheckMate app | `auth0 apps list --json \| jq '.[]\|select(.name\|test("CheckMate";"i"))'` | client_id or none |
-| M2M scopes | `auth0 api get client-grants?client_id=<id>` | scope count or none |
+| M2M scopes | `auth0 client-grants list --client-id <id>` | scope count or none |
 | CheckMate npm | `command -v a0checkmate` | path or missing |
 | Node version | `node -v` | version or missing |
 | Reviewer | read `state/operator.json` | name or missing |
@@ -168,13 +168,11 @@ read:guardian_factors read:mfa_policies read:actions read:log_streams
 read:logs read:network_acls read:event_streams read:hooks read:rules
 ```
 
-Grant via the Management API (the CLI `auth0 api` is a raw wrapper):
+Grant the Management API scopes with a client grant:
 ```bash
-auth0 api post "client-grants" --data '{
-  "client_id":"<id>",
-  "audience":"https://<tenant_domain>/api/v2/",
-  "scope":["read:tenant_settings","read:custom_domains","read:prompts","read:clients","read:connections","read:connections_options","read:resource_servers","read:client_grants","read:roles","read:branding","read:email_provider","read:email_templates","read:phone_providers","read:phone_templates","read:shields","read:attack_protection","read:self_service_profiles","read:guardian_factors","read:mfa_policies","read:actions","read:log_streams","read:logs","read:network_acls","read:event_streams","read:hooks","read:rules"]
-}'
+auth0 client-grants create --client-id "<id>" \
+  --audience "https://<tenant_domain>/api/v2/" \
+  --scopes "read:tenant_settings,read:custom_domains,read:prompts,read:clients,read:connections,read:connections_options,read:resource_servers,read:client_grants,read:roles,read:branding,read:email_provider,read:email_templates,read:phone_providers,read:phone_templates,read:shields,read:attack_protection,read:self_service_profiles,read:guardian_factors,read:mfa_policies,read:actions,read:log_streams,read:logs,read:network_acls,read:event_streams,read:hooks,read:rules"
 ```
 
 Some tenants reject `read:hooks` / `read:rules` (deprecated). On 400, retry without those two and proceed.
@@ -279,11 +277,11 @@ The Phase 5 report needs more than CheckMate alone provides. Run these in parall
 ```bash
 auth0 apps list --json                   # apps_list — count + names for Section 1, 3, 4
 auth0 logs list --number 50 --json       # logs_sample — to flag "Active" login activity
-auth0 api get tenants/settings           # tenant_settings — for "Current Auth0 Tier" detection (look for plan/subscription hints; fallback "Free Plan"). Map detected features against the pricing reference to infer the tier when no explicit plan field is present.
+auth0 tenant-settings show --json             # tenant_settings — for "Current Auth0 Tier" detection (look for plan/subscription hints; fallback "Free Plan"). Map detected features against the pricing reference to infer the tier when no explicit plan field is present.
 auth0 domains list                       # custom_domains — empty array → triggers "Branding Gap"
 auth0 connections list                   # connections — for enterprise-connection check
 auth0 logs streams list                  # log_streams — empty array → triggers "Observability Gap"
-auth0 api get attack-protection/breached-password-detection  # for "Account Security" section
+auth0 protection breached-password-detection show  # for "Account Security" section
 ```
 
 These outputs feed directly into the Phase 5 fusion.

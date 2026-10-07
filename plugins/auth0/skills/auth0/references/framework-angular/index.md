@@ -817,30 +817,10 @@ if ! auth0 tenants list &> /dev/null; then
   auth0 login
 fi
 
-# Create or select app
-auth0 apps list
-read -p "Enter your Auth0 app ID (or press Enter to create new): " APP_ID
-
 # Fastest path — auto-detects framework, creates the Auth0 app, and writes config:
 auth0 qs setup --app --framework angular --type spa
 
 echo "✅ Configuration complete!"
-
-# Manual alternative (if you need custom URL configuration):
-# APP_NAME="${PWD##*/}-angular-app"
-# APP_ID=$(auth0 apps create \
-#   --name "$APP_NAME" \
-#   --type spa \
-#   --auth-method none \
-#   --callbacks "http://localhost:4200" \
-#   --logout-urls "http://localhost:4200" \
-#   --origins "http://localhost:4200" \
-#   --web-origins "http://localhost:4200" \
-#   --json-compact | jq -r '.client_id')
-# AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
-# echo "Update src/environments/environment.ts with:"
-# echo "  domain: '$AUTH0_DOMAIN'"
-# echo "  clientId: '$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')'"
 ```
 
 ---

@@ -164,8 +164,7 @@ the only option:
 
 ```bash
 # Org-only login with an up-front org selector - set both fields in one PATCH.
-auth0 api patch "clients/<client-id>" \
-  --data '{"organization_usage":"require","organization_require_behavior":"pre_login_prompt"}'
+auth0 apps update <client-id> --organization-usage require --organization-require-behavior pre_login_prompt
 ```
 
 ### Finding or creating a login connection
@@ -186,7 +185,7 @@ auth0 api post "organizations/<org-id>/enabled_connections" \
   --data '{"connection_id":"<con-id>","assign_membership_on_login":true}'
 
 # Check which apps already have this connection enabled.
-auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
+auth0 connections enabled-clients show <con-id> --json | jq -r '.[].client_id'
 
 # ONLY if the app is not already listed above: enable the connection for it.
 # This is a separate setting from org login (see note below), so skip it on a
@@ -220,13 +219,12 @@ a link, authenticates, and becomes a member.
 # 1. Without this: "The specified client_id (...) does not allow organizations."
 #    allow/no_prompt is the minimum for invitations; for org-only login use
 #    require/pre_login_prompt instead (see "Application (client) organization settings").
-auth0 api patch "clients/<client-id>" \
-  --data '{"organization_usage":"allow","organization_require_behavior":"no_prompt"}'
+auth0 apps update <client-id> --organization-usage allow --organization-require-behavior no_prompt
 
 # 2. Without this: "A default login route is required to generate the invitation url."
 #    Read the current value FIRST - the setting is tenant-wide, and you may need
 #    to restore it. An empty response means it's currently unset.
-auth0 api get "tenants/settings" | jq -r '.default_redirection_uri // ""'
+auth0 tenant-settings show --json | jq -r '.default_redirection_uri // ""'
 
 auth0 api patch "tenants/settings" \
   --data '{"default_redirection_uri":"https://app.example.com/callback"}'

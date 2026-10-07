@@ -1146,23 +1146,6 @@ fi
 auth0 qs setup --app --framework react --type spa --port 5173
 
 echo "✅ Auth0 configuration complete!"
-
-# Manual alternative (if you need custom URL configuration):
-# APP_NAME="${PWD##*/}-react-app"
-# APP_ID=$(auth0 apps create \
-#   --name "$APP_NAME" \
-#   --type spa \
-#   --auth-method none \
-#   --callbacks "http://localhost:3000,http://localhost:5173" \
-#   --logout-urls "http://localhost:3000,http://localhost:5173" \
-#   --origins "http://localhost:3000,http://localhost:5173" \
-#   --web-origins "http://localhost:3000,http://localhost:5173" \
-#   --json-compact | jq -r '.client_id')
-# AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
-# cat >> .env << EOF
-# ${PREFIX}_DOMAIN=$AUTH0_DOMAIN
-# ${PREFIX}_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
-# EOF
 ```
 
 #### PowerShell Script (Windows)

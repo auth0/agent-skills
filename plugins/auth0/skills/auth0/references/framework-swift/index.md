@@ -997,7 +997,7 @@ func fetchData() async throws -> [Item] {
 >
 >    ```bash
 >    OUT=$(mktemp -t auth0-connections)
->    auth0 api get connections --no-input > "$OUT"
+>    auth0 connections list --query '{"name":"Username-Password-Authentication"}' --no-input > "$OUT"
 >    ```
 >
 >    Read `$OUT` to check existing connections, then `rm -f "$OUT"`.
@@ -1006,8 +1006,7 @@ func fetchData() async throws -> [Item] {
 >
 >      ```bash
 >      OUT=$(mktemp -t auth0-connection-created)
->      auth0 api post connections \
->        --data '{"strategy":"auth0","name":"Username-Password-Authentication"}' \
+>      auth0 connections create --name "Username-Password-Authentication" --strategy auth0 \
 >        --no-input > "$OUT"
 >      ```
 >
