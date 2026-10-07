@@ -688,7 +688,7 @@ is already JSON so you rarely need them. There is **no `--csv`**.
 
 ```bash
 auth0 api get connections
-auth0 api post client-grants --data '{"client_id":"...","audience":"...","scope":["read:data"]}'
+auth0 api post "organizations/<org-id>/members" --data '{"members":["<user-id>"]}'
 auth0 api get stats/daily -q "from=20240101" -q "to=20240131"
 auth0 api delete "actions/actions/<action-id>" --force
 auth0 api post clients --data @client.json      # @file
@@ -698,6 +698,13 @@ cat data.json | auth0 api post clients          # or pipe the body via stdin
 `--data` accepts inline JSON, `@file`, or `@-`/stdin (or a plain pipe). Method
 defaults to `GET` without data and `POST` with data. If a call returns 403,
 re-run `auth0 login --scopes "<needed:scope>"`.
+
+**Secrets.** Raw `auth0 api` reads and writes on `clients/<id>` return the full client,
+including `client_secret`, and typed commands do not. To read or change a client, use
+`auth0 apps show <id>` or `auth0 apps update <id>` (secrets are masked unless you pass
+`--reveal-secrets`). If you must use `auth0 api`, pipe it through `jq` and keep only the
+fields you need, for example `jq '{name, organization_usage}'`, so the secret never
+reaches your context.
 
 **Paths are relative to the API root.** Write `connections`, not
 `/api/v2/connections`. The prefixed form returns a flat `404: Not Found` that
