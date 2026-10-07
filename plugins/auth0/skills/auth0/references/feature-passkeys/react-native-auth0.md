@@ -4,7 +4,7 @@
 
 Framework-specific surface only. The shared 3-step mechanic, the tenant configuration (custom domain + passkey grant + connection auth method), the feature-level protocol symbols, and the MFA-interplay error semantics live in `feature-passkeys/index.md` — do not restate them here.
 
-react-native-auth0 is **low-level for the challenge**: it returns the challenge, the native module runs the WebAuthn ceremony, and `getTokenByPasskey()` exchanges the credential for `Credentials`. It also exposes passkey **enrollment** via the My Account API.
+react-native-auth0 is **low-level for the challenge**: it returns the challenge and `getTokenByPasskey()` exchanges the credential for `Credentials`, but **it does not run the WebAuthn ceremony itself** — you run that step with a passkey library you add yourself (native: e.g. `react-native-passkey` or a native module; web: the browser's `navigator.credentials`). See "Ceremony library + native platform setup" below. It also exposes passkey **enrollment** via the My Account API.
 
 ## Signup / Login
 
@@ -24,7 +24,7 @@ const loginChallenge = await passkeyLoginChallenge({
   // realm, organization optional
 });
 
-// --- native module runs the WebAuthn ceremony with authParamsPublicKey ---
+// --- your passkey library runs the WebAuthn ceremony with authParamsPublicKey (the SDK does NOT) ---
 
 // Token exchange → Credentials
 const credentials = await getTokenByPasskey({
@@ -53,7 +53,7 @@ const challenge = await myAccount.passkeyEnrollmentChallenge({
   // userIdentity?, connection? optional
 });
 
-// 2. Native module runs the WebAuthn registration ceremony
+// 2. Your passkey library runs the WebAuthn registration ceremony (the SDK does NOT)
 
 // 3. Verify → PasskeyAuthenticationMethod
 const method = await myAccount.enrollPasskey({
@@ -68,6 +68,20 @@ const method = await myAccount.enrollPasskey({
 - `myAccount.passkeyEnrollmentChallenge({ accessToken, userIdentity?, connection? })` → `Promise<PasskeyEnrollmentChallengeResponse { authenticationMethodId, authSession, authParamsPublicKey }>`. `accessToken` is **required**.
 - `myAccount.enrollPasskey({ accessToken, authenticationMethodId, authSession, authResponse, authParamsPublicKey })` → `Promise<PasskeyAuthenticationMethod>` — a passkey-specific shape (`id`, `type`, `keyId`, `publicKey`, `userHandle`, `credentialDeviceType`, `aaguid`, `relyingPartyId`, …), **not** the generic `AuthenticationMethod` the other `enroll*` methods return.
 
+## Ceremony library + native platform setup (required)
+
+The SDK issues the challenge and exchanges the credential, but **does not run the WebAuthn ceremony** — you must add the ceremony step yourself, and the flow will not work without it:
+
+- **Native:** add a passkey library to `package.json` `dependencies` — e.g. `react-native-passkey` (or a native module calling `ASAuthorizationController` on iOS / `CredentialManager` on Android). It consumes `authParamsPublicKey` and returns the `authResponse` string you pass into `getTokenByPasskey` / `enrollPasskey`. **Declare the dependency** — don't lazily `require()` it without adding it to `package.json`.
+- **Web** (react-native-web): no library — call the browser's `navigator.credentials.create()` / `.get()` and pass the resulting `PublicKeyCredential` as `authResponse`.
+
+Native platforms also need the verified custom domain wired as a relying party. Both bindings are mandatory — the OS silently refuses the ceremony without them:
+
+- **iOS 16.6+** — Associated Domains entitlement containing `webcredentials:<your-custom-domain>` (e.g. `webcredentials:auth.example.com`), set in the target's `.entitlements` / Signing & Capabilities.
+- **Android API 28+** — an `assetlinks.json` served at `https://<your-custom-domain>/.well-known/assetlinks.json` (App Links / Digital Asset Links) listing the app's package name and signing-cert SHA-256 fingerprint.
+
+If the scaffold's constraints block creating the `.entitlements` or `assetlinks.json` artifact, **state the required capability in a code comment or the README** rather than silently dropping it — the relying-party binding is not optional, and omitting it is the most common reason a correctly-coded flow still fails at runtime.
+
 ## Error classes
 
 - `PasskeyError` extends `AuthError` with a normalized string `.type` (plus `.code`, `.message`, and a `getMfaRequiredPayload()` method). Branch on `.type` to give the user a precise retry.
@@ -77,7 +91,7 @@ MFA: on **web**, a step-up surfaces as the typed `PASSKEY_MFA_REQUIRED` — call
 
 ## SDK-specific gotchas
 
-- Native platforms need Associated Domains (iOS) / Digital Asset Links (Android) pointed at the verified custom domain.
+- The ceremony library and the iOS/Android relying-party binding are both required — see "Ceremony library + native platform setup" above.
 - Carry the challenge's `authSession` into `getTokenByPasskey`.
 - `authParamsPublicKey` is the WebAuthn options the native ceremony consumes (typed `Record<string, any>`) — pass it through unchanged.
 - Enrollment mints its `/me/`-audience token via `getApiCredentials` off the session refresh token (the MRRT mechanism); without a refresh token that scoped token cannot be obtained.
