@@ -4,7 +4,7 @@ description: Use when adding, fixing, or improving how an app authenticates user
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
-  version: '2.3.0'
+  version: '2.4.0'
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
@@ -31,10 +31,9 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 ## Step 1: Detect intent
 
 Match the request against the **What the developer wants** column — it describes
-the goal in plain language, not just the Auth0 term (someone who says *"make
-users confirm with a code from their phone"* lands on `feature:mfa`). The
-**Intent** you pick is a lookup key: in **Step 4** it appears verbatim as a
-section heading (`### feature:mfa`) listing which reference files to load.
+the goal in plain language, not just the Auth0 term. The **Intent** you pick is a
+lookup key: in **Step 4** it appears verbatim as a section heading
+(`### feature:mfa`) listing which reference files to load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
@@ -279,7 +278,7 @@ present and consistent.
 
 ## Step 3: Detect tooling
 
-Read the project file tree and the request — a project-context decision, not a product preference.
+Read the project file tree and the request — a project-context decision.
 
 | Project has... | Load |
 |---|---|

@@ -174,9 +174,10 @@ Notes:
 - `subject_token_type`: 8–100 chars, a valid URI, no reserved prefix, unique per tenant (409 on duplicate).
 - CTE itself needs neither user consent nor Management API access for the exchanging app — the
   exchange is non-interactive (no consent prompt) and hits the Authentication API, not the
-  Management API. Only if a *separate* requirement calls for them: "Allow Skip User Consent" and
-  authorizing an M2M app for the Management API have no dedicated verbs — use
-  `auth0 api patch "resource-servers/<mgmt-api-id>"` and `auth0 api post "client-grants"`.
+  Management API. If a *separate* requirement needs them: "Allow Skip User Consent" is a per-API
+  setting on a *custom* API (`auth0 api patch "resource-servers/<custom-api-id>"`) — the Management
+  API instead relies on the client's first-party status — and authorizing an M2M app for the
+  Management API uses `auth0 api post "client-grants"`.
 
 Verify subcommands and flag names with `auth0 token-exchange --help` and `auth0 actions --help`
 rather than inferring them; use `auth0 api` for Management API calls without a dedicated
