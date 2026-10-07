@@ -93,6 +93,8 @@ await auth0.passkey.enrollmentVerify({ authenticationMethodId, authSession, auth
 
 ## SDK-specific gotchas
 
+- **Pin `@auth0/nextjs-auth0` to `^4.22.0` in `package.json`.** The `auth0.passkey` namespace and the `/client` passkey helpers do not exist before it — if the scaffold ships an older `^4.x` pin, bump it; building passkeys against `^4.0.0` fails because the API is absent.
+- `serializeCredential` **is** a real export of `@auth0/nextjs-auth0/client` (used above) — don't second-guess it by grepping `node_modules`/`.d.ts`. The SDK exports only that serializer for the browser; you still hand-roll the inbound base64url→`ArrayBuffer` decode (there is no decoder export).
 - The application must be a **confidential client** — the server token exchange authenticates with the client secret.
 - **Production requires a Custom Domain** (it becomes the passkey `rpId`); for local dev the `rpId` is just `localhost`, which works without a custom domain.
 - The client wrappers (`@auth0/nextjs-auth0/client`) do the whole flow — do not also call the server `register`/`challenge` from a client component; those are server-only.

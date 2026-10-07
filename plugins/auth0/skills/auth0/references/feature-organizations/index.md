@@ -61,7 +61,8 @@ won't have it. No matching row? Fall back to the protocol shape above plus the l
 and config files in place; do not scaffold extra `README`, `SETUP`, `NOTES`, `CHECKLIST`, or
 `*-summary` documents to "explain" the integration - they are not part of the task and dilute the
 diff. Keep the change minimal and focused on what makes org login, invitation acceptance, and
-`org_id` enforcement work.
+`org_id` enforcement work. Verify your edits by re-reading the files you changed - the task
+workspace is not guaranteed to be a git repository, so `git diff`/`git status` may just error.
 
 | SDK | Min version | Read this file |
 |---|---|---|

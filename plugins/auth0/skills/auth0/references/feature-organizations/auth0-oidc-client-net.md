@@ -34,20 +34,23 @@ var loginResult = await client.LoginAsync(new { organization = "org_barkbook_acm
 
 ## Accepting an invitation
 
-The invite link carries `invitation` + `organization`. Pass **both** on the same object - the
-`invitation` is the ticket id, not a URL:
+The invite link carries `invitation` + `organization` as query parameters. Parse **both** off the
+link you received and pass them on the same object - do not substitute your configured default org,
+and do not hardcode either value (the `invitation` is the ticket id, not a URL):
 
 ```csharp
+// invitationUrl is delivered by the platform's deep-link / redirect handling
+// (see the base framework reference for where it arrives per platform).
+var query = System.Web.HttpUtility.ParseQueryString(new Uri(invitationUrl).Query);
 var loginResult = await client.LoginAsync(new
 {
-    organization = "org_barkbook_acme",
-    invitation   = "inv_abc123",
+    organization = query["organization"],
+    invitation   = query["invitation"],
 });
 ```
 
-Forward the invite's own `organization`; do not substitute your configured default org. The SDK
-validates the returned ID token's `org_id`/`org_name` and throws `IdTokenValidationException` on a
-mismatch.
+The SDK validates the returned ID token's `org_id`/`org_name` and throws
+`IdTokenValidationException` on a mismatch.
 
 ## Reading the organization back
 
@@ -62,6 +65,11 @@ var orgId = loginResult.User.FindFirst("org_id")?.Value;
 
 Public native client: **no `client_secret`**. Do not hand-decode the ID token with
 `JwtSecurityTokenHandler` to read `org_id` - the claim is already on `loginResult.User`.
+
+**NEVER put the Auth0 domain, client ID, or org id in a `.cs` file** - not as a string literal, a
+constant, or a default. They belong in `appsettings.json` / configuration / user secrets and are
+read from there when constructing `Auth0ClientOptions` (the same rule the API and Android
+Organizations leaves state). The snippets above inline the org id only for brevity.
 
 The calls above are accurate for Auth0.OidcClient.Core 4.x (and the platform packages listed) - do
 not read the SDK source or `.d.ts`/decompiled assemblies to re-verify them.

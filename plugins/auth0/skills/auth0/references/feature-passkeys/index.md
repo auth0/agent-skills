@@ -49,7 +49,7 @@ Before writing code, read the detected SDK's file (see "Example code snippets").
 
 The deliverable is the **application code**, written from the detected SDK's leaf file. Write it early; do not spend the task investigating.
 
-- **Trust the per-SDK file's method/option names — they are verified against the installed SDK.** Do NOT grep `node_modules`, read `.d.ts`/`.d.cts`/site-packages/SDK source, run the SDK's test suite, or write throwaway probes to confirm a signature. Write the code; inspect the installed package only if a specific line fails to compile, and then only that line.
+- **Trust the per-SDK file's method/option names — they are verified against the installed SDK.** Do NOT grep `node_modules`, read `.d.ts`/`.d.cts`/site-packages/SDK source, run the SDK's test suite, write throwaway probes, **fetch the SDK's GitHub/source or any web page, run a filesystem-wide search (`find /`), or cross-check against the Auth0-docs MCP** to confirm a signature. The leaf is authoritative; when it names a symbol, use it. Write the code; inspect the installed package only if a specific line fails to compile, and then only that line.
 - **The minimum version in each SDK file is informational.** The scaffold already pins a compatible release; don't read `package.json`/`node_modules` to confirm it unless a `verify — X+` row tells you to.
 - You're done when the app code is in place (and, for a JS/TS app, `npm run build` passes if quick). Stop there.
 
