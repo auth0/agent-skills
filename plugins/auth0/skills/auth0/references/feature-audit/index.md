@@ -280,9 +280,9 @@ The Phase 5 report needs more than CheckMate alone provides. Run these in parall
 auth0 apps list --json                   # apps_list — count + names for Section 1, 3, 4
 auth0 logs list --number 50 --json       # logs_sample — to flag "Active" login activity
 auth0 api get tenants/settings           # tenant_settings — for "Current Auth0 Tier" detection (look for plan/subscription hints; fallback "Free Plan"). Map detected features against the pricing reference to infer the tier when no explicit plan field is present.
-auth0 api get custom-domains             # custom_domains — empty array → triggers "Branding Gap"
-auth0 api get connections                # connections — for enterprise-connection check
-auth0 api get log-streams                # log_streams — empty array → triggers "Observability Gap"
+auth0 domains list                       # custom_domains — empty array → triggers "Branding Gap"
+auth0 connections list                   # connections — for enterprise-connection check
+auth0 logs streams list                  # log_streams — empty array → triggers "Observability Gap"
 auth0 api get attack-protection/breached-password-detection  # for "Account Security" section
 ```
 

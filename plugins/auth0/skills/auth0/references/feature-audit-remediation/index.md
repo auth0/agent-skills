@@ -15,16 +15,16 @@ For each item, build the command. **Use a first-class subcommand when one exists
 | Breached password detection | `auth0 protection breached-password-detection update` | `PATCH attack-protection/breached-password-detection` |
 | Suspicious IP throttling | `auth0 protection suspicious-ip-throttling update` | `PATCH attack-protection/suspicious-ip-throttling` |
 | Branding (universal login, colors, logo) | `auth0 universal-login update` (alias `auth0 ul update`) | `PATCH branding` |
-| Custom domains | `auth0 domains create` / `update <id>` | `POST custom-domains` / `PATCH custom-domains/<domain-id>` |
-| Connections (DB, social, enterprise) | (none) | `PATCH connections/<connection-id>` (full options blob) |
+| Custom domains | `auth0 domains create` / `update <id>` / `domains default set <id>` / `domains default show` | `POST custom-domains` / `PATCH custom-domains/<domain-id>` |
+| Connections (DB, social, enterprise) | `auth0 connections create` / `update <id>` / `delete <id> --force` | `PATCH connections/<connection-id>` (full options blob) |
 | APIs / resource servers | `auth0 apis update <id>` | `PATCH resource-servers/<api-id>` |
 | Apps / clients (callbacks, origins, grant types, refresh tokens) | `auth0 apps update <id>` | `PATCH clients/<app-id>` |
 | Roles | `auth0 roles update <id>` | `PATCH roles/<role-id>` |
 | Actions | `auth0 actions create/update <id>/deploy <id>` | `POST actions/actions` / `PATCH actions/actions/<action-id>` / `POST actions/actions/<action-id>/deploy` |
 | Log streams | `auth0 logs streams create <provider>` / `update <provider> <id>` (provider is required: `eventbridge`, `eventgrid`, `http`, `datadog`, `splunk`, or `sumo`) | `POST log-streams` / `PATCH log-streams/<log-stream-id>` |
 | Email provider/templates | `auth0 email provider update` / `auth0 email templates update` | `PATCH emails/provider` / `PATCH email-templates/<template-name>` |
-| MFA factor toggles | (none) | `PUT guardian/factors/<factor>` |
-| MFA policies | (none) | `PUT guardian/policies` |
+| MFA factor toggles | `auth0 guardian factors set` | `PUT guardian/factors/<factor>` |
+| MFA policies | `auth0 guardian policies set` | `PUT guardian/policies` |
 | Prompts customization | `auth0 universal-login prompts update <prompt>` (alias `auth0 ul prompts update`) | `PUT prompts/<prompt>/custom-text/<lang>` |
 | Network ACLs | `auth0 network-acl create` / `update <id>` | `POST network-acls` / `PATCH network-acls/<network-acl-id>` |
 | Auth0 Organizations | `auth0 orgs create` / `update <id>` | `POST organizations` / `PATCH organizations/<org-id>` |
@@ -102,7 +102,7 @@ Even in Express mode, these commands are blocked unless the user explicitly type
 - `auth0 logout`
 - `auth0 tenants delete`
 - `auth0 apps delete` (any app, especially the CheckMate app)
-- `auth0 api delete "connections/<id>"` (no first-class delete command exists for connections)
+- `auth0 connections delete <id> --force`
 - `auth0 api delete <anything>`
 
 ## Closing the run

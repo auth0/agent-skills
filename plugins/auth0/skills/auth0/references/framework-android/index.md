@@ -1037,12 +1037,15 @@ if [ -z "$PACKAGE_NAME" ]; then
   exit 1
 fi
 
-# List existing apps and prompt to pick or create
+# Fastest path — auto-detects framework, creates the Auth0 app, and writes strings.xml:
+# auth0 qs setup --app --framework android --type native
+#
+# Manual alternative (full control over callback URLs):
 auth0 apps list
 read -p "Enter app ID (or press Enter to create a new one): " APP_ID
 
 if [ -z "$APP_ID" ]; then
-  DOMAIN=$(auth0 tenants list --csv --no-input 2>/dev/null | grep '→' | cut -d',' -f2 | tr -d ' ')
+  DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[0].domain')
   CALLBACK_URL="${SCHEME}://${DOMAIN}/android/${PACKAGE_NAME}/callback"
   CLIENT_JSON=$(auth0 apps create \
     --name "${PACKAGE_NAME}-android" \
@@ -1050,29 +1053,22 @@ if [ -z "$APP_ID" ]; then
     --auth-method none \
     --callbacks "$CALLBACK_URL" \
     --logout-urls "$CALLBACK_URL" \
-    --json \
+    --json-compact \
     --no-input)
-  CLIENT_ID=$(echo "$CLIENT_JSON" | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+  CLIENT_ID=$(echo "$CLIENT_JSON" | jq -r '.client_id')
 else
-  CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-  DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
+  CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+  DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
   CALLBACK_URL="${SCHEME}://${DOMAIN}/android/${PACKAGE_NAME}/callback"
 fi
 
 # Check / create database connection
-CONNECTIONS_JSON=$(auth0 api get connections --no-input 2>/dev/null || echo "[]")
-CONNECTION_ID=$(echo "$CONNECTIONS_JSON" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-for c in data:
-    if c.get('name') == 'Username-Password-Authentication':
-        print(c['id'])
-        break
-" 2>/dev/null)
+CONNECTIONS_JSON=$(auth0 connections list --json-compact --no-input 2>/dev/null || echo "[]")
+CONNECTION_ID=$(echo "$CONNECTIONS_JSON" | jq -r '.[] | select(.name=="Username-Password-Authentication") | .id' 2>/dev/null)
 if [ -z "$CONNECTION_ID" ]; then
-  CONNECTION_ID=$(auth0 api post connections \
-    --data "{\"strategy\":\"auth0\",\"name\":\"Username-Password-Authentication\"}" \
-    --no-input | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])" 2>/dev/null)
+  CONNECTION_ID=$(auth0 connections create \
+    --data '{"strategy":"auth0","name":"Username-Password-Authentication"}' \
+    --json-compact --no-input | jq -r '.id' 2>/dev/null)
 fi
 if [ -z "$CONNECTION_ID" ]; then
   echo "Failed to find or create the Username-Password-Authentication connection." >&2
@@ -1081,7 +1077,7 @@ fi
 
 # Enable the connection for this app. Only the client_id sent changes, so re-running
 # this is safe.
-auth0 api patch "connections/$CONNECTION_ID/clients" \
+auth0 connections enabled-clients update "$CONNECTION_ID" \
   --data "[{\"client_id\":\"$CLIENT_ID\",\"status\":true}]" \
   --no-input > /dev/null
 

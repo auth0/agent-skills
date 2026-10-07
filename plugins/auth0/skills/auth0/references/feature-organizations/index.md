@@ -175,11 +175,11 @@ Reuse an existing database connection when the tenant has one; create one only i
 ```bash
 # List database connections in the tenant and pick one explicitly by name -
 # the API defines no ordering, so `.[0]` silently grabs an arbitrary connection.
-auth0 api get "connections?strategy=auth0" | jq -r '.[] | select(.name=="<connection-name>") | .id'
+auth0 connections list --query '{"strategy":"auth0"}' | jq -r '.[] | select(.name=="<connection-name>") | .id'
 
 # Create one only if there is none matching. `name` must match
 # ^[a-zA-Z0-9](-[a-zA-Z0-9]|[a-zA-Z0-9])*$, max 128 chars.
-auth0 api post connections --data '{"name":"<connection-name>","strategy":"auth0"}'
+auth0 connections create --data '{"name":"<connection-name>","strategy":"auth0"}'
 
 # Enable it for the organization - without this, org members have no way to log in.
 auth0 api post "organizations/<org-id>/enabled_connections" \
@@ -191,7 +191,7 @@ auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
 # ONLY if the app is not already listed above: enable the connection for it.
 # This is a separate setting from org login (see note below), so skip it on a
 # connection the tenant already had enabled for the app. status false disables; max 50 per call.
-auth0 api patch "connections/<con-id>/clients" \
+auth0 connections enabled-clients update <con-id> \
   --data '[{"client_id":"<client-id>","status":true}]'
 ```
 
@@ -295,7 +295,7 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
 | Not enabling a connection for the org | `auth0 api post "organizations/<org-id>/enabled_connections"`, or Dashboard → Organization → Connections |
 | A space or underscore in a new connection's `name` | Alphanumerics and hyphens only, starting and ending alphanumeric. Anything else is a 400 |
-| Creating a connection and enabling it for no app | Nothing can use it. `auth0 api patch "connections/<con-id>/clients" --data '[{"client_id":"<client-id>","status":true}]'` |
+| Creating a connection and enabling it for no app | Nothing can use it. `auth0 connections enabled-clients update <con-id> --data '[{"client_id":"<client-id>","status":true}]'` |
 | Reading or writing `enabled_clients` on the connection object | "NOT RECOMMENDED" on write, deprecated on read. Use `GET`/`PATCH connections/<con-id>/clients` |
 | Overwriting `default_redirection_uri` without reading it first | It is tenant-wide. Capture the old value, and restore or disclose it |
 | Guessing a `auth0 orgs` subcommand for membership, roles, or connections | Verify with `auth0 commands orgs --detailed`, and use `auth0 api post organizations/...` for whatever has no dedicated subcommand |

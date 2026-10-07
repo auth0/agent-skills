@@ -964,10 +964,10 @@ func fetchData() async throws -> [Item] {
 > **Pre-flight checks:**
 >
 > 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0`.
-> 2. **Check Auth0 login**: redirect to a private temp file the same way (`OUT=$(mktemp -t auth0-tenants); auth0 tenants list --csv --no-input > "$OUT"`). Read `$OUT` to check the result, then `rm -f "$OUT"`. If it fails or returns empty:
+> 2. **Check Auth0 login**: redirect to a private temp file the same way (`OUT=$(mktemp -t auth0-tenants); auth0 tenants list --json-compact > "$OUT"`). Read `$OUT` to check the result, then `rm -f "$OUT"`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
-> 3. **Confirm active tenant**: Parse the `→` line from step 2's output to extract the domain. Tell the user using a masked format: _"Your active Auth0 tenant is: `your-te****.us.auth0.com`. Is this correct? (Recommend using a development/test tenant rather than production.)"_ — mask all but the first 7 characters of the subdomain.
+> 3. **Confirm active tenant**: Extract the domain from step 2's output with `jq -r '.[0].domain' "$OUT"`. Tell the user using a masked format: _"Your active Auth0 tenant is: `your-te****.us.auth0.com`. Is this correct? (Recommend using a development/test tenant rather than production.)"_ — mask all but the first 7 characters of the subdomain.
 >    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 2.
 >
 > **Detect project settings:**
@@ -1015,7 +1015,7 @@ func fetchData() async throws -> [Item] {
 >    - Then enable it for the client, whether or not the connection already existed:
 >
 >      ```bash
->      auth0 api patch connections/CONNECTION_ID/clients \
+>      auth0 connections enabled-clients update CONNECTION_ID \
 >        --data '[{"client_id":"CLIENT_ID","status":true}]' \
 >        --no-input > /dev/null 2>&1
 >      ```

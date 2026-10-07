@@ -1142,43 +1142,27 @@ else
   PREFIX="VITE_AUTH0"  # Default to Vite
 fi
 
-# List apps and prompt for selection
-echo "Your Auth0 applications:"
-auth0 apps list
-
-read -p "Enter your Auth0 app ID (or press Enter to create a new one): " APP_ID
-
-if [ -z "$APP_ID" ]; then
-  echo "Creating new Auth0 SPA application..."
-  APP_NAME="${PWD##*/}-react-app"
-  APP_ID=$(auth0 apps create \
-    --name "$APP_NAME" \
-    --type spa \
-    --auth-method None \
-    --callbacks "http://localhost:3000,http://localhost:5173" \
-    --logout-urls "http://localhost:3000,http://localhost:5173" \
-    --origins "http://localhost:3000,http://localhost:5173" \
-    --web-origins "http://localhost:3000,http://localhost:5173" \
-    --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-  echo "Created app with ID: $APP_ID"
-fi
-
-# Get app details and create .env file
-echo "Fetching Auth0 credentials..."
-AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-
-# Append Auth0 credentials to .env
-cat >> .env << EOF
-${PREFIX}_DOMAIN=$AUTH0_DOMAIN
-${PREFIX}_CLIENT_ID=$AUTH0_CLIENT_ID
-EOF
+# Fastest path — auto-detects framework, creates the Auth0 app, and writes .env:
+auth0 qs setup --app --framework react --type spa --port 5173
 
 echo "✅ Auth0 configuration complete!"
-echo "Appended to .env:"
-echo "  ${PREFIX}_DOMAIN=$AUTH0_DOMAIN"
-echo "  ${PREFIX}_CLIENT_ID=$AUTH0_CLIENT_ID"
+
+# Manual alternative (if you need custom URL configuration):
+# APP_NAME="${PWD##*/}-react-app"
+# APP_ID=$(auth0 apps create \
+#   --name "$APP_NAME" \
+#   --type spa \
+#   --auth-method none \
+#   --callbacks "http://localhost:3000,http://localhost:5173" \
+#   --logout-urls "http://localhost:3000,http://localhost:5173" \
+#   --origins "http://localhost:3000,http://localhost:5173" \
+#   --web-origins "http://localhost:3000,http://localhost:5173" \
+#   --json-compact | jq -r '.client_id')
+# AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+# cat >> .env << EOF
+# ${PREFIX}_DOMAIN=$AUTH0_DOMAIN
+# ${PREFIX}_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+# EOF
 ```
 
 #### PowerShell Script (Windows)

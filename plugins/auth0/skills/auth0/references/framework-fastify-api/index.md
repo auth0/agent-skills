@@ -9,7 +9,7 @@ Protect Fastify API endpoints with JWT access token validation using @auth0/auth
 - Fastify API application (v5.x or newer)
 - Node.js 20 LTS or newer
 - Auth0 API configured (not Application - must be API resource)
-- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apis create`)
 
 ## When NOT to Use
 

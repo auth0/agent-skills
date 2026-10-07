@@ -19,7 +19,7 @@ Protect Go HTTP API endpoints with JWT access token validation using github.com/
 
 - Go 1.21 or higher
 - Auth0 API configured (not Application - must be API resource)
-- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apis create`)
 
 ## When NOT to Use
 
@@ -304,21 +304,13 @@ mux.Handle("/api/private-scoped", middleware.CheckJWT(http.HandlerFunc(privateSc
 > Parse the JSON to extract `client_id`. Do NOT use `--reveal-secrets` — instead, if the client secret is needed, have the user run `auth0 apps show <CLIENT_ID> --reveal-secrets` in their own terminal so secrets stay out of the agent context.
 > Then create a client grant:
 > ```bash
-> auth0 api post "client-grants" --data '{
->   "client_id": "<CLIENT_ID>",
->   "audience": "<API_IDENTIFIER>",
->   "scope": ["<SCOPES>"]
-> }'
+> auth0 client-grants create --client-id <CLIENT_ID> --audience <API_IDENTIFIER> --scopes "<SCOPES>"
 > ```
 >
 > **If the user chose "Use existing":**
 > Ask for the Client ID. Then create a client grant to authorize it for this API:
 > ```bash
-> auth0 api post "client-grants" --data '{
->   "client_id": "<USER_PROVIDED_CLIENT_ID>",
->   "audience": "<API_IDENTIFIER>",
->   "scope": ["<SCOPES>"]
-> }'
+> auth0 client-grants create --client-id <USER_PROVIDED_CLIENT_ID> --audience <API_IDENTIFIER> --scopes "<SCOPES>"
 > ```
 > If the grant already exists (409 conflict), that's fine — the app is already authorized.
 
@@ -1338,19 +1330,11 @@ Setup instructions for Go API applications.
 >      Parse the JSON output to extract the `client_id`. **Do NOT use `--reveal-secrets`** — instead, rather than handling client secrets in agent context, tell the user: _"Your M2M app has been created. To get the client secret, run `auth0 apps show <CLIENT_ID> --reveal-secrets` in your terminal."_
 >      Then create a client grant to authorize the app for the API:
 >      ```bash
->      auth0 api post "client-grants" --data '{
->        "client_id": "<CLIENT_ID>",
->        "audience": "<API_IDENTIFIER>",
->        "scope": ["<SCOPES>"]
->      }'
+>      auth0 client-grants create --client-id <CLIENT_ID> --audience <API_IDENTIFIER> --scopes "<SCOPES>"
 >      ```
 >    - **Option B: "Use an existing application"** — Ask the user for the `client_id` of their existing application. Then create a client grant to authorize it for this API:
 >      ```bash
->      auth0 api post "client-grants" --data '{
->        "client_id": "<CLIENT_ID>",
->        "audience": "<API_IDENTIFIER>",
->        "scope": ["<SCOPES>"]
->      }'
+>      auth0 client-grants create --client-id <CLIENT_ID> --audience <API_IDENTIFIER> --scopes "<SCOPES>"
 >      ```
 >      If the grant already exists (409 conflict), that's fine — the app is already authorized.
 >
@@ -1439,11 +1423,7 @@ auth0 apps create \
 Note the `client_id` from the JSON output. Then authorize it for your API by creating a client grant:
 
 ```bash
-auth0 api post "client-grants" --data '{
-  "client_id": "YOUR_M2M_CLIENT_ID",
-  "audience": "https://my-api.example.com",
-  "scope": ["read:messages"]
-}'
+auth0 client-grants create --client-id YOUR_M2M_CLIENT_ID --audience https://my-api.example.com --scopes "read:messages"
 ```
 
 To retrieve the client secret for manual token requests, run in your terminal:
@@ -1451,7 +1431,7 @@ To retrieve the client secret for manual token requests, run in your terminal:
 auth0 apps show YOUR_M2M_CLIENT_ID --reveal-secrets
 ```
 
-If you already have an application you'd like to use, run the same `auth0 api post "client-grants"` command with your existing app's `client_id` to authorize it for this API.
+If you already have an application you'd like to use, run the same `auth0 client-grants create` command with your existing app's `client_id` to authorize it for this API.
 
 ### Step 2: Add configuration
 
@@ -1539,11 +1519,7 @@ auth0 apps create \
 Note the `client_id` from the output. To get the client secret, run `auth0 apps show <CLIENT_ID> --reveal-secrets` in your terminal. Then authorize the app for your API:
 
 ```bash
-auth0 api post "client-grants" --data '{
-  "client_id": "YOUR_M2M_CLIENT_ID",
-  "audience": "https://my-api.example.com",
-  "scope": ["read:messages"]
-}'
+auth0 client-grants create --client-id YOUR_M2M_CLIENT_ID --audience https://my-api.example.com --scopes "read:messages"
 ```
 
 ### Via Auth0 CLI

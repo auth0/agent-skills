@@ -30,7 +30,13 @@ npm install @auth0/auth0-fastify fastify @fastify/view ejs dotenv
 
 ### 2. Configure Environment
 
-Create `.env`:
+**Fastest path** — `auth0 qs setup` auto-detects the framework, creates the Auth0 app, and writes `.env` automatically:
+
+```bash
+auth0 qs setup --app --framework fastify --type regular
+```
+
+**Manual alternative** (if you need custom URL configuration): create `.env` manually:
 
 ```bash
 AUTH0_DOMAIN=your-tenant.auth0.com

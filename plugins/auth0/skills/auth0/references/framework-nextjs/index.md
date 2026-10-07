@@ -732,47 +732,42 @@ fi
 auth0 apps list
 read -p "Enter app ID (or Enter to create new): " APP_ID
 
-if [ -z "$APP_ID" ]; then
-  APP_ID=$(auth0 apps create \
-    --name "${PWD##*/}-nextjs" \
-    --type regular \
-    --callbacks "http://localhost:3000/auth/callback" \
-    --logout-urls "http://localhost:3000" \
-    --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-fi
+# Fastest path — auto-detects framework, creates the Auth0 app, and writes .env:
+auth0 qs setup --app --framework nextjs --type regular
 
-# Get credentials
-AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+echo "✅ Auth0 configuration complete!"
 
-# Generate secret
-AUTH0_SECRET=$(openssl rand -hex 32)
-
-# Determine target env file
-if [ -f .env.local ]; then
-  TARGET_FILE=".env.local"
-elif [ -f .env ]; then
-  TARGET_FILE=".env"
-else
-  TARGET_FILE=".env.local"
-fi
-
-# Append Auth0 credentials
-cat >> "$TARGET_FILE" << ENVEOF
-AUTH0_SECRET=$AUTH0_SECRET
-APP_BASE_URL=http://localhost:3000
-AUTH0_DOMAIN=$AUTH0_DOMAIN
-AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
-AUTH0_CLIENT_SECRET='YOUR_CLIENT_SECRET'
-ENVEOF
+# Manual alternative (if you need custom URL configuration):
+# APP_ID=$(auth0 apps create \
+#   --name "${PWD##*/}-nextjs" \
+#   --type regular \
+#   --callbacks "http://localhost:3000/auth/callback" \
+#   --logout-urls "http://localhost:3000" \
+#   --json-compact | jq -r '.client_id')
+# AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+# AUTH0_SECRET=$(openssl rand -hex 32)
+# AUTH0_CLIENT_SECRET=$(auth0 apps show "$APP_ID" --reveal-secrets --json-compact | jq -r '.client_secret')
+#
+# if [ -f .env.local ]; then
+#   TARGET_FILE=".env.local"
+# elif [ -f .env ]; then
+#   TARGET_FILE=".env"
+# else
+#   TARGET_FILE=".env.local"
+# fi
+#
+# cat >> "$TARGET_FILE" << ENVEOF
+# AUTH0_SECRET=$AUTH0_SECRET
+# APP_BASE_URL=http://localhost:3000
+# AUTH0_DOMAIN=$AUTH0_DOMAIN
+# AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+# AUTH0_CLIENT_SECRET=$AUTH0_CLIENT_SECRET
+# ENVEOF
 
 echo "✅ Auth0 credentials written to $TARGET_FILE"
 ```
 
-After the script runs, remind the user to:
-1. Open the env file that was written and replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0.
-2. Ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.
+After the script runs, ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.
 
 ---
 

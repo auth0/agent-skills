@@ -821,28 +821,26 @@ fi
 auth0 apps list
 read -p "Enter your Auth0 app ID (or press Enter to create new): " APP_ID
 
-if [ -z "$APP_ID" ]; then
-  APP_NAME="${PWD##*/}-angular-app"
-  APP_ID=$(auth0 apps create \
-    --name "$APP_NAME" \
-    --type spa \
-    --auth-method None \
-    --callbacks "http://localhost:4200" \
-    --logout-urls "http://localhost:4200" \
-    --origins "http://localhost:4200" \
-    --web-origins "http://localhost:4200" \
-    --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-fi
-
-# Get credentials
-AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+# Fastest path — auto-detects framework, creates the Auth0 app, and writes config:
+auth0 qs setup --app --framework angular --type spa
 
 echo "✅ Configuration complete!"
-echo "Update src/environments/environment.ts with:"
-echo "  domain: '$AUTH0_DOMAIN'"
-echo "  clientId: '$AUTH0_CLIENT_ID'"
+
+# Manual alternative (if you need custom URL configuration):
+# APP_NAME="${PWD##*/}-angular-app"
+# APP_ID=$(auth0 apps create \
+#   --name "$APP_NAME" \
+#   --type spa \
+#   --auth-method none \
+#   --callbacks "http://localhost:4200" \
+#   --logout-urls "http://localhost:4200" \
+#   --origins "http://localhost:4200" \
+#   --web-origins "http://localhost:4200" \
+#   --json-compact | jq -r '.client_id')
+# AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+# echo "Update src/environments/environment.ts with:"
+# echo "  domain: '$AUTH0_DOMAIN'"
+# echo "  clientId: '$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')'"
 ```
 
 ---
