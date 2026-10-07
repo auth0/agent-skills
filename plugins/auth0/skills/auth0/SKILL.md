@@ -41,6 +41,7 @@ lookup key: in **Step 4** it appears verbatim as a section heading
 | Require a second step **after** the password — a one-time code, SMS or email code, authenticator app, or a passkey/fingerprint/face/security key used as an *additional* factor; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
 | Let users sign up or sign in with a passkey, fingerprint, or Face ID **instead of** a password — passwordless WebAuthn as the primary credential — or let a signed-in user add a passkey to their account. *Auth0: passkeys, WebAuthn, passwordless login.* | **feature:passkeys** |
 | Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
+| Let business customers sign in through their own company's identity provider by typing a work email that routes them to the employer's login. *Auth0: Enterprise Connect, B2B Connect - Enterprise, enterprise SSO.* | **feature:enterprise-connect** |
 | Deploy a hosted self-service portal for profile, passkeys, MFA, or organization details instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
 | Serve the login page from your own web address (e.g. `login.example.com`, `auth.company.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
@@ -322,6 +323,13 @@ Read: references/feature-organizations/index.md
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 If multi-tenant architecture / B2B SaaS design question: also Read references/pattern-multi-tenant/index.md
+```
+
+### feature:enterprise-connect
+```
+Read: references/feature-enterprise-connect/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
 ```
 
 ### feature:universal-portals

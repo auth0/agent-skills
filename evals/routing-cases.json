@@ -143,6 +143,41 @@
       "expect_refs": ["feature-universal-portals/index.md", "tooling-cli/index.md"]
     },
     {
+      "id": "feature-enterprise-connect-standalone",
+      "intent": "feature:enterprise-connect",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-enterprise-connect/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-enterprise-connect-nextjs-combo",
+      "intent": "feature:enterprise-connect",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["feature-enterprise-connect/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
+    },
+    {
+      "id": "feature-enterprise-connect-auth0-server-js-combo",
+      "intent": "feature:enterprise-connect",
+      "framework": "auth0-server-js",
+      "tooling": "terraform",
+      "expect_refs": ["feature-enterprise-connect/index.md", "tooling-terraform/index.md", "framework-auth0-server-js/index.md"]
+    },
+    {
+      "id": "feature-enterprise-connect-vue-combo",
+      "intent": "feature:enterprise-connect",
+      "framework": "vue",
+      "tooling": "cli",
+      "expect_refs": ["feature-enterprise-connect/index.md", "tooling-cli/index.md", "framework-vue/index.md"]
+    },
+    {
+      "id": "feature-enterprise-connect-react-combo",
+      "intent": "feature:enterprise-connect",
+      "framework": "react",
+      "tooling": "cli",
+      "expect_refs": ["feature-enterprise-connect/index.md", "tooling-cli/index.md", "framework-react/index.md"]
+    },
+    {
       "id": "feature-dpop-spa-combo",
       "intent": "feature:dpop",
       "framework": "vue",
