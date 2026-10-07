@@ -309,6 +309,9 @@ auth0 connections enabled-clients update <connection-id> \
   --data '[{"client_id":"<id>","status":true}]'
 ```
 
+`enabled-clients update` changes only the clients in the payload and keeps the
+status of every other client, so a single entry does not replace the existing list.
+
 Strategies include `auth0` (database), `google-oauth2`, `samlp`, `oidc`, `waad`,
 `ad`, `oauth2`, and more.
 
