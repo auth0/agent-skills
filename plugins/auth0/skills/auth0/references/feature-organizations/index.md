@@ -168,8 +168,8 @@ auth0 apps update <client-id> \
   --organization-usage require --organization-require-behavior pre_login_prompt
 ```
 
-`auth0 apps update` and `auth0 apps show <client-id>` keep `client_secret` masked unless you
-pass `--reveal-secrets`, so the secret stays out of your context.
+`auth0 apps update` and `auth0 apps show <client-id>` leave `client_secret` out of their output
+unless you pass `--reveal-secrets`, so the secret stays out of your context.
 
 ### Finding or creating a login connection
 
@@ -189,7 +189,7 @@ auth0 api post "organizations/<org-id>/enabled_connections" \
   --data '{"connection_id":"<con-id>","assign_membership_on_login":true}'
 
 # Check which apps already have this connection enabled.
-auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
+auth0 connections enabled-clients show <con-id> --json | jq -r '.[].client_id'
 
 # ONLY if the app is not already listed above: enable the connection for it.
 # This is a separate setting from org login (see note below), so skip it on a
@@ -200,10 +200,8 @@ auth0 connections enabled-clients update <con-id> \
   --data '[{"client_id":"<client-id>","status":true}]'
 ```
 
-Both connection reads are checkpoint-paginated (`take` defaults to 50): omit `from` on the
-first call, then while the response carries a `next` value pass it as `from` until it is
-absent. The lookup above only inspects the first page, so page through all results before
-concluding a connection is absent, and fail unless exactly one matches rather than guessing.
+`enabled-clients show` returns every enabled client, across pages. Fail unless exactly one
+connection matches the name rather than guessing.
 
 A connection added to the organization's `enabled_connections` is what appears at that org's
 login prompt and lets members authenticate. Enabling the connection for a client
@@ -301,8 +299,8 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | Not enabling a connection for the org | `auth0 api post "organizations/<org-id>/enabled_connections"`, or Dashboard → Organization → Connections |
 | A space or underscore in a new connection's `name` | Alphanumerics and hyphens only, starting and ending alphanumeric. Anything else is a 400 |
 | Creating a connection and enabling it for no app | Nothing can use it. `auth0 connections enabled-clients update <con-id> --data '[{"client_id":"<client-id>","status":true}]'` |
-| Reading or writing `enabled_clients` on the connection object | "NOT RECOMMENDED" on write, deprecated on read. Use `auth0 connections enabled-clients update <con-id>`, which sends a PATCH to `connections/<con-id>/clients` |
-| Reading or setting a client field with `auth0 api` | Use `auth0 apps show <client-id>` or `auth0 apps update <client-id>`, which mask `client_secret`. For a raw call, pipe through `jq` to keep only the fields you need |
+| Reading or writing `enabled_clients` on the connection object | "NOT RECOMMENDED" on write, deprecated on read. Read with `auth0 connections enabled-clients show <con-id>` and write with `auth0 connections enabled-clients update <con-id>`, which sends a PATCH to `connections/<con-id>/clients` |
+| Reading or setting a client field with `auth0 api` | Use `auth0 apps show <client-id>` or `auth0 apps update <client-id>`, which leave `client_secret` out unless you pass `--reveal-secrets`. For a raw call, pipe through `jq` to keep only the fields you need |
 | Overwriting `default_redirection_uri` without reading it first | It is tenant-wide. Capture the old value, and restore or disclose it |
 | Guessing a `auth0 orgs` subcommand for membership, roles, or connections | Verify with `auth0 commands orgs --detailed`, and use `auth0 api post organizations/...` for whatever has no dedicated subcommand |
 | Prefixing `auth0 api` paths with `/api/v2/` | Paths are relative to the API root. `/api/v2/organizations/...` returns 404 |

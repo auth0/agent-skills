@@ -703,7 +703,7 @@ defaults to `GET` without data and `POST` with data. If a call returns 403,
 re-run `auth0 login --scopes "<needed:scope>"`.
 
 **Secrets.** To read or change a client, use `auth0 apps show <id>` or
-`auth0 apps update <id>`: they mask `client_secret` unless you pass `--reveal-secrets`.
+`auth0 apps update <id>`: they leave `client_secret` out unless you pass `--reveal-secrets`.
 A raw `auth0 api` call on `clients/<id>` returns the full client including the secret,
 so pipe it through `jq` and keep only the fields you need, for example
 `jq '{name, organization_usage}'`, to keep the secret out of your context.
