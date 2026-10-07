@@ -61,7 +61,8 @@ won't have it. No matching row? Fall back to the protocol shape above plus the l
 and config files in place; do not scaffold extra `README`, `SETUP`, `NOTES`, `CHECKLIST`, or
 `*-summary` documents to "explain" the integration - they are not part of the task and dilute the
 diff. Keep the change minimal and focused on what makes org login, invitation acceptance, and
-`org_id` enforcement work.
+`org_id` enforcement work. Verify your edits by re-reading the files you changed - the task
+workspace is not guaranteed to be a git repository, so `git diff`/`git status` may just error.
 
 | SDK | Min version | Read this file |
 |---|---|---|
@@ -74,11 +75,15 @@ diff. Keep the change minimal and focused on what makes org login, invitation ac
 | `react-native-auth0` | 5.x | `Read: references/feature-organizations/react-native-auth0.md` |
 | `Auth0.swift` | 2.x/3.x | `Read: references/feature-organizations/auth0-swift.md` |
 | `Auth0.Android` | 2.x–4.x | `Read: references/feature-organizations/auth0-android.md` |
+| `Auth0.OidcClient.*` (.NET WPF/WinForms/UWP/MAUI/AndroidX/iOS) | 3.2.0+ (Core) | `Read: references/feature-organizations/auth0-oidc-client-net.md` |
 | `@auth0/auth0-server-js` | 1.9.0 | `Read: references/feature-organizations/auth0-server-js.md` |
 | `@auth0/auth0-auth-js` | 1.10.0 | `Read: references/feature-organizations/auth0-auth-js.md` |
 | `auth0-server-python` | 1.0.0b11 | `Read: references/feature-organizations/auth0-server-python.md` |
 | `@auth0/auth0-api-js` (API) | 1.3.0 | `Read: references/feature-organizations/auth0-api-js.md` |
 | `express-oauth2-jwt-bearer` (API) | 1.0.0 | `Read: references/feature-organizations/express-oauth2-jwt-bearer.md` |
+| `go-jwt-middleware` (API, Go) | v3.3.0 | `Read: references/feature-organizations/go-jwt-middleware.md` |
+| `auth0-api-python` (API, Python) | 1.0.0b4 | `Read: references/feature-organizations/auth0-api-python.md` |
+| `Auth0.AspNetCore.Authentication.Api` (API, .NET) | 1.0.0 | `Read: references/feature-organizations/aspnetcore-api.md` |
 
 ### Reading the organization back
 
