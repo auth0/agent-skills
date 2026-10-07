@@ -13,7 +13,7 @@
         "Uses auth0 apps create with --type spa",
         "Sets --callbacks to http://localhost:5173",
         "Sets --logout-urls to http://localhost:5173",
-        "Sets --origins or --web-origins to http://localhost:5173",
+        "Sets --web-origins to http://localhost:5173 (--origins alone does not set web_origins)",
         "Suggests auth0 test login <client-id> to test the flow",
         "Suggests auth0 logs tail --filter type:f for debugging failures",
         "Does NOT invent non-existent flags or subcommands",

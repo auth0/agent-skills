@@ -247,10 +247,16 @@ auth0 apps create --name "My SPA" --type spa \
   --auth-method None \
   --callbacks "http://localhost:3000" \
   --logout-urls "http://localhost:3000" \
-  --origins "http://localhost:3000"
+  --origins "http://localhost:3000" \
+  --web-origins "http://localhost:3000"
 
 auth0 apps show <client-id> -r          # -r reveals the client secret
 ```
+
+`--origins` sets `allowed_origins` (CORS) and `--web-origins` sets `web_origins`
+(silent authentication and cross-origin auth). They are separate fields, and a
+SPA needs `--web-origins` for `getTokenSilently()` to work. Passing only
+`--origins` succeeds without error but leaves `web_origins` empty.
 
 App types: `spa`, `regular`, `m2m`, `native`, `resource_server`.
 
