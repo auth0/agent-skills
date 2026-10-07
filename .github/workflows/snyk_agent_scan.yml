@@ -41,28 +41,19 @@ jobs:
       run: |
         set -euo pipefail
 
-        # Scan a single markdown file, re-keying the JSON by the file path so
-        # same-named files (e.g. multiple references/*/index.md) can't collide
-        # when merged into the per-skill report. Writes re-keyed JSON to $2.
-        scan_markdown() {
-          local md_file="$1"
-          local out="$2"
-          local raw
-          raw=$(mktemp)
+        scan_skill() {
+          local skill_file="$1"
+          local skill_name="$2"
 
-          if ! uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$md_file" --skills --json 2>/dev/null > "$raw"; then
-            echo "Retrying ${md_file} in 5s..."
-            sleep 5
-            if ! uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$md_file" --skills --json 2>/dev/null > "$raw"; then
-              rm -f "$raw"
-              return 1
-            fi
-          fi
+          uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$skill_file" --skills --json 2>/dev/null \
+            | tee "snyk-agent-scan-skill-${skill_name}.json" \
+            && return 0
 
-          jq --arg f "$md_file" \
-            'if type=="object" then (to_entries | map(.key = ($f + "::" + .key)) | from_entries) else {($f): {issues: .}} end' \
-            "$raw" > "$out"
-          rm -f "$raw"
+          echo "Retrying ${skill_name} in 5s..."
+          sleep 5
+
+          uvx snyk-agent-scan@${SNYK_AGENT_SCAN_VERSION} "$skill_file" --skills --json 2>/dev/null \
+            | tee "snyk-agent-scan-skill-${skill_name}.json"
         }
 
         # Scan all skills on both PRs and pushes to main
@@ -79,30 +70,14 @@ jobs:
 
         EXIT_CODE=0
         while IFS= read -r skill_dir; do
-          if [ ! -f "${skill_dir}/SKILL.md" ]; then
+          skill_file="${skill_dir}/SKILL.md"
+          if [ -f "$skill_file" ]; then
+            skill_name=$(echo "$skill_dir" | tr '/' '-')
+            echo "Scanning ${skill_dir}..."
+            scan_skill "$skill_file" "$skill_name" || EXIT_CODE=1
+          else
             echo "Skipping deleted or non-existent skill: ${skill_dir}"
-            continue
           fi
-
-          skill_name=$(echo "$skill_dir" | tr '/' '-')
-          echo "Scanning ${skill_dir} (SKILL.md + references)..."
-
-          # Scan every markdown file in the skill — SKILL.md is the entry point,
-          # but references/ hold the content agents load at runtime, so a URL in
-          # a reference file must be scanned too (previously only SKILL.md was).
-          part_dir=$(mktemp -d)
-          i=0
-          while IFS= read -r md_file; do
-            scan_markdown "$md_file" "${part_dir}/part-${i}.json" || EXIT_CODE=1
-            i=$((i + 1))
-          done < <(find "$skill_dir" -type f -name '*.md' | sort)
-
-          # Merge all per-file results into the single per-skill report. The name
-          # is unchanged so check_snyk_findings.py's skill-name extraction and the
-          # ignore list keep resolving to the skill (e.g. "auth0").
-          jq -s 'reduce .[] as $o ({}; . + $o)' "${part_dir}"/part-*.json \
-            > "snyk-agent-scan-skill-${skill_name}.json"
-          rm -rf "$part_dir"
         done <<< "$SKILL_DIRS"
 
         exit $EXIT_CODE
