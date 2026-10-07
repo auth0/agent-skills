@@ -176,9 +176,9 @@ pass `--reveal-secrets`, so the secret stays out of your context.
 Reuse an existing database connection when the tenant has one; create one only if it does not:
 
 ```bash
-# List database connections in the tenant and pick one explicitly by name -
-# the API defines no ordering, so `.[0]` silently grabs an arbitrary connection.
-auth0 connections list --json | jq -r '.[] | select(.strategy=="auth0" and .name=="<connection-name>") | .id'
+# Look up a database connection by name. Filtering on `name` returns the exact match -
+# the API defines no ordering, so `.[0]` on an unfiltered list grabs an arbitrary connection.
+auth0 connections list --query '{"strategy":["auth0"],"name":"<connection-name>"}' --json | jq -r '.[].id'
 
 # Create one only if there is none matching. `name` must match
 # ^[a-zA-Z0-9](-[a-zA-Z0-9]|[a-zA-Z0-9])*$, max 128 chars.
