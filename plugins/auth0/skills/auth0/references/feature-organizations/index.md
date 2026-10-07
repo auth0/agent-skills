@@ -168,9 +168,8 @@ auth0 apps update <client-id> \
   --organization-usage require --organization-require-behavior pre_login_prompt
 ```
 
-Do not use `auth0 api patch "clients/<client-id>"` for this. The raw call returns the whole
-client, including `client_secret`, which then lands in your context. `auth0 apps update` and
-`auth0 apps show <client-id>` mask secrets unless you pass `--reveal-secrets`.
+`auth0 apps update` and `auth0 apps show <client-id>` keep `client_secret` masked unless you
+pass `--reveal-secrets`, so the secret stays out of your context.
 
 ### Finding or creating a login connection
 
@@ -303,7 +302,7 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | A space or underscore in a new connection's `name` | Alphanumerics and hyphens only, starting and ending alphanumeric. Anything else is a 400 |
 | Creating a connection and enabling it for no app | Nothing can use it. `auth0 connections enabled-clients update <con-id> --data '[{"client_id":"<client-id>","status":true}]'` |
 | Reading or writing `enabled_clients` on the connection object | "NOT RECOMMENDED" on write, deprecated on read. Use `auth0 connections enabled-clients update <con-id>`, which sends a PATCH to `connections/<con-id>/clients` |
-| Using `auth0 api` on `clients/<client-id>` to read or set a field | The raw response includes `client_secret`. Use `auth0 apps show <client-id>` or `auth0 apps update <client-id>` (secrets masked), or pipe through `jq` to keep only the fields you need |
+| Reading or setting a client field with `auth0 api` | Use `auth0 apps show <client-id>` or `auth0 apps update <client-id>`, which mask `client_secret`. For a raw call, pipe through `jq` to keep only the fields you need |
 | Overwriting `default_redirection_uri` without reading it first | It is tenant-wide. Capture the old value, and restore or disclose it |
 | Guessing a `auth0 orgs` subcommand for membership, roles, or connections | Verify with `auth0 commands orgs --detailed`, and use `auth0 api post organizations/...` for whatever has no dedicated subcommand |
 | Prefixing `auth0 api` paths with `/api/v2/` | Paths are relative to the API root. `/api/v2/organizations/...` returns 404 |
