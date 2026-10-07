@@ -172,9 +172,11 @@ Notes:
 - `--type` only accepts `custom_authentication` (CTE). `on_behalf_of_token_exchange` is a different
   (OBO) profile type and is out of scope here.
 - `subject_token_type`: 8–100 chars, a valid URI, no reserved prefix, unique per tenant (409 on duplicate).
-- Authorizing the M2M app for the Management API (to run these) and the "Allow Skip User Consent"
-  setting have no dedicated verbs — use `auth0 api post "client-grants"` and
-  `auth0 api patch "resource-servers/<mgmt-api-id>"`.
+- CTE itself needs neither user consent nor Management API access for the exchanging app — the
+  exchange is non-interactive (no consent prompt) and hits the Authentication API, not the
+  Management API. Only if a *separate* requirement calls for them: "Allow Skip User Consent" and
+  authorizing an M2M app for the Management API have no dedicated verbs — use
+  `auth0 api patch "resource-servers/<mgmt-api-id>"` and `auth0 api post "client-grants"`.
 
 Verify subcommands and flag names with `auth0 token-exchange --help` and `auth0 actions --help`
 rather than inferring them; use `auth0 api` for Management API calls without a dedicated
