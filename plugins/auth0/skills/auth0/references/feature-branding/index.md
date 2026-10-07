@@ -210,8 +210,8 @@ Complete Management API endpoints, CLI commands, configuration options, and erro
 
 **Theme behavior notes:**
 - `GET /branding/themes/default` returns 404 if no theme has been created yet. Create one with POST first.
-- PATCH requires all top-level sections (`colors`, `fonts`, `borders`, `widget`, `page_background`). To update one field, GET the current theme, merge your change, then PATCH the full object.
-- Each theme has a `displayName` string field (optional, used for identification).
+- PATCH requires all top-level sections (`colors`, `fonts`, `borders`, `widget`, `page_background`). To update one field, GET the current theme, merge your change, then PATCH the full object. Carry `displayName` over too: a PATCH without it resets the theme name to "Unnamed Theme".
+- On a tenant with a theme, the theme sets the colors that users see. The button color is `colors.primary_button`; send color changes with a GET, merge and PATCH on `branding/themes/<theme-id>`.
 - The response includes a `themeId` string used in subsequent PATCH/DELETE calls.
 
 ### Universal Login Templates
@@ -608,16 +608,20 @@ Common prompts you can customize (not a complete list; Auth0 supports additional
 
 ### API Behavior
 
-The `PUT /api/v2/prompts/<prompt>/custom-text/<language>` endpoint **replaces** all custom text for that prompt and language. To update one screen without losing others, first GET the current text, merge your changes, then PUT the full object back.
+`auth0 ul prompts update <prompt> -l <language> --data '...'` **replaces** all custom text for that prompt and language (it sends a `PUT` to `/api/v2/prompts/<prompt>/custom-text/<language>`). To update one screen without losing others, first read the current text, merge your changes, then write the full object back.
 
 `GET` returns only the keys you have explicitly set, not the full set of Auth0 default strings. An empty object (`{}`) means no custom text is set and Auth0's defaults are used.
 
 ```bash
-# Get current text, modify, then set
-CURRENT=$(auth0 api get "prompts/login/custom-text/en")
-# Merge changes into $CURRENT
-auth0 api put "prompts/login/custom-text/en" --data "$UPDATED"
+# 1. Read the current custom text for the prompt
+auth0 ul prompts show login-id -l en
+
+# 2. Merge your changes into that object, then write the whole object back
+auth0 ul prompts update login-id -l en \
+  --data '{"login-id":{"title":"Welcome back","buttonText":"Continue"}}'
 ```
+
+Use `auth0 api put "prompts/<prompt>/custom-text/<language>" --data '...'` only when the typed command is not available in your CLI version.
 
 ### Delete Custom Text
 
@@ -645,7 +649,7 @@ The custom-text API is **per-prompt, not per-screen**. Multiple screens under th
 
 ## Login
 
-**Identifier-first note:** `login-id` and `login-password` are each their own prompt, not screens nested under the `login` prompt. Each takes a separate `PUT /prompts/{prompt}/custom-text/{lang}` call with a body keyed by the screen name matching the prompt name (e.g., `{ "login-id": { ... } }`). Do not batch them under `login`.
+**Identifier-first note:** `login-id` and `login-password` are each their own prompt, not screens nested under the `login` prompt. Each takes a separate `auth0 ul prompts update <prompt> -l <lang> --data '...'` call with a body keyed by the screen name matching the prompt name (e.g., `auth0 ul prompts update login-id -l en --data '{"login-id":{...}}'`). Do not batch them under `login`.
 
 | Prompt | Screen |
 |---|---|

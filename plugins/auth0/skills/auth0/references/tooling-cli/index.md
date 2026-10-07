@@ -217,7 +217,7 @@ auth0 apps update --help | jq -r '.[0].flags[].name'
 | Custom login logic | `auth0 actions create --trigger post-login` |
 | Reusable code shared across actions | `auth0 actions modules create` + `--module` |
 | Multi-step self-service journeys | `auth0 forms` / `auth0 flows` |
-| Branding the login page | `auth0 ul update --logo ... --accent ...` |
+| Branding the login page | `auth0 ul update --logo ...` (colors on a tenant with a theme: see Universal Login — Branding) |
 | Custom domain for login | `auth0 domains create --domain "auth.myapp.com"` |
 | Debugging a failed login | `auth0 logs tail --filter "type:f"` |
 | Testing a login flow | `auth0 test login <client-id>` |
@@ -563,10 +563,20 @@ auth0 domains default set <domain-id>       # pick the tenant's default custom d
 ### Universal Login — Branding
 
 ```bash
-auth0 ul update --accent "#FF6600" --background "#FFFFFF" \
-  --logo "https://myapp.com/logo.png"
+auth0 ul update --logo "https://myapp.com/logo.png" \
+  --favicon "https://myapp.com/favicon.ico"
 auth0 ul update --data @branding.json           # or drive it with a JSON body
 ```
+
+`auth0 ul update` writes the tenant's classic branding settings (`/branding`: logo, favicon,
+font, colors). On a tenant that has a theme, the theme sets the colors users see, with the
+button color in `colors.primary_button`. Send color changes with a GET, merge and PATCH on
+`branding/themes/<theme-id>` using `auth0 api`, carrying `displayName` and every top-level
+section over (see the `feature-branding` reference).
+
+`auth0 ul prompts update <prompt> -l <language> --data '...'` sets a prompt's custom text
+and replaces the existing text for that prompt, so read it first with
+`auth0 ul prompts show <prompt> -l <language>` and write the merged object back.
 
 `auth0 ul update` and `auth0 ul prompts update` are non-interactive and take
 `--data` / `--schema`. `auth0 ul customize` and `templates update` are
