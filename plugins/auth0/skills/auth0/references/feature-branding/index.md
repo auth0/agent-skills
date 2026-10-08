@@ -112,7 +112,7 @@ auth0 tenants use <name> # switch active tenant; prompts for browser login if no
 
 **Before any write operation in any capability, run `auth0 tenants list` and show the active tenant to the user.** For a non-destructive change, if the user's request already identifies the tenant (by name or domain, or as "our tenant" with a single tenant in the list) and the active tenant matches, state it in one line and carry on in the same turn. Otherwise, and always for resets and deletes, get explicit confirmation to proceed before writing. If it's the wrong tenant, stop. Tell the user to run `auth0 tenants use <name>` (or `auth0 login` if the target isn't in the list) themselves and re-invoke the skill. Do not try to switch tenants on the user's behalf.
 
-For non-interactive or multi-tenant automation, skip the CLI and call the **Management API** directly with an explicit domain + bearer token per call. (see the cURL examples section below)
+If the `auth0` CLI is not available or not logged in to the target tenant, call the **Management API** directly with an explicit domain and bearer token per call (see the cURL examples section below). Otherwise, use the CLI, including for non-interactive runs.
 
 **Tooling note.** The `auth0 ul` commands below are one way to write branding settings. The loaded tooling reference has the equivalent for infrastructure-as-code projects: the Terraform `auth0_branding` resource (`logo_url`, `favicon_url`, `colors` block). The Auth0 MCP server exposes **no** branding/Universal Login tool — for an MCP-only session, fall back to the CLI, Terraform, or the Management API directly. This interactive branding workflow (extract → propose → apply) stays CLI/API-driven regardless, because it is a guided flow rather than a static config write.
 
@@ -234,6 +234,8 @@ Complete Management API endpoints, CLI commands, configuration options, and erro
 |--------|------|-------------|--------|
 | GET | `/api/v2/prompts/<prompt>/custom-text/<language>` | Get custom text | `read:prompts` |
 | PUT | `/api/v2/prompts/<prompt>/custom-text/<language>` | Set custom text (replaces all) | `update:prompts` |
+
+With the CLI: read with `auth0 ul prompts show <prompt> -l <language>` and write with `auth0 ul prompts update <prompt> -l <language> --data '...'`.
 
 ## CLI Commands
 
@@ -1041,7 +1043,7 @@ TARGET_TENANT=target-tenant.auth0.com
 BRANDING=$(auth0 api get "branding" --tenant "$SOURCE_TENANT")
 THEME=$(auth0 api get "branding/themes/default" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
 TEMPLATE=$(auth0 api get "branding/templates/universal-login" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
-LOGIN_TEXT=$(auth0 api get "prompts/login/custom-text/en" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
+LOGIN_TEXT=$(auth0 ul prompts show login -l en --tenant "$SOURCE_TENANT" 2>/dev/null || true)
 
 # Import to target tenant
 printf '%s' "$BRANDING" | auth0 api patch "branding" --tenant "$TARGET_TENANT"
@@ -1061,7 +1063,7 @@ if [ -n "$TEMPLATE" ]; then
 fi
 
 if [ -n "$LOGIN_TEXT" ]; then
-  printf '%s' "$LOGIN_TEXT" | auth0 api put "prompts/login/custom-text/en" --tenant "$TARGET_TENANT"
+  printf '%s' "$LOGIN_TEXT" | auth0 ul prompts update login -l en --tenant "$TARGET_TENANT"
 fi
 ```
 
@@ -1413,7 +1415,7 @@ After the user finishes staging changes, batch the writes by surface:
 1. All theme field changes → one `GET /branding/themes/default` + one `PATCH /branding/themes/{themeId}` with the merged full object.
 2. All tenant-level branding setting changes → one `PATCH /api/v2/branding` with the merged body.
 3. Page template change (if any) → one `PUT /api/v2/branding/templates/universal-login` after verifying `auth0:head` and `auth0:widget` are present.
-4. Per-screen text changes → one `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` per affected prompt/language (GET-merge-PUT; do not overwrite other screens in that prompt).
+4. Per-screen text changes → one `auth0 ul prompts update <prompt> -l <lang> --data '...'` per affected prompt and language (read, merge, then write; do not overwrite other screens in that prompt).
 
 Before writing, show the consolidated diff **and the target tenant name** (per the "CLI Tenant Context" prerequisite above). Confirm the whole batch when the changes are ambiguous or destructive; when the request gave exact values for each change, state the batch and apply it. Auth0 does not retain prior versions, so there is no automatic rollback; suggest the user export current state locally first if they want a backup.
 
@@ -1692,11 +1694,11 @@ Show each locale's proposed text so the user can spot-check and edit any transla
 
 Before writing, show the target tenant name and the prompt/locale pairs about to be updated, and get explicit confirmation (per the "CLI Tenant Context" prerequisite above).
 
-Batch by prompt: one `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` per prompt-locale pair, with approved new keys merged across all screens under that prompt and any existing overrides preserved.
+Batch by prompt: one `auth0 ul prompts update <prompt> -l <lang> --data '...'` per prompt-locale pair, with approved new keys merged across all screens under that prompt and any existing overrides preserved.
 
 Before writing, strip any key whose approved value is identical to the Auth0 default for that key. Comparison is an **exact byte-for-byte string match** after trimming trailing whitespace/newlines — no case folding, no HTML-entity decoding, no whitespace collapsing inside the string. If the approved value differs only in a trailing newline or leading/trailing spaces, treat it as identical and strip it. Any other difference (casing, punctuation, HTML entities, internal whitespace) is a genuine override and must be written. Only include keys that are genuinely different from the default — sending a default value creates a stored override that has no effect but adds noise and makes future resets less clean.
 
-Never PUT without merging; PUT replaces the full object for that prompt/lang. The custom-text API is per-prompt, not per-screen, so screens under the same prompt share one PUT call.
+Never write without merging; the update replaces the full object for that prompt/lang. The custom-text API is per-prompt, not per-screen, so screens under the same prompt share one `auth0 ul prompts update` call.
 
 **Rate limits.** A multi-prompt, multi-locale rewrite can produce 20+ PUTs in quick succession. The Management API's default per-tenant write budget is a few hundred requests per minute, but concurrent writes are the real risk: run PUTs **sequentially**, not in parallel. If the API returns **429 Too Many Requests**, back off and retry the failed PUT only — don't re-run the batch. Use exponential backoff: wait 5s, 10s, 20s, 30s, 60s; stop after five attempts and surface the failed prompt/locale pair to the user. Honor the `Retry-After` response header if present (seconds to wait before the next attempt). Successful PUTs don't need to be retried; the per-prompt design means each PUT is independent.
 
