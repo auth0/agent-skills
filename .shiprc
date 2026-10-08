@@ -1,0 +1,19 @@
+{
+  "prefixVersion": true,
+  "files": {
+    ".claude-plugin/marketplace.json":           ["\"version\": \"{MAJOR}.{MINOR}.{PATCH}\""],
+    ".cursor-plugin/marketplace.json":           ["\"version\": \"{MAJOR}.{MINOR}.{PATCH}\""],
+    "plugins/auth0/plugin.json":                 ["\"version\": \"{MAJOR}.{MINOR}.{PATCH}\""],
+    "plugins/auth0/.claude-plugin/plugin.json":  ["\"version\": \"{MAJOR}.{MINOR}.{PATCH}\""],
+    "plugins/auth0/.codex-plugin/plugin.json":   ["\"version\": \"{MAJOR}.{MINOR}.{PATCH}\""],
+    "plugins/auth0/.cursor-plugin/plugin.json":  ["\"version\": \"{MAJOR}.{MINOR}.{PATCH}\""],
+    "plugins/auth0/skills/auth0/SKILL.md":       ["version: '{MAJOR}.{MINOR}.{PATCH}'"]
+  },
+  "prFilters": [
+    {
+      "type": "title",
+      "args": ["^release:"],
+      "invert": true
+    }
+  ]
+}
