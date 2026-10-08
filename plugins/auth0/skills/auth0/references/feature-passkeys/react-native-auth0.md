@@ -40,6 +40,15 @@ const credentials = await getTokenByPasskey({
 
 The database connection is passed as **`realm`**, not `connection`. (`connection` is only a field on the *enrollment* challenge below — easy to conflate.)
 
+### react-native-web — one SDK, branch only the ceremony
+
+A React Native app that also ships a web build (react-native-web) uses the **same react-native-auth0 surface on every platform** — `passkeySignupChallenge`, `passkeyLoginChallenge`, `getTokenByPasskey`, and `myAccount.passkeyEnrollmentChallenge` / `enrollPasskey`. Only the WebAuthn **ceremony** differs per platform, and you branch *just that step* (via `Platform.OS` or a `.web.ts` / `.native.ts` split):
+
+- **native** → your passkey library / native module produces the `authResponse` string.
+- **web** → the browser's `navigator.credentials.create()` / `.get()` produces a `PublicKeyCredential`.
+
+**Do NOT swap in `@auth0/auth0-react` or `@auth0/auth0-spa-js` for the web build**, and do NOT hand-roll `fetch` calls to `/me/v1/authentication-methods`. The browser SDKs are a different session/token model; the challenge and token-exchange calls stay on react-native-auth0 on all platforms — only the ceremony is platform-specific.
+
 ## Enrollment (add a passkey — My Account API)
 
 Requires an access token with `create:me:authentication_methods`, minted for the `https://{yourDomain}/me/` audience via `getApiCredentials(...)` (fetching a token for that different audience from the session refresh token is the MRRT mechanism — see the hub's Enrollment section):
@@ -67,6 +76,7 @@ const method = await myAccount.enrollPasskey({
 
 - `myAccount.passkeyEnrollmentChallenge({ accessToken, userIdentity?, connection? })` → `Promise<PasskeyEnrollmentChallengeResponse { authenticationMethodId, authSession, authParamsPublicKey }>`. `accessToken` is **required**.
 - `myAccount.enrollPasskey({ accessToken, authenticationMethodId, authSession, authResponse, authParamsPublicKey })` → `Promise<PasskeyAuthenticationMethod>` — a passkey-specific shape (`id`, `type`, `keyId`, `publicKey`, `userHandle`, `credentialDeviceType`, `aaguid`, `relyingPartyId`, …), **not** the generic `AuthenticationMethod` the other `enroll*` methods return.
+- `myAccount` is a **property on `useAuth0()`** whose methods each take `accessToken`. It is **not** a `myAccount({ token })` factory (that is the browser SDKs' `@auth0/auth0-react` / nextjs shape) — don't construct a client; destructure it and pass the `/me/`-audience token into each call as shown.
 
 ## Ceremony library + native platform setup (required)
 
@@ -93,5 +103,5 @@ MFA: on **web**, a step-up surfaces as the typed `PASSKEY_MFA_REQUIRED` — call
 
 - The ceremony library and the iOS/Android relying-party binding are both required — see "Ceremony library + native platform setup" above.
 - Carry the challenge's `authSession` into `getTokenByPasskey`.
-- `authParamsPublicKey` is the WebAuthn options the native ceremony consumes (typed `Record<string, any>`) — pass it through unchanged.
+- `authParamsPublicKey` is the WebAuthn options the ceremony consumes (typed `Record<string, any>`) — pass it through unchanged on both native and web.
 - Enrollment mints its `/me/`-audience token via `getApiCredentials` off the session refresh token (the MRRT mechanism); without a refresh token that scoped token cannot be obtained.
