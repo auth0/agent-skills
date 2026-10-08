@@ -1030,7 +1030,7 @@ node --version
 auth0 --version --no-input
 
 # Verify logged in to Auth0 and capture active tenant domain
-AUTH0_DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[0].domain')
+AUTH0_DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[] | select(.active) | .name')
 ```
 
 If the Auth0 CLI is not installed, instruct the user:
@@ -1056,7 +1056,7 @@ auth0 login
 #### Step A3: Get the active tenant domain
 
 ```bash
-AUTH0_DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[0].domain')
+AUTH0_DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[] | select(.active) | .name')
 ```
 
 The output is the active tenant domain.

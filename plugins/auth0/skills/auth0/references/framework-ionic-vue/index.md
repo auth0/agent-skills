@@ -1004,7 +1004,7 @@ npx cap open android  # Build and run on device from Android Studio
 > #### Step B — Verify Auth0 CLI login session
 >
 > ```bash
-> AUTH0_DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[0].domain')
+> AUTH0_DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[] | select(.active) | .name')
 > ```
 >
 > - **If the command succeeds** and returns a domain string: proceed to Step C.

@@ -132,7 +132,7 @@ For non-interactive shells (CI, agent without TTY), or private cloud tenants, us
 When an access token expires, the CLI prompts to confirm the default tenant (`Continue login with default tenant 'your-tenant.auth0.com'? [y/N]`) or lets you pick a different one — select `y` to proceed with the default, `N` to choose another. Note that CLI usage consumes Management API rate limits according to the subscription plan.
 
 ### 1.2 Pin tenant
-Save the tenant domain returned by `auth0 tenants list --json` (`.[0].domain` if only one, otherwise ask the user to pick) into `state/setup.json.tenant_domain`. **Don't parse region from the domain suffix** — use the value the CLI returns. Custom domains (private cloud) are valid here.
+Save the tenant domain returned by `auth0 tenants list --json` (`.[] | select(.active) | .name` for the active tenant; if several tenants, ask the user to pick) into `state/setup.json.tenant_domain`. **Don't parse region from the domain suffix** — use the value the CLI returns. Custom domains (private cloud) are valid here.
 
 **This pinned `tenant_domain` is the canonical Auth0-hosted URL.** Every report reference to the tenant URL — header right rail, "authentication is served from `<tenant_domain>`" narrative, CLI commands — reads from `state/setup.json.tenant_domain`. Never derive it from the company context, never parse it from the company domain. The company context provides company-level fields (name, products, business model, integrations) — never the tenant URL.
 

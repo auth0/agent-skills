@@ -1045,7 +1045,7 @@ auth0 apps list
 read -p "Enter app ID (or press Enter to create a new one): " APP_ID
 
 if [ -z "$APP_ID" ]; then
-  DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[0].domain')
+  DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[] | select(.active) | .name')
   CALLBACK_URL="${SCHEME}://${DOMAIN}/android/${PACKAGE_NAME}/callback"
   CLIENT_JSON=$(auth0 apps create \
     --name "${PACKAGE_NAME}-android" \

@@ -1007,7 +1007,7 @@ If using refresh token rotation, configure a token overlap period of at least **
 >
 > 1. **Pre-flight checks:**
 >    - Verify Auth0 CLI is installed: `command -v auth0`
->    - Verify logged in: `auth0 tenants list --json-compact | jq -r '.[0].domain'`
+>    - Verify logged in: `auth0 tenants list --json-compact | jq -r '.[] | select(.active) | .name'`
 >    - If any check fails, guide user to install/login, or fall back to manual setup
 >
 > 2. **Read the project's app.json** to extract:

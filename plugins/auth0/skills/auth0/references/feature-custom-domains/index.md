@@ -202,7 +202,7 @@ auth0 domains update <domainId>
 auth0 domains delete <domainId> --force
 
 # Set the default custom domain
-auth0 domains default set <domainId>
+auth0 domains default set <domain>
 
 # Get the current default
 auth0 domains default show
@@ -217,7 +217,7 @@ The dedicated `auth0 domains` subcommands and the `auth0 api` passthrough use di
 | Certificate type (Auth0-managed) | `--type auth0` | `"type": "auth0_managed_certs"` |
 | Certificate type (self-managed) | `--type self` | `"type": "self_managed_certs"` |
 | Relying party identifier | **not supported on the CLI** (no `--rpid` flag); use API passthrough | `"relying_party_identifier"` |
-| Default domain | `auth0 domains default set <domainId>` (read: `auth0 domains default show`) | `PATCH /custom-domains/default` with `{"domain": "..."}` |
+| Default domain | `auth0 domains default set <domain>` (read: `auth0 domains default show`) | `PATCH /custom-domains/default` with `{"domain": "..."}` |
 
 ## Domain Object Properties
 
@@ -379,11 +379,11 @@ The skill's primary flow creates one domain. To add another, invoke the skill ag
 
 When multiple domains are configured, one is designated the **default**. The default is used when a Management API call that triggers a notification (password reset email, verification email, etc.) is made **without** an `auth0-custom-domain` header.
 
-Set the default. Two paths exist; **prefer the native CLI subcommand** — it accepts the domain ID directly. The `tenants/settings` API form is the older path, still supported, and handy when you already have the `custom_domain_id` and prefer scripting against the raw API. Both are idempotent and produce the same result; pick whichever keeps the surrounding code simpler.
+Set the default. Two paths exist; **prefer the native CLI subcommand** — it accepts the domain name directly. The `tenants/settings` API form is the older path, still supported, and handy when you already have the `custom_domain_id` and prefer scripting against the raw API. Both are idempotent and produce the same result; pick whichever keeps the surrounding code simpler.
 
 ```bash
-# Preferred: native CLI subcommand (pass the custom_domain_id):
-auth0 domains default set <domainId>
+# Preferred: native CLI subcommand (pass the domain name):
+auth0 domains default set <domain>
 
 # Alternative: tenant settings endpoint via API passthrough (pass the custom_domain_id):
 auth0 api patch "tenants/settings" --data '{"default_custom_domain_id": "cd_abc123"}'
@@ -1303,7 +1303,7 @@ The API **rejects** `type`, `domain`, `verification_method`. To change any of th
 ## Set or change the default
 
 ```bash
-auth0 domains default set <domainId>
+auth0 domains default set <domain>
 ```
 
 Effects to explain to the user:

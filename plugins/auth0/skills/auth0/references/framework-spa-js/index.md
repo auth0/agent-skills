@@ -917,7 +917,7 @@ else
 fi
 
 # Fastest path — auto-detects framework, creates the Auth0 app, and writes .env:
-auth0 qs setup --app --framework vite --type spa --port 5173
+auth0 qs setup --app --framework vanilla-javascript --build-tool vite --type spa --port 5173
 
 echo "✅ Auth0 configuration complete!"
 ```
