@@ -569,8 +569,9 @@ auth0 ul update --data @branding.json           # or drive it with a JSON body
 ```
 
 `auth0 ul update` writes the tenant's classic branding settings (`/branding`: logo, favicon,
-font, colors). On a tenant that has a theme, the theme sets the colors users see, with the
-button color in `colors.primary_button`. Send color changes with a GET, merge and PATCH on
+font, colors). On a tenant that has a theme, the theme sets the colors users see (Organization
+branding can override them in an Organization context), with the button color in
+`colors.primary_button`. Send color changes with a GET, merge and PATCH on
 `branding/themes/<theme-id>` using `auth0 api`, carrying `displayName` and every top-level
 section over (see the `feature-branding` reference).
 
@@ -579,7 +580,7 @@ and replaces the existing text for that prompt, so read it first with
 `auth0 ul prompts show <prompt> -l <language>` and write the merged object back.
 
 `auth0 ul update` and `auth0 ul prompts update` are non-interactive and take
-`--data` / `--schema`. `auth0 ul customize` and `templates update` are
+`--data`. `auth0 ul customize` and `templates update` are
 interactive editors that fail fast in agent mode (see agent-mode.md); for
 non-interactive advanced rendering (ACUL), use `auth0 acul config ...`.
 
