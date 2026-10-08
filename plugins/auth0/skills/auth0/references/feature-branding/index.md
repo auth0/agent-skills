@@ -1341,7 +1341,7 @@ The user never needs to know the API field names or which surface a setting live
 ## Flow
 
 1. Load current tenant state once at the start of the session: theme (`GET /branding/themes/default`), tenant branding (`GET /branding`), and (lazily) current page template + custom text when the request targets them. Cache for the session so disambiguation prompts can show current values.
-2. Ask: **"What do you want to change?"**
+2. If the opening request already says what to change, skip this question. Otherwise ask: **"What do you want to change?"**
 3. Parse the user's request and resolve it to one or more specific fields using the **Intent mapping** table below.
 4. Disambiguate only when needed. If the mapped target is unique, skip ahead. If multiple fields are plausible, ask one question and show current values so the user can see what they'd be changing:
    > "'button color'; which one?
