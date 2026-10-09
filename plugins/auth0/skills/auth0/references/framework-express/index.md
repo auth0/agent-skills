@@ -738,42 +738,10 @@ fi
 # Login
 auth0 login 2>/dev/null || auth0 login
 
-# Create/select app
-auth0 apps list
-read -p "Enter app ID (or Enter to create): " APP_ID
+# Fastest path — auto-detects framework, creates the Auth0 app, and writes .env:
+auth0 qs setup --app --framework express --type regular
 
-if [ -z "$APP_ID" ]; then
-  APP_ID=$(auth0 apps create --name "${PWD##*/}-express" --type regular \
-    --callbacks "http://localhost:3000/callback" \
-    --logout-urls "http://localhost:3000" \
-    --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-fi
-
-# Get credentials
-DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-SECRET=$(openssl rand -hex 32)
-
-# Determine target env file
-if [ -f .env.local ]; then
-  TARGET_FILE=".env.local"
-elif [ -f .env ]; then
-  TARGET_FILE=".env"
-else
-  TARGET_FILE=".env.local"
-fi
-
-# Append Auth0 credentials
-cat >> "$TARGET_FILE" << ENVEOF
-SECRET=$SECRET
-BASE_URL=http://localhost:3000
-CLIENT_ID=$CLIENT_ID
-CLIENT_SECRET='YOUR_CLIENT_SECRET'
-ISSUER_BASE_URL=https://$DOMAIN
-ENVEOF
-
-echo "✅ Auth0 credentials written to $TARGET_FILE"
+echo "✅ Auth0 configuration complete!"
 ```
 
 After the script runs, remind the user to:

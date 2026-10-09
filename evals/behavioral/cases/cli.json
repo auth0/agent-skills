@@ -6,14 +6,12 @@
     {
       "id": 1,
       "prompt": "I'm building a new React SPA on localhost:5173 and need to set up Auth0 for it. After creating the app, I want to test login and watch for any failures in real time. Walk me through the CLI commands.",
-      "expected_output": "Should use auth0 apps create with --type spa and correct callback/logout/origin URLs for localhost:5173, then suggest auth0 test login to test, and auth0 logs tail --filter type:f to debug failures. Should NOT hallucinate flags or suggest dashboard-only steps.",
+      "expected_output": "Should recommend auth0 qs setup --app --framework react as the primary one-step path (it creates the app and writes the config file); OR fall back to auth0 apps create --type spa with correct callback/logout/origins URLs for localhost:5173. Then suggest auth0 test login to test and auth0 logs tail --filter type:f to debug failures.",
       "files": [],
       "assertions": [
         "Runs auth0 login (or verifies auth) before other commands",
-        "Uses auth0 apps create with --type spa",
-        "Sets --callbacks to http://localhost:5173",
-        "Sets --logout-urls to http://localhost:5173",
-        "Sets --web-origins to http://localhost:5173 (--origins alone does not set web_origins)",
+        "Recommends auth0 qs setup --app (with --framework react or similar) OR uses auth0 apps create --type spa as the manual alternative",
+        "When using apps create manually, sets --callbacks and --logout-urls to http://localhost:5173 and includes --web-origins http://localhost:5173",
         "Suggests auth0 test login <client-id> to test the flow",
         "Suggests auth0 logs tail --filter type:f for debugging failures",
         "Does NOT invent non-existent flags or subcommands",
@@ -23,7 +21,7 @@
     {
       "id": 2,
       "prompt": "I need to create an 'editor' role in my Auth0 tenant and assign it to a user whose email is jane@example.com. How do I do this with the CLI?",
-      "expected_output": "Should use the dedicated auth0 roles create command (NOT raw API mode) to create the role, auth0 users search to find the user ID, and auth0 users roles assign to assign the role. The CLI has built-in roles and users roles subcommands — the response must NOT claim these don't exist or suggest using auth0 api as a workaround.",
+      "expected_output": "Should use the dedicated auth0 roles create command (NOT raw API mode) to create the role, auth0 users search to find the user ID, and auth0 users roles assign to assign the role. The CLI has built-in roles and users roles subcommands the response must NOT claim these don't exist or suggest using auth0 api as a workaround.",
       "files": [],
       "assertions": [
         "Uses auth0 roles create --name editor --description ... to create the role",
@@ -172,15 +170,14 @@
     },
     {
       "id": 13,
-      "prompt": "I need to list all connections in my Auth0 tenant and create a client grant that gives my app (client ID: abc123) access to my API (audience: https://api.myapp.com) with read:data scope. The CLI doesn't have dedicated commands for connections or client grants.",
-      "expected_output": "Should use auth0 api (raw API mode) for connections and client grants since these lack dedicated CLI commands.",
+      "prompt": "I need to list all connections in my Auth0 tenant and create a client grant that gives my app (client ID: abc123) access to my API (audience: https://api.myapp.com) with read:data scope.",
+      "expected_output": "Should use the native auth0 connections list command (not raw API) to list connections, and auth0 client-grants create with --client-id, --audience, and --scopes flags to create the grant.",
       "files": [],
       "assertions": [
-        "Uses auth0 api get connections to list connections",
-        "Uses auth0 api post client-grants with --data flag containing JSON payload",
-        "JSON payload includes client_id, audience, and scope fields",
-        "Uses correct Management API v2 paths (connections, client-grants)",
-        "Does NOT invent dedicated CLI commands for connections or client grants",
+        "Uses auth0 connections list (native command, NOT auth0 api get connections)",
+        "Uses auth0 client-grants create --client-id abc123 --audience https://api.myapp.com --scopes read:data",
+        "Does NOT fall back to raw auth0 api for either operation",
+        "Does NOT claim that the Auth0 CLI lacks dedicated commands for connections or client grants",
         "Does NOT invent non-existent flags or subcommands"
       ]
     },

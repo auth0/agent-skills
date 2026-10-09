@@ -9,7 +9,7 @@ Protect FastAPI API endpoints with JWT access token validation using `auth0-fast
 
 - FastAPI application (Python 3.9+)
 - Auth0 API resource configured (not an Application — must be an API)
-- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apis create`)
 
 ## When NOT to Use
 

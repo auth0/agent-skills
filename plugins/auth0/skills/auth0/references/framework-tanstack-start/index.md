@@ -682,11 +682,14 @@ else
   TARGET_FILE=".env"
 fi
 
+# Fetch the client secret (never display it in terminal output)
+AUTH0_CLIENT_SECRET=$(auth0 apps show "$APP_ID" --reveal-secrets --json-compact | jq -r '.client_secret')
+
 # Append Auth0 credentials (never overwrites existing content)
 cat >> "$TARGET_FILE" << ENVEOF
 AUTH0_DOMAIN=$AUTH0_DOMAIN
 AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
-AUTH0_CLIENT_SECRET='YOUR_CLIENT_SECRET'
+AUTH0_CLIENT_SECRET=$AUTH0_CLIENT_SECRET
 AUTH0_SECRET=$AUTH0_SECRET
 APP_BASE_URL=http://localhost:3000
 ENVEOF
@@ -694,9 +697,7 @@ ENVEOF
 echo "✅ Auth0 credentials written to $TARGET_FILE"
 ```
 
-After the script runs, remind the user to:
-1. Open the env file that was written and replace `YOUR_CLIENT_SECRET` with the actual client secret from the Auth0 Dashboard (Applications → your app → Settings).
-2. Ensure the env file is listed in `.gitignore` so secrets are never committed.
+Ensure the env file is listed in `.gitignore` so secrets are never committed.
 
 ## Manual Setup
 

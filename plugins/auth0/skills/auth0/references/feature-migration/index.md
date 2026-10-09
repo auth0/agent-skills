@@ -75,8 +75,8 @@ Import users via Dashboard, CLI, or Management API.
 ```bash
 # Via Auth0 CLI
 auth0 api post "jobs/users-imports" \
-  --data "connection_id=con_ABC123" \
-  --data "users=@users.json"
+  --data '{"connection_id":"con_ABC123","users":[...],"upsert":true}'
+# or: --data @users-import-body.json
 ```
 
 **For detailed instructions, see the sections below:**
@@ -1286,12 +1286,12 @@ auth0 login
 **Import users:**
 ```bash
 # Get connection ID
-auth0 api get connections
+auth0 connections list
 
 # Import users
 auth0 api post "jobs/users-imports" \
-  --data "connection_id=con_ABC123" \
-  --data "users=@users.json"
+  --data '{"connection_id":"con_ABC123","users":[...],"upsert":true}'
+# or: --data @users-import-body.json
 ```
 
 **Check import status:**
@@ -1477,11 +1477,9 @@ curl "https://YOUR_DOMAIN.auth0.com/api/v2/jobs/{job-id}/errors" \
 # Split into 5000-user chunks
 split -l 5000 users.json users-chunk-
 
-# Import each chunk
+# Import each chunk (each file must be a complete JSON body: {"connection_id":"...","users":[...]})
 for file in users-chunk-*; do
-  auth0 api post "jobs/users-imports" \
-    --data "connection_id=con_ABC123" \
-    --data "users=@$file"
+  auth0 api post "jobs/users-imports" --data @"$file"
 done
 ```
 

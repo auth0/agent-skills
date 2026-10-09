@@ -143,7 +143,7 @@ echo it. The app resource does **not** include the tenant domain; fetch it
 separately:
 
 ```bash
-auth0 tenants list --json | jq -r '.[0].domain'
+auth0 tenants list --json | jq -r '.[] | select(.active) | .name'
 ```
 
 Write both `client_id` and the tenant domain into the project (see Step 3).

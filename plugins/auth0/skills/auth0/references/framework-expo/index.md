@@ -1007,7 +1007,7 @@ If using refresh token rotation, configure a token overlap period of at least **
 >
 > 1. **Pre-flight checks:**
 >    - Verify Auth0 CLI is installed: `command -v auth0`
->    - Verify logged in: `auth0 tenants list --csv --no-input`
+>    - Verify logged in: `auth0 tenants list --json-compact | jq -r '.[] | select(.active) | .name'`
 >    - If any check fails, guide user to install/login, or fall back to manual setup
 >
 > 2. **Read the project's app.json** to extract:
@@ -1030,18 +1030,18 @@ If using refresh token rotation, configure a token overlap period of at least **
 >
 > 4. **Enable database connection** for the new client:
 >    ```bash
->    auth0 api get "connections" --query "name=Username-Password-Authentication" --no-input
+>    auth0 connections list --query '{"name":"Username-Password-Authentication"}' --no-input
 >    ```
 >    Parse the response to extract the connection `id` as `CONNECTION_ID`. If it doesn't exist, create it and parse `id` from the create response as `CONNECTION_ID` instead:
 >
 >    ```bash
->    auth0 api post "connections" --data '{"strategy":"auth0","name":"Username-Password-Authentication"}' --no-input
+>    auth0 connections create --name "Username-Password-Authentication" --strategy auth0 --no-input
 >    ```
 >
 >    Then enable it for the client, using the `CONNECTION_ID` found above (existing) or just created:
 >
 >    ```bash
->    auth0 api patch "connections/CONNECTION_ID/clients" --data '[{"client_id":"NEW_CLIENT_ID","status":true}]' --no-input
+>    auth0 connections enabled-clients update CONNECTION_ID --data '[{"client_id":"NEW_CLIENT_ID","status":true}]' --no-input
 >    ```
 >
 > 5. **Write the plugin config to app.json** using the Edit tool — add `react-native-auth0` to the plugins array with the domain and custom scheme. Do not echo credentials in your response.
