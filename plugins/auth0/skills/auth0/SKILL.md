@@ -312,6 +312,7 @@ Read: references/tooling-{tooling}/index.md
 ```
 Read: references/feature-passkeys/index.md
 Then Read the detected SDK's passkey leaf from the hub's "Example code snippets" table (e.g. nextjs → references/feature-passkeys/nextjs-auth0.md, react → references/feature-passkeys/auth0-react.md) — the leaf has the exact API surface and the required ceremony; do not implement from framework-{framework}/index.md alone.
+For react-native/expo: use ONLY references/feature-passkeys/react-native-auth0.md — it covers the web (react-native-web) build too. Do NOT also load auth0-react.md / auth0-spa-js.md; the web build stays on react-native-auth0 and branches only the ceremony.
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 ```
