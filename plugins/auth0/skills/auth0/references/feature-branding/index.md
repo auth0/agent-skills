@@ -7,7 +7,7 @@ Style Auth0 Universal Login to match a brand. Covers the theme (colors, typograp
 
 When this skill is invoked **with a specific intent** in the opening message (e.g., "brand my tenant from ferrari.com", "reset the theme", "check if Universal Login is on"), parse the intent and route directly to the matching capability below. Do not show a picker.
 
-When this skill is invoked **without intent** (bare `/auth0-branding`, or a vague "help me with branding"), show the table below and ask in one line: "Pick a number, name one, or describe what you want." Parse the reply — accept `1`, `"brand my tenant"`, or `"make it look like acme.com"` equivalently.
+When this skill is invoked **without intent** (just "auth0 branding" or a vague "help me with branding"), show the table below and ask in one line: "Pick a number, name one, or describe what you want." Parse the reply — accept `1`, `"brand my tenant"`, or `"make it look like acme.com"` equivalently.
 
 | # | Capability | What it does |
 |---|---|---|
@@ -18,6 +18,12 @@ When this skill is invoked **without intent** (bare `/auth0-branding`, or a vagu
 | 5 | **Check my setup** | Verify that login, signup, password reset, and MFA are actually running Universal Login on my tenant and not Classic. Safe read-only starter |
 
 The **Prerequisites** section applies to all capabilities.
+
+## When to ask
+
+For a non-destructive change, ask only when information is missing or ambiguous. If the request already gives what the step needs (the values, the target screen and language, and a tenant that matches the active one), restate the change in one line and apply it in the same turn; do not end on a question the request already answers. Ask and wait when something is missing or unclear: no brand color or logo URL, an ambiguous screen, or a tenant that does not match.
+
+This does not relax destructive paths. Capability 4 (reset), deletes, and empty-body custom-text clears keep their backup offer, their confirmations, and the production confirmation, in every mode.
 
 ## Prompt style
 
@@ -104,9 +110,9 @@ auth0 tenants list       # shows all tenants; the active one is marked with →
 auth0 tenants use <name> # switch active tenant; prompts for browser login if not already authenticated
 ```
 
-**Before any write operation in any capability, run `auth0 tenants list`, show the active tenant to the user, and get explicit confirmation to proceed.** If it's the wrong tenant, stop. Tell the user to run `auth0 tenants use <name>` (or `auth0 login` if the target isn't in the list) themselves and re-invoke the skill. Do not try to switch tenants on the user's behalf.
+**Before any write operation in any capability, run `auth0 tenants list` and show the active tenant to the user.** For a non-destructive change, if the user's request already identifies the tenant (by name or domain, or as "our tenant" with a single tenant in the list) and the active tenant matches, state it in one line and carry on in the same turn. Otherwise, and always for resets and deletes, get explicit confirmation to proceed before writing. If it's the wrong tenant, stop. Tell the user to run `auth0 tenants use <name>` (or `auth0 login` if the target isn't in the list) themselves and re-invoke the skill. Do not try to switch tenants on the user's behalf.
 
-For non-interactive or multi-tenant automation, skip the CLI and call the **Management API** directly with an explicit domain + bearer token per call. (see the cURL examples section below)
+If the `auth0` CLI is not available or not logged in to the target tenant, call the **Management API** directly with an explicit domain and bearer token per call (see the cURL examples section below). Otherwise, use the CLI, including for non-interactive runs.
 
 **Tooling note.** The `auth0 ul` commands below are one way to write branding settings. The loaded tooling reference has the equivalent for infrastructure-as-code projects: the Terraform `auth0_branding` resource (`logo_url`, `favicon_url`, `colors` block). The Auth0 MCP server exposes **no** branding/Universal Login tool — for an MCP-only session, fall back to the CLI, Terraform, or the Management API directly. This interactive branding workflow (extract → propose → apply) stays CLI/API-driven regardless, because it is a guided flow rather than a static config write.
 
@@ -210,8 +216,8 @@ Complete Management API endpoints, CLI commands, configuration options, and erro
 
 **Theme behavior notes:**
 - `GET /branding/themes/default` returns 404 if no theme has been created yet. Create one with POST first.
-- PATCH requires all top-level sections (`colors`, `fonts`, `borders`, `widget`, `page_background`). To update one field, GET the current theme, merge your change, then PATCH the full object.
-- Each theme has a `displayName` string field (optional, used for identification).
+- PATCH requires all top-level sections (`colors`, `fonts`, `borders`, `widget`, `page_background`). To update one field, GET the current theme, merge your change, then PATCH the full object. Carry `displayName` over too: a PATCH without it resets the theme name to "Unnamed Theme".
+- On a tenant with a theme, the theme sets the colors that users see. In an Organization context, configured Organization branding can override tenant branding on out-of-the-box Universal Login prompts, including primary and page background colors. The button color is `colors.primary_button`; send color changes with a GET, merge and PATCH on `branding/themes/<theme-id>`.
 - The response includes a `themeId` string used in subsequent PATCH/DELETE calls.
 
 ### Universal Login Templates
@@ -229,6 +235,8 @@ Complete Management API endpoints, CLI commands, configuration options, and erro
 | GET | `/api/v2/prompts/<prompt>/custom-text/<language>` | Get custom text | `read:prompts` |
 | PUT | `/api/v2/prompts/<prompt>/custom-text/<language>` | Set custom text (replaces all) | `update:prompts` |
 
+With the CLI: read with `auth0 ul prompts show <prompt> -l <language>` and write with `auth0 ul prompts update <prompt> -l <language> --data '...'`.
+
 ## CLI Commands
 
 ### Branding Settings
@@ -241,7 +249,8 @@ auth0 ul show --json
 # Update branding (interactive)
 auth0 ul update
 
-# Update branding (non-interactive)
+# Update branding (non-interactive). --accent and --background set classic
+# branding colors only; on a tenant with a theme, change colors on the theme instead.
 auth0 ul update --accent "#0059DB" --background "#FFFFFF" \
   --logo "https://example.com/logo.svg" \
   --favicon "https://example.com/favicon.ico" \
@@ -268,9 +277,9 @@ auth0 ul templates update
 auth0 ul prompts show login
 auth0 ul prompts show signup -l es
 
-# Update custom text (interactive)
-auth0 ul prompts update login
-auth0 ul prompts update signup -l es
+# Update custom text (non-interactive; replaces the prompt's existing text, so show it first and merge)
+auth0 ul prompts update login --data '{"login":{"title":"Welcome back"}}'
+auth0 ul prompts update signup -l es --data @signup-es.json
 ```
 
 ### Customization Editor
@@ -608,16 +617,20 @@ Common prompts you can customize (not a complete list; Auth0 supports additional
 
 ### API Behavior
 
-The `PUT /api/v2/prompts/<prompt>/custom-text/<language>` endpoint **replaces** all custom text for that prompt and language. To update one screen without losing others, first GET the current text, merge your changes, then PUT the full object back.
+`auth0 ul prompts update <prompt> -l <language> --data '...'` **replaces** all custom text for that prompt and language (it sends a `PUT` to `/api/v2/prompts/<prompt>/custom-text/<language>`). To update one screen without losing others, first read the current text, merge your changes, then write the full object back.
 
 `GET` returns only the keys you have explicitly set, not the full set of Auth0 default strings. An empty object (`{}`) means no custom text is set and Auth0's defaults are used.
 
 ```bash
-# Get current text, modify, then set
-CURRENT=$(auth0 api get "prompts/login/custom-text/en")
-# Merge changes into $CURRENT
-auth0 api put "prompts/login/custom-text/en" --data "$UPDATED"
+# 1. Read the current custom text for the prompt
+auth0 ul prompts show login-id -l en
+
+# 2. Merge your changes into that object, then write the whole object back
+auth0 ul prompts update login-id -l en \
+  --data '{"login-id":{"title":"Welcome back","buttonText":"Continue"}}'
 ```
+
+Use `auth0 api put "prompts/<prompt>/custom-text/<language>" --data '...'` only when the typed command is not available in your CLI version.
 
 ### Delete Custom Text
 
@@ -645,7 +658,9 @@ The custom-text API is **per-prompt, not per-screen**. Multiple screens under th
 
 ## Login
 
-**Identifier-first note:** `login-id` and `login-password` are each their own prompt, not screens nested under the `login` prompt. Each takes a separate `PUT /prompts/{prompt}/custom-text/{lang}` call with a body keyed by the screen name matching the prompt name (e.g., `{ "login-id": { ... } }`). Do not batch them under `login`.
+**Identifier-first note:** `login-id` and `login-password` are each their own prompt, not screens nested under the `login` prompt. Each takes a separate `auth0 ul prompts update <prompt> -l <lang> --data '...'` call with a body keyed by the screen name matching the prompt name (e.g., `auth0 ul prompts update login-id -l en --data '{"login-id":{...}}'`). Do not batch them under `login`.
+
+**Turning identifier-first on:** custom text does not change the login flow. The tenant-wide setting is `identifier_first` on `/prompts`, and the CLI has no typed command for it, so use `auth0 api patch prompts --data '{"identifier_first":true}'`. It sends only that field, so other login settings are untouched. Read the current value first with `auth0 api get prompts`.
 
 | Prompt | Screen |
 |---|---|
@@ -961,8 +976,8 @@ auth0 ul show --json > branding-settings.json
 auth0 ul templates show > login-template.liquid
 
 # Export custom text for prompts you've customized
-auth0 api get "prompts/login/custom-text/en" > text-login-en.json
-auth0 api get "prompts/signup/custom-text/en" > text-signup-en.json
+auth0 ul prompts show login -l en > text-login-en.json
+auth0 ul prompts show signup -l en > text-signup-en.json
 ```
 
 ### Deploy branding in a pipeline
@@ -1028,7 +1043,7 @@ TARGET_TENANT=target-tenant.auth0.com
 BRANDING=$(auth0 api get "branding" --tenant "$SOURCE_TENANT")
 THEME=$(auth0 api get "branding/themes/default" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
 TEMPLATE=$(auth0 api get "branding/templates/universal-login" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
-LOGIN_TEXT=$(auth0 api get "prompts/login/custom-text/en" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
+LOGIN_TEXT=$(auth0 ul prompts show login -l en --tenant "$SOURCE_TENANT" 2>/dev/null || true)
 
 # Import to target tenant
 printf '%s' "$BRANDING" | auth0 api patch "branding" --tenant "$TARGET_TENANT"
@@ -1048,7 +1063,7 @@ if [ -n "$TEMPLATE" ]; then
 fi
 
 if [ -n "$LOGIN_TEXT" ]; then
-  printf '%s' "$LOGIN_TEXT" | auth0 api put "prompts/login/custom-text/en" --tenant "$TARGET_TENANT"
+  printf '%s' "$LOGIN_TEXT" | auth0 ul prompts update login -l en --tenant "$TARGET_TENANT"
 fi
 ```
 
@@ -1223,7 +1238,7 @@ Editable knobs and what each reply means:
 
 ## Confirm target tenant
 
-Before any write, run `auth0 tenants list` and present the active tenant:
+Before any write, run `auth0 tenants list` and present the active tenant. For a non-destructive change where the request already identifies a matching tenant, state it in one line and continue instead of waiting on the prompt below; resets and deletes always wait:
 
 ```text
 Target tenant: acme-prod  (active in the Auth0 CLI)
@@ -1247,7 +1262,7 @@ Before writing, validate any URL-valued fields (logo, favicon, font, background 
 3. **Page template** (only if the user pasted one via `[edit]` AND the tenant has a custom domain): `PUT /api/v2/branding/templates/universal-login`. Refuse the PUT if the template is missing `auth0:head` or `auth0:widget`.
 4. **Voice rewrites** (only if `[edit] → voice rewriting` was enabled): hand off to the Match Brand Voice section with the primary-color/font context so it doesn't re-ask.
 
-Before writing, diff the proposed changes against current tenant state. In production environments, require explicit confirmation. Auth0 does not retain prior theme/template/text versions; if the user wants a backup, suggest exporting current state locally before applying (see the backup flow in the Rollback section below).
+Before writing, diff the proposed changes against current tenant state. In production environments, require explicit confirmation, even when the request is fully specified. Auth0 does not retain prior theme/template/text versions; if the user wants a backup, suggest exporting current state locally before applying (see the backup flow in the Rollback section below).
 
 Report what was written and what was skipped (for example, "page template skipped — no custom domain configured"). If voice rewriting was opted in, chain into Capability 3 after the theme write succeeds.
 
@@ -1326,16 +1341,16 @@ The user never needs to know the API field names or which surface a setting live
 ## Flow
 
 1. Load current tenant state once at the start of the session: theme (`GET /branding/themes/default`), tenant branding (`GET /branding`), and (lazily) current page template + custom text when the request targets them. Cache for the session so disambiguation prompts can show current values.
-2. Ask: **"What do you want to change?"**
+2. If the opening request already says what to change, skip this question. Otherwise ask: **"What do you want to change?"**
 3. Parse the user's request and resolve it to one or more specific fields using the **Intent mapping** table below.
 4. Disambiguate only when needed. If the mapped target is unique, skip ahead. If multiple fields are plausible, ask one question and show current values so the user can see what they'd be changing:
    > "'button color'; which one?
    > [a] Primary button fill (currently `#533AFD`)
    > [b] Primary button label/text (currently `#FFFFFF`)
    > [c] Secondary button border (currently `#CCCCCC`)"
-5. Restate the concrete change in plain language ("change primary button fill from `#533AFD` to `#FF5733`") and confirm.
+5. Restate the concrete change in plain language ("change primary button fill from `#533AFD` to `#FF5733`"). Confirm only if something is ambiguous; when the request gave exact values, apply it.
 6. Stage the change in an in-memory bundle. Do not write to the tenant yet.
-7. Ask **"anything else?"**; loop to step 2 if yes.
+7. In an interactive session, ask **"anything else?"** and loop to step 2 if yes. If the request is fully handled, finish and report instead of asking.
 8. Show the consolidated diff of all staged changes vs current tenant state.
 9. Apply as a batch; see **Apply** below.
 
@@ -1347,13 +1362,14 @@ Map freeform phrasing to the underlying surface + field. This is a starting tabl
 |---|---|
 | "logo" | `widget.logo_url` (theme) and `logo_url` (tenant branding). If both are set, ask which; if only one, update that one. Offer to set both if only one is set today |
 | "favicon" | `favicon_url` (tenant branding) |
-| "primary color" / "brand color" | Ask: theme primary button fill, tenant `colors.primary` (used on Classic pages), or both? Default to updating both if the user says "everywhere" |
-| "button color" | Disambiguate fill vs label/text. If the user means a specific button (secondary, tertiary), map to the matching theme field |
+| "primary color" / "brand color" | Ask: theme primary button fill, tenant `colors.primary` (used on Classic pages), or both? Default to updating both if the user says "everywhere". Do not ask when the tenant has a theme and the request names the login button: that is the theme's `colors.primary_button` |
+| "button color" | Fill vs label/text: the fill (`colors.primary_button`) unless the user says text or label; do not ask for a plain "button color" request. If the user means a specific button (secondary, tertiary), map to the matching theme field |
 | "page background" / "background color" | `colors.page_background` (solid) or `page_background.background_image_url` (image). Ask if ambiguous |
 | "widget background" / "card background" | `colors.widget_background` |
 | "text color" / "body text" | `colors.body_text`; disambiguate from widget title / input label if needed |
 | "corner radius" / "rounded corners" / "sharper corners" | Ask which element: buttons (`borders.button_border_radius`), inputs (`borders.input_border_radius`), widget (`borders.widget_corner_radius`). If the user says "everywhere", update all three |
 | "font" | `fonts.font_url` + `fonts.reference_text_size` family. Resolve the family name to a Google Fonts URL if possible (see per-surface mechanics) |
+| "identifier first" / "ask for email first, password next" | Tenant setting, not custom text: `auth0 api patch prompts --data '{"identifier_first":true}'` (see the identifier-first note under Login) |
 | "headline" / "title on the [login/signup/reset/...] screen" | Custom text: `{prompt}.title` on the specified screen. Confirm the prompt + screen + language |
 | "description" / "subtitle on [screen]" | Custom text: `{prompt}.description` |
 | "button label on [screen]" | Custom text: `{prompt}.buttonText` (or the screen-specific label key) |
@@ -1399,9 +1415,9 @@ After the user finishes staging changes, batch the writes by surface:
 1. All theme field changes → one `GET /branding/themes/default` + one `PATCH /branding/themes/{themeId}` with the merged full object.
 2. All tenant-level branding setting changes → one `PATCH /api/v2/branding` with the merged body.
 3. Page template change (if any) → one `PUT /api/v2/branding/templates/universal-login` after verifying `auth0:head` and `auth0:widget` are present.
-4. Per-screen text changes → one `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` per affected prompt/language (GET-merge-PUT; do not overwrite other screens in that prompt).
+4. Per-screen text changes → one `auth0 ul prompts update <prompt> -l <lang> --data '...'` per affected prompt and language (read, merge, then write; do not overwrite other screens in that prompt).
 
-Before writing, show the consolidated diff **and the target tenant name** (per the "CLI Tenant Context" prerequisite in SKILL.md). Require explicit confirmation for the whole batch. Auth0 does not retain prior versions, so there is no automatic rollback; suggest the user export current state locally first if they want a backup.
+Before writing, show the consolidated diff **and the target tenant name** (per the "CLI Tenant Context" prerequisite above). Confirm the whole batch when the changes are ambiguous or destructive; when the request gave exact values for each change, state the batch and apply it. Auth0 does not retain prior versions, so there is no automatic rollback; suggest the user export current state locally first if they want a backup.
 
 After the batch completes, run the "Verify in browser (post-apply)" step from SKILL.md.
 
@@ -1472,7 +1488,7 @@ Reset is destructive and one-way. Auth0 does not maintain prior versions of them
 
 ## Confirm
 
-Show the concrete plan, including the target tenant (per the "CLI Tenant Context" prerequisite in SKILL.md):
+Show the concrete plan, including the target tenant (per the "CLI Tenant Context" prerequisite above):
 
 ```text
 Target tenant: acme-prod  (active in the Auth0 CLI)
@@ -1676,13 +1692,13 @@ Show each locale's proposed text so the user can spot-check and edit any transla
 
 ### Step 4: Apply
 
-Before writing, show the target tenant name and the prompt/locale pairs about to be updated, and get explicit confirmation (per the "CLI Tenant Context" prerequisite in SKILL.md).
+Before writing, show the target tenant name and the prompt/locale pairs about to be updated, and get explicit confirmation (per the "CLI Tenant Context" prerequisite above).
 
-Batch by prompt: one `PUT /api/v2/prompts/{prompt}/custom-text/{lang}` per prompt-locale pair, with approved new keys merged across all screens under that prompt and any existing overrides preserved.
+Batch by prompt: one `auth0 ul prompts update <prompt> -l <lang> --data '...'` per prompt-locale pair, with approved new keys merged across all screens under that prompt and any existing overrides preserved.
 
 Before writing, strip any key whose approved value is identical to the Auth0 default for that key. Comparison is an **exact byte-for-byte string match** after trimming trailing whitespace/newlines — no case folding, no HTML-entity decoding, no whitespace collapsing inside the string. If the approved value differs only in a trailing newline or leading/trailing spaces, treat it as identical and strip it. Any other difference (casing, punctuation, HTML entities, internal whitespace) is a genuine override and must be written. Only include keys that are genuinely different from the default — sending a default value creates a stored override that has no effect but adds noise and makes future resets less clean.
 
-Never PUT without merging; PUT replaces the full object for that prompt/lang. The custom-text API is per-prompt, not per-screen, so screens under the same prompt share one PUT call.
+Never write without merging; the update replaces the full object for that prompt/lang. The custom-text API is per-prompt, not per-screen, so screens under the same prompt share one `auth0 ul prompts update` call.
 
 **Rate limits.** A multi-prompt, multi-locale rewrite can produce 20+ PUTs in quick succession. The Management API's default per-tenant write budget is a few hundred requests per minute, but concurrent writes are the real risk: run PUTs **sequentially**, not in parallel. If the API returns **429 Too Many Requests**, back off and retry the failed PUT only — don't re-run the batch. Use exponential backoff: wait 5s, 10s, 20s, 30s, 60s; stop after five attempts and surface the failed prompt/locale pair to the user. Honor the `Retry-After` response header if present (seconds to wait before the next attempt). Successful PUTs don't need to be retried; the per-prompt design means each PUT is independent.
 

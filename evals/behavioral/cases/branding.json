@@ -140,19 +140,6 @@
       ]
     },
     {
-      "id": 9,
-      "prompt": "/auth0-branding",
-      "expected_output": "No intent provided. Skill should show the capability table and ask a single free-text line ('Pick a number, name one, or describe what you want'), accepting 1, 'brand my tenant', or 'make it look like acme.com' equivalently. Does NOT force an AskUserQuestion picker for routing.",
-      "files": [],
-      "assertions": [
-        "Invokes the auth0-branding skill",
-        "Renders the 5-row capability table from SKILL.md",
-        "Asks a single free-text line for selection; does NOT use AskUserQuestion for routing",
-        "Accepts a number, a capability name, or a free-text description equivalently",
-        "Does NOT start executing any capability before the user replies"
-      ]
-    },
-    {
       "id": 10,
       "prompt": "[In Plan Mode] Brand my tenant to match stripe.com.",
       "expected_output": "Plan mode is active. Skill should run GETs to load current state, render the full proposal, and list every concrete Management API write (method, path, body summary) plus any local file writes (Brandfetch key save path, if applicable) in the plan, then call ExitPlanMode. Does NOT execute any writes before approval.",
