@@ -148,7 +148,7 @@ Reading connections back returns a **bare array**, so use `jq '.[]'`, not
 
 Two settings control whether and how an app uses organization login. They live on the
 **application (client)**, not on the organization, and are set with
-`auth0 api patch "clients/<client-id>"`:
+`auth0 apps update <client-id> --organization-usage ... --organization-require-behavior ...`:
 
 | Field | Values | Meaning |
 |---|---|---|
@@ -163,19 +163,22 @@ the only option:
 - Accept invitations, but org is otherwise optional -> `organization_usage: allow` with `organization_require_behavior: no_prompt`
 
 ```bash
-# Org-only login with an up-front org selector - set both fields in one PATCH.
-auth0 api patch "clients/<client-id>" \
-  --data '{"organization_usage":"require","organization_require_behavior":"pre_login_prompt"}'
+# Org-only login with an up-front org selector - set both fields in one call.
+auth0 apps update <client-id> \
+  --organization-usage require --organization-require-behavior pre_login_prompt
 ```
+
+`auth0 apps update` and `auth0 apps show <client-id>` leave `client_secret` out of their output
+unless you pass `--reveal-secrets`, so the secret stays out of your context.
 
 ### Finding or creating a login connection
 
 Reuse an existing database connection when the tenant has one; create one only if it does not:
 
 ```bash
-# List database connections in the tenant and pick one explicitly by name -
-# the API defines no ordering, so `.[0]` silently grabs an arbitrary connection.
-auth0 api get "connections?strategy=auth0" | jq -r '.[] | select(.name=="<connection-name>") | .id'
+# Look up a database connection by name. Filtering on `name` returns the exact match -
+# the API defines no ordering, so `.[0]` on an unfiltered list grabs an arbitrary connection.
+auth0 connections list --query '{"strategy":["auth0"],"name":"<connection-name>"}' --json | jq -r '.[].id'
 
 # Create one only if there is none matching. `name` must match
 # ^[a-zA-Z0-9](-[a-zA-Z0-9]|[a-zA-Z0-9])*$, max 128 chars.
@@ -186,19 +189,19 @@ auth0 api post "organizations/<org-id>/enabled_connections" \
   --data '{"connection_id":"<con-id>","assign_membership_on_login":true}'
 
 # Check which apps already have this connection enabled.
-auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
+auth0 connections enabled-clients show <con-id> --json | jq -r '.[].client_id'
 
 # ONLY if the app is not already listed above: enable the connection for it.
 # This is a separate setting from org login (see note below), so skip it on a
 # connection the tenant already had enabled for the app. status false disables; max 50 per call.
-auth0 api patch "connections/<con-id>/clients" \
+# This is a PATCH: it changes only the clients in the payload and keeps every other
+# client's status, so a single entry does not replace the existing list.
+auth0 connections enabled-clients update <con-id> \
   --data '[{"client_id":"<client-id>","status":true}]'
 ```
 
-Both connection reads are checkpoint-paginated (`take` defaults to 50): omit `from` on the
-first call, then while the response carries a `next` value pass it as `from` until it is
-absent. The lookup above only inspects the first page, so page through all results before
-concluding a connection is absent, and fail unless exactly one matches rather than guessing.
+`enabled-clients show` returns every enabled client, across pages. Fail unless exactly one
+connection matches the name rather than guessing.
 
 A connection added to the organization's `enabled_connections` is what appears at that org's
 login prompt and lets members authenticate. Enabling the connection for a client
@@ -220,8 +223,8 @@ a link, authenticates, and becomes a member.
 # 1. Without this: "The specified client_id (...) does not allow organizations."
 #    allow/no_prompt is the minimum for invitations; for org-only login use
 #    require/pre_login_prompt instead (see "Application (client) organization settings").
-auth0 api patch "clients/<client-id>" \
-  --data '{"organization_usage":"allow","organization_require_behavior":"no_prompt"}'
+auth0 apps update <client-id> \
+  --organization-usage allow --organization-require-behavior no_prompt
 
 # 2. Without this: "A default login route is required to generate the invitation url."
 #    Read the current value FIRST - the setting is tenant-wide, and you may need
@@ -295,8 +298,9 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
 | Not enabling a connection for the org | `auth0 api post "organizations/<org-id>/enabled_connections"`, or Dashboard → Organization → Connections |
 | A space or underscore in a new connection's `name` | Alphanumerics and hyphens only, starting and ending alphanumeric. Anything else is a 400 |
-| Creating a connection and enabling it for no app | Nothing can use it. `auth0 api patch "connections/<con-id>/clients" --data '[{"client_id":"<client-id>","status":true}]'` |
-| Reading or writing `enabled_clients` on the connection object | "NOT RECOMMENDED" on write, deprecated on read. Use `GET`/`PATCH connections/<con-id>/clients` |
+| Creating a connection and enabling it for no app | Nothing can use it. `auth0 connections enabled-clients update <con-id> --data '[{"client_id":"<client-id>","status":true}]'` |
+| Reading or writing `enabled_clients` on the connection object | "NOT RECOMMENDED" on write, deprecated on read. Read with `auth0 connections enabled-clients show <con-id>` and write with `auth0 connections enabled-clients update <con-id>`, which sends a PATCH to `connections/<con-id>/clients` |
+| Reading or setting a client field with `auth0 api` | Use `auth0 apps show <client-id>` or `auth0 apps update <client-id>`, which leave `client_secret` out unless you pass `--reveal-secrets`. For a raw call, pipe through `jq` to keep only the fields you need |
 | Overwriting `default_redirection_uri` without reading it first | It is tenant-wide. Capture the old value, and restore or disclose it |
 | Guessing a `auth0 orgs` subcommand for membership, roles, or connections | Verify with `auth0 commands orgs --detailed`, and use `auth0 api post organizations/...` for whatever has no dedicated subcommand |
 | Prefixing `auth0 api` paths with `/api/v2/` | Paths are relative to the API root. `/api/v2/organizations/...` returns 404 |

@@ -309,6 +309,9 @@ auth0 connections enabled-clients update <connection-id> \
   --data '[{"client_id":"<id>","status":true}]'
 ```
 
+`enabled-clients update` changes only the clients in the payload and keeps the
+status of every other client, so a single entry does not replace the existing list.
+
 Strategies include `auth0` (database), `google-oauth2`, `samlp`, `oidc`, `waad`,
 `ad`, `oauth2`, and more.
 
@@ -688,7 +691,7 @@ is already JSON so you rarely need them. There is **no `--csv`**.
 
 ```bash
 auth0 api get connections
-auth0 api post client-grants --data '{"client_id":"...","audience":"...","scope":["read:data"]}'
+auth0 api post "organizations/<org-id>/members" --data '{"members":["<user-id>"]}'
 auth0 api get stats/daily -q "from=20240101" -q "to=20240131"
 auth0 api delete "actions/actions/<action-id>" --force
 auth0 api post clients --data @client.json      # @file
@@ -698,6 +701,12 @@ cat data.json | auth0 api post clients          # or pipe the body via stdin
 `--data` accepts inline JSON, `@file`, or `@-`/stdin (or a plain pipe). Method
 defaults to `GET` without data and `POST` with data. If a call returns 403,
 re-run `auth0 login --scopes "<needed:scope>"`.
+
+**Secrets.** To read or change a client, use `auth0 apps show <id>` or
+`auth0 apps update <id>`: they leave `client_secret` out unless you pass `--reveal-secrets`.
+A raw `auth0 api` call on `clients/<id>` returns the full client including the secret,
+so pipe it through `jq` and keep only the fields you need, for example
+`jq '{name, organization_usage}'`, to keep the secret out of your context.
 
 **Paths are relative to the API root.** Write `connections`, not
 `/api/v2/connections`. The prefixed form returns a flat `404: Not Found` that
