@@ -1065,8 +1065,8 @@ Then ask the user for explicit confirmation before proceeding — do not continu
   - Options: "Yes, create .env" / "No, I'll configure it manually"
 
 - If `.env` **already exists**, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
+  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will add Auth0 credentials and keep your other entries (existing Auth0 domain/client ID values are replaced). Do you want to proceed?"
+  - Options: "Yes, add to existing .env" / "No, I'll update it manually"
 
 **Do not proceed with writing to `.env` unless the user selects the confirmation option.**
 
@@ -1134,7 +1134,13 @@ fi
 
 # qs setup only backs Vite for React SPAs; non-Vite projects (CRA/webpack) use auth0 apps create.
 if [ -f vite.config.ts ] || [ -f vite.config.js ] || [ -f vite.config.mjs ]; then
-  auth0 qs setup --app --framework react --build-tool vite --type spa --port 5173
+  # qs setup rewrites .env, so set the existing file aside and restore its non-Auth0 entries.
+  [ -f .env ] && mv .env .env.bak
+  if auth0 qs setup --app --framework react --build-tool vite --type spa --port 5173; then
+    [ -f .env.bak ] && { grep -vE '^VITE_AUTH0_(DOMAIN|CLIENT_ID)=' .env.bak >> .env; rm .env.bak; }
+  else
+    [ -f .env.bak ] && mv .env.bak .env
+  fi
 else
   # CRA uses REACT_APP_* vars on port 3000; adjust the port if your server differs.
   if grep -q '"react-scripts"' package.json 2>/dev/null; then

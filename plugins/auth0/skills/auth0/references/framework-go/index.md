@@ -1423,7 +1423,7 @@ auth0 apps create \
 Note the `client_id` from the JSON output. Then authorize it for your API by creating a client grant:
 
 ```bash
-auth0 client-grants create --client-id YOUR_M2M_CLIENT_ID --audience https://my-api.example.com --scopes "read:messages write:messages"
+auth0 client-grants create --client-id YOUR_M2M_CLIENT_ID --audience https://my-api.example.com --scopes "read:messages,write:messages"
 ```
 
 To retrieve the client secret for manual token requests, run in your terminal:
@@ -1519,7 +1519,7 @@ auth0 apps create \
 Note the `client_id` from the output. To get the client secret, run `auth0 apps show <CLIENT_ID> --reveal-secrets` in your terminal. Then authorize the app for your API:
 
 ```bash
-auth0 client-grants create --client-id YOUR_M2M_CLIENT_ID --audience https://my-api.example.com --scopes "read:messages write:messages"
+auth0 client-grants create --client-id YOUR_M2M_CLIENT_ID --audience https://my-api.example.com --scopes "read:messages,write:messages"
 ```
 
 ### Via Auth0 CLI

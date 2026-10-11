@@ -23,8 +23,8 @@ For each item, build the command. **Use a first-class subcommand when one exists
 | Actions | `auth0 actions create/update <id>/deploy <id>` | `POST actions/actions` / `PATCH actions/actions/<action-id>` / `POST actions/actions/<action-id>/deploy` |
 | Log streams | `auth0 logs streams create <provider>` / `update <provider> <id>` (provider is required: `eventbridge`, `eventgrid`, `http`, `datadog`, `splunk`, or `sumo`) | `POST log-streams` / `PATCH log-streams/<log-stream-id>` |
 | Email provider/templates | `auth0 email provider update` / `auth0 email templates update` | `PATCH emails/provider` / `PATCH email-templates/<template-name>` |
-| MFA factor toggles | `auth0 guardian factors set` | `PUT guardian/factors/<factor>` |
-| MFA policies | `auth0 guardian policies set` | `PUT guardian/policies` |
+| MFA factor toggles | `auth0 guardian factors set <factor> --enabled` | `PUT guardian/factors/<factor>` |
+| MFA policies | `auth0 guardian policies set --policy <policy>` | `PUT guardian/policies` |
 | Prompts customization | `auth0 universal-login prompts update <prompt>` (alias `auth0 ul prompts update`) | `PUT prompts/<prompt>/custom-text/<lang>` |
 | Network ACLs | `auth0 network-acl create` / `update <id>` | `POST network-acls` / `PATCH network-acls/<network-acl-id>` |
 | Auth0 Organizations | `auth0 orgs create` / `update <id>` | `POST organizations` / `PATCH organizations/<org-id>` |

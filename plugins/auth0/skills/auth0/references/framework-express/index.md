@@ -704,11 +704,11 @@ test -f .env && echo "ENV_EXISTS" || echo "ENV_NOT_FOUND"
 Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
 
 - If `.env.local` exists, ask:
-  - Question: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will write Auth0 configuration to `.env`. Do you want to proceed?"
+  - Question: "A `.env.local` file already exists. This setup writes Auth0 configuration to `.env` (the file `dotenv` loads) and leaves `.env.local` unchanged. Do you want to proceed?"
   - Options: "Yes, run Auth0 setup" / "No, I'll update it manually"
 
 - If `.env.local` does **not** exist but `.env` exists, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will write Auth0 configuration to it. Do you want to proceed?"
+  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will add Auth0 configuration and keep your other entries (existing Auth0 values are replaced). Do you want to proceed?"
   - Options: "Yes, run Auth0 setup" / "No, I'll update it manually"
 
 - If neither exists, ask:
@@ -738,14 +738,21 @@ fi
 # Login
 auth0 login 2>/dev/null || auth0 login
 
-# Fastest path — auto-detects framework, creates the Auth0 app, and writes .env:
-auth0 qs setup --app --framework express --type regular
+# qs setup rewrites .env, so set the existing file aside and restore its non-Auth0 entries.
+[ -f .env ] && mv .env .env.bak
+if auth0 qs setup --app --framework express --type regular; then
+  # qs setup doesn't write CLIENT_SECRET; leave a placeholder for the user to fill in.
+  echo "CLIENT_SECRET=YOUR_CLIENT_SECRET" >> .env
+  [ -f .env.bak ] && { grep -vE '^(ISSUER_BASE_URL|CLIENT_ID|CLIENT_SECRET|SECRET|BASE_URL)=' .env.bak >> .env; rm .env.bak; }
+else
+  [ -f .env.bak ] && mv .env.bak .env
+fi
 
 echo "✅ Auth0 configuration complete!"
 ```
 
 After the script runs, remind the user to:
-1. Review the `.env` file written by `auth0 qs setup` and populate any required values that remain unset.
+1. Replace `CLIENT_SECRET=YOUR_CLIENT_SECRET` in `.env`: run `auth0 apps show <CLIENT_ID> --reveal-secrets` in their own terminal (the client ID is `CLIENT_ID` in `.env`), so the secret stays out of agent output.
 2. Ensure `.env` is listed in `.gitignore` to avoid accidentally committing secrets.
 
 ---

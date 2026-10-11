@@ -398,7 +398,7 @@ Alias: `auth0 mfa`.
 ```bash
 auth0 guardian policies set --policy all-applications     # or: confidence-score, or --none
 auth0 guardian factors list
-auth0 guardian factors set                                # enable/disable a factor
+auth0 guardian factors set sms --enabled                  # enable/disable a factor (--enabled=false)
 auth0 guardian enrollments create-ticket --user-id "auth0|123" \
   --factor push-notification --send-email
 ```

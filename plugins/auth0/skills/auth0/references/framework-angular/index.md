@@ -817,8 +817,11 @@ if ! auth0 tenants list &> /dev/null; then
   auth0 login
 fi
 
-# Fastest path — auto-detects framework, creates the Auth0 app, and writes config:
+# qs setup rewrites environment.ts with only the auth0 block, so keep a backup of the current file.
+ENV_TS=src/environments/environment.ts
+[ -f "$ENV_TS" ] && cp "$ENV_TS" "$ENV_TS.bak"
 auth0 qs setup --app --framework angular --type spa
+[ -f "$ENV_TS.bak" ] && echo "⚠️  $ENV_TS was rewritten; copy any non-Auth0 settings back from $ENV_TS.bak, then delete it."
 
 echo "✅ Configuration complete!"
 ```

@@ -691,15 +691,15 @@ test -f .env && echo "ENV_EXISTS" || echo "ENV_NOT_FOUND"
 Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
 
 - If `.env.local` exists, ask:
-  - Question: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env.local" / "No, I'll update it manually"
+  - Question: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will add Auth0 credentials and keep your other entries (existing Auth0 values are replaced). Do you want to proceed?"
+  - Options: "Yes, add to existing .env.local" / "No, I'll update it manually"
 
 - If `.env.local` does **not** exist but `.env` exists, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
+  - Question: "This setup will create a `.env.local` file with Auth0 credentials. Your existing `.env` is left unchanged. Do you want to proceed?"
+  - Options: "Yes, create .env.local" / "No, I'll configure it manually"
 
 - If neither exists, ask:
-  - Question: "This setup will create a `.env.local` file containing Auth0 credentials (AUTH0_CLIENT_ID, AUTH0_DOMAIN, AUTH0_SECRET) and a placeholder for AUTH0_CLIENT_SECRET that you will need to fill in manually. Do you want to proceed?"
+  - Question: "This setup will create a `.env.local` file containing Auth0 credentials (AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_SECRET, APP_BASE_URL). Do you want to proceed?"
   - Options: "Yes, create .env.local" / "No, I'll configure it manually"
 
 **Do not proceed with writing to any env file unless the user selects the confirmation option.**
@@ -728,13 +728,19 @@ if ! auth0 tenants list &> /dev/null; then
   auth0 login
 fi
 
-# Fastest path — auto-detects framework, creates the Auth0 app, and writes .env:
-auth0 qs setup --app --framework nextjs --type regular
+# qs setup writes .env, but Next.js keeps secrets in .env.local: move its output there,
+# keep the other .env.local entries, and leave any existing .env untouched.
+[ -f .env ] && mv .env .env.bak
+if auth0 qs setup --app --framework nextjs --type regular; then
+  [ -f .env.local ] && grep -vE '^(AUTH0_DOMAIN|AUTH0_CLIENT_ID|AUTH0_CLIENT_SECRET|AUTH0_SECRET|APP_BASE_URL)=' .env.local >> .env
+  mv .env .env.local
+fi
+[ -f .env.bak ] && mv .env.bak .env
 
 echo "✅ Auth0 configuration complete!"
 ```
 
-After the script runs, ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.
+After the script runs, ensure `.env.local` is listed in `.gitignore` to avoid accidentally committing secrets.
 
 ---
 
