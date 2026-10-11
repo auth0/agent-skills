@@ -208,6 +208,8 @@ Complete Management API endpoints, CLI commands, configuration options, and erro
 | PATCH | `/api/v2/branding/themes/{themeId}` | Update a theme | `update:branding` |
 | DELETE | `/api/v2/branding/themes/{themeId}` | Delete a theme | `delete:branding` |
 
+**No `auth0 ul themes` subcommand exists yet — use `auth0 api` for all theme CRUD (GET/POST/PATCH/DELETE `branding/themes/...`).**
+
 **Theme behavior notes:**
 - `GET /branding/themes/default` returns 404 if no theme has been created yet. Create one with POST first.
 - PATCH requires all top-level sections (`colors`, `fonts`, `borders`, `widget`, `page_background`). To update one field, GET the current theme, merge your change, then PATCH the full object.

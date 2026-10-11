@@ -682,19 +682,19 @@ else
   TARGET_FILE=".env"
 fi
 
-# Fetch the client secret (never display it in terminal output)
-AUTH0_CLIENT_SECRET=$(auth0 apps show "$APP_ID" --reveal-secrets --json-compact | jq -r '.client_secret')
-
-# Append Auth0 credentials (never overwrites existing content)
+# Append Auth0 credentials (never overwrites existing content). The client secret
+# is intentionally left as a placeholder — do NOT fetch it in the agent; the user
+# runs --reveal-secrets in their own terminal so the secret stays out of agent context.
 cat >> "$TARGET_FILE" << ENVEOF
 AUTH0_DOMAIN=$AUTH0_DOMAIN
 AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
-AUTH0_CLIENT_SECRET=$AUTH0_CLIENT_SECRET
+AUTH0_CLIENT_SECRET=YOUR_CLIENT_SECRET
 AUTH0_SECRET=$AUTH0_SECRET
 APP_BASE_URL=http://localhost:3000
 ENVEOF
 
-echo "✅ Auth0 credentials written to $TARGET_FILE"
+echo "✅ Auth0 config written to $TARGET_FILE"
+echo "   Set AUTH0_CLIENT_SECRET: run 'auth0 apps show $APP_ID --reveal-secrets' in your own terminal (keeps the secret out of agent output)."
 ```
 
 Ensure the env file is listed in `.gitignore` so secrets are never committed.

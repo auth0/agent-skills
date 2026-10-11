@@ -907,17 +907,42 @@ if ! auth0 tenants list &> /dev/null; then
   echo "✅ Successfully logged in to Auth0!"
 fi
 
-# Detect env var prefix from project
-if grep -q '"vite"' package.json 2>/dev/null; then
-  PREFIX="VITE_AUTH0"
-elif grep -q '"react-scripts"' package.json 2>/dev/null; then
-  PREFIX="REACT_APP_AUTH0"
+# qs setup only backs Vite for SPAs; non-Vite projects (CRA/webpack) use auth0 apps create.
+if [ -f vite.config.ts ] || [ -f vite.config.js ] || [ -f vite.config.mjs ]; then
+  auth0 qs setup --app --framework vanilla-javascript --build-tool vite --type spa --port 5173
 else
-  PREFIX="VITE_AUTH0"  # Default to Vite
-fi
+  # CRA uses REACT_APP_* vars on port 3000; adjust the port if your server differs.
+  if grep -q '"react-scripts"' package.json 2>/dev/null; then
+    PREFIX="REACT_APP_AUTH0"
+  else
+    PREFIX="VITE_AUTH0"
+  fi
 
-# Fastest path — auto-detects framework, creates the Auth0 app, and writes .env:
-auth0 qs setup --app --framework vanilla-javascript --build-tool vite --type spa --port 5173
+  echo "Your Auth0 applications:"
+  auth0 apps list
+  read -p "Enter your Auth0 app ID (or press Enter to create a new one): " APP_ID
+
+  if [ -z "$APP_ID" ]; then
+    echo "Creating new Auth0 SPA application..."
+    APP_ID=$(auth0 apps create \
+      --name "${PWD##*/}-spa" \
+      --type spa \
+      --auth-method none \
+      --callbacks "http://localhost:3000" \
+      --logout-urls "http://localhost:3000" \
+      --origins "http://localhost:3000" \
+      --web-origins "http://localhost:3000" \
+      --json-compact | jq -r '.client_id')
+    echo "Created SPA app with ID: $APP_ID"
+  fi
+
+  echo "Fetching Auth0 credentials..."
+  APP_JSON=$(auth0 apps show "$APP_ID" --json-compact)
+  cat >> .env << EOF
+${PREFIX}_DOMAIN=$(echo "$APP_JSON" | jq -r '.domain')
+${PREFIX}_CLIENT_ID=$(echo "$APP_JSON" | jq -r '.client_id')
+EOF
+fi
 
 echo "✅ Auth0 configuration complete!"
 ```

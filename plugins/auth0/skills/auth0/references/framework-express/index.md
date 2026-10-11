@@ -704,16 +704,16 @@ test -f .env && echo "ENV_EXISTS" || echo "ENV_NOT_FOUND"
 Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
 
 - If `.env.local` exists, ask:
-  - Question: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env.local" / "No, I'll update it manually"
+  - Question: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will write Auth0 configuration to `.env`. Do you want to proceed?"
+  - Options: "Yes, run Auth0 setup" / "No, I'll update it manually"
 
 - If `.env.local` does **not** exist but `.env` exists, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
+  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will write Auth0 configuration to it. Do you want to proceed?"
+  - Options: "Yes, run Auth0 setup" / "No, I'll update it manually"
 
 - If neither exists, ask:
-  - Question: "This setup will create a `.env.local` file containing Auth0 credentials (CLIENT_ID, ISSUER_BASE_URL, SECRET) and a placeholder for CLIENT_SECRET. Do you want to proceed?"
-  - Options: "Yes, create .env.local" / "No, I'll configure it manually"
+  - Question: "This setup will run `auth0 qs setup` and write Auth0 configuration to `.env`. Do you want to proceed?"
+  - Options: "Yes, run Auth0 setup" / "No, I'll configure it manually"
 
 **Do not proceed with writing to any env file unless the user selects the confirmation option.**
 
@@ -745,8 +745,8 @@ echo "✅ Auth0 configuration complete!"
 ```
 
 After the script runs, remind the user to:
-1. Open the env file that was written and replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0.
-2. Ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.
+1. Review the `.env` file written by `auth0 qs setup` and populate any required values that remain unset.
+2. Ensure `.env` is listed in `.gitignore` to avoid accidentally committing secrets.
 
 ---
 

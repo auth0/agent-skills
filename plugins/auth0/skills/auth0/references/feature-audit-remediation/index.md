@@ -15,7 +15,7 @@ For each item, build the command. **Use a first-class subcommand when one exists
 | Breached password detection | `auth0 protection breached-password-detection update` | `PATCH attack-protection/breached-password-detection` |
 | Suspicious IP throttling | `auth0 protection suspicious-ip-throttling update` | `PATCH attack-protection/suspicious-ip-throttling` |
 | Branding (universal login, colors, logo) | `auth0 universal-login update` (alias `auth0 ul update`) | `PATCH branding` |
-| Custom domains | `auth0 domains create` / `update <id>` / `domains default set <id>` / `domains default show` | `POST custom-domains` / `PATCH custom-domains/<domain-id>` |
+| Custom domains | `auth0 domains create` / `update <id>` / `domains default set <domain>` / `domains default show` | `POST custom-domains` / `PATCH custom-domains/<domain-id>` |
 | Connections (DB, social, enterprise) | `auth0 connections create` / `update <id>` / `delete <id> --force` | `PATCH connections/<connection-id>` (full options blob) |
 | APIs / resource servers | `auth0 apis update <id>` | `PATCH resource-servers/<api-id>` |
 | Apps / clients (callbacks, origins, grant types, refresh tokens) | `auth0 apps update <id>` | `PATCH clients/<app-id>` |
