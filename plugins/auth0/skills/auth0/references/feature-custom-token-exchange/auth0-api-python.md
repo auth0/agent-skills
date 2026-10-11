@@ -29,6 +29,22 @@ result = await api_client.get_token_by_exchange_profile(
 # result holds access_token, expires_in, expires_at; id_token/refresh_token/scope are profile-dependent
 ```
 
+**Return only the access token to your caller.** `result` is the full token set and can also carry
+`id_token`/`refresh_token`; hand back `result["access_token"]`, not the whole dict. In an async
+handler:
+
+```python
+try:
+    result = await api_client.get_token_by_exchange_profile(
+        subject_token=partner_token,
+        subject_token_type="urn:example:subject-token",
+        audience="https://api.example.com",
+    )
+except (GetTokenByExchangeProfileError, ApiError):
+    return 400, {"error": "exchange_failed"}
+return 200, {"access_token": result["access_token"]}
+```
+
 Signature: `get_token_by_exchange_profile(subject_token, subject_token_type, audience=None,
 scope=None, requested_token_type=None, extra=None) -> dict[str, Any]`.
 
