@@ -691,12 +691,12 @@ test -f .env && echo "ENV_EXISTS" || echo "ENV_NOT_FOUND"
 Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
 
 - If `.env.local` exists, ask:
-  - Question: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will add Auth0 credentials and keep your other entries (existing Auth0 values are replaced). Do you want to proceed?"
-  - Options: "Yes, add to existing .env.local" / "No, I'll update it manually"
+  - Question: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
+  - Options: "Yes, append to existing .env.local" / "No, I'll update it manually"
 
 - If `.env.local` does **not** exist but `.env` exists, ask:
-  - Question: "This setup will create a `.env.local` file with Auth0 credentials. Your existing `.env` is left unchanged. Do you want to proceed?"
-  - Options: "Yes, create .env.local" / "No, I'll configure it manually"
+  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
+  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
 
 - If neither exists, ask:
   - Question: "This setup will create a `.env.local` file containing Auth0 credentials (AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_SECRET, APP_BASE_URL). Do you want to proceed?"
@@ -728,19 +728,54 @@ if ! auth0 tenants list &> /dev/null; then
   auth0 login
 fi
 
-# qs setup writes .env, but Next.js keeps secrets in .env.local: move its output there,
-# keep the other .env.local entries, and leave any existing .env untouched.
-[ -f .env ] && mv .env .env.bak
-if auth0 qs setup --app --framework nextjs --type regular; then
-  [ -f .env.local ] && grep -vE '^(AUTH0_DOMAIN|AUTH0_CLIENT_ID|AUTH0_CLIENT_SECRET|AUTH0_SECRET|APP_BASE_URL)=' .env.local >> .env
-  mv .env .env.local
-fi
-[ -f .env.bak ] && mv .env.bak .env
+# qs setup writes .env (and replaces an existing one); Next.js keeps secrets in .env.local.
+# Use it only when neither file exists, then move its output to .env.local.
+if [ ! -f .env ] && [ ! -f .env.local ]; then
+  auth0 qs setup --app --framework nextjs --type regular && mv .env .env.local
+  echo "✅ Auth0 credentials written to .env.local"
+else
+  # Create/select app
+  auth0 apps list
+  read -p "Enter app ID (or Enter to create new): " APP_ID
 
-echo "✅ Auth0 configuration complete!"
+  if [ -z "$APP_ID" ]; then
+    APP_ID=$(auth0 apps create \
+      --name "${PWD##*/}-nextjs" \
+      --type regular \
+      --callbacks "http://localhost:3000/auth/callback" \
+      --logout-urls "http://localhost:3000" \
+      --json-compact | jq -r '.client_id')
+  fi
+
+  # Get credentials
+  AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+  AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+
+  # Generate secret
+  AUTH0_SECRET=$(openssl rand -hex 32)
+
+  # Append to .env.local if it exists, otherwise to .env
+  if [ -f .env.local ]; then
+    TARGET_FILE=".env.local"
+  else
+    TARGET_FILE=".env"
+  fi
+
+  cat >> "$TARGET_FILE" << ENVEOF
+AUTH0_SECRET=$AUTH0_SECRET
+APP_BASE_URL=http://localhost:3000
+AUTH0_DOMAIN=$AUTH0_DOMAIN
+AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
+AUTH0_CLIENT_SECRET='YOUR_CLIENT_SECRET'
+ENVEOF
+
+  echo "✅ Auth0 credentials written to $TARGET_FILE"
+fi
 ```
 
-After the script runs, ensure `.env.local` is listed in `.gitignore` to avoid accidentally committing secrets.
+After the script runs, remind the user to:
+1. If an env file already existed (the `apps create` path), replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0. On a new project `qs setup` writes the real secret.
+2. Ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.
 
 ---
 

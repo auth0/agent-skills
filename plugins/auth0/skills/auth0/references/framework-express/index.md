@@ -704,16 +704,16 @@ test -f .env && echo "ENV_EXISTS" || echo "ENV_NOT_FOUND"
 Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
 
 - If `.env.local` exists, ask:
-  - Question: "A `.env.local` file already exists. This setup writes Auth0 configuration to `.env` (the file `dotenv` loads) and leaves `.env.local` unchanged. Do you want to proceed?"
-  - Options: "Yes, run Auth0 setup" / "No, I'll update it manually"
+  - Question: "A `.env.local` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
+  - Options: "Yes, append to existing .env.local" / "No, I'll update it manually"
 
 - If `.env.local` does **not** exist but `.env` exists, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will add Auth0 configuration and keep your other entries (existing Auth0 values are replaced). Do you want to proceed?"
-  - Options: "Yes, run Auth0 setup" / "No, I'll update it manually"
+  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
+  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
 
 - If neither exists, ask:
-  - Question: "This setup will run `auth0 qs setup` and write Auth0 configuration to `.env`. Do you want to proceed?"
-  - Options: "Yes, run Auth0 setup" / "No, I'll configure it manually"
+  - Question: "This setup will create a `.env` file containing Auth0 settings (ISSUER_BASE_URL, CLIENT_ID, SECRET, BASE_URL). Do you want to proceed?"
+  - Options: "Yes, create .env" / "No, I'll configure it manually"
 
 **Do not proceed with writing to any env file unless the user selects the confirmation option.**
 
@@ -738,22 +738,49 @@ fi
 # Login
 auth0 login 2>/dev/null || auth0 login
 
-# qs setup rewrites .env, so set the existing file aside and restore its non-Auth0 entries.
-[ -f .env ] && mv .env .env.bak
-if auth0 qs setup --app --framework express --type regular; then
-  # qs setup doesn't write CLIENT_SECRET; leave a placeholder for the user to fill in.
-  echo "CLIENT_SECRET=YOUR_CLIENT_SECRET" >> .env
-  [ -f .env.bak ] && { grep -vE '^(ISSUER_BASE_URL|CLIENT_ID|CLIENT_SECRET|SECRET|BASE_URL)=' .env.bak >> .env; rm .env.bak; }
+# qs setup writes .env and replaces an existing one, so use it only when no env file exists yet.
+if [ ! -f .env ] && [ ! -f .env.local ]; then
+  auth0 qs setup --app --framework express --type regular
+  echo "✅ Auth0 credentials written to .env"
 else
-  [ -f .env.bak ] && mv .env.bak .env
-fi
+  # Create/select app
+  auth0 apps list
+  read -p "Enter app ID (or Enter to create): " APP_ID
 
-echo "✅ Auth0 configuration complete!"
+  if [ -z "$APP_ID" ]; then
+    APP_ID=$(auth0 apps create --name "${PWD##*/}-express" --type regular \
+      --callbacks "http://localhost:3000/callback" \
+      --logout-urls "http://localhost:3000" \
+      --json-compact | jq -r '.client_id')
+  fi
+
+  # Get credentials
+  DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+  CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+  SECRET=$(openssl rand -hex 32)
+
+  # Append to .env.local if it exists, otherwise to .env
+  if [ -f .env.local ]; then
+    TARGET_FILE=".env.local"
+  else
+    TARGET_FILE=".env"
+  fi
+
+  cat >> "$TARGET_FILE" << ENVEOF
+SECRET=$SECRET
+BASE_URL=http://localhost:3000
+CLIENT_ID=$CLIENT_ID
+CLIENT_SECRET='YOUR_CLIENT_SECRET'
+ISSUER_BASE_URL=https://$DOMAIN
+ENVEOF
+
+  echo "✅ Auth0 credentials written to $TARGET_FILE"
+fi
 ```
 
 After the script runs, remind the user to:
-1. Replace `CLIENT_SECRET=YOUR_CLIENT_SECRET` in `.env`: run `auth0 apps show <CLIENT_ID> --reveal-secrets` in their own terminal (the client ID is `CLIENT_ID` in `.env`), so the secret stays out of agent output.
-2. Ensure `.env` is listed in `.gitignore` to avoid accidentally committing secrets.
+1. If an env file already existed (the `apps create` path), replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0 — it's only needed when calling APIs (`response_type: 'code'`).
+2. Ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.
 
 ---
 

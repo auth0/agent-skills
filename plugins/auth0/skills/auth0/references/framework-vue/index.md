@@ -821,8 +821,8 @@ Then ask the user for explicit confirmation before proceeding — do not continu
   - Options: "Yes, create .env" / "No, I'll configure it manually"
 
 - If `.env` **already exists**, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will add Auth0 credentials and keep your other entries (existing Auth0 domain/client ID values are replaced). Do you want to proceed?"
-  - Options: "Yes, add to existing .env" / "No, I'll update it manually"
+  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
+  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
 
 **Do not proceed with writing to `.env` unless the user selects the confirmation option.**
 
@@ -867,41 +867,43 @@ if ! auth0 tenants list &> /dev/null; then
   auth0 login
 fi
 
-# qs setup only backs Vite for Vue; Vue CLI projects use auth0 apps create.
-if [ -f vite.config.ts ] || [ -f vite.config.js ] || [ -f vite.config.mjs ]; then
-  # qs setup rewrites .env, so set the existing file aside and restore its non-Auth0 entries.
-  [ -f .env ] && mv .env .env.bak
-  if auth0 qs setup --app --framework vue --build-tool vite --type spa --port 5173; then
-    [ -f .env.bak ] && { grep -vE '^VITE_AUTH0_(DOMAIN|CLIENT_ID)=' .env.bak >> .env; rm .env.bak; }
-  else
-    [ -f .env.bak ] && mv .env.bak .env
-  fi
+# qs setup replaces an existing .env, so use it only for a Vite project with no .env yet.
+if [ ! -f .env ] && { [ -f vite.config.ts ] || [ -f vite.config.js ] || [ -f vite.config.mjs ]; }; then
+  auth0 qs setup --app --framework vue --build-tool vite --type spa --port 5173
 else
-  # Vue CLI reads process.env.VUE_APP_* and serves on port 8080; adjust the port if yours differs.
+  # List apps and prompt for selection
   echo "Your Auth0 applications:"
   auth0 apps list
-  read -p "Enter your Auth0 app ID (or press Enter to create a new one): " APP_ID
+
+  read -p "Enter your Auth0 app ID (or press Enter to create new): " APP_ID
 
   if [ -z "$APP_ID" ]; then
     echo "Creating new Auth0 SPA application..."
+    APP_NAME="${PWD##*/}-vue-app"
     APP_ID=$(auth0 apps create \
-      --name "${PWD##*/}-vue-app" \
+      --name "$APP_NAME" \
       --type spa \
-      --auth-method none \
-      --callbacks "http://localhost:8080" \
-      --logout-urls "http://localhost:8080" \
-      --origins "http://localhost:8080" \
-      --web-origins "http://localhost:8080" \
+      --auth-method None \
+      --callbacks "http://localhost:5173,http://localhost:3000" \
+      --logout-urls "http://localhost:5173,http://localhost:3000" \
+      --origins "http://localhost:5173,http://localhost:3000" \
+      --web-origins "http://localhost:5173,http://localhost:3000" \
       --json-compact | jq -r '.client_id')
     echo "Created app with ID: $APP_ID"
   fi
 
+  # Get app details and append Auth0 credentials to .env
   echo "Fetching Auth0 credentials..."
-  APP_JSON=$(auth0 apps show "$APP_ID" --json-compact)
+  AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+  AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+
   cat >> .env << EOF
-VUE_APP_AUTH0_DOMAIN=$(echo "$APP_JSON" | jq -r '.domain')
-VUE_APP_AUTH0_CLIENT_ID=$(echo "$APP_JSON" | jq -r '.client_id')
+VITE_AUTH0_DOMAIN=$AUTH0_DOMAIN
+VITE_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
 EOF
+  echo "Appended to .env:"
+  echo "  VITE_AUTH0_DOMAIN=$AUTH0_DOMAIN"
+  echo "  VITE_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID"
 fi
 
 echo "✅ Auth0 configuration complete!"
@@ -951,7 +953,7 @@ if ([string]::IsNullOrEmpty($appId)) {
     --logout-urls "http://localhost:5173,http://localhost:3000" `
     --origins "http://localhost:5173,http://localhost:3000" `
     --web-origins "http://localhost:5173,http://localhost:3000" `
-    --metadata "created_by=agent_skills" --json
+    --json
 
   $appId = ($appJson | ConvertFrom-Json).client_id
   Write-Host "Created app with ID: $appId"

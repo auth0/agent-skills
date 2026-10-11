@@ -817,13 +817,37 @@ if ! auth0 tenants list &> /dev/null; then
   auth0 login
 fi
 
-# qs setup rewrites environment.ts with only the auth0 block, so keep a backup of the current file.
-ENV_TS=src/environments/environment.ts
-[ -f "$ENV_TS" ] && cp "$ENV_TS" "$ENV_TS.bak"
-auth0 qs setup --app --framework angular --type spa
-[ -f "$ENV_TS.bak" ] && echo "⚠️  $ENV_TS was rewritten; copy any non-Auth0 settings back from $ENV_TS.bak, then delete it."
+# qs setup replaces an existing environment.ts, so use it only when the file doesn't exist yet.
+if [ ! -f src/environments/environment.ts ]; then
+  auth0 qs setup --app --framework angular --type spa
+  echo "✅ Configuration complete! Auth0 settings written to src/environments/environment.ts"
+else
+  # Create or select app
+  auth0 apps list
+  read -p "Enter your Auth0 app ID (or press Enter to create new): " APP_ID
 
-echo "✅ Configuration complete!"
+  if [ -z "$APP_ID" ]; then
+    APP_NAME="${PWD##*/}-angular-app"
+    APP_ID=$(auth0 apps create \
+      --name "$APP_NAME" \
+      --type spa \
+      --auth-method None \
+      --callbacks "http://localhost:4200" \
+      --logout-urls "http://localhost:4200" \
+      --origins "http://localhost:4200" \
+      --web-origins "http://localhost:4200" \
+      --json-compact | jq -r '.client_id')
+  fi
+
+  # Get credentials
+  AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+  AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+
+  echo "✅ Configuration complete!"
+  echo "Update src/environments/environment.ts with:"
+  echo "  domain: '$AUTH0_DOMAIN'"
+  echo "  clientId: '$AUTH0_CLIENT_ID'"
+fi
 ```
 
 ---
