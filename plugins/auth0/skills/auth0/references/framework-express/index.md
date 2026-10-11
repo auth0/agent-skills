@@ -740,7 +740,10 @@ auth0 login 2>/dev/null || auth0 login
 
 # qs setup writes .env and replaces an existing one, so use it only when no env file exists yet.
 if [ ! -f .env ] && [ ! -f .env.local ]; then
-  auth0 qs setup --app --framework express --type regular
+  if ! auth0 qs setup --app --framework express --type regular; then
+    echo "❌ auth0 qs setup failed"
+    exit 1
+  fi
   echo "✅ Auth0 credentials written to .env"
 else
   # Create/select app
@@ -751,6 +754,7 @@ else
     APP_ID=$(auth0 apps create --name "${PWD##*/}-express" --type regular \
       --callbacks "http://localhost:3000/callback" \
       --logout-urls "http://localhost:3000" \
+      --metadata "created_by=agent_skills" \
       --json-compact | jq -r '.client_id')
   fi
 

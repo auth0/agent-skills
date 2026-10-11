@@ -1055,18 +1055,19 @@ Complete setup instructions with automated scripts and manual configuration opti
 Before writing to `.env`, check whether the file already exists:
 
 ```bash
-test -f .env && echo "EXISTS" || echo "NOT_FOUND"
+test -f .env.local && echo "ENV_LOCAL_EXISTS" || echo "ENV_LOCAL_NOT_FOUND"
+test -f .env && echo "ENV_EXISTS" || echo "ENV_NOT_FOUND"
 ```
 
 Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
 
-- If `.env` does **not** exist, ask:
+- If neither `.env` nor `.env.local` exists, ask:
   - Question: "This setup will create a `.env` file containing Auth0 credentials (domain and client ID). Do you want to proceed?"
   - Options: "Yes, create .env" / "No, I'll configure it manually"
 
-- If `.env` **already exists**, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
+- If `.env.local` or `.env` **already exists**, ask:
+  - Question: "An env file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to `.env.local` (if present, since it overrides `.env`) or `.env`, without modifying existing content. Do you want to proceed?"
+  - Options: "Yes, append to the existing env file" / "No, I'll update it manually"
 
 **Do not proceed with writing to `.env` unless the user selects the confirmation option.**
 
@@ -1132,9 +1133,13 @@ if ! auth0 tenants list &> /dev/null; then
   echo "✅ Successfully logged in to Auth0!"
 fi
 
-# qs setup replaces an existing .env, so use it only for a Vite project with no .env yet.
-if [ ! -f .env ] && { [ -f vite.config.ts ] || [ -f vite.config.js ] || [ -f vite.config.mjs ]; }; then
-  auth0 qs setup --app --framework react --build-tool vite --type spa --port 5173
+# qs setup replaces an existing .env (and Vite lets .env.local override it), so use it
+# only for a Vite project with neither file yet.
+if [ ! -f .env ] && [ ! -f .env.local ] && { [ -f vite.config.ts ] || [ -f vite.config.js ] || [ -f vite.config.mjs ]; }; then
+  if ! auth0 qs setup --app --framework react --build-tool vite --type spa --port 5173; then
+    echo "❌ auth0 qs setup failed"
+    exit 1
+  fi
 else
   # Detect if Vite or CRA
   if grep -q '"vite"' package.json 2>/dev/null; then
@@ -1163,6 +1168,7 @@ else
       --logout-urls "http://localhost:3000,http://localhost:5173" \
       --origins "http://localhost:3000,http://localhost:5173" \
       --web-origins "http://localhost:3000,http://localhost:5173" \
+      --metadata "created_by=agent_skills" \
       --json-compact | jq -r '.client_id')
     echo "Created app with ID: $APP_ID"
   fi
@@ -1172,11 +1178,13 @@ else
   AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
   AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
 
-  cat >> .env << EOF
+  # Append to .env.local if it exists (it overrides .env), otherwise to .env
+  TARGET_FILE=$([ -f .env.local ] && echo .env.local || echo .env)
+  cat >> "$TARGET_FILE" << EOF
 ${PREFIX}_DOMAIN=$AUTH0_DOMAIN
 ${PREFIX}_CLIENT_ID=$AUTH0_CLIENT_ID
 EOF
-  echo "Appended to .env:"
+  echo "Appended to $TARGET_FILE:"
   echo "  ${PREFIX}_DOMAIN=$AUTH0_DOMAIN"
   echo "  ${PREFIX}_CLIENT_ID=$AUTH0_CLIENT_ID"
 fi
@@ -1252,7 +1260,7 @@ if ([string]::IsNullOrEmpty($appId)) {
     --logout-urls "http://localhost:3000,http://localhost:5173" `
     --origins "http://localhost:3000,http://localhost:5173" `
     --web-origins "http://localhost:3000,http://localhost:5173" `
-    --json
+    --metadata "created_by=agent_skills" --json
 
   $appId = ($appJson | ConvertFrom-Json).client_id
   Write-Host "Created app with ID: $appId"

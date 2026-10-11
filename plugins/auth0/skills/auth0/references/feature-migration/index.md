@@ -73,10 +73,9 @@ Import users via Dashboard, CLI, or Management API.
 
 **Quick start:**
 ```bash
-# Via Auth0 CLI (handles multipart upload automatically)
-auth0 users import \
+# Via Auth0 CLI (handles multipart upload; pipe the file so large imports don't hit the argument size limit)
+cat users.json | auth0 users import \
   --connection-name "Username-Password-Authentication" \
-  --users "$(cat users.json)" \
   --upsert
 ```
 
@@ -1290,9 +1289,8 @@ auth0 login
 auth0 connections list
 
 # Import users (--connection-name takes the connection name, not the ID)
-auth0 users import \
+cat users.json | auth0 users import \
   --connection-name "Username-Password-Authentication" \
-  --users "$(cat users.json)" \
   --upsert
 ```
 
@@ -1481,7 +1479,7 @@ split -l 5000 users.json users-chunk-
 
 # Import each chunk (each file must be a valid JSON array of users)
 for file in users-chunk-*; do
-  auth0 users import --connection-name "Username-Password-Authentication" --users "$(cat "$file")" --upsert
+  cat "$file" | auth0 users import --connection-name "Username-Password-Authentication" --upsert
 done
 ```
 

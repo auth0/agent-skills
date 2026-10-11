@@ -819,7 +819,10 @@ fi
 
 # qs setup replaces an existing environment.ts, so use it only when the file doesn't exist yet.
 if [ ! -f src/environments/environment.ts ]; then
-  auth0 qs setup --app --framework angular --type spa
+  if ! auth0 qs setup --app --framework angular --type spa; then
+    echo "❌ auth0 qs setup failed"
+    exit 1
+  fi
   echo "✅ Configuration complete! Auth0 settings written to src/environments/environment.ts"
 else
   # Create or select app
@@ -836,6 +839,7 @@ else
       --logout-urls "http://localhost:4200" \
       --origins "http://localhost:4200" \
       --web-origins "http://localhost:4200" \
+      --metadata "created_by=agent_skills" \
       --json-compact | jq -r '.client_id')
   fi
 

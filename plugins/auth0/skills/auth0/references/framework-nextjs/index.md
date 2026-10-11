@@ -731,7 +731,10 @@ fi
 # qs setup writes .env (and replaces an existing one); Next.js keeps secrets in .env.local.
 # Use it only when neither file exists, then move its output to .env.local.
 if [ ! -f .env ] && [ ! -f .env.local ]; then
-  auth0 qs setup --app --framework nextjs --type regular && mv .env .env.local
+  if ! { auth0 qs setup --app --framework nextjs --type regular && mv .env .env.local; }; then
+    echo "❌ auth0 qs setup failed"
+    exit 1
+  fi
   echo "✅ Auth0 credentials written to .env.local"
 else
   # Create/select app
@@ -744,6 +747,7 @@ else
       --type regular \
       --callbacks "http://localhost:3000/auth/callback" \
       --logout-urls "http://localhost:3000" \
+      --metadata "created_by=agent_skills" \
       --json-compact | jq -r '.client_id')
   fi
 
