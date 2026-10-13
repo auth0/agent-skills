@@ -73,10 +73,10 @@ Import users via Dashboard, CLI, or Management API.
 
 **Quick start:**
 ```bash
-# Via Auth0 CLI
-auth0 api post "jobs/users-imports" \
-  --data "connection_id=con_ABC123" \
-  --data "users=@users.json"
+# Via Auth0 CLI (handles multipart upload; pipe the file so large imports don't hit the argument size limit)
+cat users.json | auth0 users import \
+  --connection-name "Username-Password-Authentication" \
+  --upsert
 ```
 
 **For detailed instructions, see the sections below:**
@@ -1285,13 +1285,13 @@ auth0 login
 
 **Import users:**
 ```bash
-# Get connection ID
-auth0 api get connections
+# Get connection name
+auth0 connections list
 
-# Import users
-auth0 api post "jobs/users-imports" \
-  --data "connection_id=con_ABC123" \
-  --data "users=@users.json"
+# Import users (--connection-name takes the connection name, not the ID)
+cat users.json | auth0 users import \
+  --connection-name "Username-Password-Authentication" \
+  --upsert
 ```
 
 **Check import status:**
@@ -1477,11 +1477,9 @@ curl "https://YOUR_DOMAIN.auth0.com/api/v2/jobs/{job-id}/errors" \
 # Split into 5000-user chunks
 split -l 5000 users.json users-chunk-
 
-# Import each chunk
+# Import each chunk (each file must be a valid JSON array of users)
 for file in users-chunk-*; do
-  auth0 api post "jobs/users-imports" \
-    --data "connection_id=con_ABC123" \
-    --data "users=@$file"
+  cat "$file" | auth0 users import --connection-name "Username-Password-Authentication" --upsert
 done
 ```
 

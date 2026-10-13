@@ -7,7 +7,7 @@ Protect ASP.NET Core Web API endpoints with JWT access token validation using Au
 
 - .NET 8.0 SDK or higher
 - Auth0 API configured (not Application - must be API resource)
-- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apis create`)
 
 ## When NOT to Use
 
@@ -713,7 +713,7 @@ public class ApiTests : IClassFixture<WebApplicationFactory<Program>>
     public async Task ProtectedEndpoint_WithValidToken_Returns200()
     {
         // Option 1: Real token from Auth0 CLI (requires network, good for integration tests)
-        //   auth0 test token --audience https://my-api.example.com
+        //   auth0 test token <CLIENT_ID> --audience https://my-api.example.com
         //
         // Option 2: Mock JWT for fast unit tests — override auth in WebApplicationFactory:
         //   _factory.WithWebHostBuilder(b => b.ConfigureTestServices(services =>
@@ -857,7 +857,7 @@ Note the double underscore `__` separator for nested config in environment varia
 
 ```bash
 # Get access token for testing
-auth0 test token \
+auth0 test token <CLIENT_ID> \
   --audience https://my-api.example.com
 ```
 
