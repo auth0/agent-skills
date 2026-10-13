@@ -112,7 +112,7 @@ auth0 tenants use <name> # switch active tenant; prompts for browser login if no
 
 **Before any write operation in any capability, run `auth0 tenants list` and show the active tenant to the user.** For a non-destructive change, if the user's request already identifies the tenant (by name or domain, or as "our tenant" with a single tenant in the list) and the active tenant matches, state it in one line and carry on in the same turn. Otherwise, and always for resets and deletes, get explicit confirmation to proceed before writing. If it's the wrong tenant, stop. Tell the user to run `auth0 tenants use <name>` (or `auth0 login` if the target isn't in the list) themselves and re-invoke the skill. Do not try to switch tenants on the user's behalf.
 
-If the `auth0` CLI is not available or not logged in to the target tenant, call the **Management API** directly with an explicit domain and bearer token per call (see the cURL examples section below). Otherwise, use the CLI, including for non-interactive runs.
+If the `auth0` CLI is not installed or is not logged in to any tenant, call the **Management API** directly with an explicit domain and bearer token per call (see the cURL examples section below). A different active tenant is not a reason to fall back: stop as described above. Otherwise, use the CLI, including for non-interactive runs.
 
 **Tooling note.** The `auth0 ul` commands below are one way to write branding settings. The loaded tooling reference has the equivalent for infrastructure-as-code projects: the Terraform `auth0_branding` resource (`logo_url`, `favicon_url`, `colors` block). The Auth0 MCP server exposes **no** branding/Universal Login tool — for an MCP-only session, fall back to the CLI, Terraform, or the Management API directly. This interactive branding workflow (extract → propose → apply) stays CLI/API-driven regardless, because it is a guided flow rather than a static config write.
 
@@ -1343,14 +1343,14 @@ The user never needs to know the API field names or which surface a setting live
 ## Flow
 
 1. Load current tenant state once at the start of the session: theme (`GET /branding/themes/default`), tenant branding (`GET /branding`), and (lazily) current page template + custom text when the request targets them. Cache for the session so disambiguation prompts can show current values.
-2. If the opening request already says what to change, skip this question. Otherwise ask: **"What do you want to change?"**
+2. If the user's latest message already says what to change, skip this question. Otherwise ask: **"What do you want to change?"**
 3. Parse the user's request and resolve it to one or more specific fields using the **Intent mapping** table below.
 4. Disambiguate only when needed. If the mapped target is unique, skip ahead. If multiple fields are plausible, ask one question and show current values so the user can see what they'd be changing:
    > "'button color'; which one?
    > [a] Primary button fill (currently `#533AFD`)
    > [b] Primary button label/text (currently `#FFFFFF`)
    > [c] Secondary button border (currently `#CCCCCC`)"
-5. Restate the concrete change in plain language ("change primary button fill from `#533AFD` to `#FF5733`"). Confirm only if something is ambiguous; when the request gave exact values, apply it.
+5. Restate the concrete change in plain language ("change primary button fill from `#533AFD` to `#FF5733`"). Confirm only if something is ambiguous; when the request gave exact values, apply it, except on a production tenant, where Apply still requires explicit confirmation.
 6. Stage the change in an in-memory bundle. Do not write to the tenant yet.
 7. In an interactive session, ask **"anything else?"** and loop to step 2 if yes. If the request is fully handled, finish and report instead of asking.
 8. Show the consolidated diff of all staged changes vs current tenant state.
