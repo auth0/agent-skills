@@ -182,7 +182,7 @@ auth0 connections list --query '{"strategy":["auth0"],"name":"<connection-name>"
 
 # Create one only if there is none matching. `name` must match
 # ^[a-zA-Z0-9](-[a-zA-Z0-9]|[a-zA-Z0-9])*$, max 128 chars.
-auth0 api post connections --data '{"name":"<connection-name>","strategy":"auth0"}'
+auth0 connections create --data '{"name":"<connection-name>","strategy":"auth0"}'
 
 # Enable it for the organization - without this, org members have no way to log in.
 auth0 api post "organizations/<org-id>/enabled_connections" \
@@ -229,7 +229,7 @@ auth0 apps update <client-id> \
 # 2. Without this: "A default login route is required to generate the invitation url."
 #    Read the current value FIRST - the setting is tenant-wide, and you may need
 #    to restore it. An empty response means it's currently unset.
-auth0 api get "tenants/settings" | jq -r '.default_redirection_uri // ""'
+auth0 tenant-settings show --json | jq -r '.default_redirection_uri // ""'
 
 auth0 api patch "tenants/settings" \
   --data '{"default_redirection_uri":"https://app.example.com/callback"}'

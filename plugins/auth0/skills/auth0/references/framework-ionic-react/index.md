@@ -865,10 +865,10 @@ npx cap open android  # Build and run on device from Android Studio
 > **Agent instruction:** Run these pre-flight checks before creating the Auth0 application. Do NOT run `auth0 login` from the agent — it is interactive and will hang.
 >
 > 1. **Check Auth0 CLI**: `command -v auth0`. If missing, install it: `brew install auth0`.
-> 2. **Check Auth0 login**: `auth0 tenants list --csv --no-input`. If it fails or returns empty:
+> 2. **Check Auth0 login**: `AUTH0_DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[] | select(.active) | .name')`. If it fails or returns empty:
 >    - Tell the user: _"Please run `auth0 login` in your terminal and let me know when done."_
 >    - Wait for confirmation, then re-run the check. Retry up to 3 times before treating as a persistent failure.
-> 3. **Confirm active tenant**: Parse the `→` line from the CSV output. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
+> 3. **Confirm active tenant**: The output of step 2 is the active tenant domain. Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
 >    - If no, ask the user to run `auth0 tenants use <tenant-domain>`, then re-run step 2.
 >
 > Once confirmed, run the following steps:
@@ -881,7 +881,7 @@ npx cap open android  # Build and run on device from Android Studio
 > auth0 apps create \
 >   --name "APP_NAME" \
 >   --type native \
->   --auth-method None \
+>   --auth-method none \
 >   --callbacks "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
 >   --logout-urls "PACKAGE_ID://DOMAIN/capacitor/PACKAGE_ID/callback" \
 >   --origins "capacitor://localhost,http://localhost" \

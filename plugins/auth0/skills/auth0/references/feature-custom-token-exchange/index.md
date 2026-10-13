@@ -166,9 +166,10 @@ The tenant setup (steps 1–3) is the deliverable; step 4 only confirms it works
 always runnable in a given environment.
 
 Notes:
-- `auth0 apps update` has **no** `--is-first-party` or `--oidc-conformant` flag. Apps created in your
-  own tenant are already first-party; if you must set either on an existing client, patch it:
-  `auth0 api patch "clients/<id>" --data '{"is_first_party":true,"oidc_conformant":true}'`.
+- `auth0 apps update` has an `--is-first-party` flag, but **no** `--oidc-conformant` flag. Apps created in
+  your own tenant are already first-party; set it explicitly with `auth0 apps update <id> --is-first-party=true`.
+  `oidc_conformant` has no dedicated flag — set it via the JSON passthrough:
+  `auth0 apps update <id> --data '{"oidc_conformant":true}'`.
 - `--type` only accepts `custom_authentication` (CTE). `on_behalf_of_token_exchange` is a different
   (OBO) profile type and is out of scope here.
 - `subject_token_type`: 8–100 chars, a valid URI, no reserved prefix, unique per tenant (409 on duplicate).
@@ -177,7 +178,7 @@ Notes:
   Management API. If a *separate* requirement needs them: "Allow Skip User Consent" is a per-API
   setting on a *custom* API (`auth0 api patch "resource-servers/<custom-api-id>"`) — the Management
   API instead relies on the client's first-party status — and authorizing an M2M app for the
-  Management API uses `auth0 api post "client-grants"`.
+  Management API uses `auth0 client-grants create`.
 
 Verify subcommands and flag names with `auth0 token-exchange --help` and `auth0 actions --help`
 rather than inferring them; use `auth0 api` for Management API calls without a dedicated

@@ -18,7 +18,7 @@ Protect Spring Boot API endpoints with JWT access token validation using `com.au
 - Java 17+ and Spring Boot 3.2+
 - Maven 3.6+ or Gradle 7+
 - Auth0 API configured (not Application — must be API resource)
-- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apis create`)
 
 ## When NOT to Use
 
@@ -936,7 +936,7 @@ class ApiControllerTest {
 
 ```bash
 # Get a test token
-TOKEN=$(auth0 test token --audience https://my-springboot-api --json | jq -r '.access_token')
+TOKEN=$(auth0 test token <CLIENT_ID> --audience https://my-springboot-api --json | jq -r '.access_token')
 
 # Test protected endpoint
 curl http://localhost:8080/api/protected \
@@ -1141,7 +1141,7 @@ Or use Spring profiles (`application-prod.yml`).
 ### Via Auth0 CLI (Client Credentials)
 
 ```bash
-auth0 test token \
+auth0 test token <CLIENT_ID> \
   --audience https://my-springboot-api
 ```
 

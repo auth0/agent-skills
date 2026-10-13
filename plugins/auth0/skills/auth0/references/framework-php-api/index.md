@@ -15,7 +15,7 @@ Protect PHP API endpoints with JWT access token validation using `auth0/auth0-ph
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
 - Composer installed
 - Auth0 API resource configured (not an Application - must be an API)
-- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apis create`)
 
 ## When NOT to Use
 
@@ -324,21 +324,13 @@ CORS must be handled before auth so that preflight `OPTIONS` requests short-circ
 > Parse the JSON with `jq` to extract `client_id`. Do NOT use `--reveal-secrets` - never expose client secrets in agent context. Instead, use only the `client_id`; the client-credentials/client-grant flow below does not require the secret in agent context.
 > Then create a client grant:
 > ```bash
-> auth0 api post "client-grants" --data '{
->   "client_id": "<CLIENT_ID>",
->   "audience": "<API_IDENTIFIER>",
->   "scope": ["<SCOPES>"]
-> }'
+> auth0 client-grants create --client-id <CLIENT_ID> --audience <API_IDENTIFIER> --scopes "<SCOPES>"
 > ```
 >
 > **If the user chose "Use existing":**
 > Ask for the Client ID. Then create a client grant to authorize it for this API:
 > ```bash
-> auth0 api post "client-grants" --data '{
->   "client_id": "<USER_PROVIDED_CLIENT_ID>",
->   "audience": "<API_IDENTIFIER>",
->   "scope": ["<SCOPES>"]
-> }'
+> auth0 client-grants create --client-id <USER_PROVIDED_CLIENT_ID> --audience <API_IDENTIFIER> --scopes "<SCOPES>"
 > ```
 > If the grant already exists (409 conflict), that's fine - the app is already authorized.
 
@@ -1240,7 +1232,7 @@ class ApiTest extends TestCase
 
 ```bash
 # Get a test token via Auth0 CLI
-TOKEN=$(auth0 test token --audience https://my-api.example.com --no-input 2>/dev/null)
+TOKEN=$(auth0 test token <CLIENT_ID> --audience https://my-api.example.com --no-input 2>/dev/null)
 
 # Test protected endpoint
 curl -s http://localhost:8000/api/private \
@@ -1425,7 +1417,7 @@ export AUTH0_AUDIENCE=https://my-api.example.com
 
 ```bash
 # Get access token for testing
-auth0 test token \
+auth0 test token <CLIENT_ID> \
   --audience https://my-api.example.com
 ```
 

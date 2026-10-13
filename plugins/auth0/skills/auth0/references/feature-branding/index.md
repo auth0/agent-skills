@@ -208,6 +208,8 @@ Complete Management API endpoints, CLI commands, configuration options, and erro
 | PATCH | `/api/v2/branding/themes/{themeId}` | Update a theme | `update:branding` |
 | DELETE | `/api/v2/branding/themes/{themeId}` | Delete a theme | `delete:branding` |
 
+**No `auth0 ul themes` subcommand exists yet — use `auth0 api` for all theme CRUD (GET/POST/PATCH/DELETE `branding/themes/...`).**
+
 **Theme behavior notes:**
 - `GET /branding/themes/default` returns 404 if no theme has been created yet. Create one with POST first.
 - PATCH requires all top-level sections (`colors`, `fonts`, `borders`, `widget`, `page_background`). To update one field, GET the current theme, merge your change, then PATCH the full object.
@@ -616,7 +618,7 @@ The `PUT /api/v2/prompts/<prompt>/custom-text/<language>` endpoint **replaces** 
 # Get current text, modify, then set
 CURRENT=$(auth0 api get "prompts/login/custom-text/en")
 # Merge changes into $CURRENT
-auth0 api put "prompts/login/custom-text/en" --data "$UPDATED"
+auth0 ul prompts update login -l en --data "$UPDATED"
 ```
 
 ### Delete Custom Text
@@ -624,7 +626,7 @@ auth0 api put "prompts/login/custom-text/en" --data "$UPDATED"
 Send an empty object to remove all custom text for a prompt:
 
 ```bash
-auth0 api put "prompts/login/custom-text/en" --data '{}'
+auth0 ul prompts update login -l en --data '{}'
 ```
 
 ---
@@ -1025,13 +1027,13 @@ SOURCE_TENANT=source-tenant.auth0.com
 TARGET_TENANT=target-tenant.auth0.com
 
 # Export from source tenant
-BRANDING=$(auth0 api get "branding" --tenant "$SOURCE_TENANT")
+BRANDING=$(auth0 ul show --json --tenant "$SOURCE_TENANT")
 THEME=$(auth0 api get "branding/themes/default" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
 TEMPLATE=$(auth0 api get "branding/templates/universal-login" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
 LOGIN_TEXT=$(auth0 api get "prompts/login/custom-text/en" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
 
 # Import to target tenant
-printf '%s' "$BRANDING" | auth0 api patch "branding" --tenant "$TARGET_TENANT"
+auth0 ul update --data "$BRANDING" --tenant "$TARGET_TENANT"
 
 if [ -n "$THEME" ]; then
   THEME_BODY=$(printf '%s' "$THEME" | jq 'del(.themeId)')
@@ -1048,7 +1050,7 @@ if [ -n "$TEMPLATE" ]; then
 fi
 
 if [ -n "$LOGIN_TEXT" ]; then
-  printf '%s' "$LOGIN_TEXT" | auth0 api put "prompts/login/custom-text/en" --tenant "$TARGET_TENANT"
+  auth0 ul prompts update login -l en --data "$LOGIN_TEXT" --tenant "$TARGET_TENANT"
 fi
 ```
 
@@ -1065,9 +1067,9 @@ auth0 test login "{yourAppClientId}"
 auth0 test login --organization org_abc123
 
 # Verify via API
-auth0 api get "branding" | jq '.colors'
+auth0 ul show --json | jq '.colors'
 auth0 api get "branding/themes/default" | jq '.colors.primary_button'
-auth0 api get "branding/templates/universal-login" | jq '.template' | head -1
+auth0 ul templates show | head -1
 ```
 
 ---
