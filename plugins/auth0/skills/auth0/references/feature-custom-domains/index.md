@@ -201,11 +201,11 @@ auth0 domains update <domainId>
 # Delete a custom domain (use --force to skip the CLI's interactive prompt)
 auth0 domains delete <domainId> --force
 
-# Set the default custom domain (no dedicated CLI subcommand; use API passthrough)
-auth0 api patch "custom-domains/default" --data '{"domain": "<domain>"}'
+# Set the default custom domain
+auth0 domains default set <domain>
 
 # Get the current default
-auth0 api get "custom-domains/default"
+auth0 domains default show
 ```
 
 ### CLI vs API value conventions
@@ -217,7 +217,7 @@ The dedicated `auth0 domains` subcommands and the `auth0 api` passthrough use di
 | Certificate type (Auth0-managed) | `--type auth0` | `"type": "auth0_managed_certs"` |
 | Certificate type (self-managed) | `--type self` | `"type": "self_managed_certs"` |
 | Relying party identifier | **not supported on the CLI** (no `--rpid` flag); use API passthrough | `"relying_party_identifier"` |
-| Default domain | **not supported on the CLI** (no `default` subcommand); use API passthrough | `PATCH /custom-domains/default` with `{"domain": "..."}` |
+| Default domain | `auth0 domains default set <domain>` (read: `auth0 domains default show`) | `PATCH /custom-domains/default` with `{"domain": "..."}` |
 
 ## Domain Object Properties
 
@@ -379,17 +379,15 @@ The skill's primary flow creates one domain. To add another, invoke the skill ag
 
 When multiple domains are configured, one is designated the **default**. The default is used when a Management API call that triggers a notification (password reset email, verification email, etc.) is made **without** an `auth0-custom-domain` header.
 
-Set the default. Two endpoints exist; **prefer `PATCH /custom-domains/default`** — it accepts the human-readable domain name and is the endpoint the skill uses in the Manage capability. The `tenants/settings` form is the older path, still supported, and handy when you already have the `custom_domain_id` (e.g., from a list response). Both are idempotent and produce the same result; pick whichever keeps the surrounding code simpler.
+Set the default. Two paths exist; **prefer the native CLI subcommand** — it accepts the domain name directly. The `tenants/settings` API form is the older path, still supported, and handy when you already have the `custom_domain_id` and prefer scripting against the raw API. Both are idempotent and produce the same result; pick whichever keeps the surrounding code simpler.
 
 ```bash
-# Preferred: PATCH /custom-domains/default (pass domain name, not ID):
-auth0 api patch "custom-domains/default" --data '{"domain": "login.example.com"}'
+# Preferred: native CLI subcommand (pass the domain name):
+auth0 domains default set <domain>
 
-# Alternative: tenant settings endpoint (pass the custom_domain_id):
+# Alternative: tenant settings endpoint via API passthrough (pass the custom_domain_id):
 auth0 api patch "tenants/settings" --data '{"default_custom_domain_id": "cd_abc123"}'
 ```
-
-The Auth0 CLI does not have a dedicated `auth0 domains default` subcommand; the API passthrough is the only way.
 
 ### The `auth0-custom-domain` header
 
@@ -483,7 +481,7 @@ Fresh records can take 5-60 minutes to propagate across resolvers. If `dig +shor
 If the record is correct in DNS but Auth0 still reports `pending_verification`:
 1. Do not delete and recreate the domain. This can cause a service interruption.
 2. Wait at least 4 hours.
-3. Retry verification with `auth0 api post "custom-domains/<domainId>/verify"`.
+3. Retry verification with `auth0 domains verify <domainId>`.
 
 ### When to open a support ticket
 
@@ -1116,7 +1114,7 @@ Ask questions one at a time as plain conversational text. Do not present all inp
 Minimal create (Auth0-managed certs, defaults everywhere):
 
 ```bash
-auth0 api post "custom-domains" --data '{
+auth0 domains create --data '{
   "domain": "login.example.com",
   "type": "auth0_managed_certs"
 }'
@@ -1125,7 +1123,7 @@ auth0 api post "custom-domains" --data '{
 Full-featured create with optional fields (omit any that don't apply):
 
 ```bash
-auth0 api post "custom-domains" --data '{
+auth0 domains create --data '{
   "domain": "login.example.com",
   "type": "auth0_managed_certs",
   "verification_method": "txt",
@@ -1152,7 +1150,7 @@ The response contains `custom_domain_id`, `status: "pending_verification"`, and 
 
 **If the API returns 403**: the tenant is a Free tenant without a credit card on file. Direct the user to **Dashboard → Tenant Settings → Billing** (or the Teams section for Teams-managed tenants) to add a card, then retry. The card is not charged. This is the correct diagnosis on Free tier; do not suggest a plan upgrade.
 
-**If the API returns 409**: the domain already exists on this or another tenant. `auth0 api get "custom-domains"` to list existing. If it's already on this tenant and just needs verification, skip to the verify step below with the existing `custom_domain_id`.
+**If the API returns 409**: the domain already exists on this or another tenant. `auth0 domains list` to list existing. If it's already on this tenant and just needs verification, skip to the verify step below with the existing `custom_domain_id`.
 
 See the Examples section below for curl, node-auth0, and auth0-python code patterns.
 
@@ -1191,7 +1189,7 @@ Execute the tier-specific flow from the sub-file you opened above. For Tiers 2 a
 ## Trigger Auth0 verification
 
 ```bash
-auth0 api post "custom-domains/<domainId>/verify"
+auth0 domains verify <domainId>
 ```
 
 ## Poll until ready
@@ -1258,7 +1256,7 @@ Surface the active tenant to the user and require explicit confirmation ("the ac
 After tenant confirmation, fetch the current custom domain list once. Cache it for the session so disambiguation prompts can show current values.
 
 ```bash
-auth0 api get "custom-domains"
+auth0 domains list
 ```
 
 Also fetch tenant settings for the current default:
@@ -1305,10 +1303,8 @@ The API **rejects** `type`, `domain`, `verification_method`. To change any of th
 ## Set or change the default
 
 ```bash
-auth0 api patch "custom-domains/default" --data '{"domain": "login.example.com"}'
+auth0 domains default set <domain>
 ```
-
-The Auth0 CLI does not have a dedicated `auth0 domains default` subcommand; use the API passthrough above.
 
 Effects to explain to the user:
 - Notification-triggering Management API calls (password reset tickets, verification emails) will route through this domain when no `auth0-custom-domain` header is sent.
@@ -1331,7 +1327,7 @@ The RPID must be a registrable suffix of the custom domain (you can't set `googl
 ### Execute the PATCH
 
 ```bash
-auth0 api patch "custom-domains/<domainId>" --data '{
+auth0 domains update <domainId> --data '{
   "relying_party_identifier": "example.com"
 }'
 ```
@@ -1348,7 +1344,7 @@ Before sending, show the diff: `current rpId: {value or "(default: domain hostna
 To revert to the default (RPID = custom domain hostname), PATCH with `null`:
 
 ```bash
-auth0 api patch "custom-domains/<domainId>" --data '{
+auth0 domains update <domainId> --data '{
   "relying_party_identifier": null
 }'
 ```
@@ -1358,7 +1354,7 @@ auth0 api patch "custom-domains/<domainId>" --data '{
 `tls_policy` governs the TLS posture for Auth0-managed certificate domains. Default and recommended value is `"recommended"`. Only set explicitly when a compliance mandate requires a specific policy.
 
 ```bash
-auth0 api patch "custom-domains/<domainId>" --data '{
+auth0 domains update <domainId> --data '{
   "tls_policy": "recommended"
 }'
 ```
@@ -1381,7 +1377,7 @@ Pick the value that matches what the proxy in front of Auth0 emits. Only one val
 ### Execute the PATCH
 
 ```bash
-auth0 api patch "custom-domains/<domainId>" --data '{
+auth0 domains update <domainId> --data '{
   "custom_client_ip_header": "cf-connecting-ip"
 }'
 ```
@@ -1389,7 +1385,7 @@ auth0 api patch "custom-domains/<domainId>" --data '{
 To clear, PATCH with `null`:
 
 ```bash
-auth0 api patch "custom-domains/<domainId>" --data '{
+auth0 domains update <domainId> --data '{
   "custom_client_ip_header": null
 }'
 ```
@@ -1420,7 +1416,7 @@ Set the tag once on the domain; every authentication that hits that domain surfa
 Metadata is returned as `domain_metadata` on the domain object. Load once at the start of the Manage existing domains flow (see top of this file); no extra call needed.
 
 ```bash
-auth0 api get "custom-domains/<domainId>"
+auth0 domains show <domainId>
 ```
 
 ### Add or update metadata (canonical pattern: GET → merge → PATCH)
@@ -1432,7 +1428,7 @@ Always read current metadata, merge the user's changes into it locally, and PATC
 3. PATCH the full merged object.
 
 ```bash
-auth0 api patch "custom-domains/<domainId>" --data '{
+auth0 domains update <domainId> --data '{
   "domain_metadata": {
     "region": "us-east",
     "brand": "acme"
@@ -1449,7 +1445,7 @@ Omit the key from the merged object and PATCH the full result. Don't rely on `nu
 ```bash
 # Current: { "region": "us-east", "brand": "acme" }
 # User wants to drop "brand":
-auth0 api patch "custom-domains/<domainId>" --data '{
+auth0 domains update <domainId> --data '{
   "domain_metadata": {
     "region": "us-east"
   }
@@ -1459,7 +1455,7 @@ auth0 api patch "custom-domains/<domainId>" --data '{
 To clear all metadata, PATCH with an empty object:
 
 ```bash
-auth0 api patch "custom-domains/<domainId>" --data '{
+auth0 domains update <domainId> --data '{
   "domain_metadata": {}
 }'
 ```
@@ -1534,7 +1530,7 @@ Surface the active tenant to the user and confirm it's the one they want checked
 ### 1. List custom domains on the tenant
 
 ```bash
-auth0 api get "custom-domains"
+auth0 domains list
 ```
 
 Pull for each: `domain`, `custom_domain_id`, `status`, `type`, `primary`.
@@ -1684,7 +1680,7 @@ A custom domain that's stuck in `pending_verification`, or verification that kee
 
 ## Inputs
 
-- The `custom_domain_id` or the domain name (look up the ID via `auth0 api get "custom-domains"` if only the name is known).
+- The `custom_domain_id` or the domain name (look up the ID via `auth0 domains list` if only the name is known).
 - Confirmation that the user has already gone through the Set up a custom domain flow at some point (if not, route them to the Set up a custom domain flow first).
 
 ## Pre-flight: surface the active tenant
@@ -1700,7 +1696,7 @@ Surface the active tenant and ask the user to confirm it is the one hosting the 
 ## Get the current state from Auth0
 
 ```bash
-auth0 api get "custom-domains/<domainId>"
+auth0 domains show <domainId>
 ```
 
 From the response, pull:
@@ -1776,13 +1772,13 @@ Look for a `PrivateZone: true` entry. If that's the zone the record went into, t
 After applying a fix, trigger verification:
 
 ```bash
-auth0 api post "custom-domains/<domainId>/verify"
+auth0 domains verify <domainId>
 ```
 
 Then poll for up to ~5 minutes:
 
 ```bash
-auth0 api get "custom-domains/<domainId>"
+auth0 domains show <domainId>
 ```
 
 ## What not to do
@@ -1843,7 +1839,7 @@ The user can proceed anyway, but they should plan to set a new default right aft
 ### 2. Is this the only custom domain?
 
 ```bash
-auth0 api get "custom-domains"
+auth0 domains list
 ```
 
 If the list has only this one domain, warn:
@@ -1992,7 +1988,7 @@ If the scan found references, pause here and let the user decide whether to fix 
 ## Delete in Auth0
 
 ```bash
-auth0 api delete "custom-domains/<domainId>" --force
+auth0 domains delete <domainId> --force
 ```
 
 `--force` is important: without it the CLI prints its own confirmation prompt, which duplicates the skill's confirmation and hangs in non-interactive contexts. The skill has already obtained explicit yes from the user, so pass `--force`.

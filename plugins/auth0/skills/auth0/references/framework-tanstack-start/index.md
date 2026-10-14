@@ -682,21 +682,22 @@ else
   TARGET_FILE=".env"
 fi
 
-# Append Auth0 credentials (never overwrites existing content)
+# Append Auth0 credentials (never overwrites existing content). The client secret
+# is intentionally left as a placeholder — do NOT fetch it in the agent; the user
+# runs --reveal-secrets in their own terminal so the secret stays out of agent context.
 cat >> "$TARGET_FILE" << ENVEOF
 AUTH0_DOMAIN=$AUTH0_DOMAIN
 AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
-AUTH0_CLIENT_SECRET='YOUR_CLIENT_SECRET'
+AUTH0_CLIENT_SECRET=YOUR_CLIENT_SECRET
 AUTH0_SECRET=$AUTH0_SECRET
 APP_BASE_URL=http://localhost:3000
 ENVEOF
 
-echo "✅ Auth0 credentials written to $TARGET_FILE"
+echo "✅ Auth0 config written to $TARGET_FILE"
+echo "   Set AUTH0_CLIENT_SECRET: run 'auth0 apps show $APP_ID --reveal-secrets' in your own terminal (keeps the secret out of agent output)."
 ```
 
-After the script runs, remind the user to:
-1. Open the env file that was written and replace `YOUR_CLIENT_SECRET` with the actual client secret from the Auth0 Dashboard (Applications → your app → Settings).
-2. Ensure the env file is listed in `.gitignore` so secrets are never committed.
+Ensure the env file is listed in `.gitignore` so secrets are never committed.
 
 ## Manual Setup
 
