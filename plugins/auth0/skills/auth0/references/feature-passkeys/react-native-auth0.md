@@ -1,6 +1,6 @@
 # react-native-auth0 — Passkeys
 
-**Minimum version:** `5.7.0` (the passkey methods on the `useAuth0()` hook / `Auth0` client). Requires **iOS 16.6+**, **Android API 28+**, or a WebAuthn-capable browser; native platforms need Associated Domains (iOS) / Digital Asset Links (Android) on the custom domain.
+**Minimum version:** `5.7.0` on **iOS/Android** (the passkey methods on the `useAuth0()` hook / `Auth0` client, plus My Account enrollment); `5.11.0` on **web** (react-native-web) — passkeys and the My Account API were added for the web platform in 5.11.0. Requires **iOS 16.6+**, **Android API 28+**, or a WebAuthn-capable browser; native platforms need Associated Domains (iOS) / Digital Asset Links (Android) on the custom domain.
 
 Framework-specific surface only. The shared 3-step mechanic, the tenant configuration (custom domain + passkey grant + connection auth method), the feature-level protocol symbols, and the MFA-interplay error semantics live in `feature-passkeys/index.md` — do not restate them here.
 
@@ -41,6 +41,8 @@ const credentials = await getTokenByPasskey({
 The database connection is passed as **`realm`**, not `connection`. (`connection` is only a field on the *enrollment* challenge below — easy to conflate.)
 
 ### react-native-web — one SDK, branch only the ceremony
+
+**Requires react-native-auth0 `5.11.0`+** — earlier 5.x versions have no web passkey or My Account support, so if the project pins `<5.11.0` and ships a web build, bump the dependency first.
 
 A React Native app that also ships a web build (react-native-web) uses the **same react-native-auth0 surface on every platform** — `passkeySignupChallenge`, `passkeyLoginChallenge`, `getTokenByPasskey`, and `myAccount.passkeyEnrollmentChallenge` / `enrollPasskey`. Only the WebAuthn **ceremony** differs per platform, and you branch *just that step* (via `Platform.OS` or a `.web.ts` / `.native.ts` split):
 
@@ -83,7 +85,7 @@ const method = await myAccount.enrollPasskey({
 The SDK issues the challenge and exchanges the credential, but **does not run the WebAuthn ceremony** — you must add the ceremony step yourself, and the flow will not work without it:
 
 - **Native:** add a passkey library to `package.json` `dependencies` — e.g. `react-native-passkey` (or a native module calling `ASAuthorizationController` on iOS / `CredentialManager` on Android). It consumes `authParamsPublicKey` and returns the `authResponse` string you pass into `getTokenByPasskey` / `enrollPasskey`. **Declare the dependency** — don't lazily `require()` it without adding it to `package.json`.
-- **Web** (react-native-web): no library — call the browser's `navigator.credentials.create()` / `.get()` and pass the resulting `PublicKeyCredential` as `authResponse`.
+- **Web** (react-native-web, `5.11.0`+): no library — call the browser's `navigator.credentials.create()` / `.get()` and pass the resulting `PublicKeyCredential` as `authResponse`.
 
 Native platforms also need the verified custom domain wired as a relying party. Both bindings are mandatory — the OS silently refuses the ceremony without them:
 
