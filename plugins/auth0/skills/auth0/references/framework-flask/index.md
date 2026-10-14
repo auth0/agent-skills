@@ -966,12 +966,12 @@ if [ -z "$APP_ID" ]; then
     --callbacks "http://localhost:5000/callback" \
     --logout-urls "http://localhost:5000" \
     --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+    --json-compact | jq -r '.client_id')
 fi
 
 # Get credentials
-DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
 SECRET=$(openssl rand -hex 64)
 
 # Determine target env file

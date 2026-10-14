@@ -141,7 +141,7 @@
     },
     {
       "id": 9,
-      "prompt": "/auth0-branding",
+      "prompt": "auth0 branding",
       "expected_output": "No intent provided. Skill should show the capability table and ask a single free-text line ('Pick a number, name one, or describe what you want'), accepting 1, 'brand my tenant', or 'make it look like acme.com' equivalently. Does NOT force an AskUserQuestion picker for routing.",
       "files": [],
       "assertions": [

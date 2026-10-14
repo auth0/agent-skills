@@ -1107,7 +1107,7 @@ Or manually in Auth0 Dashboard:
 
 ```bash
 # List existing connections
-auth0 api get connections
+auth0 connections list
 
 # Enable your app on the default database connection
 # (done automatically if using Option A: Automatic Setup)

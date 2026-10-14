@@ -150,6 +150,20 @@
       "expect_refs": ["feature-dpop/index.md", "tooling-cli/index.md", "framework-vue/index.md"]
     },
     {
+      "id": "feature-custom-token-exchange-standalone",
+      "intent": "feature:custom-token-exchange",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-custom-token-exchange/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-custom-token-exchange-nextjs-combo",
+      "intent": "feature:custom-token-exchange",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["feature-custom-token-exchange/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
+    },
+    {
       "id": "guidance-token-handling",
       "intent": "guidance",
       "framework": null,
