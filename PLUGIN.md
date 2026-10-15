@@ -1,6 +1,6 @@
 # Agent Plugin Architecture
 
-This repository provides one canonical Auth0 skill distributed through Claude Code, Cursor, OpenAI/Codex, and the portable Agent Plugins package format. The OpenAI package is also usable by ChatGPT desktop through the universal plugin directory.
+This repository provides one canonical Auth0 skill distributed through Claude Code, Cursor, OpenAI/Codex, Google Antigravity, and the portable Agent Plugins package format. The OpenAI package is also usable by ChatGPT desktop through the universal plugin directory.
 
 ## Architecture Overview
 
@@ -74,6 +74,8 @@ auth0/agent-skills/
 │       │   └── plugin.json       # Cursor plugin config
 │       ├── .codex-plugin/
 │       │   └── plugin.json       # Codex plugin config
+│       ├── .antigravity-plugin/
+│       │   └── plugin.json       # Google Antigravity plugin config
 │       ├── README.md
 │       └── skills/
 │           └── auth0/                 # The single unified skill
@@ -114,6 +116,7 @@ the OpenAI plugin submission portal.
 **Location**: `.claude-plugin/marketplace.json`
 
 **Contains**:
+
 - Repository metadata (name, version, author, license)
 - Plugin configuration with source path
 - Skills are auto-discovered from the `skills/` directory within the plugin
@@ -130,6 +133,7 @@ package does not include `mcp.json` because it does not bundle an MCP server.
 **Purpose**: Claude-specific plugin configuration.
 
 **Contains**:
+
 - Plugin name, display name, and version
 - Plugin description
 - Skills are auto-discovered from the `skills/` directory
