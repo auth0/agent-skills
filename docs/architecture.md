@@ -61,51 +61,75 @@ intra-references `.md` link (existing target or dead), and cross-group links are
 forbidden. This runs in the `skillsaw` GitHub Actions workflow and inside
 `validate-skill.sh`.
 
-## Sourcing discipline (what stays inline vs. delegates)
+## Sourcing discipline (what the skill owns)
 
-A reference earns its length by holding what the agent can't get elsewhere.
-Before writing (or keeping) any block, run the **differentiation test**: does
-auth0.com/docs or the Management API reference already serve this well, and is it
-read-to-look-up material? If yes, it's an offload candidate. One-sentence rule:
-**inline what the agent must *execute or decide*; delegate what it would only
-*read to understand or look up*.**
+**The skill owns only what no single SDK or docs page can; everything else is a
+pointer the agent must fetch.** SDK usage lives in each SDK's shipped `docs/`
+(see [`sdk-docs-contract.md`](./sdk-docs-contract.md)); Auth0 concepts and
+product procedures live on auth0.com/docs, which serves every page as Markdown
+when `.md` is appended (index: `https://auth0.com/docs/llms.txt`).
 
-Five categories, each with a fixed disposition:
+### Framework reference (`framework-*/index.md`, ~60–100 lines)
 
-| Category | What it is | Disposition |
-|---|---|---|
-| **WIRING** | Exact CLI, SDK code, agent step-blocks, config keys, request bodies the agent sends | **Inline, always** |
-| **DECISION** | Error-triage, capability tables, common-mistakes, diagnostic ladders | **Inline, always** (the skill's unique value) |
-| **REFERENCE** | SDK-symbol tables, API object/body/config-key/scope tables | **Delegate**: keep the 3–8 symbols the common path needs; point to the rest |
-| **CONCEPTUAL** | Overview, Key Concepts, security narrative, "advanced" prose | **Trim** to a 1–2 line orientation + canonical link |
-| **LINKS** | Scattered "External Docs" lists | **Consolidate** into one pointer block |
+Applies once the SDK's row in the contract's rollout table is `shipped`.
 
-Two rules protect correctness while offloading:
-- **Extract before offload.** Offloadable tables sometimes carry agent-only rules
-  that exist nowhere else (e.g. branding's "`mfa-begin-enroll-options` only accepts
-  `title`"). Copy the rule into the kept wiring *before* deleting its table.
-- **Load-bearing runtime fetches stay inline.** If the skill *fetches* a doc URL
-  at runtime (branding Capability 3 reads auth0.com/docs for default copy; swift
-  migration fetches SDK source from `raw.githubusercontent.com`), that is WIRING,
-  not a link — keep it.
+| Block | Contents |
+|---|---|
+| Use / don't use | One-line purpose; "when NOT to use → route elsewhere" |
+| Install | Package-manager command |
+| Tenant setup | Auth0 CLI app creation, callback/logout URLs, env var names |
+| **Read the SDK docs** | The Read block below — a mandatory step |
+| Agent-only rules | ≤ ~10 Common Mistakes / decisions the SDK docs don't cover |
 
-**Pointer convention.** Delegated material uses one standard block — never a
-literal `node_modules` path, phrased so the agent resolves it wherever the
-package lives, with GitHub as the durable fallback and auth0.com/docs as the
-concept source:
+### Feature reference (`feature-*/index.md`)
+
+| Block | Contents |
+|---|---|
+| Use / don't use | Same as framework |
+| **Read the docs** | The specific `https://auth0.com/docs/<page>.md` pages — a mandatory step |
+| WIRING the docs lack | Agent step-blocks, exact Management API / CLI sequences, request bodies, gotchas |
+| DECISION | Triage tables, capability/plan gating, diagnostic ladders |
+
+### The Read block
+
+Framework references use this text, filling `<pkg>`, `<repo>`, `<package-dir>`
+(empty outside monorepos) and `<page>` from the contract's rollout table:
 
 ```
-> **Full reference:** <topic> — full options/symbols live in the installed
-> package's docs (its `README` / `EXAMPLES.md` / generated API docs). Source of
-> truth if not installed: github.com/auth0/<repo> (<path>).
-> Auth0 concepts: https://auth0.com/docs/<page>
+## Read the SDK docs (required before writing code)
+
+1. If installed, read `node_modules/<pkg>/docs/README.md` (or the package's
+   `docs/` wherever the ecosystem installs it), then the files it lists for
+   this task.
+2. Otherwise fetch
+   `https://raw.githubusercontent.com/auth0/<repo>/<release-tag>/<package-dir>docs/README.md`
+   — the repo's release tag for the installed version, or the latest release
+   for a new install.
+3. For Auth0 concepts, fetch `https://auth0.com/docs/<page>.md`.
+
+Prefer what these say over anything remembered. If none can be read, say so
+and continue with the steps below.
 ```
 
-Any SDK-symbol content that stays inline carries a `verified against
-<package>@<version>` marker so staleness is visible rather than silent.
+Feature references use a `## Read the docs (required)` block listing their
+`https://auth0.com/docs/<page>.md` URLs with one line each on what to take from
+the page.
 
-`framework-swift/` (splitting + the framework template) and `feature-branding/`
-(offload) are the reference implementations of this discipline.
+### Rules
+
+- **Extract before offload.** A block being removed sometimes carries an
+  agent-only rule that exists nowhere else. Copy it into the kept text first.
+- **Fetches are steps, not links.** Phrase them "Read X before …", never
+  "See also".
+- **Greenfield:** install first, then read the local `docs/`.
+- **Verify every URL** with `python3 scripts/check_docs_links.py
+  plugins/auth0/skills/auth0` before merging a slimmed reference.
+- **Gate:** a slimmed reference's behavioral eval (if it has graders) must score
+  ≥ its pre-slim with-skill score.
+
+`feature-audit-pricing/` (offload to a fetched page) and
+`feature-universal-portals/` (feature WIRING the docs lack stays inline) are the
+worked examples.
 
 To add or extend a capability, see
 [CONTRIBUTING.md](../CONTRIBUTING.md#adding-a-capability-to-the-unified-skill).

@@ -123,6 +123,13 @@ dispatch table to a leaf if it has one. The reachability and routing-eval
 checkers resolve a leaf-group slug automatically; you don't edit `SKILL.md`'s
 routing tables.
 
+### Reference shape
+Before writing or keeping content in a reference, apply the [sourcing
+discipline](./docs/architecture.md#sourcing-discipline-what-the-skill-owns):
+the skill keeps install, tenant setup, agent step-blocks, and decision tables;
+SDK usage comes from the SDK's shipped `docs/` ([contract](./docs/sdk-docs-contract.md))
+and concepts from `https://auth0.com/docs/<page>.md`.
+
 ### Validate
 ```bash
 bash plugins/auth0/skills/auth0/scripts/validate-skill.sh
