@@ -6,6 +6,16 @@ Auth0 Universal Portals is a hosted identity experience platform. It provides ma
 
 A portal is backed by a Regular Web Application. The portal server uses that application's credentials for SSO, keeps tokens server-side, and sets browser session cookies. It requests section-specific access tokens and refreshes them through a multi-resource refresh token. Do not build a browser-side token exchange or expose the portal application's client secret.
 
+## Read the docs (required)
+
+- `https://auth0.com/docs/customize/portals/overview.md` — what portals are and
+  which components exist; read before proposing a design.
+- `https://auth0.com/docs/customize/portals/quickstart.md` — what
+  `auth0-beta universal-portals setup` provisions; read before running it.
+
+The payload shapes, callback/logout URLs, and scopes below are not on those
+pages — use them as written here.
+
 ## Choose the right workflow
 
 | Developer goal | Use |
@@ -72,7 +82,7 @@ With `client_credentials`, these scopes are granted in **Application → API Acc
 
 ## Portal API operations
 
-The portal endpoints are part of Management API v2. Prefer `auth0 api` when it is available because it uses the active Auth0 CLI session; use a direct Management API request in CI or another non-interactive context.
+The portal endpoints are part of [Management API v2](https://auth0.com/docs/api/management/v2). Prefer [`auth0 api`](https://auth0.github.io/auth0-cli/auth0_api.html) when it is available because it uses the active Auth0 CLI session; use a direct Management API request in CI or another non-interactive context.
 
 | Operation | Command | Success |
 |---|---|---|
@@ -165,7 +175,7 @@ A portal may have a sidebar and a set of pages:
 | `sidebar:component:auth0:internal_link` | `label` (1–50) | `to` (page slug, 1–50), `icon` |
 | `sidebar:component:auth0:external_link` | `label` (1–50), `url` (1–200) | `icon` |
 
-Icons are Lucide icon names in kebab-case, such as `user`, `shield`, `file-text`, `building-2`, and `lock-keyhole`.
+Icons are [Lucide](https://lucide.dev/icons/) icon names in kebab-case, such as `user`, `shield`, `file-text`, `building-2`, and `lock-keyhole`.
 
 ### Page components
 
@@ -292,11 +302,3 @@ For a business portal, add a page whose section children include `page:component
 | Form fails to render | Verify that `form_id` refers to an existing Auth0 Forms resource and that the portal application can use the required API access. |
 | Passkey, MFA, or organization component fails | Confirm its underlying Auth0 capability and the matching My Account or My Organization scopes. Do not replace the managed component with a browser-side implementation. |
 | Secret disappears after reading a portal | Expected behavior: `client_secret` is write-only. Keep the source secret in an approved secret store and supply it only when creating or changing the portal client. |
-
-## Sources
-
-- https://auth0.com/docs/customize/portals/overview
-- https://auth0.com/docs/customize/portals/quickstart
-- https://auth0.com/docs/api/management/v2
-- https://auth0.github.io/auth0-cli/auth0_api.html
-- https://lucide.dev/icons/
