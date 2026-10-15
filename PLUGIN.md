@@ -144,9 +144,12 @@ Antigravity's plugin guide requires for a Marketplace listing: `name`,
 `description` (120–160 characters), `displayName`, `version`, `author`, `logo`,
 and up to three `suggestedPrompts`.
 
-- `logo` points at `assets/antigravity-logo.png`, a square transparent PNG with
-  padding that stays legible on light and dark themes. The existing
-  `assets/logo.png` is black on an opaque white background, so it is not used here.
+- `logo` points at `assets/antigravity-logo.png`: the official Auth0 shield
+  logomark (black, RGB) on a white rounded tile, centred in a transparent
+  512×512 canvas with about 10% padding, as the guide requires. The tile keeps
+  the black mark legible on dark themes. The existing `assets/logo.png` is
+  black on an opaque white square with no padding, which the guide's
+  transparent-padding spec doesn't allow.
 - `version` must match `plugins/auth0/plugin.json`. Antigravity needs every
   published update to bump it so installed clients detect the change.
 - Skills are auto-discovered from `skills/`. All component paths resolve from
