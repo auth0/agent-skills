@@ -49,7 +49,8 @@ instead of duplicating SDK content. Design: see
 ## Rollout
 
 A framework reference in this repo is slimmed only once its SDK's row is
-`shipped`. Until then the reference stays as is. Repos below come from each
+`shipped`, or `pilot` — slimmed early against the SDK's existing root Markdown
+because it already covers the common path. Otherwise the reference stays as is. Repos below come from each
 package's registry metadata (npm, PyPI, Packagist, pub.dev, NuGet, Maven
 Central POM) as of 2026-10-15; `unverified` means the registry didn't confirm it.
 
@@ -83,5 +84,5 @@ Central POM) as of 2026-10-15; `unverified` means the registry didn't confirm it
 | framework-android | `com.auth0.android:auth0` (Maven) | auth0/Auth0.Android | not started | — |
 | framework-java-mvc | `com.auth0:mvc-auth-commons` (Maven) | auth0/auth0-java-mvc-common | not started | — |
 | framework-springboot-api | `com.auth0:auth0-springboot-api` (Maven) | auth0/auth0-auth-java | not started | — |
-| framework-swift | `Auth0` (CocoaPods / SPM) | unverified | not started | — |
+| framework-swift | `Auth0` (CocoaPods / SPM / Carthage) | auth0/Auth0.swift | pilot — slimmed against root `README.md` / `EXAMPLES.md` / `V3_MIGRATION_GUIDE.md` at 3.1.0; its `docs/` is generated DocC | — |
 | framework-kmp | `com.auth0.kmp:*` (Maven) | unverified | not started | — |

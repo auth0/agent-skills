@@ -71,7 +71,10 @@ when `.md` is appended (index: `https://auth0.com/docs/llms.txt`).
 
 ### Framework reference (`framework-*/index.md`, ~60–100 lines)
 
-Applies once the SDK's row in the contract's rollout table is `shipped`.
+Applies once the SDK's row in the contract's rollout table is `shipped` — or,
+as a `pilot`, when the SDK's existing root Markdown (`README.md`, `EXAMPLES.md`,
+migration guides) already covers the common path; the Read block then names
+those files instead of `docs/README.md`.
 
 | Block | Contents |
 |---|---|
@@ -122,13 +125,17 @@ the page.
 - **Fetches are steps, not links.** Phrase them "Read X before …", never
   "See also".
 - **Greenfield:** install first, then read the local `docs/`.
+- **Default every decision.** A thin reference still names the default for
+  each choice it leaves open (UI framework, package manager, callback scheme);
+  "ask" alone stalls headless runs.
 - **Verify every URL** with `python3 scripts/check_docs_links.py
   plugins/auth0/skills/auth0` before merging a slimmed reference.
 - **Gate:** a slimmed reference's behavioral eval (if it has graders) must score
   ≥ its pre-slim with-skill score.
 
-`feature-audit-pricing/` (offload to a fetched page) and
-`feature-universal-portals/` (feature WIRING the docs lack stays inline) are the
+`feature-audit-pricing/` (offload to a fetched page),
+`feature-universal-portals/` (feature WIRING the docs lack stays inline), and
+`framework-swift/` (framework pilot against the SDK's root Markdown) are the
 worked examples.
 
 To add or extend a capability, see

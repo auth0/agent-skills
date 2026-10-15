@@ -115,6 +115,23 @@ Procedure-heavy features (`feature-custom-domains`, `feature-acul`,
    `framework-nextjs` only after that ships in a release.
 4. **Remaining SDKs:** slim each reference when its contract row is `shipped`.
 
+**Swift pilot (exception to step 3's ordering):** `framework-swift` is slimmed
+ahead of any SDK shipping `docs/`, against Auth0.swift's existing root Markdown
+(`README.md`, `EXAMPLES.md`, `V3_MIGRATION_GUIDE.md`), which already covers the
+common path. It tests the thin framework template before the Next.js PR lands.
+Auth0.swift's `docs/` holds generated DocC, the same clash as the typedoc
+`docs/` in six JS SDKs — the contract's directory name is still open.
+
+Pilot result (1321 → 158 lines; with-skill behavioral scores, pre → post):
+`swift` 13/16 → 16/16 (without skill: 15/16), `swift-migration` 5/11 → 5/11
+(same six process judges fail in both — they grade files, not the transcript).
+Two lessons fed back into the template: a thin reference must give a **default
+for every decision** (it stalled at 0/16 asking four questions in an empty
+workspace), and must say to **write files** when the user pastes code instead
+of having a project on disk. Grader fix found on the way: SwiftPM `.build/`,
+`Pods/`, `Carthage/` were not excluded, so vendored SDK sources could satisfy
+regex graders and crowd out the judge's file sample.
+
 ### Per-reference merge gate
 
 - `uvx skillsaw --strict`, `scripts/check_router_reachability.py`, and
