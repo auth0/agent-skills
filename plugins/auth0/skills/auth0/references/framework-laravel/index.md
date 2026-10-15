@@ -314,6 +314,8 @@ Route::middleware('auth')->group(function () {
 
 ## References
 
+Run `auth0 docs search "laravel"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Laravel Quickstart](https://auth0.com/docs/quickstart/webapp/laravel)
 - [SDK GitHub Repository](https://github.com/auth0/laravel-auth0)
 - [SDK on Packagist](https://packagist.org/packages/auth0/login)

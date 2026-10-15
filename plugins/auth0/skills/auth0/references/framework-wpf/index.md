@@ -242,6 +242,8 @@ public partial class MainWindow : Window
 
 ## References
 
+Run `auth0 docs search "wpf"` for the latest Auth0 docs on this topic.
+
 - [Auth0 WPF/WinForms Quickstart](https://auth0.com/docs/quickstart/native/wpf-winforms)
 - [GitHub Repository](https://github.com/auth0/auth0-oidc-client-net)
 - [NuGet Package](https://www.nuget.org/packages/Auth0.OidcClient.WPF)

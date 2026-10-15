@@ -1,10 +1,10 @@
 ---
 name: auth0
-description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, SSO, Organizations, RBAC, custom domains, Universal Portals for hosted account and organization self-service, or Universal Login branding. Also use to audit a tenant's health, security, and plan fit (CheckMate), to debug why an auth flow fails, to migrate from another auth provider, or to set up the Vercel native integration. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
+description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, passwordless passkey login (WebAuthn), SSO, Organizations, RBAC, custom domains, Universal Portals for hosted account and organization self-service, or Universal Login branding. Also use to audit a tenant's health, security, and plan fit (CheckMate), to debug why an auth flow fails, to migrate from another auth provider, or to set up the Vercel native integration. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
-  version: '2.2.0'
+  version: '2.5.1'
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
@@ -31,21 +31,22 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 ## Step 1: Detect intent
 
 Match the request against the **What the developer wants** column — it describes
-the goal in plain language, not just the Auth0 term (someone who says *"make
-users confirm with a code from their phone"* lands on `feature:mfa`). The
-**Intent** you pick is a lookup key: in **Step 4** it appears verbatim as a
-section heading (`### feature:mfa`) listing which reference files to load.
+the goal in plain language, not just the Auth0 term. The **Intent** you pick is a
+lookup key: in **Step 4** it appears verbatim as a section heading
+(`### feature:mfa`) listing which reference files to load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
 | Add login, signup, sign-in, "let users log in / create accounts" to an app, or otherwise add and use an Auth0 SDK in an app or script | **integrate** |
-| Require a second step after the password — a one-time code, SMS or email code, authenticator app, passkey, fingerprint/face (biometric), or security key; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
+| Require a second step **after** the password — a one-time code, SMS or email code, authenticator app, or a passkey/fingerprint/face/security key used as an *additional* factor; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
+| Let users sign up or sign in with a passkey, fingerprint, or Face ID **instead of** a password — passwordless WebAuthn as the primary credential — or let a signed-in user add a passkey to their account. *Auth0: passkeys, WebAuthn, passwordless login.* | **feature:passkeys** |
 | Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
 | Deploy a hosted self-service portal for profile, passkeys, MFA, or organization details instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
 | Serve the login page from your own web address (e.g. `login.example.com`, `auth.company.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
 | Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
+| Trade an external or partner token (legacy system, MCP/agent, or another IdP) for Auth0 tokens with no interactive login. *Auth0: Custom Token Exchange (CTE), RFC 8693, subject_token.* | **feature:custom-token-exchange** |
 | Audit a tenant for security/config issues, report, then optionally fix findings. *Auth0: tenant audit, CheckMate.* | **audit** |
 | Check if a tenant is healthy and on the right plan — two scores + a recommendation. *Auth0: health check.* | **healthcheck** |
 | Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
@@ -84,6 +85,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `@capacitor/browser` + `@auth0/auth0-vue` | `ionic-vue` |
 | `@auth0/nextjs-auth0` | `nextjs` |
 | `@auth0/auth0-nuxt` | `nuxt` |
+| `@auth0/auth0-tanstack-start-react` | `tanstack-start` |
 | `@auth0/auth0-react` | `react` |
 | `@auth0/auth0-vue` | `vue` |
 | `@auth0/auth0-angular` | `angular` |
@@ -110,6 +112,7 @@ bare-SDK row.
 | `auth0-server-python` + `flask` | `flask` |
 | `auth0-server-python` (no Flask web framework) | `server-python` |
 | `auth0-fastapi-api` | `fastapi-api` |
+| `auth0-api-python` | `api-python` |
 
 ### Java / Kotlin — check `build.gradle` or `pom.xml`
 
@@ -173,6 +176,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 |---|---|
 | `next` in `package.json` | `nextjs` |
 | `nuxt` in `package.json` | `nuxt` |
+| `@tanstack/react-start` in `package.json` | `tanstack-start` |
 | `@ionic/*` + `@angular/core` | `ionic-angular` |
 | `@ionic/*` + `react` | `ionic-react` |
 | `@ionic/*` + `vue` | `ionic-vue` |
@@ -212,6 +216,7 @@ request. **Stop at the first match.**
 |---|---|
 | Next.js / `next` | `nextjs` |
 | Nuxt | `nuxt` |
+| TanStack Start (React) | `tanstack-start` |
 | Angular (not Ionic) | `angular` |
 | Vue (not Nuxt/Ionic) | `vue` |
 | React SPA (not Next.js) | `react` |
@@ -226,6 +231,7 @@ request. **Stop at the first match.**
 | Flask | `flask` |
 | FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
 | `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
+| `auth0-api-python` / Python API JWT validator (resource server / `verify_access_token`) | `api-python` |
 | Spring Boot | `springboot-api` |
 | Java MVC / servlet | `java-mvc` |
 | ASP.NET Core web app / API | `aspnetcore-auth` / `aspnetcore-api` |
@@ -272,7 +278,7 @@ present and consistent.
 
 ## Step 3: Detect tooling
 
-Read the project file tree and the request — a project-context decision, not a product preference.
+Read the project file tree and the request — a project-context decision.
 
 | Project has... | Load |
 |---|---|
@@ -300,6 +306,14 @@ Use references/tooling-{tooling}/index.md for all Auth0 tenant configuration ste
 ```
 Read: references/feature-mfa/index.md
 Read: references/tooling-{tooling}/index.md
+```
+
+### feature:passkeys
+```
+Read: references/feature-passkeys/index.md
+Then Read the detected SDK's passkey leaf from the hub's "Example code snippets" table (e.g. nextjs → nextjs-auth0.md; react-native/expo → ONLY react-native-auth0.md, which covers react-native-web — never auth0-react.md) — it has the exact API and ceremony; don't implement from framework-{framework}/index.md alone.
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
 ```
 
 ### feature:organizations
@@ -340,6 +354,13 @@ Read: references/feature-dpop/index.md
 Read: references/tooling-{tooling}/index.md
 If a SPA framework is detected (vue/react/angular/spa-js): Read references/framework-{framework}/index.md
 DPoP is SPA-only (no SSR: Next.js/Nuxt) — feature-dpop/index.md states the exclusion.
+```
+
+### feature:custom-token-exchange
+```
+Read: references/feature-custom-token-exchange/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
 ```
 
 ### guidance

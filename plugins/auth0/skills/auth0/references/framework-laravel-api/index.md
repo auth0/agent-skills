@@ -21,7 +21,7 @@ Protect Laravel API endpoints with JWT access token validation using `auth0/logi
 - PHP 8.2+ with extensions: `mbstring`, `openssl`, `json`
 - Composer installed
 - Auth0 API resource configured (not an Application - must be an API)
-- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
+- If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apis create`)
 
 ## When NOT to Use
 
@@ -292,11 +292,7 @@ Claims are accessed via:
 > Parse JSON with `jq` to extract `client_id`. Do NOT use `--reveal-secrets`; instead, use only the `client_id` — the client secret is not needed for the token flow below.
 > Then create a client grant:
 > ```bash
-> auth0 api post "client-grants" --data '{
->   "client_id": "<CLIENT_ID>",
->   "audience": "<API_IDENTIFIER>",
->   "scope": ["<SCOPES>"]
-> }'
+> auth0 client-grants create --client-id <CLIENT_ID> --audience <API_IDENTIFIER> --scopes "<SCOPES>"
 > ```
 >
 > **If the user chose "Use existing":**
@@ -468,6 +464,8 @@ $user->getAttribute('iss');   // explicit claim access
 ---
 
 ## References
+
+Run `auth0 docs search "laravel api"` for the latest Auth0 docs on this topic.
 
 - [Auth0 Laravel API Quickstart](https://auth0.com/docs/quickstart/backend/laravel)
 - [SDK GitHub Repository](https://github.com/auth0/laravel-auth0)

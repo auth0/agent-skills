@@ -251,6 +251,8 @@ Visit `http://localhost:3000` and test the login flow.
 
 ## References
 
+Run `auth0 docs search "nextjs"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Next.js SDK Documentation](https://auth0.com/docs/libraries/nextjs)
 - [Auth0 Next.js Quickstart](https://auth0.com/docs/quickstart/webapp/nextjs)
 - [SDK GitHub Repository](https://github.com/auth0/nextjs-auth0)
@@ -697,7 +699,7 @@ Then ask the user for explicit confirmation before proceeding — do not continu
   - Options: "Yes, append to existing .env" / "No, I'll update it manually"
 
 - If neither exists, ask:
-  - Question: "This setup will create a `.env.local` file containing Auth0 credentials (AUTH0_CLIENT_ID, AUTH0_DOMAIN, AUTH0_SECRET) and a placeholder for AUTH0_CLIENT_SECRET that you will need to fill in manually. Do you want to proceed?"
+  - Question: "This setup will create a `.env.local` file containing Auth0 credentials (AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET, AUTH0_SECRET, APP_BASE_URL). Do you want to proceed?"
   - Options: "Yes, create .env.local" / "No, I'll configure it manually"
 
 **Do not proceed with writing to any env file unless the user selects the confirmation option.**
@@ -726,38 +728,44 @@ if ! auth0 tenants list &> /dev/null; then
   auth0 login
 fi
 
-# Create/select app
-auth0 apps list
-read -p "Enter app ID (or Enter to create new): " APP_ID
-
-if [ -z "$APP_ID" ]; then
-  APP_ID=$(auth0 apps create \
-    --name "${PWD##*/}-nextjs" \
-    --type regular \
-    --callbacks "http://localhost:3000/auth/callback" \
-    --logout-urls "http://localhost:3000" \
-    --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-fi
-
-# Get credentials
-AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-
-# Generate secret
-AUTH0_SECRET=$(openssl rand -hex 32)
-
-# Determine target env file
-if [ -f .env.local ]; then
-  TARGET_FILE=".env.local"
-elif [ -f .env ]; then
-  TARGET_FILE=".env"
+# qs setup writes .env (and replaces an existing one); Next.js keeps secrets in .env.local.
+# Use it only when neither file exists, then move its output to .env.local.
+if [ ! -f .env ] && [ ! -f .env.local ]; then
+  if ! { auth0 qs setup --app --framework nextjs --type regular && mv .env .env.local; }; then
+    echo "❌ auth0 qs setup failed"
+    exit 1
+  fi
+  echo "✅ Auth0 credentials written to .env.local"
 else
-  TARGET_FILE=".env.local"
-fi
+  # Create/select app
+  auth0 apps list
+  read -p "Enter app ID (or Enter to create new): " APP_ID
 
-# Append Auth0 credentials
-cat >> "$TARGET_FILE" << ENVEOF
+  if [ -z "$APP_ID" ]; then
+    APP_ID=$(auth0 apps create \
+      --name "${PWD##*/}-nextjs" \
+      --type regular \
+      --callbacks "http://localhost:3000/auth/callback" \
+      --logout-urls "http://localhost:3000" \
+      --metadata "created_by=agent_skills" \
+      --json-compact | jq -r '.client_id')
+  fi
+
+  # Get credentials
+  AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+  AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+
+  # Generate secret
+  AUTH0_SECRET=$(openssl rand -hex 32)
+
+  # Append to .env.local if it exists, otherwise to .env
+  if [ -f .env.local ]; then
+    TARGET_FILE=".env.local"
+  else
+    TARGET_FILE=".env"
+  fi
+
+  cat >> "$TARGET_FILE" << ENVEOF
 AUTH0_SECRET=$AUTH0_SECRET
 APP_BASE_URL=http://localhost:3000
 AUTH0_DOMAIN=$AUTH0_DOMAIN
@@ -765,11 +773,12 @@ AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
 AUTH0_CLIENT_SECRET='YOUR_CLIENT_SECRET'
 ENVEOF
 
-echo "✅ Auth0 credentials written to $TARGET_FILE"
+  echo "✅ Auth0 credentials written to $TARGET_FILE"
+fi
 ```
 
 After the script runs, remind the user to:
-1. Open the env file that was written and replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0.
+1. If an env file already existed (the `apps create` path), replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0. On a new project `qs setup` writes the real secret.
 2. Ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.
 
 ---

@@ -237,6 +237,8 @@ All of this lives in the one `auth0` skill — just describe what you need (e.g.
 
 ## References
 
+Run `auth0 docs search "ionic vue"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Ionic Vue Quickstart](https://auth0.com/docs/quickstart/native/ionic-vue/interactive)
 - [Auth0 Vue SDK GitHub](https://github.com/auth0/auth0-vue)
 - [Auth0 Vue SDK API Reference](https://auth0.github.io/auth0-vue/)
@@ -1002,10 +1004,10 @@ npx cap open android  # Build and run on device from Android Studio
 > #### Step B — Verify Auth0 CLI login session
 >
 > ```bash
-> auth0 tenants list --csv --no-input
+> AUTH0_DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[] | select(.active) | .name')
 > ```
 >
-> - **If the command succeeds** and returns CSV output with tenant rows: proceed to Step C.
+> - **If the command succeeds** and returns a domain string: proceed to Step C.
 > - **If the command fails** (exit code non-zero, or output contains "login" / "unauthorized" / is empty):
 >   - Tell the user: _"You're not logged in to the Auth0 CLI. Please run `auth0 login` in your terminal and let me know when done."_
 >   - Use `AskUserQuestion` to wait for confirmation.
@@ -1016,16 +1018,7 @@ npx cap open android  # Build and run on device from Android Studio
 >
 > #### Step C — Detect active Auth0 tenant domain
 >
-> Parse the CSV output from Step B. The active tenant line contains `→` (Unicode arrow U+2192).
->
-> ```
-> Example output:
->   ACTIVE,DOMAIN
->   →,dev-example.us.auth0.com
->     ,dev-other.us.auth0.com
-> ```
->
-> Extract the domain from the second column of the `→` line (e.g., `dev-example.us.auth0.com`).
+> The output of Step B is the active tenant domain (e.g., `dev-example.us.auth0.com`).
 >
 > Tell the user: _"Your active Auth0 tenant is: `<domain>`. Is this correct?"_
 > - If no, ask the user to run `auth0 tenants use <correct-tenant-domain>`, then re-run Step B.

@@ -46,26 +46,44 @@ preferring the most specific form:
 
 Match the detected SDK to the form its own reference documents; do not infer it from the platform.
 
-For richer per-SDK examples (org switching, reading org claims) read the SDK's own file, only
-the named section (from that heading to the next heading of the same or higher level):
+Get the exact call from the per-SDK reference below — **`Read:` the file for the detected SDK**.
+Each carries that SDK's exact org-login option, invitation forwarding, and `org_id` accessor,
+verified against the installed SDK. Implement directly from it: do NOT fetch from GitHub, grep
+`node_modules`/`.d.ts`/site-packages, or web-search to re-verify a signature. Min version is the
+release the feature landed in — **check the installed version (`package.json`/lockfile,
+`Package.swift`, Gradle, `pyproject.toml`) meets it before implementing**, and upgrade if it
+falls short. It matters most for the newer server SDKs (`auth0-server-js`, `auth0-auth-js`,
+`auth0-api-js`, `auth0-server-python`), where organizations lands mid-`1.x`, so an older install
+won't have it. No matching row? Fall back to the protocol shape above plus the loaded
+`framework-{framework}/index.md`. Never hand-roll the authorize URL or decode the token by hand.
 
-| SDK | Raw example file (markdown) | Find section |
+**Wire the change into the project's existing files.** Edit the app's real login/callback/route
+and config files in place; do not scaffold extra `README`, `SETUP`, `NOTES`, `CHECKLIST`, or
+`*-summary` documents to "explain" the integration - they are not part of the task and dilute the
+diff. Keep the change minimal and focused on what makes org login, invitation acceptance, and
+`org_id` enforcement work. Verify your edits by re-reading the files you changed - the task
+workspace is not guaranteed to be a git repository, so `git diff`/`git status` may just error.
+
+| SDK | Min version | Read this file |
 |---|---|---|
-| `@auth0/auth0-react` | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Use with Auth0 organizations` |
-| `@auth0/auth0-spa-js` | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/organizations.md | `## Organizations` |
-| `@auth0/auth0-vue` | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Organizations` |
-| `@auth0/auth0-angular` | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Organizations` |
-| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Passing authorization parameters` |
-| `express-openid-connect` | https://raw.githubusercontent.com/auth0/express-openid-connect/master/EXAMPLES.md | `9. Validate Claims from an ID token before logging a user in` |
-| `react-native-auth0` | https://raw.githubusercontent.com/auth0/react-native-auth0/master/EXAMPLES.md | `## Organizations` |
-| `Auth0.swift` | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/advanced-features/organizations.md | `Log in to an organization` |
-| `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/organizations.md | `Organizations` |
-| `auth0-server-python` | https://raw.githubusercontent.com/auth0/auth0-server-python/main/README.md | `#### Organizations` |
-| `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/EXAMPLES.md | `### Logging in to an Organization` |
-
-No matching row? The framework reference loaded alongside this file carries the SDK-specific
-org login syntax; fall back to it plus the protocol shape above. 
-Never hand-roll the authorize URL or decode the token by hand.
+| `@auth0/auth0-react` | 2.x | `Read: references/feature-organizations/auth0-react.md` |
+| `@auth0/auth0-spa-js` | 2.x | `Read: references/feature-organizations/auth0-spa-js.md` |
+| `@auth0/auth0-vue` | 2.x | `Read: references/feature-organizations/auth0-vue.md` |
+| `@auth0/auth0-angular` | 2.x | `Read: references/feature-organizations/auth0-angular.md` |
+| `@auth0/nextjs-auth0` | 4.x | `Read: references/feature-organizations/nextjs-auth0.md` |
+| `express-openid-connect` | 2.x/3.x | `Read: references/feature-organizations/express-oidc.md` |
+| `react-native-auth0` | 5.x | `Read: references/feature-organizations/react-native-auth0.md` |
+| `Auth0.swift` | 2.x/3.x | `Read: references/feature-organizations/auth0-swift.md` |
+| `Auth0.Android` | 2.x–4.x | `Read: references/feature-organizations/auth0-android.md` |
+| `Auth0.OidcClient.*` (.NET WPF/WinForms/UWP/MAUI/AndroidX/iOS) | 3.2.0+ (Core) | `Read: references/feature-organizations/auth0-oidc-client-net.md` |
+| `@auth0/auth0-server-js` | 1.9.0 | `Read: references/feature-organizations/auth0-server-js.md` |
+| `@auth0/auth0-auth-js` | 1.10.0 | `Read: references/feature-organizations/auth0-auth-js.md` |
+| `auth0-server-python` | 1.0.0b11 | `Read: references/feature-organizations/auth0-server-python.md` |
+| `@auth0/auth0-api-js` (API) | 1.3.0 | `Read: references/feature-organizations/auth0-api-js.md` |
+| `express-oauth2-jwt-bearer` (API) | 1.0.0 | `Read: references/feature-organizations/express-oauth2-jwt-bearer.md` |
+| `go-jwt-middleware` (API, Go) | v3.3.0 | `Read: references/feature-organizations/go-jwt-middleware.md` |
+| `auth0-api-python` (API, Python) | 1.0.0b4 | `Read: references/feature-organizations/auth0-api-python.md` |
+| `Auth0.AspNetCore.Authentication.Api` (API, .NET) | 1.0.0 | `Read: references/feature-organizations/aspnetcore-api.md` |
 
 ### Reading the organization back
 
@@ -82,24 +100,21 @@ you read depends on *why* you need it:
 
 ### Validate org on the backend
 
-Validate the access token's `org_id` to prevent cross-tenant access, then segment data by it.
-Per Auth0's guidance, check it against a **known list of organization IDs** or the org implied by
-the request context (e.g. tenant subdomain) - not a single hardcoded default. A fixed
-`!== defaultOrg` check is fine for a single-org app but rejects valid members of other orgs in a
-multi-org app or one accepting cross-org invitations.
+What you do here depends on the app type - applying the wrong one is a real defect:
 
-```text
-// Illustrative - orgId is the org_id claim from the *verified* access token.
-if (!allowedOrgIds.has(orgId)) { /* reject: untrusted organization (e.g. 403) */ }
-// then scope every data lookup by orgId
-```
+- **A resource API validating access tokens:** enforce `org_id` on the *verified access token*. Per
+  [Auth0's guidance](https://auth0.com/docs/manage-users/organizations/using-tokens#validate-tokens),
+  check it against a **known list of the org IDs the API serves** (or the org implied by request
+  context) *and* segment data by `org_id`. A valid token proves membership in *some* org, not that
+  it is one your API serves. Read the detected SDK's file from the per-SDK table above for the exact
+  enforcement call.
+- **A login / session app:** read `org_id` from the session / ID token to display the org and to
+  **segment data** by it. Do **not** add a post-login allow-list that rejects a signed-in user whose
+  `org_id` is not the default - the user already authenticated into that org, so gating the session
+  or its routes 403s anyone who accepted an invitation to another org.
 
-For richer per-SDK examples (org switching, reading org claims) read the SDK's own file, only
-the named section (from that heading to the next heading of the same or higher level):
-
-| SDK | Raw example file (markdown) | Find section |
-|---|---|---|
-| `@auth0/auth0-api-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-api-js/README.md | `### 3. Verify the Access Token` |
+Wherever a known list is used, source it from your org records and keep it in sync with every org
+served - a list seeded with only the default org 403s the first invited member.
 
 ---
 
@@ -107,6 +122,13 @@ the named section (from that heading to the next heading of the same or higher l
 
 The Auth0 MCP server exposes **no** organizations tool, so use the CLI or Terraform (full
 command syntax lives in your tooling reference).
+
+When the task is to configure the tenant itself (not wire an SDK into an app), the deliverable
+is the **mutated tenant**, not a guide to it. Run each `auth0` command directly as its own step,
+and read state back after each mutation to confirm it landed. Do **not** bundle the whole setup
+into a single script you run once (`bash setup.sh`), and do **not** emit setup scripts, `README`,
+or summary files describing commands for a human to run later - a wrapped or unrun script leaves
+the tenant unchanged and hides which step failed.
 
 | Operation | CLI | Terraform |
 |---|---|---|
@@ -122,35 +144,64 @@ rather than inferring them; use `auth0 api` for anything without a dedicated sub
 Reading connections back returns a **bare array**, so use `jq '.[]'`, not
 `jq '.enabled_connections[]'`.
 
+### Application (client) organization settings
+
+Two settings control whether and how an app uses organization login. They live on the
+**application (client)**, not on the organization, and are set with
+`auth0 apps update <client-id> --organization-usage ... --organization-require-behavior ...`:
+
+| Field | Values | Meaning |
+|---|---|---|
+| `organization_usage` | `deny` / `allow` / `require` | Whether a login may (`allow`) or **must** (`require`) carry an organization. `require` forbids any login without one |
+| `organization_require_behavior` | `no_prompt` / `pre_login_prompt` / `post_login_prompt` | How the org is resolved when one is required. `pre_login_prompt` makes the user pick the org **before** entering credentials |
+
+Map the intent to the pair - do not assume the `allow`/`no_prompt` invitation default (below) is
+the only option:
+
+- "No login outside an organization" -> `organization_usage: require`
+- "Choose the organization up front, before credentials" -> `organization_require_behavior: pre_login_prompt`
+- Accept invitations, but org is otherwise optional -> `organization_usage: allow` with `organization_require_behavior: no_prompt`
+
+```bash
+# Org-only login with an up-front org selector - set both fields in one call.
+auth0 apps update <client-id> \
+  --organization-usage require --organization-require-behavior pre_login_prompt
+```
+
+`auth0 apps update` and `auth0 apps show <client-id>` leave `client_secret` out of their output
+unless you pass `--reveal-secrets`, so the secret stays out of your context.
+
 ### Finding or creating a login connection
 
 Reuse an existing database connection when the tenant has one; create one only if it does not:
 
 ```bash
-# List database connections in the tenant and pick one explicitly by name -
-# the API defines no ordering, so `.[0]` silently grabs an arbitrary connection.
-auth0 api get "connections?strategy=auth0" | jq -r '.[] | select(.name=="<connection-name>") | .id'
+# Look up a database connection by name. Filtering on `name` returns the exact match -
+# the API defines no ordering, so `.[0]` on an unfiltered list grabs an arbitrary connection.
+auth0 connections list --query '{"strategy":["auth0"],"name":"<connection-name>"}' --json | jq -r '.[].id'
 
 # Create one only if there is none matching. `name` must match
 # ^[a-zA-Z0-9](-[a-zA-Z0-9]|[a-zA-Z0-9])*$, max 128 chars.
-auth0 api post connections --data '{"name":"<connection-name>","strategy":"auth0"}'
+auth0 connections create --data '{"name":"<connection-name>","strategy":"auth0"}'
 
 # Enable it for the organization - without this, org members have no way to log in.
 auth0 api post "organizations/<org-id>/enabled_connections" \
   --data '{"connection_id":"<con-id>","assign_membership_on_login":true}'
 
-# Enable it for each app that will use it - status false disables. Max 50 per call.
-auth0 api patch "connections/<con-id>/clients" \
-  --data '[{"client_id":"<client-id>","status":true}]'
+# Check which apps already have this connection enabled.
+auth0 connections enabled-clients show <con-id> --json | jq -r '.[].client_id'
 
-# Read back which apps are enabled.
-auth0 api get "connections/<con-id>/clients" | jq -r '.clients[].client_id'
+# ONLY if the app is not already listed above: enable the connection for it.
+# This is a separate setting from org login (see note below), so skip it on a
+# connection the tenant already had enabled for the app. status false disables; max 50 per call.
+# This is a PATCH: it changes only the clients in the payload and keeps every other
+# client's status, so a single entry does not replace the existing list.
+auth0 connections enabled-clients update <con-id> \
+  --data '[{"client_id":"<client-id>","status":true}]'
 ```
 
-Both connection reads are checkpoint-paginated (`take` defaults to 50): omit `from` on the
-first call, then while the response carries a `next` value pass it as `from` until it is
-absent. The lookup above only inspects the first page, so page through all results before
-concluding a connection is absent, and fail unless exactly one matches rather than guessing.
+`enabled-clients show` returns every enabled client, across pages. Fail unless exactly one
+connection matches the name rather than guessing.
 
 A connection added to the organization's `enabled_connections` is what appears at that org's
 login prompt and lets members authenticate. Enabling the connection for a client
@@ -170,13 +221,15 @@ a link, authenticates, and becomes a member.
 
 ```bash
 # 1. Without this: "The specified client_id (...) does not allow organizations."
-auth0 api patch "clients/<client-id>" \
-  --data '{"organization_usage":"allow","organization_require_behavior":"no_prompt"}'
+#    allow/no_prompt is the minimum for invitations; for org-only login use
+#    require/pre_login_prompt instead (see "Application (client) organization settings").
+auth0 apps update <client-id> \
+  --organization-usage allow --organization-require-behavior no_prompt
 
 # 2. Without this: "A default login route is required to generate the invitation url."
 #    Read the current value FIRST - the setting is tenant-wide, and you may need
 #    to restore it. An empty response means it's currently unset.
-auth0 api get "tenants/settings" | jq -r '.default_redirection_uri // ""'
+auth0 tenant-settings show --json | jq -r '.default_redirection_uri // ""'
 
 auth0 api patch "tenants/settings" \
   --data '{"default_redirection_uri":"https://app.example.com/callback"}'
@@ -236,17 +289,23 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 | Pinning a client-wide default org while accepting cross-org invitations | A client-level `organization` is validated against the returned `org_id` at login completion, rejecting invites to other orgs. Pass `organization` per login call instead |
 | Reading `org_id` from the wrong token | Web/client apps read it from the ID token (display); APIs validate it from the access token (authorization) |
 | Validating `org_id` against a single hardcoded org on the backend | Validate against the set of orgs the request may serve - a known list, or the org derived from request context. A fixed `!== defaultOrg` check rejects valid members of other orgs |
+| Gating a login/session app on an org allow-list | The allow-list is an access-token check for APIs, not a session gate. A signed-in user already authenticated into their org; rejecting a non-default `org_id` blocks invited members. Read `org_id` from the session and segment data by it |
+| On an API, an allow-list seeded with only the default org | Keep the served-org list sourced from your org records and in sync with every org served; a list holding just the default 403s the first invited member |
+| Comparing `org_id` against an env var that can be `undefined` | Guarantee the required org id: give it a literal fallback (`process.env.ACME_ORG_ID ?? 'org_xxx'`) or validate env vars at startup. An unset var makes the check compare against `undefined` and silently breaks enforcement |
+| Scaffolding extra README/SETUP/summary files for the integration | Wire the change into the project's existing login/callback/route/config files; keep the diff minimal |
 | Hand-decoding a token to read `org_id` | Use the SDK's claim accessor (`getUser()` / `getIdTokenClaims()` / session user) - the claim is already exposed |
 | Mixing up org `id` (org_xxx) and `name` (slug) | `id` for API calls, `name` for display |
 | Granting global roles instead of org-level roles | Use the org member roles endpoint, not the user roles endpoint |
 | Not enabling a connection for the org | `auth0 api post "organizations/<org-id>/enabled_connections"`, or Dashboard → Organization → Connections |
 | A space or underscore in a new connection's `name` | Alphanumerics and hyphens only, starting and ending alphanumeric. Anything else is a 400 |
-| Creating a connection and enabling it for no app | Nothing can use it. `auth0 api patch "connections/<con-id>/clients" --data '[{"client_id":"<client-id>","status":true}]'` |
-| Reading or writing `enabled_clients` on the connection object | "NOT RECOMMENDED" on write, deprecated on read. Use `GET`/`PATCH connections/<con-id>/clients` |
+| Creating a connection and enabling it for no app | Nothing can use it. `auth0 connections enabled-clients update <con-id> --data '[{"client_id":"<client-id>","status":true}]'` |
+| Reading or writing `enabled_clients` on the connection object | "NOT RECOMMENDED" on write, deprecated on read. Read with `auth0 connections enabled-clients show <con-id>` and write with `auth0 connections enabled-clients update <con-id>`, which sends a PATCH to `connections/<con-id>/clients` |
+| Reading or setting a client field with `auth0 api` | Use `auth0 apps show <client-id>` or `auth0 apps update <client-id>`, which leave `client_secret` out unless you pass `--reveal-secrets`. For a raw call, pipe through `jq` to keep only the fields you need |
 | Overwriting `default_redirection_uri` without reading it first | It is tenant-wide. Capture the old value, and restore or disclose it |
 | Guessing a `auth0 orgs` subcommand for membership, roles, or connections | Verify with `auth0 commands orgs --detailed`, and use `auth0 api post organizations/...` for whatever has no dedicated subcommand |
 | Prefixing `auth0 api` paths with `/api/v2/` | Paths are relative to the API root. `/api/v2/organizations/...` returns 404 |
 | Inviting before setting `organization_usage` on the app and `default_redirection_uri` on the tenant | Both are hard 400s. Configure them first (see Invitation flow) |
+| Leaving `organization_usage` at `allow` when the app must reject non-org logins | `allow` permits both; use `require` to forbid any login without an organization, with `pre_login_prompt` to choose the org before credentials |
 | Letting `auth0 orgs invitations create` send a live email | `--send-email` defaults to `true`. Pass `--send-email=false` |
 
 ---
@@ -254,3 +313,7 @@ Your app must read **both** params from the URL and forward **both** to the `/au
 ## Multi-tenant architecture
 
 For broader B2B SaaS architecture guidance (tenant isolation models, when to use one Auth0 organization per customer vs. shared connections), the router loads the multi-tenant pattern guidance alongside this file for architecture questions.
+
+## References
+
+Run `auth0 docs search "organizations"` for the latest Auth0 docs on this topic.

@@ -425,6 +425,8 @@ public IActionResult Profile() { return View(); }
 
 ## References
 
+Run `auth0 docs search "asp.net core"` for the latest Auth0 docs on this topic.
+
 - [Auth0.AspNetCore.Authentication on NuGet](https://www.nuget.org/packages/Auth0.AspNetCore.Authentication)
 - [Auth0 ASP.NET Core MVC Quickstart](https://auth0.com/docs/quickstart/webapp/aspnet-core)
 - [Auth0 ASP.NET Core Blazor Server Quickstart](https://auth0.com/docs/quickstart/webapp/aspnet-core-blazor-server)

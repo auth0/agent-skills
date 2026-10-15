@@ -15,7 +15,7 @@ The `express-oauth2-jwt-bearer` package provides Express middleware for validati
 - **Express** 4.x or 5.x
 - **npm** or **yarn**
 - An **Auth0 account** with a configured API (Resource Server)
-- **Auth0 CLI** (for automatic setup): `npm install -g @auth0/auth0-cli`
+- **Auth0 CLI** (for automatic setup): `brew install auth0` (macOS) or `curl -sSfL https://raw.githubusercontent.com/auth0/auth0-cli/main/install.sh | sh -s -- -b /usr/local/bin` (Linux)
 
 ## When NOT to Use
 
@@ -200,6 +200,8 @@ curl -v -X OPTIONS http://localhost:3000/api/private \
 ```
 
 ## References
+
+Run `auth0 docs search "express api"` for the latest Auth0 docs on this topic.
 
 - [express-oauth2-jwt-bearer on npm](https://www.npmjs.com/package/express-oauth2-jwt-bearer)
 - [GitHub: auth0/node-oauth2-jwt-bearer](https://github.com/auth0/node-oauth2-jwt-bearer)

@@ -243,6 +243,8 @@ public App()
 
 ## References
 
+Run `auth0 docs search ".net maui"` for the latest Auth0 docs on this topic.
+
 - [Auth0 MAUI Quickstart](https://auth0.com/docs/quickstart/native/maui)
 - [GitHub Repository](https://github.com/auth0/auth0-oidc-client-net)
 - [NuGet Package](https://www.nuget.org/packages/Auth0.OidcClient.MAUI)

@@ -39,9 +39,23 @@
       "id": "kw-passkeys",
       "prompt": "I want users to be able to sign in with passkeys instead of a password.",
       "should_activate": true,
-      "why": "Auth0 passwordless/passkeys feature. The word 'passkeys' was in the OLD description and is NOT in the new one — a direct test of the keyword-vs-generalization trade.",
-      "tags": ["keyword-loss", "feature"],
+      "why": "Auth0 passwordless/passkeys primary-login feature (feature:passkeys). The description names 'passwordless passkey login (WebAuthn)' explicitly.",
+      "tags": ["feature", "passkeys"],
       "spot_check": true
+    },
+    {
+      "id": "kw-passkeys-signup-faceid",
+      "prompt": "Let new users create an account with Face ID or a fingerprint instead of choosing a password.",
+      "should_activate": true,
+      "why": "Passwordless WebAuthn signup as the primary credential (feature:passkeys) — the request never says 'Auth0' or 'passkey', testing the intent generalization.",
+      "tags": ["feature", "passkeys", "indirect"]
+    },
+    {
+      "id": "neg-passkeys-hardware-ssh",
+      "prompt": "How do I register my YubiKey as an SSH hardware key for signing git commits?",
+      "should_activate": false,
+      "why": "Hardware security key for SSH/git, no application authentication or Auth0 involvement — a near-miss that reuses 'security key' vocabulary the passkeys scope must not over-trigger on.",
+      "tags": ["negative", "passkeys"]
     },
     {
       "id": "kw-step-up",

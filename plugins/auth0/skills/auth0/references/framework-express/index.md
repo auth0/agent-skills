@@ -163,6 +163,8 @@ Visit `http://localhost:3000` and test the login flow.
 
 ## References
 
+Run `auth0 docs search "express"` for the latest Auth0 docs on this topic.
+
 - [Express OpenID Connect Documentation](https://auth0.com/docs/libraries/express-openid-connect)
 - [Auth0 Express Quickstart](https://auth0.com/docs/quickstart/webapp/express)
 - [SDK GitHub Repository](https://github.com/auth0/express-openid-connect)
@@ -710,8 +712,8 @@ Then ask the user for explicit confirmation before proceeding — do not continu
   - Options: "Yes, append to existing .env" / "No, I'll update it manually"
 
 - If neither exists, ask:
-  - Question: "This setup will create a `.env.local` file containing Auth0 credentials (CLIENT_ID, ISSUER_BASE_URL, SECRET) and a placeholder for CLIENT_SECRET. Do you want to proceed?"
-  - Options: "Yes, create .env.local" / "No, I'll configure it manually"
+  - Question: "This setup will create a `.env` file containing Auth0 settings (ISSUER_BASE_URL, CLIENT_ID, SECRET, BASE_URL). Do you want to proceed?"
+  - Options: "Yes, create .env" / "No, I'll configure it manually"
 
 **Do not proceed with writing to any env file unless the user selects the confirmation option.**
 
@@ -736,34 +738,39 @@ fi
 # Login
 auth0 login 2>/dev/null || auth0 login
 
-# Create/select app
-auth0 apps list
-read -p "Enter app ID (or Enter to create): " APP_ID
-
-if [ -z "$APP_ID" ]; then
-  APP_ID=$(auth0 apps create --name "${PWD##*/}-express" --type regular \
-    --callbacks "http://localhost:3000/callback" \
-    --logout-urls "http://localhost:3000" \
-    --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-fi
-
-# Get credentials
-DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-SECRET=$(openssl rand -hex 32)
-
-# Determine target env file
-if [ -f .env.local ]; then
-  TARGET_FILE=".env.local"
-elif [ -f .env ]; then
-  TARGET_FILE=".env"
+# qs setup writes .env and replaces an existing one, so use it only when no env file exists yet.
+if [ ! -f .env ] && [ ! -f .env.local ]; then
+  if ! auth0 qs setup --app --framework express --type regular; then
+    echo "❌ auth0 qs setup failed"
+    exit 1
+  fi
+  echo "✅ Auth0 credentials written to .env"
 else
-  TARGET_FILE=".env.local"
-fi
+  # Create/select app
+  auth0 apps list
+  read -p "Enter app ID (or Enter to create): " APP_ID
 
-# Append Auth0 credentials
-cat >> "$TARGET_FILE" << ENVEOF
+  if [ -z "$APP_ID" ]; then
+    APP_ID=$(auth0 apps create --name "${PWD##*/}-express" --type regular \
+      --callbacks "http://localhost:3000/callback" \
+      --logout-urls "http://localhost:3000" \
+      --metadata "created_by=agent_skills" \
+      --json-compact | jq -r '.client_id')
+  fi
+
+  # Get credentials
+  DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+  CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+  SECRET=$(openssl rand -hex 32)
+
+  # Append to .env.local if it exists, otherwise to .env
+  if [ -f .env.local ]; then
+    TARGET_FILE=".env.local"
+  else
+    TARGET_FILE=".env"
+  fi
+
+  cat >> "$TARGET_FILE" << ENVEOF
 SECRET=$SECRET
 BASE_URL=http://localhost:3000
 CLIENT_ID=$CLIENT_ID
@@ -771,11 +778,12 @@ CLIENT_SECRET='YOUR_CLIENT_SECRET'
 ISSUER_BASE_URL=https://$DOMAIN
 ENVEOF
 
-echo "✅ Auth0 credentials written to $TARGET_FILE"
+  echo "✅ Auth0 credentials written to $TARGET_FILE"
+fi
 ```
 
 After the script runs, remind the user to:
-1. Open the env file that was written and replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0.
+1. If an env file already existed (the `apps create` path), replace `YOUR_CLIENT_SECRET` with the actual client secret from Auth0 — it's only needed when calling APIs (`response_type: 'code'`).
 2. Ensure the env file is listed in `.gitignore` to avoid accidentally committing secrets.
 
 ---

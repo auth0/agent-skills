@@ -146,6 +146,8 @@ For full DPoP setup, ask for DPoP token binding (feature:dpop).
 
 ## References
 
+Run `auth0 docs search "vue"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Vue SDK Documentation](https://auth0.com/docs/libraries/auth0-vue)
 - [Auth0 Vue Quickstart](https://auth0.com/docs/quickstart/spa/vuejs)
 - [SDK GitHub Repository](https://github.com/auth0/auth0-vue)
@@ -809,18 +811,19 @@ Complete setup instructions with automated scripts and manual configuration opti
 Before writing to `.env`, check whether the file already exists:
 
 ```bash
-test -f .env && echo "EXISTS" || echo "NOT_FOUND"
+test -f .env.local && echo "ENV_LOCAL_EXISTS" || echo "ENV_LOCAL_NOT_FOUND"
+test -f .env && echo "ENV_EXISTS" || echo "ENV_NOT_FOUND"
 ```
 
 Then ask the user for explicit confirmation before proceeding — do not continue until the user confirms:
 
-- If `.env` does **not** exist, ask:
+- If neither `.env` nor `.env.local` exists, ask:
   - Question: "This setup will create a `.env` file containing Auth0 credentials (domain and client ID). Do you want to proceed?"
   - Options: "Yes, create .env" / "No, I'll configure it manually"
 
-- If `.env` **already exists**, ask:
-  - Question: "A `.env` file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to it without modifying existing content. Do you want to proceed?"
-  - Options: "Yes, append to existing .env" / "No, I'll update it manually"
+- If `.env.local` or `.env` **already exists**, ask:
+  - Question: "An env file already exists and may contain secrets unrelated to Auth0. This setup will append Auth0 credentials to `.env.local` (if present, since it overrides `.env`) or `.env`, without modifying existing content. Do you want to proceed?"
+  - Options: "Yes, append to the existing env file" / "No, I'll update it manually"
 
 **Do not proceed with writing to `.env` unless the user selects the confirmation option.**
 
@@ -865,43 +868,53 @@ if ! auth0 tenants list &> /dev/null; then
   auth0 login
 fi
 
-# List apps and prompt for selection
-echo "Your Auth0 applications:"
-auth0 apps list
+# qs setup replaces an existing .env (and Vite lets .env.local override it), so use it
+# only for a Vite project with neither file yet.
+if [ ! -f .env ] && [ ! -f .env.local ] && { [ -f vite.config.ts ] || [ -f vite.config.js ] || [ -f vite.config.mjs ]; }; then
+  if ! auth0 qs setup --app --framework vue --build-tool vite --type spa --port 5173; then
+    echo "❌ auth0 qs setup failed"
+    exit 1
+  fi
+else
+  # List apps and prompt for selection
+  echo "Your Auth0 applications:"
+  auth0 apps list
 
-read -p "Enter your Auth0 app ID (or press Enter to create new): " APP_ID
+  read -p "Enter your Auth0 app ID (or press Enter to create new): " APP_ID
 
-if [ -z "$APP_ID" ]; then
-  echo "Creating new Auth0 SPA application..."
-  APP_NAME="${PWD##*/}-vue-app"
-  APP_ID=$(auth0 apps create \
-    --name "$APP_NAME" \
-    --type spa \
-    --auth-method None \
-    --callbacks "http://localhost:5173,http://localhost:3000" \
-    --logout-urls "http://localhost:5173,http://localhost:3000" \
-    --origins "http://localhost:5173,http://localhost:3000" \
-    --web-origins "http://localhost:5173,http://localhost:3000" \
-    --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-  echo "Created app with ID: $APP_ID"
-fi
+  if [ -z "$APP_ID" ]; then
+    echo "Creating new Auth0 SPA application..."
+    APP_NAME="${PWD##*/}-vue-app"
+    APP_ID=$(auth0 apps create \
+      --name "$APP_NAME" \
+      --type spa \
+      --auth-method None \
+      --callbacks "http://localhost:5173,http://localhost:3000" \
+      --logout-urls "http://localhost:5173,http://localhost:3000" \
+      --origins "http://localhost:5173,http://localhost:3000" \
+      --web-origins "http://localhost:5173,http://localhost:3000" \
+      --metadata "created_by=agent_skills" \
+      --json-compact | jq -r '.client_id')
+    echo "Created app with ID: $APP_ID"
+  fi
 
-# Get app details and create .env file
-echo "Fetching Auth0 credentials..."
-AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+  # Get app details and append Auth0 credentials to .env
+  echo "Fetching Auth0 credentials..."
+  AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+  AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
 
-# Append Auth0 credentials to .env
-cat >> .env << EOF
+  # Append to .env.local if it exists (it overrides .env), otherwise to .env
+  TARGET_FILE=$([ -f .env.local ] && echo .env.local || echo .env)
+  cat >> "$TARGET_FILE" << EOF
 VITE_AUTH0_DOMAIN=$AUTH0_DOMAIN
 VITE_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID
 EOF
+  echo "Appended to $TARGET_FILE:"
+  echo "  VITE_AUTH0_DOMAIN=$AUTH0_DOMAIN"
+  echo "  VITE_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID"
+fi
 
 echo "✅ Auth0 configuration complete!"
-echo "Appended to .env:"
-echo "  VITE_AUTH0_DOMAIN=$AUTH0_DOMAIN"
-echo "  VITE_AUTH0_CLIENT_ID=$AUTH0_CLIENT_ID"
 ```
 
 #### PowerShell Script (Windows)

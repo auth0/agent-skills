@@ -62,7 +62,7 @@ fi
 # "every routed framework has a file and every file is routed" guarantee is
 # enforced by scripts/check_router_reachability.py (run below), which derives
 # slugs from the router itself. Keep this list in sync when adding frameworks.
-EXPECTED_FRAMEWORKS="react nextjs vue angular spa-js nuxt express flask fastify fastify-api java-mvc aspnetcore-auth aspnetcore-api php php-api express-jwt fastapi-api springboot-api go react-native expo ionic-angular ionic-react ionic-vue android swift kmp flutter-native flutter-web flutter-windows laravel laravel-api maui net-android net-ios winforms wpf node-auth0 auth0-auth-js auth0-server-js auth0-api-js"
+EXPECTED_FRAMEWORKS="react nextjs vue angular spa-js nuxt tanstack-start express flask fastify fastify-api java-mvc aspnetcore-auth aspnetcore-api php php-api express-jwt fastapi-api springboot-api go react-native expo ionic-angular ionic-react ionic-vue android swift kmp flutter-native flutter-web flutter-windows laravel laravel-api maui net-android net-ios winforms wpf node-auth0 auth0-auth-js auth0-server-js auth0-api-js"
 for fw in $EXPECTED_FRAMEWORKS; do
   if [ ! -f "$REFS_DIR/framework-$fw/index.md" ]; then
     echo "FAIL: missing references/framework-$fw/index.md"
@@ -78,7 +78,7 @@ if [ "$OLD_PATTERNS" -gt 0 ]; then
 fi
 
 # Feature file checks
-EXPECTED_FEATURES="mfa branding custom-domains migration acul dpop"
+EXPECTED_FEATURES="mfa passkeys branding custom-domains migration acul dpop"
 for feat in $EXPECTED_FEATURES; do
   if [ ! -f "$REFS_DIR/feature-$feat/index.md" ]; then
     echo "FAIL: missing references/feature-$feat/index.md"

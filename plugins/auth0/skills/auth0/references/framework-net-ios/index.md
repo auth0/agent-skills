@@ -170,6 +170,8 @@ For login with extra parameters, error handling, token refresh, user claims acce
 
 ## References
 
+Run `auth0 docs search ".net ios"` for the latest Auth0 docs on this topic.
+
 - [.NET Android & iOS Quickstart](https://auth0.com/docs/quickstart/native/net-android-ios)
 - [GitHub Repository](https://github.com/auth0/auth0-oidc-client-net)
 - [NuGet Package — Auth0.OidcClient.iOS](https://www.nuget.org/packages/Auth0.OidcClient.iOS)

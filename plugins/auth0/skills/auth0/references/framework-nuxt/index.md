@@ -228,6 +228,8 @@ export default defineEventHandler(async (event) => {
 
 **Links:** [Auth0-Nuxt GitHub](https://github.com/auth0/auth0-nuxt) • [Auth0 Docs](https://auth0.com/docs) • [Nuxt Modules](https://nuxt.com/modules)
 
+Run `auth0 docs search "nuxt"` for the latest Auth0 docs on this topic.
+
 ---
 
 # Route Protection Patterns for Auth0-Nuxt
