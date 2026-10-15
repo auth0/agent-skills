@@ -106,7 +106,8 @@ Procedure-heavy features (`feature-custom-domains`, `feature-acul`,
    discipline in `docs/architecture.md` and the framework template in
    `CONTRIBUTING.md` per §1; update the `author-auth0-skill` procedure.
 2. **Feature references** (no SDK dependency): exemplars first
-   (`universal-portals`, `audit-remediation`, `audit-pricing`), then
+   (`audit-pricing` — offload; `universal-portals` — feature WIRING
+   stays; `audit-remediation` reviewed and already conforms, no change), then
    `branding`, `mfa`, `organizations`, `dpop`, then `custom-domains`, `acul`,
    `migration`.
 3. **Next.js pilot:** PR to `auth0/nextjs-auth0` adding `docs/` (converted from
@@ -123,6 +124,9 @@ Procedure-heavy features (`feature-custom-domains`, `feature-acul`,
 - Framework references: record the **without-skill** score before and after
   the SDK ships `docs/` (informational, not a gate — it measures the
   "succeed without our skill" goal).
+- References without a graded behavioral case (`audit`, `healthcheck`,
+  `universal-portals` today) are gated on the static checks plus an explicit
+  extract-before-offload checklist in the PR.
 
 ### Graders
 
