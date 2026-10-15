@@ -112,7 +112,7 @@ auth0 tenants use <name> # switch active tenant; prompts for browser login if no
 
 **Before any write operation in any capability, run `auth0 tenants list` and show the active tenant to the user.** For a non-destructive change, if the user's request already identifies the tenant (by name or domain, or as "our tenant" with a single tenant in the list) and the active tenant matches, state it in one line and carry on in the same turn. Otherwise, and always for resets and deletes, get explicit confirmation to proceed before writing. If it's the wrong tenant, stop. Tell the user to run `auth0 tenants use <name>` (or `auth0 login` if the target isn't in the list) themselves and re-invoke the skill. Do not try to switch tenants on the user's behalf.
 
-If the `auth0` CLI is not installed or is not logged in to any tenant, call the **Management API** directly with an explicit domain and bearer token per call (see the cURL examples section below). A different active tenant is not a reason to fall back: stop as described above. Otherwise, use the CLI, including for non-interactive runs.
+If the `auth0` CLI is not installed or is not logged in to any tenant, call the **Management API** directly with an explicit domain and bearer token per call (see the Raw Management API calls section below). A different active tenant is not a reason to fall back: stop as described above. Otherwise, use the CLI, including for non-interactive runs.
 
 **Tooling note.** The `auth0 ul` commands below are one way to write branding settings. The loaded tooling reference has the equivalent for infrastructure-as-code projects: the Terraform `auth0_branding` resource (`logo_url`, `favicon_url`, `colors` block). The Auth0 MCP server exposes **no** branding/Universal Login tool — for an MCP-only session, fall back to the CLI, Terraform, or the Management API directly. This interactive branding workflow (extract → propose → apply) stays CLI/API-driven regardless, because it is a guided flow rather than a static config write.
 
@@ -193,223 +193,88 @@ External:
 
 # Auth0 Branding: API Reference
 
-Complete Management API endpoints, CLI commands, configuration options, and error handling for Auth0 Branding.
+The endpoints, CLI commands, and agent-only rules the branding capabilities
+execute. Auth0 Branding has no SDK — all configuration is through the Management
+API (or the `auth0` CLI, which wraps it). Exhaustive schemas (every theme
+property, every template variable, full request/response bodies) live in the
+Auth0 docs via the pointers below; this file keeps only what the agent must send
+or decide.
 
 ## Management API Endpoints
 
-### Branding Settings
+| Method | Path | Scope |
+|--------|------|-------|
+| GET / PATCH | `/api/v2/branding` | `read:branding` / `update:branding` |
+| POST | `/api/v2/branding/themes` | `create:branding` |
+| GET | `/api/v2/branding/themes/default` · `/{themeId}` | `read:branding` |
+| PATCH / DELETE | `/api/v2/branding/themes/{themeId}` | `update:branding` / `delete:branding` |
+| GET / PUT / DELETE | `/api/v2/branding/templates/universal-login` | `read:` / `update:` / `delete:branding` |
+| GET / PUT | `/api/v2/prompts/{prompt}/custom-text/{language}` | `read:prompts` / `update:prompts` |
 
-| Method | Path | Description | Scopes |
-|--------|------|-------------|--------|
-| GET | `/api/v2/branding` | Get branding settings (logo, colors, favicon, font) | `read:branding` |
-| PATCH | `/api/v2/branding` | Update branding settings | `update:branding` |
+**Theme behavior rules (the API enforces these — they exist nowhere in the
+public schema):**
+- No `auth0 ul themes` subcommand exists yet — use `auth0 api` for all theme CRUD (GET/POST/PATCH/DELETE `branding/themes/...`).
+- `GET /branding/themes/default` returns **404** if no theme exists yet. POST one first.
+- **PATCH and POST require all top-level sections** (`colors`, `fonts`, `borders`, `widget`, `page_background`). To change one field, GET the current theme, merge, then PATCH the full object. Carry `displayName` over too: a PATCH without it resets the theme name to "Unnamed Theme".
+- On a tenant with a theme, the theme sets the colors that users see; the button color is `colors.primary_button`. In an Organization context, configured Organization branding can override tenant branding on out-of-the-box Universal Login prompts, including primary and page background colors.
+- **Required fields within sections** (omitting any is a 400, not a default): `fonts.font_url` and `fonts.links_style`; a `size` and `bold` on each font element (`title`, `subtitle`, `body_text`, `buttons_text`, `input_labels`, `links`); `widget.logo_url`; `page_background.background_image_url`. Use `""` for unset URL fields and `bold: false` where no bold is wanted.
+- **Template key asymmetry:** the template `PUT` body uses the `template` key; `GET` returns it under `body`. Remap the key when round-tripping (GET → edit → PUT).
 
-### Branding Themes
+**Error notes.** Standard Management API status codes apply (`400` bad body /
+invalid hex / bad URL, `401` expired token, `403` missing scope, `404` theme or
+template not set, `429` rate limited — back off and retry). One branding-specific
+case: **`409` on a template PUT means the template requires a custom domain but
+none is configured** — configure a custom domain first.
 
-| Method | Path | Description | Scopes |
-|--------|------|-------------|--------|
-| POST | `/api/v2/branding/themes` | Create a new theme | `create:branding` |
-| GET | `/api/v2/branding/themes/default` | Get the default theme | `read:branding` |
-| GET | `/api/v2/branding/themes/{themeId}` | Get a specific theme | `read:branding` |
-| PATCH | `/api/v2/branding/themes/{themeId}` | Update a theme | `update:branding` |
-| DELETE | `/api/v2/branding/themes/{themeId}` | Delete a theme | `delete:branding` |
-
-**No `auth0 ul themes` subcommand exists yet — use `auth0 api` for all theme CRUD (GET/POST/PATCH/DELETE `branding/themes/...`).**
-
-**Theme behavior notes:**
-- `GET /branding/themes/default` returns 404 if no theme has been created yet. Create one with POST first.
-- PATCH requires all top-level sections (`colors`, `fonts`, `borders`, `widget`, `page_background`). To update one field, GET the current theme, merge your change, then PATCH the full object. Carry `displayName` over too: a PATCH without it resets the theme name to "Unnamed Theme".
-- On a tenant with a theme, the theme sets the colors that users see. In an Organization context, configured Organization branding can override tenant branding on out-of-the-box Universal Login prompts, including primary and page background colors. The button color is `colors.primary_button`; send color changes with a GET, merge and PATCH on `branding/themes/<theme-id>`.
-- The response includes a `themeId` string used in subsequent PATCH/DELETE calls.
-
-### Universal Login Templates
-
-| Method | Path | Description | Scopes |
-|--------|------|-------------|--------|
-| GET | `/api/v2/branding/templates/universal-login` | Get page template | `read:branding` |
-| PUT | `/api/v2/branding/templates/universal-login` | Set page template | `update:branding` |
-| DELETE | `/api/v2/branding/templates/universal-login` | Delete page template | `delete:branding` |
-
-### Custom Text (Prompts)
-
-| Method | Path | Description | Scopes |
-|--------|------|-------------|--------|
-| GET | `/api/v2/prompts/<prompt>/custom-text/<language>` | Get custom text | `read:prompts` |
-| PUT | `/api/v2/prompts/<prompt>/custom-text/<language>` | Set custom text (replaces all) | `update:prompts` |
+> **Full reference:** complete request/response schemas, every property, and
+> per-endpoint error bodies live at
+> https://auth0.com/docs/api/management/v2/branding and
+> https://auth0.com/docs/api/management/v2 (Prompts).
 
 With the CLI: read with `auth0 ul prompts show <prompt> -l <language>` and write with `auth0 ul prompts update <prompt> -l <language> --data '...'`.
 
 ## CLI Commands
 
-### Branding Settings
-
 ```bash
-# View current branding configuration
-auth0 ul show
-auth0 ul show --json
-
-# Update branding (interactive)
-auth0 ul update
-
-# Update branding (non-interactive). --accent and --background set classic
-# branding colors only; on a tenant with a theme, change colors on the theme instead.
+# Branding settings
+auth0 ul show                       # view current config (add --json for machine output)
+# --accent / --background set classic branding colors only; on a tenant with a
+# theme, change colors on the theme instead.
 auth0 ul update --accent "#0059DB" --background "#FFFFFF" \
   --logo "https://example.com/logo.svg" \
   --favicon "https://example.com/favicon.ico" \
-  --font "https://cdn.example.com/fonts/custom.woff"
-```
+  --font "https://cdn.example.com/fonts/custom.woff"   # non-interactive
 
-### Page Templates
-
-```bash
-# View current page template
+# Page templates
 auth0 ul templates show
+cat login.liquid | auth0 ul templates update           # from file
 
-# Update page template from file
-cat login.liquid | auth0 ul templates update
-
-# Update page template (interactive)
-auth0 ul templates update
-```
-
-### Custom Text
-
-```bash
-# View custom text for a prompt
+# Custom text (per prompt, optional -l <locale>)
 auth0 ul prompts show login
-auth0 ul prompts show signup -l es
+auth0 ul prompts update login --data '{"login":{"title":"Welcome back"}}'  # replaces the prompt's text: show first and merge
 
-# Update custom text (non-interactive; replaces the prompt's existing text, so show it first and merge)
-auth0 ul prompts update login --data '{"login":{"title":"Welcome back"}}'
-auth0 ul prompts update signup -l es --data @signup-es.json
-```
-
-### Customization Editor
-
-```bash
-# Open the browser-based customization editor
-auth0 ul customize
-
-# Switch between standard and advanced rendering modes
-auth0 ul switch
-```
-
-### Testing
-
-```bash
-# Test your login flow in a browser
+# Test the login flow
 auth0 test login
-
-# Test with specific client
 auth0 test login "{appClientId}"
-
-# Test with organization context
 auth0 test login --organization org_abc123
 ```
 
-## Branding Settings Properties
+Full CLI reference: https://auth0.com/docs/cli or `auth0 ul --help`.
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `colors.primary` | string | Primary accent color (hex, e.g., `#0059DB`) |
-| `colors.page_background` | string | Page background color (hex) |
-| `logo_url` | string | URL to brand logo (HTTPS required; SVG recommended) |
-| `favicon_url` | string | URL to favicon (HTTPS required) |
-| `font.url` | string | URL to custom WOFF font file (HTTPS, CORS-enabled host required) |
+## Configuration Properties
 
-## Theme Configuration Properties
+Branding settings accept `colors.primary`, `colors.page_background` (hex),
+`logo_url`, `favicon_url` (HTTPS; SVG logo recommended), and `font.url` (HTTPS,
+CORS-enabled WOFF). Theme objects carry ~20 color elements plus `fonts`,
+`borders`, `widget`, and `page_background` blocks.
 
-### Colors (20+ elements)
-
-| Property | Description |
-|----------|-------------|
-| `primary_button` | Primary button fill color |
-| `primary_button_label` | Primary button text color |
-| `secondary_button_border` | Secondary button / input field border |
-| `secondary_button_label` | Secondary button text color |
-| `links_focused_components` | Link and focus indicator color |
-| `base_focus_color` | Hover state color |
-| `base_hover_color` | Click state color |
-| `header` | Header text color |
-| `body_text` | Body text color |
-| `widget_background` | Widget background color |
-| `widget_border` | Widget border color |
-| `input_labels_placeholders` | Input label and placeholder text color |
-| `input_filled_text` | Typed input text color |
-| `input_border` | Input field border color |
-| `input_background` | Input field background color |
-| `icons` | Input field icon color |
-| `error` | Error message color |
-| `success` | Success message color |
-
-### Fonts
-
-`font_url` and `links_style` are required. Each font-size object (`title`, `subtitle`, `body_text`, `buttons_text`, `input_labels`, `links`) requires both `size` and `bold`.
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `font_url` | string | Yes | WOFF file URL (CORS-enabled host); use `""` for system font |
-| `links_style` | string | Yes | Link style: `"normal"` or `"italic"` |
-| `reference_text_size` | number | Yes | Base text size in pixels |
-| `title.size` | number | Yes | Title size (% of reference) |
-| `title.bold` | boolean | Yes | Whether title is bold |
-| `subtitle.size` | number | Yes | Subtitle size (% of reference) |
-| `subtitle.bold` | boolean | Yes | Whether subtitle is bold |
-| `body_text.size` | number | Yes | Body text size (% of reference) |
-| `body_text.bold` | boolean | Yes | Whether body text is bold |
-| `buttons_text.size` | number | Yes | Button text size (% of reference) |
-| `buttons_text.bold` | boolean | Yes | Whether button text is bold |
-| `input_labels.size` | number | Yes | Input label size (% of reference) |
-| `input_labels.bold` | boolean | Yes | Whether input labels are bold |
-| `links.size` | number | Yes | Link text size (% of reference) |
-| `links.bold` | boolean | Yes | Whether links are bold |
-
-### Borders
-
-| Property | Type | Description |
-|----------|------|-------------|
-| `button_border_weight` | number | Button border width (px) |
-| `buttons_style` | string | `"sharp"`, `"rounded"`, or `"pill"` |
-| `button_border_radius` | number | Button corner radius (rounded only) |
-| `input_border_weight` | number | Input border width (px) |
-| `inputs_style` | string | `"sharp"`, `"rounded"`, or `"pill"` |
-| `input_border_radius` | number | Input corner radius (rounded only) |
-| `widget_corner_radius` | number | Widget corner radius (px) |
-| `widget_border_weight` | number | Widget border width (px) |
-| `show_widget_shadow` | boolean | Enable widget shadow |
-
-### Widget
-
-`logo_url` is required (use `""` if no logo).
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `logo_position` | string | Yes | `"left"`, `"right"`, `"center"`, or `"none"` |
-| `logo_url` | string | Yes | Logo URL (SVG recommended); use `""` for no logo |
-| `logo_height` | number | Yes | Logo height in pixels |
-| `header_text_alignment` | string | Yes | `"left"`, `"right"`, or `"center"` |
-| `social_buttons_layout` | string | Yes | `"top"` or `"bottom"` |
-
-### Page Background
-
-`background_image_url` is required (use `""` if no background image).
-
-| Property | Type | Required | Description |
-|----------|------|----------|-------------|
-| `background_color` | string | Yes | Background color (hex) |
-| `background_image_url` | string | Yes | Background image URL (JPEG, min 2000px wide recommended); use `""` for no image |
-| `page_layout` | string | Yes | Widget position: `"left"`, `"right"`, or `"center"` |
-
-## Error Handling
-
-| HTTP Status | Cause | Resolution |
-|-------------|-------|------------|
-| 400 | Invalid request body (bad hex color, invalid URL, missing required field) | Check request body against schema |
-| 401 | Missing or expired access token | Refresh your Management API token |
-| 403 | Token lacks required scope | Add the required scope to your token (e.g., `update:branding`) |
-| 404 | Theme not found (invalid themeId) or no template set | Verify the themeId exists; use GET first |
-| 409 | Template requires custom domain but none configured | Configure a custom domain before setting templates |
-| 429 | Rate limited | Back off and retry; Management API has per-endpoint rate limits |
+> **Full reference:** every branding-settings and theme property (all color
+> keys, font-size families, border/widget/background options and their types),
+> and the concrete create-theme request body, live at
+> https://auth0.com/docs/customize/login-pages/universal-login/customize-themes
+> and the Branding Themes schema under
+> https://auth0.com/docs/api/management/v2/branding. The required-field rules
+> above are what the schema does *not* state.
 
 ## URL Validation
 
@@ -437,7 +302,7 @@ curl -s -o /dev/null -w "%{http_code}" --max-time 5 -I "<url>"
 
 ## Extended gotchas
 
-These complement the top-5 table in SKILL.md with longer-tail edge cases that tend to surface during real work.
+These complement the Common Mistakes table above with longer-tail edge cases that tend to surface during real work.
 
 | Gotcha | What to do |
 |---|---|
@@ -449,25 +314,18 @@ These complement the top-5 table in SKILL.md with longer-tail edge cases that te
 | Fetching Brandfetch logos server-side | Violates Brandfetch ToS. Use the hotlink pattern `https://cdn.brandfetch.io/<domain>?c=<client-id>` in `widget.logo_url`; the browser fetches at render time |
 | `PUT` template uses key `template`; `GET` template returns key `body` | Expected API asymmetry. When round-tripping (GET → edit → PUT), remap before the PUT |
 
----
-
-# Auth0 Branding: Page Templates and Text Customization
-
-Advanced branding customization using Liquid page templates and per-screen text overrides.
-
 ## Page Templates
 
-Page templates let you control the HTML structure around the Universal Login widget. They use the [Liquid template language](https://shopify.github.io/liquid/).
+Page templates control the HTML structure around the Universal Login widget,
+using the [Liquid template language](https://shopify.github.io/liquid/).
 
-### Requirements
+**Requirements:**
+- A **custom domain** must be configured on your tenant.
+- Templates can only be set via the **Management API** or **CLI** (not the Dashboard).
+- Every template must include the `auth0:head` and `auth0:widget` tags.
 
-- A **custom domain** must be configured on your tenant
-- Templates can only be set via the **Management API** or **CLI** (not the Dashboard)
-- Every template must include `auth0:head` and `auth0:widget` tags
-
-**API key asymmetry:** `PUT` uses the `template` key in the request body. `GET` returns the template under the `body` key. This is expected API behavior.
-
-### Minimal Template
+**Minimal template** (the agent writes this; `_widget-auto-layout` centers the
+widget — omit it to position the widget manually):
 
 ```html
 <!DOCTYPE html>
@@ -482,165 +340,71 @@ Page templates let you control the HTML structure around the Universal Login wid
 </html>
 ```
 
-Add `class="_widget-auto-layout"` on `<body>` to center the widget. Omit it to position the widget manually.
+Templates expose `application.*`, `branding.*`, `tenant.*`, `organization.*`
+(B2B), `user.*` (post-authentication screens only), and screen context
+(`locale`, `dir`, `prompt.name`, `prompt.screen.name`, `prompt.screen.texts`).
 
-### Template with Custom Layout
-
-```html
-<!DOCTYPE html>
-{% assign resolved_dir = dir | default: "auto" %}
-<html lang="{{locale}}" dir="{{resolved_dir}}">
-  <head>
-    {%- auth0:head -%}
-    <style>
-      .custom-container {
-        display: flex;
-        min-height: 100vh;
-      }
-      .brand-panel {
-        flex: 1;
-        background: {{ branding.colors.primary }};
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        padding: 2rem;
-      }
-      .login-panel {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="custom-container">
-      <div class="brand-panel">
-        <div>
-          <img src="{{ branding.logo_url }}" alt="{{ tenant.friendly_name }}" />
-          <h1>Welcome to {{ tenant.friendly_name }}</h1>
-          {% if organization.display_name %}
-            <p>Signing in as {{ organization.display_name }}</p>
-          {% endif %}
-        </div>
-      </div>
-      <div class="login-panel">
-        {%- auth0:widget -%}
-      </div>
-    </div>
-  </body>
-</html>
-```
-
-### Available Template Variables
-
-#### Application
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `application.id` | Client ID | `XXXXXXXXXXXXXXXXX` |
-| `application.name` | Application name | `My Application` |
-| `application.logo_url` | Application logo URL | `https://example.com/logo.png` |
-| `application.metadata` | Application metadata object | `{"key": "value"}` |
-
-#### Branding
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `branding.logo_url` | Tenant logo URL | `https://example.com/logo.png` |
-| `branding.colors.primary` | Primary branding color | `#0059DB` |
-| `branding.colors.page_background` | Page background color | `#FFFFFF` |
-
-#### Tenant
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `tenant.friendly_name` | Tenant display name | `My Tenant` |
-| `tenant.support_email` | Support email | `support@example.com` |
-| `tenant.support_url` | Support page URL | `https://example.com/support` |
-| `tenant.enabled_locales` | Enabled locale codes | `en, es` |
-
-#### Organization (B2B)
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `organization.id` | Organization ID | `org_XXXXXXX` |
-| `organization.display_name` | Display name | `Acme Corp` |
-| `organization.name` | Internal name | `acme-corp` |
-| `organization.branding.logo_url` | Org-specific logo | `https://acme.com/logo.png` |
-| `organization.branding.colors.primary` | Org primary color | `#FF0000` |
-| `organization.branding.colors.page_background` | Org background | `#FAFAFA` |
-
-#### Current User (post-authentication screens only)
-
-| Variable | Description |
-|----------|-------------|
-| `user.user_id` | User profile ID |
-| `user.email` | Email address |
-| `user.name` | Full name |
-| `user.picture` | Profile picture URL |
-| `user.email_verified` | Boolean verification status |
-
-#### Screen Context
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `locale` | Current locale | `en-US` |
-| `dir` | Text direction | `auto`, `rtl`, `ltr` |
-| `prompt.name` | Current prompt | `login`, `mfa` |
-| `prompt.screen.name` | Current screen | `login`, `mfa-login-options` |
-| `prompt.screen.texts` | Localized screen text | `{"pageTitle": "Log In"}` |
-
-### Template Limitations
-
-- **CSS class names change on each Auth0 build.** Do not target internal class names; they will break.
+**Limitations (decide before customizing structure):**
+- **CSS class names change on each Auth0 build.** Never target internal class names — they break. Use the theme API or no-code editor for styling; use page templates only for structure around the widget.
 - **HTML structure may change.** Avoid customizations that depend on the widget's internal DOM.
-- **Storybook rendering**: `<script>` tags break Storybook. Workaround: `<scr` + `ipt>code</scr` + `ipt>`
+- **Storybook rendering:** `<script>` tags break Storybook. Workaround: `<scr` + `ipt>code</scr` + `ipt>`.
+
+> **Full reference:** the complete template-variable catalog and custom-layout
+> examples live at
+> https://auth0.com/docs/customize/login-pages/universal-login/customize-templates.
 
 ## Text Customization
 
-### Supported Prompts
-
-Common prompts you can customize (not a complete list; Auth0 supports additional prompts for MFA methods, passkeys, and other flows):
-
-| Prompt | Screens |
-|--------|---------|
-| `login` | `login` |
-| `login-id` | `login-id` |
-| `login-password` | `login-password` |
-| `signup` | `signup` |
-| `signup-id` | `signup-id` |
-| `signup-password` | `signup-password` |
-| `consent` | `consent` |
-| `mfa` | `mfa-enroll-options`, `mfa-login-options`, `mfa-otp-challenge` |
-| `reset-password` | `reset-password-request`, `reset-password-email` |
-| `device-flow` | `device-code-activation`, `device-code-confirmation` |
-
-### API Behavior
-
-`auth0 ul prompts update <prompt> -l <language> --data '...'` **replaces** all custom text for that prompt and language (it sends a `PUT` to `/api/v2/prompts/<prompt>/custom-text/<language>`). To update one screen without losing others, first read the current text, merge your changes, then write the full object back.
-
-`GET` returns only the keys you have explicitly set, not the full set of Auth0 default strings. An empty object (`{}`) means no custom text is set and Auth0's defaults are used.
+`auth0 ul prompts update <prompt> -l <language> --data '...'` **replaces** all
+custom text for that prompt and language (it sends a `PUT` to
+`/api/v2/prompts/<prompt>/custom-text/<language>`). To update one screen without
+losing others, first read the current text, merge your changes, then write the
+full object back. `GET` returns only the keys you have explicitly set (not
+Auth0's full default set); an empty object (`{}`) means no custom text is set
+and defaults are used.
 
 ```bash
-# 1. Read the current custom text for the prompt
-auth0 ul prompts show login-id -l en
-
-# 2. Merge your changes into that object, then write the whole object back
+auth0 ul prompts show login-id -l en                         # 1. read
 auth0 ul prompts update login-id -l en \
-  --data '{"login-id":{"title":"Welcome back","buttonText":"Continue"}}'
+  --data '{"login-id":{"title":"Welcome back","buttonText":"Continue"}}'  # 2. write merged object
+auth0 ul prompts update login -l en --data '{}'              # delete all custom text
 ```
 
-Use `auth0 api put "prompts/<prompt>/custom-text/<language>" --data '...'` only when the typed command is not available in your CLI version.
+Use `auth0 api put "prompts/<prompt>/custom-text/<language>" --data '...'` only
+when the typed command is not available in your CLI version.
 
-### Delete Custom Text
+> **Full reference:** the prompt/screen catalog and every default text key live
+> at https://auth0.com/docs/customize/login-pages/universal-login/customize-text-elements.
 
-Send an empty object to remove all custom text for a prompt:
+## Raw Management API calls
 
-```bash
-auth0 ul prompts update login -l en --data '{}'
-```
+The CLI (`auth0 …`) is the primary path. For pipelines that don't use the CLI,
+every call is `Bearer`-authenticated JSON against `https://{yourDomain}` and
+follows the schemas linked above:
+
+- **Branding:** `GET`/`PATCH` `/api/v2/branding`, body `{ colors, logo_url, favicon_url, font }`.
+- **Theme:** `POST` `/api/v2/branding/themes` (all sections required — see the theme rules); `PATCH .../themes/{themeId}` must send the full object (GET, merge, PATCH).
+- **Page template:** `PUT .../branding/templates/universal-login`, body `{ "template": "<escaped HTML>" }`.
+- **Custom text:** `PUT .../prompts/{prompt}/custom-text/{lang}` with the per-screen text object.
+
+> **Full reference:** exact request/response bodies (including the full
+> create-theme body) live at https://auth0.com/docs/api/management/v2/branding.
+
+## Deployment
+
+Store branding in version control and deploy in your release pipeline by
+exporting each artifact (`auth0 ul show --json`, `auth0 ul templates show`,
+`auth0 ul prompts show <p> -l <lang>`) and re-applying it with the CLI
+commands above, keeping per-environment config files separate.
+
+**Copying branding between tenants — the one non-obvious rule:** `--tenant` is
+the only way to pick a tenant per call, so pass it on **every** export and
+import. Without it both halves hit the active tenant and the import overwrites
+the tenant you just exported from. Passing it per call also leaves the active
+tenant untouched. Both tenants must already appear in `auth0 tenants list`,
+otherwise the CLI fails with `Failed to find tenant`. When copying a theme,
+`del(.themeId)` from the exported body and POST it (or PATCH the target's
+existing default theme id).
 
 ---
 
@@ -795,297 +559,6 @@ Long-tail screens rarely targeted for voice rewrites. Available if the user expl
 | common | redeem-ticket |
 | status | status |
 | custom-form | custom-form |
-
----
-
-# Auth0 Branding: API Examples
-
-Management API examples for configuring branding, themes, page templates, and text customization, plus patterns for CI/CD deployment and tenant migration. Auth0 Branding has no SDK-side code; all configuration is through the Management API.
-
-## Prerequisites
-
-- Management API access token with appropriate scopes (see the Management API Endpoints section above for per-endpoint scopes)
-- For page templates: a custom domain configured on your tenant
-
-## cURL examples
-
-### Get branding settings
-
-```bash
-curl --request GET \
-  --url 'https://{yourDomain}/api/v2/branding' \
-  --header 'authorization: Bearer {yourMgmtApiAccessToken}'
-```
-
-### Update branding settings
-
-```bash
-curl --request PATCH \
-  --url 'https://{yourDomain}/api/v2/branding' \
-  --header 'authorization: Bearer {yourMgmtApiAccessToken}' \
-  --header 'content-type: application/json' \
-  --data '{
-    "colors": {
-      "primary": "#0059DB",
-      "page_background": "#FFFFFF"
-    },
-    "logo_url": "https://example.com/logo.svg",
-    "favicon_url": "https://example.com/favicon.ico",
-    "font": {
-      "url": "https://cdn.example.com/fonts/custom.woff"
-    }
-  }'
-```
-
-### Get default theme
-
-```bash
-curl --request GET \
-  --url 'https://{yourDomain}/api/v2/branding/themes/default' \
-  --header 'authorization: Bearer {yourMgmtApiAccessToken}'
-```
-
-### Create a theme
-
-All top-level sections are required. Within `fonts`, `font_url` and `links_style` are required, and each font-size object requires a `bold` boolean. Within `widget`, `logo_url` is required (use `""` if no logo). Within `page_background`, `background_image_url` is required (use `""` if no image).
-
-```bash
-curl --request POST \
-  --url 'https://{yourDomain}/api/v2/branding/themes' \
-  --header 'authorization: Bearer {yourMgmtApiAccessToken}' \
-  --header 'content-type: application/json' \
-  --data '{
-    "displayName": "My Theme",
-    "colors": {
-      "primary_button": "#0059DB",
-      "primary_button_label": "#FFFFFF",
-      "secondary_button_border": "#C9CACE",
-      "secondary_button_label": "#1E212A",
-      "base_focus_color": "#0059DB",
-      "base_hover_color": "#004DB7",
-      "links_focused_components": "#0059DB",
-      "header": "#1E212A",
-      "body_text": "#1E212A",
-      "widget_background": "#FFFFFF",
-      "widget_border": "#C9CACE",
-      "input_labels_placeholders": "#65676E",
-      "input_filled_text": "#1E212A",
-      "input_border": "#C9CACE",
-      "input_background": "#FFFFFF",
-      "icons": "#65676E",
-      "error": "#D03C38",
-      "success": "#13A688"
-    },
-    "fonts": {
-      "font_url": "",
-      "links_style": "normal",
-      "reference_text_size": 16,
-      "title": { "size": 150, "bold": false },
-      "subtitle": { "size": 87.5, "bold": false },
-      "body_text": { "size": 87.5, "bold": false },
-      "buttons_text": { "size": 100, "bold": false },
-      "input_labels": { "size": 100, "bold": false },
-      "links": { "size": 87.5, "bold": false }
-    },
-    "borders": {
-      "button_border_weight": 1,
-      "buttons_style": "rounded",
-      "button_border_radius": 3,
-      "input_border_weight": 1,
-      "inputs_style": "rounded",
-      "input_border_radius": 3,
-      "widget_corner_radius": 5,
-      "widget_border_weight": 0,
-      "show_widget_shadow": true
-    },
-    "widget": {
-      "logo_position": "center",
-      "logo_url": "https://example.com/logo.svg",
-      "logo_height": 52,
-      "header_text_alignment": "center",
-      "social_buttons_layout": "bottom"
-    },
-    "page_background": {
-      "background_color": "#000000",
-      "background_image_url": "",
-      "page_layout": "center"
-    }
-  }'
-```
-
-### Update a theme
-
-PATCH requires all top-level sections (colors, fonts, borders, widget, page_background). To change only colors, GET the current theme first, merge your changes, then PATCH the full object.
-
-```bash
-# Get current theme, then patch with full body
-THEME=$(curl --request GET \
-  --url 'https://{yourDomain}/api/v2/branding/themes/default' \
-  --header 'authorization: Bearer {yourMgmtApiAccessToken}')
-
-# Merge your color change into $THEME, then:
-curl --request PATCH \
-  --url 'https://{yourDomain}/api/v2/branding/themes/{themeId}' \
-  --header 'authorization: Bearer {yourMgmtApiAccessToken}' \
-  --header 'content-type: application/json' \
-  --data '{
-    "colors": { "primary_button": "#FF4F40", ...all other color fields... },
-    "fonts": { ...all font fields... },
-    "borders": { ...all border fields... },
-    "widget": { ...all widget fields... },
-    "page_background": { ...all page_background fields... }
-  }'
-```
-
-### Set page template
-
-```bash
-curl --request PUT \
-  --url 'https://{yourDomain}/api/v2/branding/templates/universal-login' \
-  --header 'authorization: Bearer {yourMgmtApiAccessToken}' \
-  --header 'content-type: application/json' \
-  --data '{
-    "template": "<!DOCTYPE html>{% assign resolved_dir = dir | default: \"auto\" %}<html lang=\"{{locale}}\" dir=\"{{resolved_dir}}\"><head>{%- auth0:head -%}</head><body class=\"_widget-auto-layout\">{%- auth0:widget -%}</body></html>"
-  }'
-```
-
-### Set custom text
-
-```bash
-curl --request PUT \
-  --url 'https://{yourDomain}/api/v2/prompts/login/custom-text/en' \
-  --header 'authorization: Bearer {yourMgmtApiAccessToken}' \
-  --header 'content-type: application/json' \
-  --data '{
-    "login": {
-      "title": "Welcome back",
-      "description": "Log in to continue to My App"
-    }
-  }'
-```
-
-## Deployment and migration patterns
-
-### Export and version control
-
-Store branding configuration in version control and deploy as part of your release pipeline.
-
-```bash
-# Export current branding settings
-auth0 ul show --json > branding-settings.json
-
-# Export current page template
-auth0 ul templates show > login-template.liquid
-
-# Export custom text for prompts you've customized
-auth0 ul prompts show login -l en > text-login-en.json
-auth0 ul prompts show signup -l en > text-signup-en.json
-```
-
-### Deploy branding in a pipeline
-
-```bash
-#!/bin/bash
-# deploy-branding.sh
-# Requires: AUTH0_DOMAIN, AUTH0_CLIENT_ID, AUTH0_CLIENT_SECRET
-
-auth0 login --client-id "$AUTH0_CLIENT_ID" \
-  --client-secret "$AUTH0_CLIENT_SECRET" \
-  --domain "$AUTH0_DOMAIN" --no-input
-
-auth0 ul update \
-  --logo "https://cdn.example.com/logo.svg" \
-  --accent "#0059DB" \
-  --background "#FFFFFF" \
-  --favicon "https://cdn.example.com/favicon.ico" \
-  --no-input
-
-cat ./branding/login-template.liquid | auth0 ul templates update
-
-cat ./branding/text-login-en.json | auth0 ul prompts update login --language en
-cat ./branding/text-signup-en.json | auth0 ul prompts update signup --language en
-```
-
-### Multi-environment layout
-
-Keep environment-specific branding in separate config files:
-
-```text
-branding/
-  base/
-    theme.json          # shared theme structure
-    login-template.liquid
-  environments/
-    dev/
-      settings.json
-      text-login-en.json
-    staging/
-      settings.json
-      text-login-en.json
-    production/
-      settings.json
-      text-login-en.json
-```
-
-### Copy branding between tenants
-
-`--tenant` is the only way to pick a tenant per call, so pass it on every export
-and import. Without it both halves hit the active tenant and the import
-overwrites the tenant you just exported from. Passing it per call also leaves the
-active tenant untouched. Both tenants must already appear in
-`auth0 tenants list`, otherwise the CLI fails with `Failed to find tenant`.
-
-```bash
-set -euo pipefail
-
-SOURCE_TENANT=source-tenant.auth0.com
-TARGET_TENANT=target-tenant.auth0.com
-
-# Export from source tenant
-BRANDING=$(auth0 ul show --json --tenant "$SOURCE_TENANT")
-THEME=$(auth0 api get "branding/themes/default" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
-TEMPLATE=$(auth0 api get "branding/templates/universal-login" --tenant "$SOURCE_TENANT" 2>/dev/null || true)
-LOGIN_TEXT=$(auth0 ul prompts show login -l en --tenant "$SOURCE_TENANT" 2>/dev/null || true)
-
-# Import to target tenant
-auth0 ul update --data "$BRANDING" --tenant "$TARGET_TENANT"
-
-if [ -n "$THEME" ]; then
-  THEME_BODY=$(printf '%s' "$THEME" | jq 'del(.themeId)')
-  TARGET_THEME_ID=$(auth0 api get "branding/themes/default" --tenant "$TARGET_TENANT" 2>/dev/null | jq -r '.themeId // empty' || true)
-  if [ -n "$TARGET_THEME_ID" ]; then
-    printf '%s' "$THEME_BODY" | auth0 api patch "branding/themes/$TARGET_THEME_ID" --tenant "$TARGET_TENANT"
-  else
-    printf '%s' "$THEME_BODY" | auth0 api post "branding/themes" --tenant "$TARGET_TENANT"
-  fi
-fi
-
-if [ -n "$TEMPLATE" ]; then
-  printf '%s' "$TEMPLATE" | auth0 api put "branding/templates/universal-login" --tenant "$TARGET_TENANT"
-fi
-
-if [ -n "$LOGIN_TEXT" ]; then
-  auth0 ul prompts update login -l en --data "$LOGIN_TEXT" --tenant "$TARGET_TENANT"
-fi
-```
-
-### Verify branding changes
-
-```bash
-# Open a test login flow in your browser
-auth0 test login
-
-# Test with a specific application
-auth0 test login "{yourAppClientId}"
-
-# Test with organization context (for B2B branding)
-auth0 test login --organization org_abc123
-
-# Verify via API
-auth0 ul show --json | jq '.colors'
-auth0 api get "branding/themes/default" | jq '.colors.primary_button'
-auth0 ul templates show | head -1
-```
 
 ---
 
@@ -1251,7 +724,7 @@ Target tenant: acme-prod  (active in the Auth0 CLI)
 
 If it's the wrong tenant, cancel. Tell the user to run `auth0 tenants use <name>` (or `auth0 login`) themselves and re-invoke the skill. Do not try to switch tenants on the user's behalf.
 
-For non-interactive / multi-tenant workflows, accept an explicit tenant domain + bearer token inline instead of the CLI; see the cURL examples section below.
+For non-interactive / multi-tenant workflows, accept an explicit tenant domain + bearer token inline instead of the CLI; see the Raw Management API calls section below.
 
 ## Apply
 

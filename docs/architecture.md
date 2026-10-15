@@ -131,8 +131,10 @@ the page.
 - **Gate:** a slimmed reference's behavioral eval (if it has graders) must score
   ≥ its pre-slim with-skill score.
 
-`framework-swift/` (framework pilot against the SDK's root Markdown) is the
-worked example.
+`feature-audit-pricing/` (offload to a fetched page),
+`feature-universal-portals/` (feature WIRING the docs lack stays inline), and
+`framework-swift/` (framework pilot against the SDK's root Markdown) are the
+worked examples.
 
 To add or extend a capability, see
 [CONTRIBUTING.md](../CONTRIBUTING.md#adding-a-capability-to-the-unified-skill).
