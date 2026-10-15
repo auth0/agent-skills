@@ -61,5 +61,78 @@ intra-references `.md` link (existing target or dead), and cross-group links are
 forbidden. This runs in the `skillsaw` GitHub Actions workflow and inside
 `validate-skill.sh`.
 
+## Sourcing discipline (what the skill owns)
+
+**The skill owns only what no single SDK or docs page can; everything else is a
+pointer the agent must fetch.** SDK usage lives in each SDK's shipped `docs/`
+(see [`sdk-docs-contract.md`](./sdk-docs-contract.md)); Auth0 concepts and
+product procedures live on auth0.com/docs, which serves every page as Markdown
+when `.md` is appended (index: `https://auth0.com/docs/llms.txt`).
+
+### Framework reference (`framework-*/index.md`, ~60–100 lines)
+
+Applies once the SDK's row in the contract's rollout table is `shipped` — or,
+as a `pilot`, when the SDK's existing root Markdown (`README.md`, `EXAMPLES.md`,
+migration guides) already covers the common path; the Read block then names
+those files instead of `docs/README.md`.
+
+| Block | Contents |
+|---|---|
+| Use / don't use | One-line purpose; "when NOT to use → route elsewhere" |
+| Install | Package-manager command |
+| Tenant setup | Auth0 CLI app creation, callback/logout URLs, env var names |
+| **Read the SDK docs** | The Read block below — a mandatory step |
+| Agent-only rules | ≤ ~10 Common Mistakes / decisions the SDK docs don't cover |
+
+### Feature reference (`feature-*/index.md`)
+
+| Block | Contents |
+|---|---|
+| Use / don't use | Same as framework |
+| **Read the docs** | The specific `https://auth0.com/docs/<page>.md` pages — a mandatory step |
+| WIRING the docs lack | Agent step-blocks, exact Management API / CLI sequences, request bodies, gotchas |
+| DECISION | Triage tables, capability/plan gating, diagnostic ladders |
+
+### The Read block
+
+Framework references use this text, filling `<pkg>`, `<repo>`, `<package-dir>`
+(empty outside monorepos) and `<page>` from the contract's rollout table:
+
+```
+## Read the SDK docs (required before writing code)
+
+1. If installed, read `node_modules/<pkg>/docs/README.md` (or the package's
+   `docs/` wherever the ecosystem installs it), then the files it lists for
+   this task.
+2. Otherwise fetch
+   `https://raw.githubusercontent.com/auth0/<repo>/<release-tag>/<package-dir>docs/README.md`
+   — the repo's release tag for the installed version, or the latest release
+   for a new install.
+3. For Auth0 concepts, fetch `https://auth0.com/docs/<page>.md`.
+
+Prefer what these say over anything remembered. If none can be read, say so
+and continue with the steps below.
+```
+
+Feature references use a `## Read the docs (required)` block listing their
+`https://auth0.com/docs/<page>.md` URLs with one line each on what to take from
+the page.
+
+### Rules
+
+- **Extract before offload.** A block being removed sometimes carries an
+  agent-only rule that exists nowhere else. Copy it into the kept text first.
+- **Fetches are steps, not links.** Phrase them "Read X before …", never
+  "See also".
+- **Greenfield:** install first, then read the local `docs/`.
+- **Default every decision.** A thin reference still names the default for
+  each choice it leaves open (UI framework, package manager, callback scheme);
+  "ask" alone stalls headless runs.
+- **Gate:** a slimmed reference's behavioral eval (if it has graders) must score
+  ≥ its pre-slim with-skill score.
+
+`framework-swift/` (framework pilot against the SDK's root Markdown) is the
+worked example.
+
 To add or extend a capability, see
 [CONTRIBUTING.md](../CONTRIBUTING.md#adding-a-capability-to-the-unified-skill).

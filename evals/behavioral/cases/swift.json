@@ -11,7 +11,7 @@
         "Auth0 SDK installed via any valid method (SPM URL, CocoaPods pod line, or Carthage)",
         "Has correct import statement (import Auth0)",
         "Implements login via Auth0 WebAuth browser flow",
-        "Implements logout via clearSession (clears Auth0 session cookie)",
+        "Implements logout that clears the Auth0 session cookie (logout() in v3, clearSession() in v2)",
         "Uses CredentialsManager for secure Keychain credential storage",
         "Stores credentials in Keychain after login",
         "Retrieves credentials (with auto-refresh) from CredentialsManager",
@@ -94,8 +94,8 @@
     {
       "type": "judge",
       "description": "Solution correctly integrates Auth0 into Swift iOS app with login, logout, and secure credential storage",
-      "question": "Does the solution correctly integrate Auth0 into an iOS or macOS Swift app with: (1) working login via WebAuth browser flow, (2) logout that clears the session cookie, (3) secure credential storage using CredentialsManager (Keychain), and (4) proper Auth0.plist configuration with ClientId and Domain keys?",
-      "examples": "PASS: Uses Auth0.webAuth().start() for login, .clearSession() for logout, CredentialsManager to store and retrieve credentials, and has Auth0.plist with ClientId and Domain.\nFAIL: Only implements login without logout or credential storage.\nFAIL: Stores tokens in UserDefaults instead of CredentialsManager.\nFAIL: Uses @auth0/auth0-react or another web SDK instead of Auth0.swift.",
+      "question": "Does the solution correctly integrate Auth0 into an iOS or macOS Swift app with: (1) working login via WebAuth browser flow, (2) logout that clears the session cookie (`webAuth().logout()` in Auth0.swift v3, `webAuth().clearSession()` in v2 — either is correct), (3) secure credential storage using CredentialsManager (Keychain), and (4) proper Auth0.plist configuration with ClientId and Domain keys?",
+      "examples": "PASS: Uses Auth0.webAuth().start() for login, .logout() (v3) or .clearSession() (v2) for logout, CredentialsManager to store and retrieve credentials, and has Auth0.plist with ClientId and Domain.\nFAIL: Only implements login without logout or credential storage.\nFAIL: Stores tokens in UserDefaults instead of CredentialsManager.\nFAIL: Uses @auth0/auth0-react or another web SDK instead of Auth0.swift.",
       "framework": "swift"
     },
     {

@@ -46,6 +46,8 @@ Key top-level docs:
 - [`README.md`](./README.md) — user-facing install and skill catalog.
 - [`docs/architecture.md`](./docs/architecture.md) — why one skill, and how the
   router resolves a request to reference files.
+- [`docs/sdk-docs-contract.md`](./docs/sdk-docs-contract.md) — the `docs/`
+  directory Auth0 SDKs ship, and which references are slimmed against it.
 - [`docs/openai-plugin.md`](./docs/openai-plugin.md) — OpenAI/Codex plugin
   packaging, pre-submission testing, and public submission.
 
