@@ -1,7 +1,7 @@
 {
   "name": "auth0",
   "displayName": "Auth0",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "description": "Add Auth0 authentication to any app: login, MFA, SSO, Organizations, RBAC, custom domains, and branding. Debug auth errors and migrate from other providers.",
   "logo": "assets/antigravity-logo.png",
   "suggestedPrompts": [
