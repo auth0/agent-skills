@@ -78,6 +78,12 @@ Grader types: `contains`, `contains_any`, `not_contains`, `not_contains_any`,
 `matches` (regex), `not_matches` (regex must be absent), `file_contains`
 (`file_pattern` glob + `value`), `all` (composite), `judge` (LLM YES/NO).
 
+- `transcript_matches` — `pattern` (regex) is tested against each tool call the
+  agent made, flattened as `<ToolName> <input JSON>`. Use it to assert the agent
+  read the SDK's shipped `docs/` or fetched an auth0.com `.md` page, e.g.
+  `"pattern": "nextjs-auth0/(v[^/]+/)?docs/|auth0\\.com/docs/.+\\.md"`. Raw
+  transcripts are saved as `<workspace>.transcript.jsonl`.
+
 Notes on the negative graders:
 
 - Prefer **`not_matches`** over `not_contains` when a bare substring would

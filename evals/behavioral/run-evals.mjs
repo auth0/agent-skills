@@ -34,7 +34,7 @@ import path from "node:path"
 import os from "node:os"
 import { fileURLToPath } from "node:url"
 import { $ } from "execa"
-import { runGraders } from "./graders.mjs"
+import { runGraders, parseToolUses } from "./graders.mjs"
 
 const EVAL_DIR = path.dirname(fileURLToPath(import.meta.url))
 const CASES_DIR = path.join(EVAL_DIR, "cases")
@@ -71,6 +71,7 @@ async function runAgent(taskPrompt, workspaceDir, withSkill) {
     "-p", taskPrompt,
     "--permission-mode", "dontAsk",
     "--no-session-persistence",
+    "--output-format", "stream-json", "--verbose", // tool calls, for transcript_matches
     "--allowedTools", "Bash,Read,Write,Edit,Glob,Grep,WebFetch",
   ]
   if (withSkill) {
@@ -81,7 +82,9 @@ async function runAgent(taskPrompt, workspaceDir, withSkill) {
 
   const start = Date.now()
   const { stdout } = await $({ cwd: workspaceDir, timeout: 600000, reject: false })`claude ${args}`
-  return { stdout, durationMs: Date.now() - start }
+  // Keep the raw transcript next to (not inside) the graded workspace.
+  fs.writeFileSync(`${workspaceDir}.transcript.jsonl`, stdout)
+  return { stdout, toolUses: parseToolUses(stdout), durationMs: Date.now() - start }
 }
 
 // Some routing tiers key on project files. If a case names a scaffold map
@@ -130,15 +133,15 @@ async function runCase(caseObj, opts) {
   if (!opts.skillOnly) scaffold(caseObj, withoutDir)
 
   console.log("  Running agent WITH skill (router loaded)...")
-  await runAgent(prompt, withDir, true)
-  const withRes = await runGraders(graders, withDir, MODEL)
+  const withRun = await runAgent(prompt, withDir, true)
+  const withRes = await runGraders(graders, withDir, MODEL, withRun.toolUses)
   const withPass = display("With skill", withRes)
 
   let withoutPass = null
   if (!opts.skillOnly) {
     console.log("\n  Running agent WITHOUT skill...")
-    await runAgent(prompt, withoutDir, false)
-    const withoutRes = await runGraders(graders, withoutDir, MODEL)
+    const withoutRun = await runAgent(prompt, withoutDir, false)
+    const withoutRes = await runGraders(graders, withoutDir, MODEL, withoutRun.toolUses)
     withoutPass = display("Without skill", withoutRes)
     const delta = withPass - withoutPass
     console.log(`\n  Delta (skill value): ${delta >= 0 ? "+" : ""}${delta} graders (${withPass} vs ${withoutPass} of ${withRes.length})`)
