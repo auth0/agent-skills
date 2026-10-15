@@ -139,13 +139,35 @@ package does not include `mcp.json` because it does not bundle an MCP server.
 
 ### plugins/auth0/.antigravity-plugin/plugin.json
 
-**Purpose**: Antigravity-specific plugin manifest.
+**Purpose**: Antigravity-specific plugin manifest, carrying the fields
+Antigravity's plugin guide requires for a Marketplace listing: `name`,
+`description` (120–160 characters), `displayName`, `version`, `author`, `logo`,
+and up to three `suggestedPrompts`.
 
-Antigravity's manifest schema only permits `name` and `description`
-(`additionalProperties: false`), so this file cannot carry the version,
-author, or keyword fields the other manifests do. Install locally with
-`agy plugin install plugins/auth0` — skills are auto-discovered from the
-`skills/` directory.
+- `logo` points at `assets/antigravity-logo.png`, a square transparent PNG with
+  padding that stays legible on light and dark themes. The existing
+  `assets/logo.png` is black on an opaque white background, so it is not used here.
+- `version` must match `plugins/auth0/plugin.json`. Antigravity needs every
+  published update to bump it so installed clients detect the change.
+- Skills are auto-discovered from `skills/`. All component paths resolve from
+  the plugin root (`plugins/auth0/`), not from `.antigravity-plugin/`.
+
+Both this file and the root `plugins/auth0/plugin.json` (the Agent Plugins
+manifest) exist. With `agy` 1.0.9, `agy plugin validate` fails with
+`missing plugin.json` if the root manifest is absent, and when both exist and
+their `name` fields differ, the root manifest's name is the one installed. Keep
+the root manifest in place. Do not copy the Antigravity-only fields into it:
+the Agent Plugins schema it declares does not allow `displayName`, `logo`, or
+`suggestedPrompts`. It has not been confirmed which file the Antigravity app
+reads for Marketplace display fields, so check the plugin's detail page after
+installing.
+
+`agy plugin validate` and `install` treat the path you give them as the plugin
+root, so run them on `plugins/auth0`, not on `.antigravity-plugin/`:
+
+```bash
+agy plugin validate plugins/auth0
+```
 
 ### plugins/auth0/gemini-extension.json
 
@@ -230,8 +252,8 @@ no per-framework skill to pick.
 Edit the relevant marketplace and plugin manifests. For OpenAI/Codex, update
 `.agents/plugins/marketplace.json` and `plugins/auth0/.codex-plugin/plugin.json`.
 For Agent Plugins, update `plugins/auth0/plugin.json`. For Antigravity, update
-`plugins/auth0/.antigravity-plugin/plugin.json` (description only — no version
-field). For Gemini CLI, update `plugins/auth0/gemini-extension.json`.
+`plugins/auth0/.antigravity-plugin/plugin.json` (`version` must increment on
+every published update). For Gemini CLI, update `plugins/auth0/gemini-extension.json`.
 
 ### Create Release
 
