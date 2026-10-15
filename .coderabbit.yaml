@@ -66,3 +66,9 @@ reviews:
       instructions: |
         This defines the Codex plugin manifest.
         Ensure plugin.json is valid JSON and skill references are correct.
+
+    - path: "plugins/auth0/.antigravity-plugin/**"
+      instructions: |
+        This defines the Google Antigravity plugin manifest.
+        Ensure plugin.json is valid JSON, the version matches the other
+        manifests, and skills/logo paths resolve from the plugin root.

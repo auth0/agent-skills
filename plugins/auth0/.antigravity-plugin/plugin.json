@@ -1,0 +1,42 @@
+{
+  "name": "auth0",
+  "displayName": "Auth0",
+  "version": "2.5.0",
+  "description": "Add Auth0 authentication to any app: login, MFA, SSO, Organizations, RBAC, ACUL, custom domains, and branding across 20+ frameworks.",
+  "skills": ["./skills"],
+  "logo": "assets/logo.png",
+  "suggestedPrompts": [
+    "Add Auth0 login to my app",
+    "Debug why my Auth0 login is failing",
+    "Audit my Auth0 tenant's health and security"
+  ],
+  "category": "Security",
+  "keywords": [
+    "auth0",
+    "authentication",
+    "authorization",
+    "oauth",
+    "oidc",
+    "mfa",
+    "sso",
+    "rbac",
+    "sdk",
+    "quickstart",
+    "migration",
+    "branding",
+    "custom-domains",
+    "security",
+    "acul",
+    "universal-login",
+    "jwt",
+    "cli"
+  ],
+  "author": {
+    "name": "Auth0",
+    "email": "support@auth0.com",
+    "url": "https://auth0.com"
+  },
+  "homepage": "https://auth0.com/docs/quickstart/agent-skills",
+  "repository": "https://github.com/auth0/agent-skills",
+  "license": "Apache-2.0"
+}

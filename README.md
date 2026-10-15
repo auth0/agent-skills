@@ -51,6 +51,20 @@ For public availability, Auth0 must submit the plugin through the
 [OpenAI plugin submission portal](https://platform.openai.com/plugins). Approval
 is required before it appears in the universal ChatGPT and Codex directory.
 
+### Google Antigravity
+
+The repository ships an Antigravity plugin manifest at
+`plugins/auth0/.antigravity-plugin/plugin.json`. Install it with the `agy` CLI:
+
+```bash
+git clone https://github.com/auth0/agent-skills.git
+agy plugin validate ./agent-skills/plugins/auth0
+agy plugin install ./agent-skills/plugins/auth0
+```
+
+Or, in the Antigravity app, go to **Customizations → Plugins → + Install from
+URL** and enter this repository's URL.
+
 ### Any Agent (Skills CLI)
 
 The [Skills CLI](https://github.com/vercel-labs/skills) works with Claude Code, Cursor, Copilot, Codex, and [40+ other agents](https://agentskills.io/clients):
