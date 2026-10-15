@@ -147,16 +147,15 @@ regex graders and crowd out the judge's file sample.
 
 ### Graders
 
-Existing code-pattern graders stay. Add one grader for framework cases: the
-transcript shows the agent read the SDK `docs/` path or fetched the docs `.md`
-page — catches skipping the step and guessing.
+Existing graders stay; no new grader types or checks are added. Process
+judges that grade the transcript rather than files are a possible follow-up.
 
 ### Risks
 
 | Risk | Mitigation |
 |---|---|
 | No network → GitHub / auth0.com fetch fails | Local `node_modules`/`vendor` read is first; reference keeps install, tenant setup, and mistakes list |
-| auth0.com/docs URL churn (not covered by reachability) | Small link-check script over `auth0.com/docs/*.md` URLs in references; run manually or scheduled, not per-PR |
+| auth0.com/docs URL churn (not covered by reachability) | Fetch each new URL once by hand when slimming a reference; a link checker is a possible follow-up |
 | SDK docs quality drift | Owned by SDK teams; this repo's evals surface it |
 
 ## Out of scope

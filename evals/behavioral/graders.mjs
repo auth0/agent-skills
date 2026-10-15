@@ -23,7 +23,6 @@
 //   file_contains                   — value present in a glob-matched file
 //   all                             — composite; all sub-graders must pass
 //   judge                           — LLM YES/NO verdict via `claude -p`
-//   transcript_matches              — regex matched against the agent's tool calls
 import fs from "node:fs"
 import path from "node:path"
 import { $ } from "execa"
@@ -67,7 +66,7 @@ function isSourceFile(name) {
 // Dependency checkouts and build output, never agent-written code. SwiftPM's
 // `.build/checkouts`, CocoaPods' `Pods`, and Carthage's `Carthage` hold vendored
 // SDK sources that would otherwise satisfy regex graders and crowd the judge.
-export const IGNORED_DIRS = new Set([
+const IGNORED_DIRS = new Set([
   "node_modules", ".git", "build", "dist", ".gradle",
   ".build", ".swiftpm", "Pods", "Carthage", "DerivedData",
 ])
@@ -238,38 +237,6 @@ function gradeNotMatches(grader, sources) {
   return { pass: true, detail: `Pattern /${grader.pattern}/ correctly absent` }
 }
 
-// Parse `claude -p --output-format stream-json --verbose` output into the
-// ordered list of tool calls. Non-JSON lines are skipped (stderr noise).
-export function parseToolUses(streamJson) {
-  const uses = []
-  for (const raw of streamJson.split("\n")) {
-    let event
-    try { event = JSON.parse(raw) } catch { continue }
-    if (event?.type !== "assistant") continue
-    for (const block of event.message?.content || []) {
-      if (block.type === "tool_use") uses.push({ name: block.name, input: block.input })
-    }
-  }
-  return uses
-}
-
-// Did the agent actually read the docs it was told to? Matches the pattern
-// against `<ToolName> <input JSON>` for each call, so one regex covers a local
-// Read of node_modules/<pkg>/docs/ and a WebFetch of an auth0.com .md page.
-function gradeTranscriptMatches(grader, toolUses) {
-  let regex
-  try {
-    regex = new RegExp(grader.pattern)
-  } catch {
-    return { pass: false, detail: `Invalid regex pattern: ${grader.pattern}` }
-  }
-  for (const use of toolUses) {
-    const flat = `${use.name} ${JSON.stringify(use.input)}`
-    if (regex.test(flat)) return { pass: true, detail: `Matched: ${flat.slice(0, 200)}` }
-  }
-  return { pass: false, detail: `Pattern /${grader.pattern}/ matched none of ${toolUses.length} tool uses` }
-}
-
 function gradeSync(grader, sources, workspaceDir) {
   switch (grader.type) {
     case "contains": return gradeContains(grader, sources)
@@ -337,9 +304,8 @@ function parseVerdict(stdout) {
 }
 
 // Run every grader against the workspace. `model` (optional) is forwarded to
-// judge graders as the --model flag for `claude -p`. `toolUses` (from
-// parseToolUses) feeds transcript_matches graders.
-export async function runGraders(graders, workspaceDir, model = null, toolUses = []) {
+// judge graders as the --model flag for `claude -p`.
+export async function runGraders(graders, workspaceDir, model = null) {
   const sources = readAllSources(workspaceDir)
   const results = []
 
@@ -355,7 +321,6 @@ export async function runGraders(graders, workspaceDir, model = null, toolUses =
       case "not_matches": result = gradeNotMatches(grader, sources); break
       case "all": result = gradeAll(grader, sources, workspaceDir); break
       case "judge": result = await gradeJudge(grader, sources, workspaceDir, model); break
-      case "transcript_matches": result = gradeTranscriptMatches(grader, toolUses); break
       default: result = { pass: false, detail: `Unknown grader type: ${grader.type}` }
     }
     results.push({ type: grader.type, description: grader.description, ...result })

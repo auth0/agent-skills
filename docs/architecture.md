@@ -128,8 +128,6 @@ the page.
 - **Default every decision.** A thin reference still names the default for
   each choice it leaves open (UI framework, package manager, callback scheme);
   "ask" alone stalls headless runs.
-- **Verify every URL** with `python3 scripts/check_docs_links.py
-  plugins/auth0/skills/auth0` before merging a slimmed reference.
 - **Gate:** a slimmed reference's behavioral eval (if it has graders) must score
   ≥ its pre-slim with-skill score.
 
