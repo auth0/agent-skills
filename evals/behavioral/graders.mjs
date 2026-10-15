@@ -64,12 +64,20 @@ function isSourceFile(name) {
   return SOURCE_EXTENSIONS.has(path.extname(name))
 }
 
+// Dependency checkouts and build output, never agent-written code. SwiftPM's
+// `.build/checkouts`, CocoaPods' `Pods`, and Carthage's `Carthage` hold vendored
+// SDK sources that would otherwise satisfy regex graders and crowd the judge.
+export const IGNORED_DIRS = new Set([
+  "node_modules", ".git", "build", "dist", ".gradle",
+  ".build", ".swiftpm", "Pods", "Carthage", "DerivedData",
+])
+
 function collectSourceFiles(dir, files = []) {
   if (!fs.existsSync(dir)) return files
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name)
     if (entry.isDirectory()) {
-      if (["node_modules", ".git", "build", "dist", ".gradle"].includes(entry.name)) continue
+      if (IGNORED_DIRS.has(entry.name)) continue
       collectSourceFiles(full, files)
     } else if (isSourceFile(entry.name)) {
       files.push(full)
@@ -130,7 +138,7 @@ function gradeFileContains(grader, workspaceDir) {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
       const full = path.join(dir, entry.name)
       if (entry.isDirectory()) {
-        if (["node_modules", ".git", "build", "dist", ".gradle"].includes(entry.name)) continue
+        if (IGNORED_DIRS.has(entry.name)) continue
         walkAndMatch(full, globPattern)
       } else if (matchesPattern(entry.name)) {
         try {

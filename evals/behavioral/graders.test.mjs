@@ -3,7 +3,7 @@ import assert from "node:assert/strict"
 import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
-import { parseToolUses, runGraders } from "./graders.mjs"
+import { parseToolUses, readAllSources, runGraders } from "./graders.mjs"
 
 const line = (o) => JSON.stringify(o)
 const STREAM = [
@@ -53,4 +53,16 @@ test("transcript_matches reports an invalid regex", async () => {
     [{ type: "transcript_matches", pattern: "(", description: "bad" }], emptyDir(), null, [])
   assert.equal(r.pass, false)
   assert.match(r.detail, /Invalid regex/)
+})
+
+test("readAllSources skips vendored dependency checkouts", () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "graders-test-"))
+  fs.mkdirSync(path.join(dir, "Sources"), { recursive: true })
+  fs.writeFileSync(path.join(dir, "Sources", "App.swift"), "import Auth0")
+  for (const vendored of [".build/checkouts/Auth0.swift", "Pods/Auth0", "Carthage/Checkouts/Auth0.swift"]) {
+    fs.mkdirSync(path.join(dir, vendored), { recursive: true })
+    fs.writeFileSync(path.join(dir, vendored, "Biometrics.swift"), "enableBiometrics(")
+  }
+  const rel = readAllSources(dir).map((f) => path.relative(dir, f.path))
+  assert.deepEqual(rel, [path.join("Sources", "App.swift")])
 })
