@@ -1,0 +1,9 @@
+{
+  "name": "team-delegated-admin-my-organization-api",
+  "description": "B2B SaaS delegated admin skills using Auth0's My Organization API.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Auth0 Delegated Administration Team",
+    "email": "authn-b2b-delegated-admin@okta.com"
+  }
+}
