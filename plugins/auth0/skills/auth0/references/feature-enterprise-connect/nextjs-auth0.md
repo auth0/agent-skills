@@ -9,12 +9,14 @@ Router use the client helper below.
 
 ## Enable relay mode and own the session in `onCallback`
 
-`enterpriseConnect: true` stops the SDK writing its session cookie and makes session methods
-(`getSession`, `getAccessToken`) throw `EnterpriseConnectError` (code
-`enterprise_connect_not_supported`). `onCallback` is therefore the only place to create the app
-session, and it **must return a `NextResponse`**. Edit the project's **existing** `new Auth0Client(...)`
-(`lib/auth0.ts`, or `src/lib/auth0.ts` in a `src/` layout) in place - do not create a second
-client or a second file:
+`enterpriseConnect: true` stops the SDK writing its session cookie and blocks every `Auth0Client`
+member except `middleware`, `startInteractiveLogin`, `startEnterpriseLogin` and
+`customTokenExchange`: `getSession`, `getAccessToken`, `updateSession`, `createFetcher`, etc.
+reject with `EnterpriseConnectError` (code `enterprise_connect_not_supported`). `onCallback` is
+therefore the only place to create the app session, and it **must return a `NextResponse` on every
+path, including errors**; a thrown error becomes a 500. Put the one `Auth0Client` in `lib/auth0.ts`
+(`src/lib/auth0.ts` in a `src/` layout); if the project already has one, edit it in place - do not
+create a second client or a second file. Credentials are the B2B Integration's:
 
 ```typescript
 import { Auth0Client } from '@auth0/nextjs-auth0/server';
@@ -29,9 +31,8 @@ export const auth0 = new Auth0Client({
   enterpriseConnect: true,
   authorizationParameters: { scope: 'openid profile email' }, // no offline_access, no static organization
   async onCallback(error, ctx, session) {
-    if (error) throw error;
-    if (!session?.user) {
-      return NextResponse.redirect(new URL('/login?error=no-session', process.env.APP_BASE_URL));
+    if (error || !session?.user) {
+      return NextResponse.redirect(new URL('/login?error=sso', process.env.APP_BASE_URL));
     }
     const user = session.user;
     const appSession = { sub: user.sub, email: user.email, orgId: user['org_id'] as string };
@@ -59,15 +60,18 @@ export async function getAppSession() {
 }
 ```
 
-Keep the project's existing `middleware.ts` / `proxy.ts` (at the root, or under `src/`) calling
-`auth0.middleware(request)` - do not add or rename one; it serves `/auth/login`, `/auth/callback`,
-`/auth/logout`.
+`auth0.middleware(request)` must run from `proxy.ts` (Next 16, `export async function proxy`) or
+`middleware.ts` (Next 15), at the root or under `src/`, matching all paths except static assets; it
+serves `/auth/login`, `/auth/callback`, `/auth/logout` and `/auth/federated-domain`. Keep an existing one - do not add a second
+or rename it.
 
 ## Discover and start login (server)
 
 `auth0.startEnterpriseLogin({ email, returnTo })` returns a redirect `NextResponse` when the
-domain is federated, or `null`. Call it from a **Route Handler** (not a server action) so the
-transaction cookie reaches the browser, and re-emit the redirect as 303. `app/api/login/route.ts` (under `src/` if the project uses it):
+domain is federated, or `null` (also `null` for an email without a domain). It runs Home Realm
+Discovery and sets `login_hint` from `email`, so do not pass `connection` or `organization`. Call
+it from a **Route Handler** (not a server action) so the `__txn_*` transaction cookie reaches the
+browser, and re-emit the 307 redirect as 303 so the browser follows it with GET. `app/api/login/route.ts` (under `src/` if the project uses it):
 
 ```typescript
 import { auth0 } from '@/lib/auth0';
@@ -83,7 +87,9 @@ export async function POST(req: NextRequest) {
     for (const cookie of res.cookies.getAll()) redirect.cookies.set(cookie);
     return redirect;
   }
-  return NextResponse.redirect(new URL('/login?mode=password', req.url), 303); // not federated
+  // Domain is not federated, handle with your own login -
+  // replace '/login?mode=password' with your existing login route
+  return NextResponse.redirect(new URL('/login?mode=password', req.url), 303);
 }
 ```
 
@@ -91,8 +97,9 @@ The login page is a plain `<form method="POST" action="/api/login">` with an `em
 
 ## Discover and start login (client component)
 
-The client helper returns `true` once it has started the redirect, `false` when the domain is not
-federated. It calls the SDK-mounted routes, so no Route Handler is needed:
+The client helper returns `Promise<boolean>`: `true` once it has navigated to `/auth/login`,
+`false` when the domain is not federated. It POSTs to the SDK-mounted `/auth/federated-domain` and
+navigates to `/auth/login`, so no Route Handler is needed and it works on the Pages Router:
 
 ```tsx
 'use client';
@@ -113,8 +120,10 @@ if (!session) redirect('/login');
 
 ## Federated logout
 
-Clear the app cookie and hand off to the SDK logout route with `federated=true` and an absolute
-`returnTo` that is in Allowed Logout URLs. `app/api/logout/route.ts`:
+Clear the app cookie and hand off to the SDK logout route with an absolute `returnTo` that is in
+Allowed Logout URLs. The route defaults to federated logout in this mode (ending the enterprise IdP
+session); `federated=true` is kept explicit, and `federated=false` would leave the IdP session
+alive. `app/api/logout/route.ts`:
 
 ```typescript
 import { NextResponse } from 'next/server';
@@ -133,8 +142,9 @@ export async function GET() {
 ## Security
 
 `AUTH0_CLIENT_ID` / `AUTH0_CLIENT_SECRET` are the B2B Integration's, read from `.env.local` with
-`AUTH0_DOMAIN`, `AUTH0_SECRET`, `APP_BASE_URL`. Keep only identity claims in the app cookie, never
-the Auth0 tokens. Maintained example:
+`AUTH0_DOMAIN`, `AUTH0_SECRET`, `APP_BASE_URL`. `session.user` carries every raw ID token claim: keep only the
+claims you need in the app cookie, never the Auth0 tokens (the access token cannot be renewed; EC
+issues no refresh token). Maintained example:
 https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md#enterprise-connect-b2b-integration
 
 All calls above are accurate for `@auth0/nextjs-auth0` 4.30.0+ — do not read the SDK source to

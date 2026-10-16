@@ -10,7 +10,9 @@ common mistakes live in the shared Enterprise Connect reference. There is **no
 ## Enable relay mode
 
 Set `enterpriseConnect` in `provideAuth0` (or `AuthModule.forRoot` with the same options), with
-the B2B Integration's Client ID:
+the B2B Integration's Client ID. The flag only makes the SDK `console.warn` on `useRefreshTokens` /
+`offline_access`, a static `organization`, or a logout without `federated: true`; it does not
+change the login flow or throw:
 
 ```ts
 import { ApplicationConfig } from '@angular/core';
@@ -35,36 +37,57 @@ export const appConfig: ApplicationConfig = {
 ## Discover and start login
 
 `isFederatedDomain(auth0Domain, emailDomain)` is a function exported by the package - **not** an
-`AuthService` method. `loginWithRedirect` returns an Observable that must be subscribed:
+`AuthService` method. It returns `Promise<boolean>`, never throws, and resolves `false` on any
+failure (unmanaged domain, 429, network error), so `await` it and treat `false` as "use your
+existing login". It is a routing hint, not a security control. `AuthService.loginWithRedirect`
+returns a cold `Observable<void>`: nothing happens until you subscribe:
 
 ```ts
-import { FormControl } from '@angular/forms';
+import { Component, inject } from '@angular/core';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { AuthService, isFederatedDomain } from '@auth0/auth0-angular';
 import { environment } from '../environments/environment';
 
+@Component({
+  selector: 'app-login',
+  standalone: true,
+  imports: [ReactiveFormsModule],
+  template: `
+    <form (ngSubmit)="onSubmit()">
+      <input type="email" [formControl]="email" />
+      <button type="submit">Continue</button>
+    </form>
+  `,
+})
 export class LoginComponent {
-  email = new FormControl('');
-  constructor(private auth: AuthService) {}
+  private auth = inject(AuthService);
+  email = new FormControl('', { nonNullable: true });
 
   async onSubmit(): Promise<void> {
-    const email = this.email.value ?? '';
-    const federated = await isFederatedDomain(environment.auth0Domain, email.split('@')[1]);
-    if (!federated) {
-      return; // not federated: your existing login
+    const email = this.email.value.trim();
+    const parts = email.split('@');
+    const emailDomain = parts.length === 2 ? parts[1] : '';
+
+    if (emailDomain && (await isFederatedDomain(environment.auth0Domain, emailDomain))) {
+      this.auth.loginWithRedirect({ authorizationParams: { login_hint: email } }).subscribe();
+    } else {
+      // not federated or malformed email: your existing login
     }
-    this.auth.loginWithRedirect({ authorizationParams: { login_hint: email } }).subscribe();
   }
 }
 ```
 
 ## Read the user and `org_id`
 
-`AuthService` processes `code`/`state` on load; read `auth.user$` (`user.email`, `user.org_id`)
-after `auth.isLoading$` emits `false`.
+`AuthService` processes `code`/`state` on load (no manual callback handling); read `auth.user$`
+(`user.email`, `user.org_id`) after `auth.isLoading$` emits `false`. Enterprise Connect issues no
+refresh token, so `getAccessTokenSilently` cannot renew an expired access token; send the user
+through login again.
 
 ## Validate the organization (optional)
 
-Reject with a **federated** logout:
+Reject with a **federated** logout so the IdP session ends too. This is a client-side guard;
+enforce `org_id` on your server for every API call that trusts the token:
 
 ```ts
 import { filter, take } from 'rxjs';
@@ -95,7 +118,8 @@ be in Allowed Callback URLs and Allowed Web Origins.
 
 ## Security
 
-Public client: no client secret. Tokens stay in memory - do not set `useRefreshTokens`. Maintained
+Public client: no client secret. Tokens stay in memory - do not set `useRefreshTokens` or copy
+tokens to `localStorage`. Maintained
 example: https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md#enterprise-connect
 
 All calls above are accurate for `@auth0/auth0-angular` 2.12.0+ — do not read the SDK source to
