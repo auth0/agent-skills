@@ -9,16 +9,16 @@ common mistakes live in the shared Enterprise Connect reference. There is **no
 
 ## Enable relay mode
 
-`enterpriseConnect: true` is warn-only here: it `console.warn`s on `useRefreshTokens` /
-`offline_access`, a static `organization`, or a non-federated logout, but does not throw. Use the
-B2B Integration's Client ID:
+`enterpriseConnect: true` only makes the SDK `console.warn` on `useRefreshTokens` /
+`offline_access`, a static `organization`, or a logout without `federated: true`; it does not
+change the login flow or throw. Use the B2B Integration's Client ID:
 
 ```ts
 import { createAuth0Client } from '@auth0/auth0-spa-js';
 
 export const auth0 = await createAuth0Client({
-  domain: process.env.AUTH0_DOMAIN,
-  clientId: process.env.AUTH0_CLIENT_ID,
+  domain: import.meta.env.VITE_AUTH0_DOMAIN,
+  clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
   enterpriseConnect: true,
   authorizationParams: {
     redirect_uri: window.location.origin,
@@ -29,42 +29,49 @@ export const auth0 = await createAuth0Client({
 
 ## Discover and start login
 
-`isFederatedDomain(auth0Domain, emailDomain)` is a standalone export (not a client method) that
-resolves `false` on any failure:
+`isFederatedDomain(auth0Domain, emailDomain)` is a standalone export (not a client method). It
+returns `Promise<boolean>`, never throws, and resolves `false` on any failure (unmanaged domain,
+429, network error), so `await` it and treat `false` as "use your existing login". It is a routing
+hint, not a security control:
 
 ```ts
 import { isFederatedDomain } from '@auth0/auth0-spa-js';
 import { auth0 } from './auth0';
 
-document.querySelector('#login-form').addEventListener('submit', async e => {
-  e.preventDefault();
-  const email = document.querySelector('#email').value;
-  const federated = await isFederatedDomain(process.env.AUTH0_DOMAIN, email.split('@')[1]);
+async function login(email: string) {
+  const emailDomain = email.trim().split('@')[1];
 
-  if (federated) {
-    await auth0.loginWithRedirect({ authorizationParams: { login_hint: email } });
+  if (emailDomain && (await isFederatedDomain(import.meta.env.VITE_AUTH0_DOMAIN, emailDomain))) {
+    await auth0.loginWithRedirect({ authorizationParams: { login_hint: email.trim() } });
   } else {
-    // not federated: your existing login
+    // not federated or malformed email: your existing login
   }
-});
+}
 ```
 
 ## Handle the callback and read `org_id`
 
+The client does not process `code`/`state` on its own; call `handleRedirectCallback()` on the
+redirect URI:
+
 ```ts
 const query = window.location.search;
-if (query.includes('code=') && query.includes('state=')) {
-  await auth0.handleRedirectCallback();
+if ((query.includes('code=') || query.includes('error=')) && query.includes('state=')) {
+  await auth0.handleRedirectCallback(); // throws on an error response
   window.history.replaceState({}, document.title, '/');
 }
 if (await auth0.isAuthenticated()) {
-  const user = await auth0.getUser(); // user.email, user.org_id
+  const user = await auth0.getUser(); // user?.email, user?.org_id
 }
 ```
 
+Enterprise Connect issues no refresh token, so `getTokenSilently` cannot renew an expired access
+token; send the user through login again.
+
 ## Validate the organization (optional)
 
-Reject with a **federated** logout so the IdP session ends too:
+Reject with a **federated** logout so the IdP session ends too. This is a client-side guard;
+enforce `org_id` on your server for every API call that trusts the token:
 
 ```ts
 const claims = await auth0.getIdTokenClaims();

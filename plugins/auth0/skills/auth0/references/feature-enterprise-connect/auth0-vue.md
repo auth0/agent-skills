@@ -9,7 +9,9 @@ common mistakes live in the shared Enterprise Connect reference. There is **no
 
 ## Enable relay mode
 
-Set `enterpriseConnect` in `createAuth0`, with the B2B Integration's Client ID:
+Set `enterpriseConnect` in `createAuth0`, with the B2B Integration's Client ID. The flag only makes
+the SDK `console.warn` on `useRefreshTokens` / `offline_access`, a static `organization`, or a
+logout without `federated: true`; it does not change the login flow or throw:
 
 ```ts
 import { createApp } from 'vue';
@@ -33,33 +35,52 @@ createApp(App)
 
 ## Discover and start login
 
-`isFederatedDomain(auth0Domain, emailDomain)` is a function exported by the package:
+`isFederatedDomain(auth0Domain, emailDomain)` is a standalone function exported by the package. It
+returns `Promise<boolean>`, never throws, and resolves `false` on any failure (unmanaged domain,
+429, network error), so `await` it and treat `false` as "use your existing login". It is a routing
+hint, not a security control:
 
 ```vue
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useAuth0, isFederatedDomain } from '@auth0/auth0-vue';
 
 const { loginWithRedirect } = useAuth0();
+const email = ref('');
 
-const handleSubmit = async (email: string) => {
-  const federated = await isFederatedDomain(import.meta.env.VITE_AUTH0_DOMAIN, email.split('@')[1]);
-  if (!federated) {
-    return; // not federated: your existing login
+const handleSubmit = async () => {
+  const value = email.value.trim();
+  const parts = value.split('@');
+  const emailDomain = parts.length === 2 ? parts[1] : '';
+
+  if (emailDomain && (await isFederatedDomain(import.meta.env.VITE_AUTH0_DOMAIN, emailDomain))) {
+    await loginWithRedirect({ authorizationParams: { login_hint: value } });
+  } else {
+    // not federated or malformed email: your existing login
   }
-  await loginWithRedirect({ authorizationParams: { login_hint: email } });
 };
 </script>
+
+<template>
+  <form @submit.prevent="handleSubmit">
+    <input v-model="email" type="email" />
+    <button type="submit">Continue</button>
+  </form>
+</template>
 ```
 
 ## Read the user and `org_id`
 
-The plugin processes `code`/`state` on load:
-`const { isLoading, isAuthenticated, user } = useAuth0();` - `user.value?.org_id` holds the
-resolved organization.
+The plugin processes `code`/`state` on load (no manual callback handling). Read
+`const { isLoading, isAuthenticated, user } = useAuth0();` once `isLoading.value` is `false`;
+`user.value?.org_id` holds the resolved organization. Enterprise Connect issues no refresh token,
+so `getAccessTokenSilently` cannot renew an expired access token; send the user through login
+again.
 
 ## Validate the organization (optional)
 
-Reject with a **federated** logout:
+Reject with a **federated** logout so the IdP session ends too. This is a client-side guard;
+enforce `org_id` on your server for every API call that trusts the token:
 
 ```ts
 import { watch } from 'vue';
@@ -69,7 +90,7 @@ const allowedOrgs = ['org_123']; // your organization IDs
 const { idTokenClaims, logout } = useAuth0();
 
 watch(idTokenClaims, (claims) => {
-  if (claims && !allowedOrgs.includes(claims.org_id)) {
+  if (claims && (!claims.org_id || !allowedOrgs.includes(claims.org_id))) {
     logout({ logoutParams: { federated: true, returnTo: `${window.location.origin}/login` } });
   }
 });
@@ -87,7 +108,8 @@ Allowed Web Origins.
 
 ## Security
 
-Public client: no client secret. Tokens stay in memory - do not set `useRefreshTokens`. Maintained
+Public client: no client secret. Tokens stay in memory - do not set `useRefreshTokens` or copy
+tokens to `localStorage`. Maintained
 example: https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md#enterprise-connect
 
 All calls above are accurate for `@auth0/auth0-vue` 2.10.0+ — do not read the SDK source to
