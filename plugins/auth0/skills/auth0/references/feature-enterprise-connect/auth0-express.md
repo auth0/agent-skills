@@ -122,7 +122,7 @@ mode (identity-only); guard it with `requireAppSession` instead of calling the S
 The mounted `/auth/logout` is forced federated in this mode, but it cannot clear the app cookie and
 its `returnTo` is always the base URL. Do not re-register your own handler on `/auth/logout` (it
 collides with the mounted route). To clear the app cookie and return to a registered Allowed Logout
-URL such as `/login`, add a separate route and point every sign-out link at it. `client.logout`
+URL, add a separate route and point every sign-out link at it. `client.logout`
 defaults `federated` to `true` in this mode (`false` logs a warning and leaves the enterprise IdP
 session active); pass it explicitly:
 
@@ -131,6 +131,7 @@ app.get('/logout', async (req, res, next) => {
   try {
     res.clearCookie('app_session', cookieOptions);
     const logoutUrl = await req.auth0.client.logout({
+      // placeholder: the app's sign-in route, registered as an Allowed Logout URL
       returnTo: `${process.env.APP_BASE_URL}/login`,
       federated: true,
     });

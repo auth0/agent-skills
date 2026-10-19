@@ -60,8 +60,11 @@ export async function getAppSession() {
 }
 ```
 
+`app_session` and `getAppSession` are only for an app with no session layer. If the app has one (e.g.
+a `createSession` helper), call it from `onCallback` and add no second cookie or reader.
+
 `auth0.middleware(request)` must run from `proxy.ts` (Next 16, `export async function proxy`) or
-`middleware.ts` (Next 15), at the root or under `src/`, matching all paths except static assets; it
+`middleware.ts` (Next 15) - check `next` in `package.json` - at the root or under `src/`, matching all paths except static assets; it
 serves `/auth/login`, `/auth/callback`, `/auth/logout` and `/auth/federated-domain`. Keep an existing one - do not add a second
 or rename it.
 

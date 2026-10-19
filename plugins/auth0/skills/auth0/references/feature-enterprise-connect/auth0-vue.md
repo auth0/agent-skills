@@ -33,6 +33,10 @@ createApp(App)
   .mount('#app');
 ```
 
+With vue-router, call `.use(router)` **before** `.use(createAuth0(...))`: the plugin's post-callback
+`router.push(appState.target ?? '/')` runs only if a router is already installed; otherwise it only
+calls `history.replaceState`, which the router ignores.
+
 ## Discover and start login
 
 `isFederatedDomain(auth0Domain, emailDomain)` is a standalone function exported by the package. It
@@ -71,8 +75,9 @@ const handleSubmit = async () => {
 
 ## Read the user and `org_id`
 
-The plugin processes `code`/`state` on load (no manual callback handling). Read
-`const { isLoading, isAuthenticated, user } = useAuth0();` once `isLoading.value` is `false`;
+The plugin handles `code`/`state` on load; never call `handleRedirectCallback`. Read
+`const { isLoading, isAuthenticated, user } = useAuth0();` only once `isLoading.value` is `false`
+(before that, `isAuthenticated` is `false` even for a signed-in user);
 `user.value?.org_id` holds the resolved organization. Enterprise Connect issues no refresh token,
 so `getAccessTokenSilently` cannot renew an expired access token; send the user through login
 again.

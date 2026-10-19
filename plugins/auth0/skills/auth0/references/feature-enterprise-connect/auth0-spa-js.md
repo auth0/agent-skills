@@ -16,7 +16,8 @@ change the login flow or throw. Use the B2B Integration's Client ID:
 ```ts
 import { createAuth0Client } from '@auth0/auth0-spa-js';
 
-export const auth0 = await createAuth0Client({
+// Export the promise: the default Vite build target rejects top-level await.
+export const auth0Ready = createAuth0Client({
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
   enterpriseConnect: true,
@@ -36,9 +37,10 @@ hint, not a security control:
 
 ```ts
 import { isFederatedDomain } from '@auth0/auth0-spa-js';
-import { auth0 } from './auth0';
+import { auth0Ready } from './auth0';
 
 async function login(email: string) {
+  const auth0 = await auth0Ready;
   const emailDomain = email.trim().split('@')[1];
 
   if (emailDomain && (await isFederatedDomain(import.meta.env.VITE_AUTH0_DOMAIN, emailDomain))) {
@@ -55,6 +57,7 @@ The client does not process `code`/`state` on its own; call `handleRedirectCallb
 redirect URI:
 
 ```ts
+const auth0 = await auth0Ready;
 const query = window.location.search;
 if ((query.includes('code=') || query.includes('error=')) && query.includes('state=')) {
   await auth0.handleRedirectCallback(); // throws on an error response
@@ -67,6 +70,9 @@ if (await auth0.isAuthenticated()) {
 
 Enterprise Connect issues no refresh token, so `getTokenSilently` cannot renew an expired access
 token; send the user through login again.
+
+Never full-page navigate after `handleRedirectCallback()` - the in-memory cache does not survive it.
+Protected views must accept `await auth0.isAuthenticated()`.
 
 ## Validate the organization (optional)
 
@@ -89,7 +95,7 @@ await auth0.logout({
 });
 ```
 
-`returnTo` must be in Allowed Logout URLs; the app origin must be in Allowed Callback URLs and
+`returnTo` (the app's sign-in route) must be in Allowed Logout URLs; the app origin must be in Allowed Callback URLs and
 Allowed Web Origins.
 
 ## Security

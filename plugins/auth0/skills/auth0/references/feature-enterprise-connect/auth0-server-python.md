@@ -68,6 +68,7 @@ async def login(request: Request, email: str = Form(...)):
         auth_url = None
     # None: domain is not federated, handle with your own login -
     # replace '/login?mode=password' with your existing login route
+    # (URL-encode an email in its query with urllib.parse.quote)
     response.headers["location"] = auth_url or "/login?mode=password"
     return response
 ```

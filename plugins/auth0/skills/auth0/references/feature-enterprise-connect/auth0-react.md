@@ -63,6 +63,12 @@ not call `handleRedirectCallback` yourself:
 const { isLoading, isAuthenticated, user } = useAuth0(); // user?.email, user?.org_id
 ```
 
+The default `onRedirectCallback` only calls `history.replaceState`, which client-side routers ignore.
+To land on a route, pass `loginWithSSO(email, { appState: { returnTo } })` and navigate in
+`onRedirectCallback(appState)` with the app's router (React Router: render the provider inside the
+router, call `navigate(appState?.returnTo ?? '/')`). Never use `window.location` there - a full page
+load clears the in-memory session.
+
 Enterprise Connect issues no refresh token, so `getAccessTokenSilently` cannot renew an expired
 access token; send the user through login again.
 
