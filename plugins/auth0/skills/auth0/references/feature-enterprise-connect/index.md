@@ -1,6 +1,6 @@
 # Auth0 Enterprise Connect
 
-Let a B2B app use Auth0 as a **stateless SSO relay**: the user types a work email, Auth0 runs Home Realm Discovery (HRD) on its domain, federates to that customer's enterprise IdP (SAML/OIDC), and hands back identity claims. Auth0 keeps **no session** and issues **no refresh token** in this mode - the application owns its session end to end. Enterprise Connect is an **Early Access** feature. This reference covers only the **app-embedded** pattern (the app embeds an Auth0 SDK); per-company users, roles, and invitations are `feature-organizations`.
+Let a B2B app use Auth0 as a **stateless SSO relay**: the user types a work email, Auth0 runs Home Realm Discovery (HRD) on its domain, federates to that customer's enterprise IdP (SAML/OIDC), and hands back identity claims. Auth0 keeps **no session** and issues **no refresh token** in this mode - the application owns its session end to end. Enterprise Connect is an **Early Access** feature. This reference covers the **app-embedded** pattern (the app embeds an Auth0 SDK) and the **tenant-side setup** of a B2B integration plus customer onboarding (see Tenant Configuration); per-company users, roles, and invitations are `feature-organizations`.
 
 ---
 
@@ -12,7 +12,7 @@ Use Enterprise Connect when the app must:
 - Act as a relay only: read identity from the login result and create the **app's own** session, with no Auth0 session cookie and no refresh token.
 - Keep an existing login (password, social) for every domain that is not federated, and send only federated domains to Auth0.
 
-Do NOT use Enterprise Connect when the need is per-organization membership, roles, or invitations with Auth0 as the session owner - that is `feature-organizations` (Enterprise Connect resolves an organization and stamps `org_id`, but it is the federation handoff, not org management). Do not use it either when the customer's own authorization server federates to Auth0 (the Custom / Third-party Authorization Server integration types): those need no SDK change in the app. A tenant-only provisioning task with no app code defers to the loaded `tooling-*` reference.
+Do NOT use Enterprise Connect when the need is per-organization membership, roles, or invitations with Auth0 as the session owner - that is `feature-organizations` (Enterprise Connect resolves an organization and stamps `org_id`, but it is the federation handoff, not org management). When the developer's own authorization server federates to Auth0 (the Custom / Third-party Authorization Server integration types), there is no SDK change in any app: skip SDK Integration and go to **Integration and customer onboarding (CLI)** under Tenant Configuration - the deliverable is the configured tenant and a setup link for the customer.
 
 ---
 
@@ -24,6 +24,8 @@ The product and protocol theory is owned by [B2B Connect - Enterprise](https://a
 |---|---|
 | **Relay (stateless) mode** | Auth0 brokers the SSO round trip and returns claims but writes no session of its own. The app is the session authority. |
 | **B2B Integration (Application type)** | The Auth0 application created by the B2B Connect wizard for the app-embedded pattern. The app uses **its** Client ID (and secret, for server SDKs) - not a regular SPA or web app client. |
+| **Integration type** | `b2b_integration_configuration.integration_type` on the integration client: `custom_auth_server` (your own OIDC/SAML auth server is the relying party to Auth0), `third_party` (a managed auth server such as Cognito, PingOne, Keycloak), or `application` (the app embeds an Auth0 SDK - the pattern under SDK Integration). The marker is what makes a client a B2B integration; a plain app with the same settings is not one. |
+| **SSEC profile / SSO ticket** | Self-Service Enterprise Configuration. A self-service profile (max 20 per tenant) defines which IdP types and user attributes a customer can configure; an SSO ticket generated from it is a one-time setup link the customer's IT admin opens to create **their** enterprise connection and verify their domain. |
 | **Domain discovery** | Asking the tenant's WebFinger endpoint whether an email domain is managed by Auth0. A routing hint only: the SDK helper never throws and returns `false` on any failure (flag off = 403, unmanaged domain = 404, 429, network error). It caches results briefly (about 60 s for `true`, 15 s for a 404), so a newly onboarded domain can take up to ~15 s to appear. |
 | **Home Realm Discovery (HRD)** | Auth0 resolving the organization and enterprise connection from the email sent as `login_hint`. The app keeps no domain-to-org or domain-to-connection map. |
 | **Identity-only** | The flow yields ID-token claims (and a short-lived access token) but no refresh token. Durable API access is the app's job. |
@@ -110,7 +112,11 @@ If the app already constructs an Auth0 client, add the Enterprise Connect option
 
 ## Tenant Configuration (via chosen tooling)
 
-Enterprise Connect is **Early Access**. The B2B Integration itself is created in the Auth0 Dashboard (**B2B Connect** > Create B2B Connect Integration > type **Application**); there is no dedicated `auth0` CLI verb or MCP tool for it. Do not substitute a regular app from `auth0 apps create`. This is provisioning, separate from the app code: **do not block the code change on it** - implement against the client credentials already in the app's environment, and in your final message note that they must belong to the B2B Integration (created in the Dashboard if it does not exist yet).
+Enterprise Connect is **Early Access**. A B2B Integration is a client carrying `b2b_integration_configuration`, created in the Dashboard (**B2B Connect** > Create B2B Connect Integration) or through the Management API (see Integration and customer onboarding below); there is no dedicated `auth0` CLI verb or MCP tool for it, and a plain `auth0 apps create` app is not a substitute.
+
+### App-embedded (Application type)
+
+This is provisioning, separate from the app code: **do not block the code change on it** - implement against the client credentials already in the app's environment, and in your final message note that they must belong to the B2B Integration (created in the Dashboard if it does not exist yet).
 
 What must be true before the flow works:
 
@@ -135,7 +141,67 @@ auth0 apps update <b2b-integration-client-id> \
 auth0 api patch "tenants/settings" --data '{"flags":{"local_resource_discovery":true}}'
 ```
 
-Organizations, domains, and connections are owned by `feature-organizations` and the loaded `tooling-*` reference (DEFER ACROSS); onboarding customer IdPs through Self-Service Enterprise Configuration is a Dashboard flow.
+Organization management beyond onboarding (members, roles, invitations) is owned by `feature-organizations` (DEFER ACROSS); onboarding a customer is below.
+
+### Integration and customer onboarding (CLI)
+
+Use this when the task is to **configure the tenant** - register the B2B integration for the developer's own (or a managed) authorization server, then onboard a customer with a self-service setup link. The deliverable is the **mutated tenant** plus the ticket URL, not a guide to it. Run each `auth0` command directly as its own step and read state back after each mutation; do **not** bundle the setup into one `bash setup.sh`, and do **not** emit setup scripts, `README`, or summary files for a human to run later.
+
+The CLI has no verb for B2B integrations, self-service profiles, organization client access, or SSO tickets, and no `apps` flag for `b2b_integration_configuration`, so those go through `auth0 api` (the Management API passthrough). The steps are ordered - each later one needs an id from an earlier one. This is the **OIDC** variant (the docs recommend OIDC); a SAML auth server is set up through the Dashboard wizard.
+
+```bash
+# 1. Reuse a self-service (SSEC) profile if one exists, otherwise create one (max 20 per tenant).
+#    The Dashboard creates a User Attribute Profile with the same name; through the API, pass
+#    user_attribute_profile_id only if the developer already has one - otherwise omit it.
+auth0 api get "self-service-profiles"
+auth0 api post "self-service-profiles" --data '{"name":"<Profile name>"}'
+
+# 2. Reuse a B2B integration the Dashboard wizard already created (it also applies the
+#    organization settings the client needs) - list clients and look for
+#    b2b_integration_configuration. Only if none exists, register one. integration_type:
+#    the developer's own auth server -> custom_auth_server; a managed one (Cognito, PingOne,
+#    Ory, Keycloak, Transmit) -> third_party. The callback is the AUTH SERVER's own Auth0
+#    callback, not an app route. sso_profiles links the profile (max 1 entry).
+auth0 api post "clients" --data '{
+  "name": "<Integration name>",
+  "app_type": "regular_web",
+  "callbacks": ["<auth-server-callback-url>"],
+  "grant_types": ["authorization_code"],
+  "b2b_integration_configuration": {
+    "integration_type": "custom_auth_server",
+    "sso_profiles": ["<profile-id>"]
+  }
+}'
+auth0 apps show <client-id> --json      # confirm b2b_integration_configuration and grant_types
+
+# 3. Create the customer's organization (or reuse it: auth0 orgs list).
+auth0 orgs create --name <org-slug> --display "<Customer Name>"
+
+# 4. Grant the organization access to the integration client - without it the customer's
+#    connection never surfaces at login. The body is a `clients` array (1-10 entries), and
+#    use_for_member_access is required on each.
+auth0 api post "organizations/<org-id>/clients" \
+  --data '{"clients":[{"client_id":"<client-id>","use_for_member_access":true}]}'
+auth0 api get "organizations/<org-id>/clients"
+
+# 5. Generate the SSO ticket. connection_config creates the connection the customer's admin
+#    configures through the ticket; enabled_organizations / enabled_clients enable it for the
+#    org and the integration. use_for_organization_discovery lets the verified domain drive
+#    org-level HRD from login_hint (valid only with a single enabled organization).
+auth0 api post "self-service-profiles/<profile-id>/sso-ticket" --data '{
+  "connection_config": {"name": "<connection-name>", "display_name": "<Customer Name>"},
+  "enabled_organizations": [{"organization_id": "<org-id>", "assign_membership_on_login": true}],
+  "enabled_clients": ["<client-id>"],
+  "use_for_organization_discovery": true
+}'
+```
+
+The ticket response is `{"ticket":"https://..."}` - return that URL to the developer to send to the customer's IT admin. It expires after `ttl_sec` (default and maximum 432000, 5 days); if it is lost or expires, generate a new one. Notes:
+
+- **Do not create the enterprise connection yourself** (`auth0 connections create`, or `enabled_connections` on the org). The ticket's `connection_config` provisions it, and the customer's admin configures their IdP and verifies their domain through the ticket. `connection_config.name` must match `^[a-zA-Z0-9](-[a-zA-Z0-9]|[a-zA-Z0-9])*$`, max 128 chars. To let the admin edit an existing connection instead, pass `connection_id` in place of `connection_config`.
+- **Set `grant_types` explicitly.** `auth0 apps create --type regular` without `--grants` defaults to implicit, authorization_code, **refresh_token**, and client_credentials - wrong here, because B2B Connect - Enterprise issues no refresh tokens. Never add `refresh_token` or request `offline_access`.
+- A `custom_auth_server` / `third_party` integration needs no app code. The developer registers Auth0 as an upstream OIDC IdP in their auth server (issuer `https://<tenant-domain>/`, this client's ID and secret); tell them where to get the secret (`auth0 apps show <client-id> -r`) rather than revealing it yourself or writing it to a file.
+- For the auth server to decide which users to send to Auth0, it can query the tenant's WebFinger endpoint (`/.well-known/webfinger?resource=urn:auth0:discovery:domain:<domain>&rel=http://openid.net/specs/connect/1.0/issuer`), which needs Local Resource Discovery enabled (see the table above) and Per-Application Access disabled on the org. Or it can keep its own domain map, synced from `connection.*` events through `auth0 event-streams create`. An org with more than one connection also needs Identifier First.
 
 ---
 
@@ -163,6 +229,12 @@ Organizations, domains, and connections are owned by `feature-organizations` and
 | Mixing SDKs: `@auth0/auth0-spa-js` inside a react/angular/vue app or a server app, `@auth0/auth0-react` in a plain-JS SPA, `@auth0/nextjs-auth0` in a browser SPA | Use the one SDK for the app's framework; each wrapper re-exports what it needs |
 | Using `express-openid-connect` for Enterprise Connect | The feature exists only in `@auth0/auth0-express` |
 | Using a regular SPA or web app client's credentials | Use the Client ID (and secret) of the B2B Integration |
+| Registering the integration with plain `auth0 apps create` (no `b2b_integration_configuration`) | Without the marker it is an ordinary app, not a B2B integration. Create it with `auth0 api post "clients"` carrying `b2b_integration_configuration.integration_type` |
+| Picking `application` as the integration type for the developer's own authorization server | Own auth server -> `custom_auth_server`; managed auth server -> `third_party`; `application` is only for an app that embeds the SDK |
+| Taking the CLI's default grants on the integration client | Set `grant_types` explicitly (`authorization_code`); the defaults include `refresh_token`, which the integration never uses |
+| Creating the customer's enterprise connection directly, or telling the developer SSEC is Dashboard-only | Generate an SSO ticket (`self-service-profiles/<id>/sso-ticket`) with `connection_config`, `enabled_organizations`, and `enabled_clients`; the customer's admin creates the connection through it |
+| Generating the ticket without `enabled_clients` / `enabled_organizations` | The resulting connection is not enabled for the integration or the org, so HRD cannot route the customer's users. Scope the ticket to both |
+| Posting `{"client_id": ...}` to `organizations/<id>/clients` | The body is `{"clients":[{"client_id":"<id>","use_for_member_access":true}]}`; a bare `client_id` is rejected |
 | Hardcoding the client or session secret, even as a fallback (`process.env.X ?? '<value>'`, `os.environ.get("X", "<value>")`) | Read it from the environment, no literal fallback - even when `.env` cannot be written (copy `.env.example` instead) |
 | Setting the flag after construction (e.g. `auth0.enterprise_connect = True` in Python) | Relay-mode restrictions are applied in the constructor, so a later assignment has no effect. Add the option to the existing constructor call |
 | Mounting a second `createAuth0(...)` / constructing a second client for the enterprise flow | Two clients split login and callback state (auth0-express: `req.auth0` is shared and the last instance wins). Use one relay-mode client with the B2B Integration's credentials |
