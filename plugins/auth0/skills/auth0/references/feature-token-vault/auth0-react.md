@@ -63,11 +63,14 @@ as a rejected `connectAccountWithRedirect` promise. `skipRedirectCallback` also 
 
 ## Call your API
 
+With `useDpop`, the access token is DPoP-bound, so call the API through the SDK's fetcher — it
+attaches the token **and** a DPoP proof. A hand-built `Bearer` fetch sends no proof.
+
 ```jsx
-const { getAccessTokenSilently } = useAuth0();
-const token = await getAccessTokenSilently();
-await fetch('/api/calendar', { headers: { Authorization: `Bearer ${token}` } });
-// The API verifies it and exchanges it for the Google token server-side.
+const { createFetcher } = useAuth0();
+const fetcher = createFetcher({ dpopNonceId: 'calendar_api' });
+const res = await fetcher.fetchWithAuth('/api/calendar');
+// The API verifies the token and DPoP proof, then exchanges the token for the Google token server-side.
 ```
 
 ## Security

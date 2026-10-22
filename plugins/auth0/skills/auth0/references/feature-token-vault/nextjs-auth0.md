@@ -69,7 +69,8 @@ export async function GET() {
     return NextResponse.json(await res.json());
   } catch (err) {
     if (err instanceof AccessTokenForConnectionError) {
-      // err.code: missing_session | missing_refresh_token | failed_to_exchange_refresh_token
+      // missing_session / missing_refresh_token → log in again (keep offline_access)
+      // failed_to_exchange_refresh_token → account missing or disconnected → send to /auth/connect
       return NextResponse.json({ error: err.code }, { status: 401 });
     }
     throw err;

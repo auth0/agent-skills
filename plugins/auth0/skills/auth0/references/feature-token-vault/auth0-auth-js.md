@@ -55,7 +55,8 @@ try {
   await authClient.exchangeToken({ connection, subjectToken, subjectTokenType });
 } catch (err) {
   if (err instanceof TokenExchangeError) {
-    // err.cause?.error / error_description from Auth0; err.statusCode (401 → user must (re)connect)
+    // err.cause?.error / error_description from Auth0; err.statusCode 401 = invalid/expired
+    // subject token or bad client credentials, or the user has no connected account for `connection`
   } else if (err instanceof MissingClientAuthError) {
     // AuthClient was built without a client secret / assertion key
   }

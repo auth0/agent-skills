@@ -53,9 +53,11 @@ try:
         store_options={"request": request, "response": response},
     )
 except AccessTokenForConnectionError as e:
-    # e.code: missing_refresh_token | failed_to_retrieve | api_error | ...
-    # → send the user through the connect flow again
-    ...
+    if e.code == "missing_refresh_token":
+        ...  # session has no Auth0 refresh token → log in again with offline_access
+    else:
+        ...  # failed_to_retrieve / api_error → provider account missing or disconnected:
+             # send the user through the connect flow
 ```
 
 `options` is a plain **dict**; the method returns the provider access token as a **`str`**. Treat

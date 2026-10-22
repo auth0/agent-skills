@@ -367,8 +367,8 @@ If framework detected: Read references/framework-{framework}/index.md
 ### feature:token-vault
 ```
 Read: references/feature-token-vault/index.md
-Then Read the SDK's leaf from the hub table; unsupported SDK → follow its row, never invent a method.
 Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
 ```
 
 ### guidance

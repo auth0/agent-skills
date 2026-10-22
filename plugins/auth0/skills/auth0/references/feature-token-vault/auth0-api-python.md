@@ -24,10 +24,15 @@ api_client = ApiClient(ApiClientOptions(
     client_secret=os.environ["AUTH0_CLIENT_SECRET"],
 ))
 
-# 1. Verify the caller's token first (signature, iss, aud, exp).
-claims = await api_client.verify_access_token(access_token)
+# 1. Verify the whole request first — the token's signature, iss, aud, exp, and, when the
+#    scheme is DPoP, the DPoP proof and its key binding. verify_access_token alone skips DPoP.
+headers = {k.lower(): v for k, v in request.headers.items()}
+claims = await api_client.verify_request(
+    headers, http_method=request.method, http_url=str(request.url)
+)
+access_token = headers["authorization"].split(None, 1)[1]  # raw token, Bearer or DPoP scheme
 
-# 2. Exchange it.
+# 2. Exchange the verified token.
 result = await api_client.get_access_token_for_connection({
     "connection": "google-oauth2",
     "access_token": access_token,   # the raw incoming Auth0 access token
@@ -53,7 +58,8 @@ except ApiError as e:
 
 ## Security
 
-Verify the incoming token before exchanging it, keep the client secret in the environment, and use
+Verify the incoming request with `verify_request` before exchanging its token (front ends that
+enable DPoP send DPoP-bound tokens), keep the client secret in the environment, and use
 the provider token only for the outbound call — never return it to the caller or persist it.
 
 These names and options are accurate for auth0-api-python 1.0.0b5+; do not grep site-packages or

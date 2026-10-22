@@ -52,10 +52,13 @@ throws `MyAccountApiError`.
 
 ## Call your API
 
+With `useDpop`, the access token is DPoP-bound, so call the API through the SDK's fetcher — it
+attaches the token **and** a DPoP proof. A hand-built `Bearer` fetch sends no proof.
+
 ```js
-const token = await auth0.getTokenSilently(); // Auth0 access token for your API
-await fetch('/api/calendar', { headers: { Authorization: `Bearer ${token}` } });
-// The API verifies it and exchanges it for the Google token server-side.
+const fetcher = auth0.createFetcher({ dpopNonceId: 'calendar_api' });
+const res = await fetcher.fetchWithAuth('/api/calendar');
+// The API verifies the token and DPoP proof, then exchanges the token for the Google token server-side.
 ```
 
 ## Security

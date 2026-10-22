@@ -151,7 +151,7 @@ EOF
 | Logging in without `offline_access` | No Auth0 refresh token, so the refresh-token exchange (and the SDK's My Account token) can't run |
 | Forgetting `connected_accounts.active` on the connection, or skipping the Connected Accounts flow | The exchange returns 401 — the user has no connected account for that connection |
 | Google connection without Offline Access | Google issues no refresh token, so Token Vault can't refresh the provider token |
-| MFA policy set to *Always* | Breaks the exchange. Use *Never* plus an Action that skips MFA when `event.transaction.protocol === 'oauth2-token-exchange-federated-connection'` |
+| MFA policy set to *Always* | Breaks the exchange. Don't just switch it to *Never* — that drops MFA from logins. Replace it with an Action that **still enforces MFA on every login** and skips it only when `event.transaction.protocol === 'oauth2-token-exchange-federated-connection'` |
 | Sending `audience` in the exchange | The provider is chosen by `connection`, not `audience`; SDKs reject or ignore it |
 | Returning the provider token to the browser or storing it in your DB | Keep it server-side and request it from Token Vault each time you need it |
 | Treating a 401 from the exchange as a server bug | Usually the user hasn't connected (or has disconnected) the account — send them through the connect flow again |
