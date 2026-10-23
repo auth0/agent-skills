@@ -26,6 +26,7 @@ import { NextResponse } from 'next/server';
 const enc = new TextEncoder();
 const key = () => crypto.subtle.importKey('raw', enc.encode(process.env.AUTH0_SECRET!),
   { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
+const SESSION_MS = 8 * 60 * 60 * 1000;
 
 export const auth0 = new Auth0Client({
   enterpriseConnect: true,
@@ -35,13 +36,16 @@ export const auth0 = new Auth0Client({
       return NextResponse.redirect(new URL('/login?error=sso', process.env.APP_BASE_URL));
     }
     const user = session.user;
-    const appSession = { sub: user.sub, email: user.email, orgId: user['org_id'] as string };
+    const appSession = {
+      sub: user.sub, email: user.email, orgId: user['org_id'] as string, exp: Date.now() + SESSION_MS,
+    };
     const body = Buffer.from(JSON.stringify(appSession)).toString('base64url');
     const sig = Buffer.from(await crypto.subtle.sign('HMAC', await key(), enc.encode(body))).toString('base64url');
 
     const res = NextResponse.redirect(new URL(ctx.returnTo ?? '/dashboard', process.env.APP_BASE_URL));
     res.cookies.set('app_session', `${body}.${sig}`, {
       httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', path: '/',
+      maxAge: SESSION_MS / 1000, // Next.js maxAge is seconds
     });
     return res;
   },
@@ -53,7 +57,9 @@ export async function getAppSession() {
   if (!body || !sig) return null;
   try {
     const valid = await crypto.subtle.verify('HMAC', await key(), Buffer.from(sig, 'base64url'), enc.encode(body));
-    return valid ? JSON.parse(Buffer.from(body, 'base64url').toString()) : null;
+    if (!valid) return null;
+    const session = JSON.parse(Buffer.from(body, 'base64url').toString());
+    return session.exp > Date.now() ? session : null;
   } catch {
     return null;
   }

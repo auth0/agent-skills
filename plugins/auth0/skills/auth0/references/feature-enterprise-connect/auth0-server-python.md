@@ -85,10 +85,11 @@ mode. Create the app session with the app's existing session helper if it has on
 version below shows the required shape (signed, `HttpOnly`, no Auth0 tokens):
 
 ```python
-import base64, hashlib, hmac, json
+import base64, hashlib, hmac, json, time
 from auth0_server_python.error import Auth0Error
 
 _secret = os.environ["SESSION_SECRET"].encode()
+SESSION_SECONDS = 8 * 60 * 60
 
 @app.get("/auth/callback")
 async def callback(request: Request):
@@ -103,10 +104,10 @@ async def callback(request: Request):
 
     user = result["user"]
     app_session = {"sub": user["sub"], "email": user.get("email"), "name": user.get("name"),
-                   "org_id": user.get("org_id") or ""}
+                   "org_id": user.get("org_id") or "", "exp": int(time.time()) + SESSION_SECONDS}
     body = base64.urlsafe_b64encode(json.dumps(app_session).encode()).decode().rstrip("=")
     sig = hmac.new(_secret, body.encode(), hashlib.sha256).hexdigest()
-    response.set_cookie("app_session", f"{body}.{sig}", httponly=True,
+    response.set_cookie("app_session", f"{body}.{sig}", httponly=True, max_age=SESSION_SECONDS,
                         secure=os.environ.get("ENV") == "production", samesite="lax", path="/")
     response.headers["location"] = (result.get("app_state") or {}).get("return_to", "/dashboard")
     return response
@@ -115,8 +116,8 @@ async def callback(request: Request):
 ## Protect routes
 
 Read `request.cookies.get("app_session")`, recompute the HMAC, compare with
-`hmac.compare_digest`, then decode the body; redirect to `/login` when it fails. Never call
-`auth0.get_session()` / `get_user()` here - they raise.
+`hmac.compare_digest`, then decode the body and check `exp > time.time()`; redirect to `/login`
+when any check fails. Never call `auth0.get_session()` / `get_user()` here - they raise.
 
 ## Federated logout
 

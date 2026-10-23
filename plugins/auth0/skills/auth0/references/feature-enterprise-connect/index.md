@@ -81,7 +81,7 @@ Get the exact calls from the per-SDK file below - **`Read:` the file for the det
 | `@auth0/auth0-angular` | 2.12.0 | `Read: references/feature-enterprise-connect/auth0-angular.md` |
 | `@auth0/auth0-vue` | 2.10.0 | `Read: references/feature-enterprise-connect/auth0-vue.md` |
 
-**Min version is informational.** It is the release the feature landed in; a `^`/`>=` range in `package.json` / `requirements.txt` resolves to a current release, so do not read `node_modules` or lockfiles to confirm it and do not bump or reinstall the SDK. Upgrade only if a call from the per-SDK file fails to compile because the symbol is missing.
+**Min version is the release the feature landed in.** Check only the declared range in `package.json` / `requirements.txt`. If its lower bound is below the minimum (e.g. `^2.3.0`, which a lockfile can keep on an older release), raise it to the minimum and reinstall. Otherwise leave the SDK as it is, and do not read `node_modules` or lockfiles. Upgrade at any other time only if a call from the per-SDK file fails to compile or import because the symbol is missing.
 
 #### Scope - do this, then stop
 

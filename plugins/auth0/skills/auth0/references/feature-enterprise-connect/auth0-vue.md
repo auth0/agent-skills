@@ -98,7 +98,7 @@ watch(idTokenClaims, (claims) => {
   if (claims && (!claims.org_id || !allowedOrgs.includes(claims.org_id))) {
     logout({ logoutParams: { federated: true, returnTo: `${window.location.origin}/login` } });
   }
-});
+}, { immediate: true }); // also check claims already loaded when the guard is set up
 ```
 
 ## Federated logout
