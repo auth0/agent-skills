@@ -227,6 +227,7 @@ auth0 apps update --help | jq -r '.[0].flags[].name'
 | Streaming tenant events to your system | `auth0 event-streams create` |
 | Reading or changing tenant-wide settings | `auth0 tenant-settings show` / `update set` |
 | Token exchange / custom auth profiles | `auth0 token-exchange create` |
+| B2B Connect integration, SSEC profile, or SSO ticket | `auth0 api post "clients"` / `"self-service-profiles"` (no dedicated command — see the enterprise-connect feature reference) |
 | Anything with no dedicated command | `auth0 api get <path>` |
 | Security hardening | `auth0 protection brute-force-protection update --enabled true` |
 | Routing logs externally | `auth0 logs streams create datadog` (one subcommand per provider) |
