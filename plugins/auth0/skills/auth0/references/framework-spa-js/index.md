@@ -61,6 +61,8 @@ In Auth0 Dashboard, set for your **Single Page Application**:
 - **Allowed Callback URLs**: `http://localhost:5173`
 - **Allowed Logout URLs**: `http://localhost:5173`
 - **Allowed Web Origins**: `http://localhost:5173`
+- **Refresh Token** grant and **Refresh Token Rotation** enabled (for `useRefreshTokens: true` below)
+- If you pass an API `audience`: **Allow Offline Access** enabled on that API
 
 ### 3. Initialize Auth0 Client
 
@@ -70,8 +72,10 @@ import { createAuth0Client } from '@auth0/auth0-spa-js';
 const auth0 = await createAuth0Client({
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
+  useRefreshTokens: true, // renew tokens via rotating refresh tokens, not third-party cookies (default memory cache: lost on reload)
   authorizationParams: {
-    redirect_uri: window.location.origin
+    redirect_uri: window.location.origin,
+    scope: 'openid profile email offline_access'
   }
 });
 
@@ -406,8 +410,10 @@ import { createAuth0Client } from '@auth0/auth0-spa-js';
 const auth0 = await createAuth0Client({
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
+  useRefreshTokens: true, // renew tokens via rotating refresh tokens, not third-party cookies (default memory cache: lost on reload)
   authorizationParams: {
-    redirect_uri: window.location.origin
+    redirect_uri: window.location.origin,
+    scope: 'openid profile email offline_access'
   }
 });
 ```
