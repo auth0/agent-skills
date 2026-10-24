@@ -35,6 +35,11 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
    ```gradle
    implementation 'com.auth0.android:auth0:{LATEST_VERSION}'
    ```
+   Resolve `{LATEST_VERSION}` without credentials from Maven Central:
+   `curl -s https://repo1.maven.org/maven2/com/auth0/android/auth0/maven-metadata.xml | grep -o '<version>[0-9.]*</version>' | tail -1`
+   (stable releases only; `<release>` can be a beta).
+   If you can't reach it, write a concrete version you know (3.x or later) and say so; never leave
+   the placeholder or a `+` range in the build file.
 
 2. **Configure Auth0**:
 

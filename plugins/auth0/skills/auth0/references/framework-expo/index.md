@@ -130,20 +130,39 @@ Wrap your app with `Auth0Provider` and use the `useAuth0` hook:
 
 ```typescript
 import React from 'react';
-import { Auth0Provider, useAuth0 } from 'react-native-auth0';
+import {
+  Auth0Provider,
+  useAuth0,
+  WebAuthError,
+  WebAuthErrorCodes,
+  CredentialsManagerError,
+} from 'react-native-auth0';
 import { View, Button, Text, ActivityIndicator } from 'react-native';
 
 function HomeScreen() {
-  const { authorize, clearSession, user, isLoading, error } = useAuth0();
+  const { authorize, clearSession, getCredentials, user, isLoading, error } = useAuth0();
 
   const login = async () => {
     try {
       await authorize(
-        { scope: 'openid profile email' },
+        // offline_access: a refresh token, so getCredentials() can renew silently
+        { scope: 'openid profile email offline_access' },
         { customScheme: 'YOUR_CUSTOM_SCHEME' }
       );
     } catch (e) {
+      // Handle Auth0's typed errors, not a generic catch-all (see Error Handling below)
+      if (e instanceof WebAuthError && e.type === WebAuthErrorCodes.USER_CANCELLED) return;
       console.error('Login error:', e);
+    }
+  };
+
+  // Tokens come from the SDK's secure credential store, never from your own storage
+  const callApi = async () => {
+    try {
+      const { accessToken } = await getCredentials();
+      // fetch(API_URL, { headers: { Authorization: `Bearer ${accessToken}` } })
+    } catch (e) {
+      if (e instanceof CredentialsManagerError) await login(); // no or expired session
     }
   };
 
