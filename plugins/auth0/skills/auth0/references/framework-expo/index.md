@@ -136,8 +136,16 @@ import {
   WebAuthError,
   WebAuthErrorCodes,
   CredentialsManagerError,
+  CredentialsManagerErrorCodes,
 } from 'react-native-auth0';
 import { View, Button, Text, ActivityIndicator } from 'react-native';
+
+// Credentials Manager errors that mean the session is gone and the user must log in again
+const REAUTH_ERRORS: string[] = [
+  CredentialsManagerErrorCodes.NO_CREDENTIALS,
+  CredentialsManagerErrorCodes.NO_REFRESH_TOKEN,
+  CredentialsManagerErrorCodes.RENEW_FAILED,
+];
 
 function HomeScreen() {
   const { authorize, clearSession, getCredentials, user, isLoading, error } = useAuth0();
@@ -158,12 +166,16 @@ function HomeScreen() {
 
   // Tokens come from the SDK's secure credential store, never from your own storage
   const callApi = async () => {
+    let credentials;
     try {
-      const { accessToken } = await getCredentials();
-      // fetch(API_URL, { headers: { Authorization: `Bearer ${accessToken}` } })
+      credentials = await getCredentials();
     } catch (e) {
-      if (e instanceof CredentialsManagerError) await login(); // no or expired session
+      // Re-authenticate only for session errors; network, biometric and other errors propagate
+      if (!(e instanceof CredentialsManagerError) || !REAUTH_ERRORS.includes(e.type)) throw e;
+      await login();
+      credentials = await getCredentials(); // then retry the request with the new session
     }
+    // return fetch(API_URL, { headers: { Authorization: `Bearer ${credentials.accessToken}` } });
   };
 
   const logout = async () => {

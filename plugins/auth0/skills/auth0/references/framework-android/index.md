@@ -8,6 +8,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 > gh api repos/auth0/Auth0.Android/releases/latest --jq '.tag_name'
 > ```
 > Use the returned version in all `implementation` dependency lines instead of any hardcoded version below. If the command fails, fall back to checking https://github.com/auth0/Auth0.Android/releases.
+> Auth0.Android 4.x requires `minSdk` 26+ and Java 17. If the project's `minSdk` is 21–25, use the latest 3.x release instead.
 
 ## Critical rules
 
@@ -16,7 +17,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 
 ## Prerequisites
 
-- Android API 21 or higher
+- Android API 26 or higher with Java 17 (Auth0.Android 4.x), or API 21+ with Java 8 (3.x)
 - Kotlin or Java project
 - Auth0 account with a Native application configured
 - If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
@@ -35,10 +36,11 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
    ```gradle
    implementation 'com.auth0.android:auth0:{LATEST_VERSION}'
    ```
-   Resolve `{LATEST_VERSION}` without credentials from Maven Central:
+   `{LATEST_VERSION}` is the release tag from the agent instruction at the top (latest 3.x if `minSdk` is below 26).
+   Only if that lookup fails, use Maven Central, which needs no credentials (`<release>` can be a beta, so take the last stable version):
    `curl -s https://repo1.maven.org/maven2/com/auth0/android/auth0/maven-metadata.xml | grep -o '<version>[0-9.]*</version>' | tail -1`
-   (stable releases only; `<release>` can be a beta).
-   If you can't reach it, write a concrete version you know (3.x or later) and say so; never leave
+   (for 3.x, use `grep -o '<version>3\.[0-9.]*</version>'`).
+   If neither is reachable, write a concrete version you know from the right major line and say so; never leave
    the placeholder or a `+` range in the build file.
 
 2. **Configure Auth0**:
@@ -123,8 +125,8 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
    > - **Cannot resolve symbol `R.string.com_auth0_scheme`**: `strings.xml` not updated — verify `com_auth0_scheme`, `com_auth0_client_id`, and `com_auth0_domain` entries exist
    > - **Incompatible types in callback**: Callback type parameters don't match — ensure `Callback<Credentials, AuthenticationException>` for login and `Callback<Void?, AuthenticationException>` for logout
    > - **Unresolved `lifecycleScope`**: Missing dependency — add `implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.+'` or move code out of coroutine scope
-   > - **minSdk too low**: SDK requires API 21+ — update `minSdkVersion` to at least 21
-   > - **Java version mismatch**: SDK requires Java 8 — add `compileOptions` with `JavaVersion.VERSION_1_8`
+   > - **minSdk too low**: 4.x requires API 26+ and 3.x requires API 21+ — use 3.x for `minSdk` 21–25, or raise `minSdk` only with the user's agreement
+   > - **Java version mismatch**: 4.x requires Java 17 (`JavaVersion.VERSION_17`, `jvmTarget = '17'`); 3.x requires Java 8 (`JavaVersion.VERSION_1_8`)
    >
    > Re-run the build after each fix. Track the number of build-fix iterations.
    >
@@ -964,7 +966,7 @@ WebAuthProvider.login(account)
 
 > **Agent instruction:** Before providing version numbers, fetch the latest release:
 > `gh api repos/auth0/Auth0.Android/releases/latest --jq '.tag_name'`
-> Replace `{LATEST_VERSION}` in all dependency lines with the result.
+> Replace `{LATEST_VERSION}` in all dependency lines with the result. If the project's `minSdk` is below 26, use the latest 3.x release instead (4.x requires API 26+ and Java 17).
 
 ## Setup Overview
 
@@ -1182,17 +1184,17 @@ dependencies {
 }
 ```
 
-Ensure Java 8 compatibility in your `build.gradle`:
+Set the Java version in your `build.gradle`: Java 17 for 4.x (shown), or Java 8 (`JavaVersion.VERSION_1_8`, `jvmTarget = '1.8'`) for 3.x:
 
 ```gradle
 android {
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
 }
 ```
