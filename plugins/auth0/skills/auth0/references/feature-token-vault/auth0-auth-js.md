@@ -13,6 +13,12 @@ the exchange only; it has **no** Connected Accounts / My Account API methods.
 
 ## Exchange an access token (backend API)
 
+Verify the incoming request **before** exchanging its token, with DPoP-aware validation: SPA
+front ends that enable `useDpop` send DPoP-bound tokens, and claims-only checks would let a copied
+DPoP-bound token through without its proof. For Express, `express-oauth2-jwt-bearer`'s `auth()`
+verifies DPoP proofs by default (hybrid mode — plain Bearer tokens still pass). `auth0-auth-js`
+does not verify requests itself.
+
 ```ts
 import { AuthClient } from '@auth0/auth0-auth-js';
 
@@ -22,7 +28,8 @@ const authClient = new AuthClient({
   clientSecret: process.env.AUTH0_CLIENT_SECRET!,
 });
 
-// `auth0AccessToken` is the incoming bearer token, already verified by your JWT middleware.
+// `auth0AccessToken` is the raw incoming token (Bearer or DPoP scheme), already verified —
+// including its DPoP proof when the scheme is DPoP — by your JWT middleware.
 const { accessToken: googleToken, expiresAt } = await authClient.exchangeToken({
   connection: 'google-oauth2',
   subjectToken: auth0AccessToken,

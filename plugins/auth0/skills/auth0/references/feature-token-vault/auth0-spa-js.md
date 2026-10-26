@@ -44,9 +44,10 @@ await auth0.connectAccountWithRedirect({
   // redirectUri / appState         // camelCase
 });
 
-// On the callback page — note `connect_code`, not `code`:
+// On the callback page. Login returns `code`, connect returns `connect_code` — both use the same
+// redirect URI here, so match both and let handleRedirectCallback() tell them apart:
 const query = new URLSearchParams(window.location.search);
-if ((query.has('connect_code') || query.has('error')) && query.has('state')) {
+if ((query.has('code') || query.has('connect_code') || query.has('error')) && query.has('state')) {
   const result = await auth0.handleRedirectCallback();
   if (result.response_type === 'connect_code') {
     // result.connection, result.scopes
