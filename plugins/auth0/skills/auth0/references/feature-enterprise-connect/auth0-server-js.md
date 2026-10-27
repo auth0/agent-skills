@@ -21,13 +21,20 @@ edit that call - do not construct a second client). Add `enterpriseConnect: true
 `openid profile email` (drop `offline_access`, which is stripped anyway, and `audience`), and
 remove `stateStore` (optional in this mode; the SDK uses a no-op store). Keep the
 `transactionStore` and its cookie handler - it is required and holds the login transaction across
-the redirect. `cookie-parser` must run before any route that calls the client so `req.cookies` is
-populated. If the app has no `CookieHandler<StoreOptions>` yet, add this one:
+the redirect. `cookie-parser` (for `req.cookies`) and `express.urlencoded` (for the login form's
+`req.body`) must run before any route that calls the client; keep the app's own if it already mounts
+them. If the app has no `CookieHandler<StoreOptions>` yet, add this one:
 
 ```typescript
+import express from 'express';
 import type { Request, Response } from 'express';
+import cookieParser from 'cookie-parser';
 import { ServerClient, CookieTransactionStore } from '@auth0/auth0-server-js';
 import type { CookieHandler, CookieSerializeOptions } from '@auth0/auth0-server-js';
+
+const app = express();
+app.use(express.urlencoded({ extended: false })); // form login posts req.body.email
+app.use(cookieParser());                          // the cookie handler reads req.cookies
 
 interface StoreOptions { request: Request; response: Response }
 

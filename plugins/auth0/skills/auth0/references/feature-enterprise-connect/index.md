@@ -248,7 +248,7 @@ The ticket response is `{"ticket":"https://..."}` - return that URL to the devel
 ## Related capabilities
 
 - `feature-organizations` - organizations, verified domains, members, and roles. The organization that HRD resolves is configured there; load it for org management rather than the IdP handoff.
-- `framework-{framework}` - the detected SDK's base integration and idioms; the router co-loads it. Apply this feature's flow through that file's conventions.
+- `framework-{framework}` - the detected SDK's base integration and idioms; the router co-loads it. Apply this feature's flow through that file's conventions. Exception: an `@auth0/auth0-express` app resolves to `framework-express`, which covers `express-openid-connect` (`req.oidc`, `requiresAuth()`) - none of it applies; follow `auth0-express.md` only.
 - `pattern-multi-tenant` - B2B SaaS tenancy architecture questions.
 - `tooling-{tooling}` - the CLI / Management API commands for the tenant setup above.
 
