@@ -40,8 +40,13 @@ app.get('/calendar', async (request, response) => {
     ));
   } catch (err) {
     if (err instanceof TokenForConnectionError) {
-      // No session / no refresh token / Auth0 rejected the exchange → send the user back through login.
-      return response.redirect('/auth/login');
+      // No session / no refresh token — thrown by the SDK itself, so no statusCode → log in again.
+      if (err.statusCode === undefined) return response.redirect('/auth/login');
+      // Auth0 rejected the exchange (statusCode + cause set) — usually no connected account for
+      // this connection. Logging in again won't fix that, so return a clear error instead of looping.
+      return response
+        .status(err.statusCode >= 500 ? 502 : 401)
+        .json({ error: 'provider_account_not_connected' });
     }
     throw err;
   }
@@ -55,9 +60,12 @@ app.get('/calendar', async (request, response) => {
 });
 ```
 
-Handle the failure — **don't let it crash the request**. `err.code` is `'token_for_connection_error'`
-and `err.cause?.error` carries Auth0's reason; a missing refresh token means logging in again with
-`offline_access`, and a 401 from Auth0 usually means the user has no connected account.
+Handle the failure — **don't let it crash the request**, and don't send every error to login.
+`err.code` is always `'token_for_connection_error'`, so tell the cases apart by `err.statusCode`:
+**absent** → the session has no refresh token (log in again with `offline_access`); **present** →
+Auth0 rejected the exchange and `err.cause?.error` carries its reason — a 401 usually means the user
+has no connected account, which a fresh login does not fix. server-js has no connect flow of its
+own, so surface that as a clear error (or send the user to wherever your app links accounts).
 
 `AccessTokenForConnectionOptions`: `connection` (required), `loginHint`. The return value is a
 **`ConnectionTokenSet` object**, not a string: `accessToken`, `expiresAt` (Unix **seconds**),
@@ -75,9 +83,12 @@ mismatched session throws `MissingSessionError`.
 ## Security
 
 Keep the client secret in the environment. Use the provider token only for server-side calls —
-never return it to the browser, put it in a template, log it, or persist it yourself. If one user has
-several accounts on the same connection, the cache is keyed by connection, so pass `loginHint` and
-don't assume a cached token belongs to that hint.
+never return it to the browser, put it in a template, log it, or persist it yourself.
+
+**One account per connection.** The SDK's session cache looks up tokens by `connection` only, so a
+cached token for one account can be returned for a request whose `loginHint` names a different
+account — the provider call then runs as the wrong account. Passing `loginHint` does not make this
+safe; don't rely on server-js for several accounts on the same connection.
 
 These names and options are accurate for auth0-server-js 1.13.0+; do not grep `node_modules`/`.d.ts`
 or web-search to re-verify.

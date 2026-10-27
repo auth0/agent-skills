@@ -106,8 +106,11 @@ auth0 apps update <client-id> --data '{"grant_types":["authorization_code","refr
 #    Send back the full refresh_token object you read in step 1 with only rotation_type changed.
 auth0 apps update <client-id> --data '{"refresh_token":{ ...current fields..., "rotation_type":"non-rotating"}}'
 
-# 3. Enable the connection for the app (auth0-cli v1.38.0+), then turn on Connected Accounts for Token Vault.
-auth0 connections enabled-clients update <connection-id> --data '[{"client_id":"<client-id>","status":true}]'
+# 3. Enable the connection for the app the user logs in and connects through (auth0-cli v1.38.0+),
+#    then turn on Connected Accounts for Token Vault. <login-app-client-id> is:
+#      - nextjs-auth0 / auth0-server-python / auth0-server-js / auth0-auth-js (refresh token): the step-1 web app
+#      - auth0-spa-js / auth0-react: the SPA's own (public) client — NOT the step-1 app or the step-4 Custom API Client
+auth0 connections enabled-clients update <connection-id> --data '[{"client_id":"<login-app-client-id>","status":true}]'
 auth0 connections enabled-clients show <connection-id> --json   # confirm the app is enabled
 auth0 connections update <connection-id> --data '{"connected_accounts":{"active":true}}'
 auth0 connections show <connection-id> --json                   # confirm connected_accounts.active
