@@ -48,7 +48,9 @@ meets it before implementing**, and upgrade if it falls short.
 |---|---|---|---|
 | `@auth0/nextjs-auth0` | Refresh-token exchange + Connected Accounts | 4.4.0 (connect: 4.11.0) | `Read: references/feature-token-vault/nextjs-auth0.md` |
 | `auth0-server-python` | Refresh-token exchange + Connected Accounts | 1.0.0b1 (connect: 1.0.0b6) | `Read: references/feature-token-vault/auth0-server-python.md` |
+| `@auth0/auth0-server-js` | Refresh-token exchange from the session (no Connected Accounts) | 1.0.0 (full signature: 1.13.0) | `Read: references/feature-token-vault/auth0-server-js.md` |
 | `@auth0/auth0-auth-js` | Refresh- or access-token exchange (no Connected Accounts) | 1.2.0 | `Read: references/feature-token-vault/auth0-auth-js.md` |
+| `@auth0/auth0-api-js` (API) | Access-token exchange | 1.1.0 (DPoP verify: 1.4.0) | `Read: references/feature-token-vault/auth0-api-js.md` |
 | `auth0-api-python` (API) | Access-token exchange | 1.0.0b5 | `Read: references/feature-token-vault/auth0-api-python.md` |
 | `@auth0/auth0-spa-js` | Connected Accounts linking only — the backend API exchanges | 2.9.0 | `Read: references/feature-token-vault/auth0-spa-js.md` |
 | `@auth0/auth0-react` | Connected Accounts linking only — the backend API exchanges | 2.9.0 | `Read: references/feature-token-vault/auth0-react.md` |
@@ -104,9 +106,11 @@ auth0 apps update <client-id> --data '{"grant_types":["authorization_code","refr
 #    Send back the full refresh_token object you read in step 1 with only rotation_type changed.
 auth0 apps update <client-id> --data '{"refresh_token":{ ...current fields..., "rotation_type":"non-rotating"}}'
 
-# 3. Enable the connection for the app, then turn on Connected Accounts for Token Vault.
-auth0 connections show <connection-id> --json
+# 3. Enable the connection for the app (auth0-cli v1.38.0+), then turn on Connected Accounts for Token Vault.
+auth0 connections enabled-clients update <connection-id> --data '[{"client_id":"<client-id>","status":true}]'
+auth0 connections enabled-clients show <connection-id> --json   # confirm the app is enabled
 auth0 connections update <connection-id> --data '{"connected_accounts":{"active":true}}'
+auth0 connections show <connection-id> --json                   # confirm connected_accounts.active
 
 # 4. (Access-token exchange only) Create the Custom API Client for your backend API.
 #    With --type resource_server and no --grants, the CLI sets the Token Vault grant itself.

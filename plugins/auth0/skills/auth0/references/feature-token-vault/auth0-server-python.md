@@ -55,10 +55,18 @@ try:
 except AccessTokenForConnectionError as e:
     if e.code == "missing_refresh_token":
         ...  # session has no Auth0 refresh token → log in again with offline_access
+    elif e.code == "api_error":
+        ...  # Auth0 rejected the exchange — usually no connected account for this connection
+             # → send the user through the connect flow
     else:
-        ...  # failed_to_retrieve / api_error → provider account missing or disconnected:
-             # send the user through the connect flow
+        ...  # missing_session_domain / domain_mismatch (custom-domain mode) → log in again
+except Exception:
+    ...  # transient / network failure → retry or return 502; do NOT send the user to reconnect
 ```
+
+Route on `e.code`, and keep the separate `except Exception` branch: network failures do not
+reliably arrive as an `AccessTokenForConnectionError`, so they must not fall into the "reconnect"
+path.
 
 `options` is a plain **dict**; the method returns the provider access token as a **`str`**. Treat
 every call as a possible network exchange — don't build on it being served from a cache — and also

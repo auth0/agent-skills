@@ -23,6 +23,8 @@ import { Auth0Client } from '@auth0/nextjs-auth0/server';
 export const auth0 = new Auth0Client({
   enableConnectAccountEndpoint: true, // mounts GET /auth/connect (off by default)
   async onCallback(err, ctx, session) {
+    // Handle failures first — a failed login or connect must not redirect as if it succeeded.
+    if (err) return new NextResponse(err.message, { status: 500 });
     const appBaseUrl = ctx.appBaseUrl ?? process.env.APP_BASE_URL;
     // ctx.connectedAccount is set when this callback finished a connect flow
     return NextResponse.redirect(new URL(ctx.returnTo ?? '/', appBaseUrl));

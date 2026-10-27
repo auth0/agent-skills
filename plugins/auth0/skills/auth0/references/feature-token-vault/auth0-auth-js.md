@@ -19,6 +19,12 @@ DPoP-bound token through without its proof. For Express, `express-oauth2-jwt-bea
 verifies DPoP proofs by default (hybrid mode — plain Bearer tokens still pass). `auth0-auth-js`
 does not verify requests itself.
 
+**Add DPoP replay protection.** `auth()` checks the proof's signature and that its `jti` exists, but
+does **not** reject a reused `jti`, so a captured proof can be replayed within its validity window.
+In production, reject any `jti` already seen — keep seen values in a cache shared across instances
+until the proof's `iat` window expires — before calling `exchangeToken`. The SDK's EXAMPLES.md
+("DPoP jti Replay Prevention") shows the pattern.
+
 ```ts
 import { AuthClient } from '@auth0/auth0-auth-js';
 
@@ -49,7 +55,8 @@ const { accessToken: googleToken } = await authClient.exchangeToken({
 ```
 
 `TokenVaultExchangeOptions` (camelCase): `connection`, `subjectToken` (required); `subjectTokenType`
-(defaults to the **access-token** type), `loginHint`, `scope`, `requestedTokenType`, `extra`.
+(defaults to the **access-token** type), `loginHint`, `requestedTokenType`, `extra`, and `scope`
+— `scope` down-scoping is **Early Access**; omit it unless the tenant has that feature enabled.
 `TokenResponse`: the provider token is `accessToken`; `expiresAt` is Unix **seconds**. The SDK does
 not cache — reuse the token until `expiresAt` within the request, then exchange again.
 

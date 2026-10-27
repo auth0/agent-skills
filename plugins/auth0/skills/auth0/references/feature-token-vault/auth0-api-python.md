@@ -43,6 +43,11 @@ google_token = result["access_token"]   # also result["expires_at"], result["sco
 
 The return value is a **dict** — index `["access_token"]`; don't print or log the whole result.
 
+**Add DPoP replay protection.** `verify_request` checks the DPoP proof's signature, binding, and
+required claims (including that `jti` is present), but does not reject a reused `jti`. In
+production, reject any proof `jti` already seen — keep seen values in a cache shared across
+instances until the proof's `iat` window expires — before calling `get_access_token_for_connection`.
+
 ## Error handling
 
 ```python
