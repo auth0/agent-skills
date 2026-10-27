@@ -24,7 +24,7 @@ import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 const enc = new TextEncoder();
-const key = () => crypto.subtle.importKey('raw', enc.encode(process.env.AUTH0_SECRET!),
+const key = () => crypto.subtle.importKey('raw', enc.encode(process.env.APP_SESSION_SECRET!),
   { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
 const SESSION_MS = 8 * 60 * 60 * 1000;
 
@@ -151,7 +151,7 @@ export async function GET() {
 ## Security
 
 `AUTH0_CLIENT_ID` / `AUTH0_CLIENT_SECRET` are the B2B Integration's, read from `.env.local` with
-`AUTH0_DOMAIN`, `AUTH0_SECRET`, `APP_BASE_URL`. `session.user` carries every raw ID token claim: keep only the
+`AUTH0_DOMAIN`, `AUTH0_SECRET` (the SDK's), `APP_SESSION_SECRET` (signs `app_session`; reuse the app's existing session secret if it has one), `APP_BASE_URL`. `session.user` carries every raw ID token claim: keep only the
 claims you need in the app cookie, never the Auth0 tokens (the access token cannot be renewed; EC
 issues no refresh token). Maintained example:
 https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md#enterprise-connect-b2b-integration

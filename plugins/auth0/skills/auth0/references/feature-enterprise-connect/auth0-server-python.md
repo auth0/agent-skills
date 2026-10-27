@@ -34,7 +34,7 @@ auth0 = ServerClient(
     domain=os.environ["AUTH0_DOMAIN"],
     client_id=os.environ["AUTH0_CLIENT_ID"],          # the B2B Integration's
     client_secret=os.environ["AUTH0_CLIENT_SECRET"],
-    secret=os.environ["SESSION_SECRET"],
+    secret=os.environ["AUTH0_SECRET"],                # encrypts the login-transaction cookie
     redirect_uri=f"{os.environ['APP_BASE_URL']}/auth/callback",
     transaction_store=your_transaction_store,  # concrete auth0_server_python.store.TransactionStore
     enterprise_connect=True,
@@ -82,13 +82,14 @@ is_federated_domain`, then `await is_federated_domain(auth0_domain, email_domain
 and `app_state` when one was passed. `result["user"]` is itself a **dict of claims**: read it by
 key (`user["sub"]`, `user.get("org_id")`), not by attribute. There is no `state_data` key in this
 mode. Create the app session with the app's existing session helper if it has one; the inline
-version below shows the required shape (signed, `HttpOnly`, no Auth0 tokens):
+version below shows the required shape (signed, `HttpOnly`, no Auth0 tokens). Sign it with a secret
+separate from the SDK's `AUTH0_SECRET` (reuse the app's existing session secret if it has one):
 
 ```python
 import base64, hashlib, hmac, json, time
 from auth0_server_python.error import Auth0Error
 
-_secret = os.environ["SESSION_SECRET"].encode()
+_secret = os.environ["APP_SESSION_SECRET"].encode()
 SESSION_SECONDS = 8 * 60 * 60
 
 @app.get("/auth/callback")
