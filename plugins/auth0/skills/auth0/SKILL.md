@@ -48,6 +48,7 @@ lookup key: in **Step 4** it appears verbatim as a section heading
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
 | Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
 | Trade an external or partner token (legacy system, MCP/agent, or another IdP) for Auth0 tokens with no interactive login. *Auth0: Custom Token Exchange (CTE), RFC 8693, subject_token.* | **feature:custom-token-exchange** |
+| Call a third-party API (Google, GitHub, Slack) as the signed-in user. *Auth0: Token Vault, Connected Accounts.* | **feature:token-vault** |
 | Audit a tenant for security/config issues, report, then optionally fix findings. *Auth0: tenant audit, CheckMate.* | **audit** |
 | Check if a tenant is healthy and on the right plan — two scores + a recommendation. *Auth0: health check.* | **healthcheck** |
 | Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
@@ -367,6 +368,13 @@ DPoP is SPA-only (no SSR: Next.js/Nuxt) — feature-dpop/index.md states the exc
 ### feature:custom-token-exchange
 ```
 Read: references/feature-custom-token-exchange/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
+```
+
+### feature:token-vault
+```
+Read: references/feature-token-vault/index.md
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 ```
