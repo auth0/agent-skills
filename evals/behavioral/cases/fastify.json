@@ -1,0 +1,136 @@
+{
+  "slug": "fastify",
+  "origin_skill": "auth0-fastify",
+  "skill_name": "auth0-fastify",
+  "_comment": "Session-based Fastify web app. Note that .ejs is NOT in the grader engine's SOURCE_EXTENSIONS, so template files are invisible to the scan — every grader here targets the server source (server.js / .env) instead. See ../README.md.",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Add Auth0 authentication to a Fastify web application using the @auth0/auth0-fastify SDK. It should render server-side pages, with a public home page and a protected profile page.\n\n**Auth0 Credentials:**\n- Domain: `dev-example.auth0.com`\n- Client ID: `abc123def456ghi789jkl012`\n- Client Secret: `YOUR_AUTH0_CLIENT_SECRET`",
+      "expected_output": "Working Fastify web app with Auth0 session-based login, logout, a public home page, and a session-protected profile route",
+      "expectations": [
+        "Auth0 SDK (@auth0/auth0-fastify) present in project",
+        "Has correct import statement (@auth0/auth0-fastify)",
+        "Registers the Auth0 plugin via fastify.register",
+        "Awaits plugin registration (Fastify v5 requires await before auth0Client is used at setup time)",
+        "Configures all five required plugin options (domain, clientId, clientSecret, appBaseUrl, sessionSecret)",
+        "Auth0 domain dev-example.auth0.com written to .env config file",
+        "Client ID abc123def456ghi789jkl012 written to .env config file",
+        "Reads credentials from environment variables rather than hardcoding them",
+        "Protects a route using a preHandler that checks getSession",
+        "Retrieves the user profile with getUser",
+        "Does NOT hand-roll /auth/login, /auth/logout or /auth/callback routes — the plugin mounts them",
+        "Does not use the stateless API SDK (@auth0/auth0-fastify-api) or bare JWT validation for a session-based web app",
+        "Does not use unrelated auth libraries (@fastify/passport, fastify-auth0-verify, express-openid-connect)",
+        "Passes template names relative to @fastify/view's root option (e.g. 'home.ejs', not 'views/home.ejs')",
+        "Solution correctly integrates session-based Auth0 auth in Fastify",
+        "At least 2 skill-specific advanced patterns present (correct template path resolution, TokenSet destructuring, session config, reusable preHandler, logout URL href)"
+      ]
+    }
+  ],
+  "graders": [
+    {
+      "type": "matches",
+      "pattern": "@auth0/auth0-fastify(?![-a-z])",
+      "description": "Auth0 SDK (@auth0/auth0-fastify) present in project"
+    },
+    {
+      "type": "matches",
+      "pattern": "from\\s+['\"]@auth0/auth0-fastify['\"]|require\\s*\\(\\s*['\"]@auth0/auth0-fastify['\"]",
+      "description": "Has correct import statement (@auth0/auth0-fastify)"
+    },
+    {
+      "type": "matches",
+      "pattern": "\\.register\\s*\\(\\s*\\w*[aA]uth0",
+      "description": "Registers the Auth0 plugin via fastify.register"
+    },
+    {
+      "type": "matches",
+      "pattern": "await\\s+\\w+\\.register\\s*\\(",
+      "description": "Awaits plugin registration (Fastify v5 requires await before auth0Client is used at setup time)"
+    },
+    {
+      "type": "all",
+      "description": "Configures all five required plugin options (domain, clientId, clientSecret, appBaseUrl, sessionSecret)",
+      "graders": [
+        { "type": "matches", "pattern": "domain\\s*:" },
+        { "type": "matches", "pattern": "clientId\\s*:" },
+        { "type": "matches", "pattern": "clientSecret\\s*:" },
+        { "type": "matches", "pattern": "appBaseUrl\\s*:" },
+        { "type": "matches", "pattern": "sessionSecret\\s*:" }
+      ]
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/.env*",
+      "value": "dev-example.auth0.com",
+      "description": "Auth0 domain dev-example.auth0.com written to .env config file"
+    },
+    {
+      "type": "file_contains",
+      "file_pattern": "**/.env*",
+      "value": "abc123def456ghi789jkl012",
+      "description": "Client ID abc123def456ghi789jkl012 written to .env config file"
+    },
+    {
+      "type": "matches",
+      "pattern": "process\\.env\\.AUTH0_DOMAIN",
+      "description": "Reads credentials from environment variables rather than hardcoding them"
+    },
+    {
+      "type": "all",
+      "description": "Protects a route using a preHandler that checks getSession",
+      "graders": [
+        { "type": "matches", "pattern": "preHandler" },
+        { "type": "matches", "pattern": "getSession\\s*\\(" }
+      ]
+    },
+    {
+      "type": "matches",
+      "pattern": "getUser\\s*\\(",
+      "description": "Retrieves the user profile with getUser"
+    },
+    {
+      "type": "not_matches",
+      "pattern": "\\.(get|post)\\s*\\(\\s*['\"`]/auth/(login|logout|callback)['\"`]",
+      "description": "Does NOT hand-roll /auth/login, /auth/logout or /auth/callback routes — the plugin mounts them"
+    },
+    {
+      "type": "not_matches",
+      "pattern": "['\"]@auth0/auth0-fastify-api['\"]|requireAuth\\s*\\(",
+      "description": "Does not use the stateless API SDK (@auth0/auth0-fastify-api) or bare JWT validation for a session-based web app"
+    },
+    {
+      "type": "not_contains_any",
+      "values": [
+        "@fastify/passport",
+        "fastify-auth0-verify",
+        "express-openid-connect",
+        "@auth0/auth0-spa-js"
+      ],
+      "description": "Does not use unrelated auth libraries (@fastify/passport, fastify-auth0-verify, express-openid-connect)"
+    },
+    {
+      "type": "not_matches",
+      "pattern": "view(Async)?\\s*\\(\\s*['\"`]\\.?/?views/",
+      "description": "Passes template names relative to @fastify/view's root option (e.g. 'home.ejs', not 'views/home.ejs')"
+    },
+    {
+      "type": "judge",
+      "question": "Does the solution correctly integrate Auth0 into a Fastify web application with: (1) the @auth0/auth0-fastify plugin registered via fastify.register with domain, clientId, clientSecret, appBaseUrl and sessionSecret, (2) reliance on the plugin's built-in /auth/login, /auth/logout and /auth/callback routes rather than hand-written equivalents, (3) at least one route protected by a preHandler that calls fastify.auth0Client.getSession() and redirects to /auth/login when there is no session, and (4) a profile/user route that reads the user via fastify.auth0Client.getUser()?",
+      "examples": "PASS: Registers the plugin with all five options from process.env, links to /auth/login and /auth/logout in templates without defining those routes, and guards /profile with a preHandler calling getSession() that redirects when the session is falsy.\nPASS: Uses a shared requireSession preHandler function reused across several protected routes, with getUser() supplying the view data.\nFAIL: Defines its own fastify.get('/auth/login') that builds an Auth0 authorize URL by hand instead of using the mounted route.\nFAIL: Uses @auth0/auth0-fastify-api with requireAuth() and Bearer tokens for what is a server-rendered, session-based web app.\nFAIL: Hardcodes the domain and client secret in server.js instead of reading process.env.",
+      "framework": "fastify",
+      "description": "correctness-judge: Solution correctly integrates session-based Auth0 auth in Fastify"
+    },
+    {
+      "type": "judge",
+      "question": "Check ONLY for these skill-specific advanced patterns (NOT basic SDK usage like registering the plugin, getSession, getUser, or importing the SDK). Look for at least 2 of: (1) template names passed to reply.view/viewAsync are relative to @fastify/view's root option (e.g. 'profile.ejs') rather than repeating the directory ('views/profile.ejs'), (2) the result of getAccessToken() is destructured or property-accessed for .accessToken rather than being used as a string directly, (3) explicit sessionConfiguration (rolling, absoluteDuration, inactivityDuration, or cookie options), (4) a single reusable preHandler function shared across multiple protected routes rather than an inline closure duplicated per route, (5) logout() treated as returning a URL object, redirecting with .href. These are advanced patterns taught by the skill that are NOT part of standard quickstart knowledge. Answer YES only if at least 2 of these advanced patterns are present, NO otherwise.",
+      "examples": "PASS: Registers @fastify/view with root: './views' AND calls reply.view('profile.ejs', ...) without the directory prefix, AND defines one requireSession preHandler reused by /profile and /dashboard.\nPASS: Destructures const { accessToken } = await fastify.auth0Client.getAccessToken(...) AND configures sessionConfiguration with rolling and absoluteDuration.\nFAIL: Only registers the plugin and calls getSession/getUser — no shared preHandler, no session config, template paths repeat the views/ directory.\nFAIL: Uses await fastify.auth0Client.getAccessToken(...) directly as the Bearer token value without reading .accessToken.",
+      "framework": "fastify",
+      "description": "skill-attribution-judge: At least 2 skill-specific advanced patterns present (correct template path resolution, TokenSet destructuring, session config, reusable preHandler, logout URL href)"
+    }
+  ],
+  "scaffold": {
+    "package.json": "{\n  \"name\": \"fastify-auth0-eval\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"dependencies\": {\n    \"fastify\": \"^5.3.2\"\n  }\n}\n"
+  }
+}
