@@ -93,9 +93,11 @@ Run audit once more afterwards: the final JSON lists what remains but not what w
 
 When setup is not used, create one Regular Web Application for each portal and apply these settings before creating the portal. They match what `setup` configures.
 
+Two domains appear below. `YOUR_DOMAIN` is the custom domain the tenant has configured, or the Auth0 domain (`*.auth0.com`) when it has none; it goes in every URL. `YOUR_CANONICAL_DOMAIN` is always the tenant's Auth0 domain; it goes in every API audience, including the client grant and the refresh token policy. Without a custom domain both are the same value.
+
 | Setting | Value |
 |---|---|
-| Allowed Callback URLs | `https://YOUR_AUTH0_DOMAIN/portals/auth/callback` (use the custom domain when the tenant has one) |
+| Allowed Callback URLs | `https://YOUR_DOMAIN/portals/auth/callback` |
 | Allowed Logout URLs | The URL of the developer's own application, where users land after logging out. Auth0 redirects to the first entry |
 | Grant types | Authorization Code, Refresh Token, and MFA |
 | Trust token endpoint IP header | On |
@@ -109,9 +111,9 @@ Each API the portal calls needs two things for the same audience and scopes: a c
 
 | Component | API and audience | Scopes |
 |---|---|---|
-| `my_account:mfa_management` | My Account, `https://YOUR_AUTH0_DOMAIN/me/` | `read:me:factors`, `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
+| `my_account:mfa_management` | My Account, `https://YOUR_CANONICAL_DOMAIN/me/` | `read:me:factors`, `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
 | `my_account:passkey_management` | My Account | `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
-| `my_organization:details_edit` | My Organization, `https://YOUR_AUTH0_DOMAIN/my-org/` | `read:my_org:details`, `update:my_org:details`, `read:my_org:configuration` |
+| `my_organization:details_edit` | My Organization, `https://YOUR_CANONICAL_DOMAIN/my-org/` | `read:my_org:details`, `update:my_org:details`, `read:my_org:configuration` |
 | `my_organization:domain_table` | My Organization | `read:my_org:domains`, `create:my_org:domains`, `update:my_org:domains`, `delete:my_org:domains`, `read:my_org:identity_providers`, `create:my_org:identity_providers_domains`, `delete:my_org:identity_providers_domains` |
 
 To open the portal from a native application, also add `"session_transfer": { "allowed_authentication_methods": ["query"], "enforce_device_binding": "ip" }` to the application.
@@ -123,7 +125,7 @@ Create the application with `auth0 api post clients --data '<payload>'`. This bo
   "name": "My Account (Universal Portals)",
   "app_type": "regular_web",
   "oidc_conformant": true,
-  "callbacks": ["https://YOUR_AUTH0_DOMAIN/portals/auth/callback"],
+  "callbacks": ["https://YOUR_DOMAIN/portals/auth/callback"],
   "allowed_logout_urls": ["https://app.example.com"],
   "grant_types": [
     "authorization_code",
@@ -142,7 +144,7 @@ Create the application with `auth0 api post clients --data '<payload>'`. This bo
     "idle_token_lifetime": 3600,
     "policies": [
       {
-        "audience": "https://YOUR_AUTH0_DOMAIN/me/",
+        "audience": "https://YOUR_CANONICAL_DOMAIN/me/",
         "scope": [
           "read:me:factors",
           "read:me:authentication_methods",
@@ -155,7 +157,7 @@ Create the application with `auth0 api post clients --data '<payload>'`. This bo
 }
 ```
 
-Then create the matching client grant for each audience with `auth0 api post client-grants`, using the new client ID, the audience, `"subject_type": "user"`, and the same scopes.
+Then create the matching client grant for each audience with `auth0 api post client-grants`, using the new client ID, the same `YOUR_CANONICAL_DOMAIN` audience, `"subject_type": "user"`, and the same scopes.
 
 ### Administration scopes
 
@@ -560,7 +562,7 @@ The portal URL is `https://YOUR_DOMAIN/portals/SLUG`, where `YOUR_DOMAIN` is the
 | Entry point | How |
 |---|---|
 | Web application | Link to the portal URL. A user with an Auth0 session on the same domain arrives signed in; otherwise Auth0 shows the login page and returns the user to the portal |
-| Native application | Exchange the refresh token for a session transfer token immediately before opening an in-app browser: `POST /oauth/token` with `grant_type: refresh_token`, `client_id`, `refresh_token`, and `audience: urn:YOUR_AUTH0_DOMAIN:session_transfer`. Open `https://YOUR_DOMAIN/portals/SLUG?session_transfer_token=TOKEN`. The token works once and expires after 60 seconds. The portal application needs the `session_transfer` setting |
+| Native application | Exchange the refresh token for a session transfer token immediately before opening an in-app browser: `POST /oauth/token` with `grant_type: refresh_token`, `client_id`, `refresh_token`, and `audience: urn:YOUR_DOMAIN:session_transfer`. Open `https://YOUR_DOMAIN/portals/SLUG?session_transfer_token=TOKEN`. The token works once and expires after 60 seconds. The portal application needs the `session_transfer` setting |
 | Organization | Add `?organization=ORG_ID` (or the organization name when the tenant accepts names). Always add it for portals that manage an organization (the business template), because the My Organization API acts on an organization, and for consumer portals when users belong to several organizations. The user must be a member. A different `organization` replaces the existing portal session; for a native app it must match the organization of the session transfer token |
 | In-app browser layout | Add `hide_sidebar=true`, `hide_topbar=true`, or `hide_user_menu=true`. Only `true` works, and the parameters persist while the user navigates |
 
