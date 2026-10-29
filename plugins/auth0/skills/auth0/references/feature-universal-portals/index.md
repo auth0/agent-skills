@@ -1,6 +1,6 @@
 # Auth0 Universal Portals
 
-Auth0 Universal Portals provides hosted, self-service portals instead of an application-owned “My Account” or “My Organization” UI. A **consumer portal** lets end users manage their profile, passkeys, and MFA. A **business portal** lets organization administrators manage organization details and domains. One **combined portal** can do both.
+Auth0 Universal Portals provides hosted, self-service portals instead of an application-owned “My Account” or “My Organization” UI. The **consumer** template lets end users manage their profile, passkeys, and MFA. The **business** template lets organization administrators manage organization details and domains. More templates will follow, and a portal can mix components from any of them.
 
 > **Developer Preview.** Universal Portals works in tenants where Auth0 has enabled it. If the feature is not enabled for the tenant, direct the developer to Auth0 Support.
 
@@ -12,7 +12,7 @@ Universal Portals is a hosted surface, not an SDK integration, unlike Universal 
 
 | Developer goal | Use |
 |---|---|
-| Create a consumer or business portal with its APIs, application, grants, and forms in one step | `auth0-beta universal-portals setup` |
+| Create a portal from a template (`consumer` or `business`) with its APIs, application, grants, and forms in one step | `auth0-beta universal-portals setup` |
 | Check or repair the configuration of an existing portal | `auth0-beta universal-portals audit` |
 | Configure a portal visually | Dashboard → **Portals** → **Create Portal**, which creates the application, grants, and a default template from a name and slug |
 | Script portal creation, reads, updates, or deletion | Management API `portals` endpoints, preferably through `auth0 api` |
@@ -23,13 +23,13 @@ Universal Portals is a hosted surface, not an SDK integration, unlike Universal 
 Collect these before any command that writes to the tenant:
 
 1. **Tenant** - the tenant domain, which you name back to the developer. A `feature_not_enabled` error means Universal Portals is not enabled for it.
-2. **Portal type** - consumer, business, or both.
+2. **Template** - `consumer` or `business`, or a mix of components from both.
 3. **Portal name and unique slug** - a kebab-case slug such as `my-account`.
-4. **Business portals** - the test user (email or user ID) and the organization the user belongs to.
+4. **Business template** - the test user (email or user ID) and the organization the user belongs to.
 5. **Custom domain** - the portal URL uses the tenant's custom domain when one is ready, and custom code needs one.
 6. **Forms** - the IDs of existing Auth0 Forms, if the portal needs form components. A `form_id` is not a label and cannot be fabricated; create the Forms resource first and insert its ID.
 
-Run no write command until the developer has confirmed the tenant, type, name, slug, and (for business) user and organization. `setup` has no rollback.
+Run no write command until the developer has confirmed the tenant, template, name, slug, and (for the business template) user and organization. `setup` has no rollback.
 
 ## Create a portal with the CLI
 
@@ -38,16 +38,16 @@ Run `setup` with `--json` and `AUTH0_AGENT_MODE=1`. Without `--json` an agent se
 ```bash
 auth0-beta login
 
-# consumer portal
+# consumer template
 AUTH0_AGENT_MODE=1 auth0-beta universal-portals setup --no-input --json \
   --template consumer --name "Acme Account" --slug acme-account
 
-# business portal; add --organization ORG_ID_OR_NAME when the user belongs to several
+# business template; add --organization ORG_ID_OR_NAME when the user belongs to several
 AUTH0_AGENT_MODE=1 auth0-beta universal-portals setup --no-input --json \
   --template business --name "Acme Admin" --slug acme-admin --user jane@acme.com
 ```
 
-`--no-input` requires `--template` and `--name`, and a business portal also requires `--user`. The alias `auth0-beta up` works for `universal-portals`. If the stable `auth0` CLI shadows the beta, alias `auth0-beta` to the beta binary. If the CLI rejects `--template` or has no `audit` command, it predates this tool; use the Portal application settings and Portal API operations below.
+`--no-input` requires `--template` and `--name`, and the business template also requires `--user`. The alias `auth0-beta up` works for `universal-portals`. If the stable `auth0` CLI shadows the beta, alias `auth0-beta` to the beta binary. If the CLI rejects `--template` or has no `audit` command, it predates this tool; use the Portal application settings and Portal API operations below.
 
 `setup` creates, or reuses by name and slug, so rerunning it resumes a failed run:
 
@@ -56,7 +56,7 @@ AUTH0_AGENT_MODE=1 auth0-beta universal-portals setup --no-input --json \
 - one shared forms-vault machine-to-machine application and its vault connection, plus three forms (profile, communication preferences, privacy);
 - the portal, from the template: Profile, Security, and Legal & privacy pages for consumer; Organization, Domains, Security, and Preferences pages for business.
 
-The result goes to stdout as JSON: `portal` (`id`, `slug`, `url`, `status`), `application`, `vault`, `forms`, `resources`, and `organization` for business, each with a `status` of `created`, `reused`, or `updated`. The client secret is never printed. Open `portal.url` with a test user. For a business portal, `organization.hasRole: false` means the user lacks the My Organization permissions, so the organization components will not work for that user; report this.
+The result goes to stdout as JSON: `portal` (`id`, `slug`, `url`, `status`), `application`, `vault`, `forms`, `resources`, and `organization` for the business template, each with a `status` of `created`, `reused`, or `updated`. The client secret is never printed. Open `portal.url` with a test user. For a business portal, `organization.hasRole: false` means the user lacks the My Organization permissions, so the organization components will not work for that user; report this.
 
 Errors go to stderr as JSON with an `error` code and, where possible, `fixes`:
 
@@ -116,7 +116,7 @@ Each API the portal calls needs two things for the same audience and scopes: a c
 
 To open the portal from a native application, also add `"session_transfer": { "allowed_authentication_methods": ["query"], "enforce_device_binding": "ip" }` to the application.
 
-Create the application with `auth0 api post clients --data '<payload>'`. This body is for a consumer portal; add the My Organization policy for a business portal:
+Create the application with `auth0 api post clients --data '<payload>'`. This body is for the consumer template. The business template also needs the My Organization policy, and keeps the My Account policy because its Security and Preferences pages use it:
 
 ```json
 {
@@ -288,9 +288,9 @@ Each page has `title` (1–150 characters), a `slug` (same pattern as the portal
 
 A section's `children` can contain any page component except another section. Do not nest sections. A component without config takes no `config` key, or an empty one. Rich text supports headings, bold, italics, underline, links, alignment, and lists; use `<em>` for italic placeholder text.
 
-### Starter consumer portal payload
+### Starter payload: consumer template
 
-This creates Profile and Security pages using a pre-existing Form. Replace the placeholder values only through a secure input path.
+This matches the portal that `setup --template consumer` creates: Profile, Security, and Legal & privacy pages, with the My Account components. The three Forms must already exist; replace the form IDs and the client placeholders only through a secure input path.
 
 ```json
 {
@@ -306,11 +306,15 @@ This creates Profile and Security pages using a pre-existing Form. Replace the p
       "components": [
         {
           "type": "sidebar:component:auth0:internal_link:v2",
-          "config": { "label": "Profile", "page_slug": "profile", "icon": "user" }
+          "config": {"label": "Profile", "page_slug": "profile", "icon": "user"}
         },
         {
           "type": "sidebar:component:auth0:internal_link:v2",
-          "config": { "label": "Security", "page_slug": "security", "icon": "shield" }
+          "config": {"label": "Security", "page_slug": "security", "icon": "shield-check"}
+        },
+        {
+          "type": "sidebar:component:auth0:internal_link:v2",
+          "config": {"label": "Legal & privacy", "page_slug": "legal-privacy", "icon": "file-text"}
         }
       ]
     }
@@ -326,7 +330,7 @@ This creates Profile and Security pages using a pre-existing Form. Replace the p
             "type": "page:component:auth0:structure:section",
             "config": {
               "title": "Personal information",
-              "description": "Update the information you use across our services.",
+              "description": "Basic info about you, like your name and contact details, that you use across services.",
               "variant": "card",
               "children": [
                 {
@@ -348,22 +352,58 @@ This creates Profile and Security pages using a pre-existing Form. Replace the p
           {
             "type": "page:component:auth0:structure:section",
             "config": {
+              "title": "Multi-factor authentication",
+              "description": "Add an extra layer of protection to your account by requiring a second verification step each time you sign in.",
+              "variant": "card",
+              "children": [{"type": "page:component:auth0:my_account:mfa_management"}]
+            }
+          },
+          {
+            "type": "page:component:auth0:structure:section",
+            "config": {
               "title": "Passkeys",
-              "description": "Manage passwordless sign-in methods for this account.",
+              "description": "Use your fingerprint, face, or screen lock instead of a password to sign in quickly and more securely.",
+              "variant": "card",
+              "children": [{"type": "page:component:auth0:my_account:passkey_management"}]
+            }
+          }
+        ]
+      },
+      {
+        "title": "Legal & privacy",
+        "slug": "legal-privacy",
+        "components": [
+          {
+            "type": "page:component:auth0:structure:section",
+            "config": {
+              "title": "Privacy & data consent",
+              "description": "Control how your personal data is collected and used across our services.",
               "variant": "card",
               "children": [
-                { "type": "page:component:auth0:my_account:passkey_management" }
+                {
+                  "type": "page:component:auth0:form",
+                  "config": {
+                    "form_id": "YOUR_PRIVACY_FORM_ID",
+                    "completion_message": "Your privacy preferences have been saved."
+                  }
+                }
               ]
             }
           },
           {
             "type": "page:component:auth0:structure:section",
             "config": {
-              "title": "Multi-factor authentication",
-              "description": "Manage the additional verification methods for this account.",
+              "title": "Communication preferences",
+              "description": "Choose which emails and notifications you'd like to receive from us.",
               "variant": "card",
               "children": [
-                { "type": "page:component:auth0:my_account:mfa_management" }
+                {
+                  "type": "page:component:auth0:form",
+                  "config": {
+                    "form_id": "YOUR_COMMUNICATION_PREFERENCES_FORM_ID",
+                    "completion_message": "Your communication preferences have been updated."
+                  }
+                }
               ]
             }
           }
@@ -374,9 +414,9 @@ This creates Profile and Security pages using a pre-existing Form. Replace the p
 }
 ```
 
-### Starter business portal payload
+### Starter payload: business template
 
-A business portal manages one organization's details and domains. It needs the My Organization API access described in the portal application settings.
+This matches the portal that `setup --template business` creates: Organization, Domains, Security, and Preferences pages. The organization components use the My Organization API, and the Security and Preferences pages use the My Account API and the same Forms, so the portal application needs access to both APIs.
 
 ```json
 {
@@ -392,11 +432,19 @@ A business portal manages one organization's details and domains. It needs the M
       "components": [
         {
           "type": "sidebar:component:auth0:internal_link:v2",
-          "config": { "label": "Organization", "page_slug": "organization", "icon": "building-2" }
+          "config": {"label": "Organization", "page_slug": "organization", "icon": "building-2"}
         },
         {
           "type": "sidebar:component:auth0:internal_link:v2",
-          "config": { "label": "Domains", "page_slug": "domains", "icon": "globe" }
+          "config": {"label": "Domains", "page_slug": "domains", "icon": "globe"}
+        },
+        {
+          "type": "sidebar:component:auth0:internal_link:v2",
+          "config": {"label": "Security", "page_slug": "security", "icon": "shield-check"}
+        },
+        {
+          "type": "sidebar:component:auth0:internal_link:v2",
+          "config": {"label": "Preferences", "page_slug": "preferences", "icon": "sliders-horizontal"}
         }
       ]
     }
@@ -412,10 +460,9 @@ A business portal manages one organization's details and domains. It needs the M
             "type": "page:component:auth0:structure:section",
             "config": {
               "title": "Organization details",
+              "description": "Update your organization's name and other details visible to its members.",
               "variant": "card",
-              "children": [
-                { "type": "page:component:auth0:my_organization:details_edit" }
-              ]
+              "children": [{"type": "page:component:auth0:my_organization:details_edit"}]
             }
           }
         ]
@@ -428,9 +475,72 @@ A business portal manages one organization's details and domains. It needs the M
             "type": "page:component:auth0:structure:section",
             "config": {
               "title": "Verified domains",
+              "description": "Add and verify the domains that your organization members sign in with.",
+              "variant": "card",
+              "children": [{"type": "page:component:auth0:my_organization:domain_table"}]
+            }
+          }
+        ]
+      },
+      {
+        "title": "Security",
+        "slug": "security",
+        "components": [
+          {
+            "type": "page:component:auth0:structure:section",
+            "config": {
+              "title": "Multi-factor authentication",
+              "description": "Add an extra layer of protection to your account by requiring a second verification step each time you sign in.",
+              "variant": "card",
+              "children": [{"type": "page:component:auth0:my_account:mfa_management"}]
+            }
+          },
+          {
+            "type": "page:component:auth0:structure:section",
+            "config": {
+              "title": "Passkeys",
+              "description": "Use your fingerprint, face, or screen lock instead of a password to sign in quickly and more securely.",
+              "variant": "card",
+              "children": [{"type": "page:component:auth0:my_account:passkey_management"}]
+            }
+          }
+        ]
+      },
+      {
+        "title": "Preferences",
+        "slug": "preferences",
+        "components": [
+          {
+            "type": "page:component:auth0:structure:section",
+            "config": {
+              "title": "Personal information",
+              "description": "Basic info about you, like your name and contact details, that you use across services.",
               "variant": "card",
               "children": [
-                { "type": "page:component:auth0:my_organization:domain_table" }
+                {
+                  "type": "page:component:auth0:form",
+                  "config": {
+                    "form_id": "YOUR_PERSONAL_INFO_FORM_ID",
+                    "completion_message": "Your personal information has been updated."
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "page:component:auth0:structure:section",
+            "config": {
+              "title": "Communication preferences",
+              "description": "Choose which emails and notifications you'd like to receive from us.",
+              "variant": "card",
+              "children": [
+                {
+                  "type": "page:component:auth0:form",
+                  "config": {
+                    "form_id": "YOUR_COMMUNICATION_PREFERENCES_FORM_ID",
+                    "completion_message": "Your communication preferences have been updated."
+                  }
+                }
               ]
             }
           }
@@ -441,7 +551,7 @@ A business portal manages one organization's details and domains. It needs the M
 }
 ```
 
-Combine both payloads in one portal when the same people need personal and organization settings.
+A portal is not limited to one template: add pages and components from either payload to cover another scenario.
 
 ## Open the portal
 
@@ -451,7 +561,7 @@ The portal URL is `https://YOUR_DOMAIN/portals/SLUG`, where `YOUR_DOMAIN` is the
 |---|---|
 | Web application | Link to the portal URL. A user with an Auth0 session on the same domain arrives signed in; otherwise Auth0 shows the login page and returns the user to the portal |
 | Native application | Exchange the refresh token for a session transfer token immediately before opening an in-app browser: `POST /oauth/token` with `grant_type: refresh_token`, `client_id`, `refresh_token`, and `audience: urn:YOUR_AUTH0_DOMAIN:session_transfer`. Open `https://YOUR_DOMAIN/portals/SLUG?session_transfer_token=TOKEN`. The token works once and expires after 60 seconds. The portal application needs the `session_transfer` setting |
-| Organization | Add `?organization=ORG_ID` (or the organization name when the tenant accepts names). Always add it for a business portal, because the My Organization API acts on an organization, and for consumer portals when users belong to several organizations. The user must be a member. A different `organization` replaces the existing portal session; for a native app it must match the organization of the session transfer token |
+| Organization | Add `?organization=ORG_ID` (or the organization name when the tenant accepts names). Always add it for portals that manage an organization (the business template), because the My Organization API acts on an organization, and for consumer portals when users belong to several organizations. The user must be a member. A different `organization` replaces the existing portal session; for a native app it must match the organization of the session transfer token |
 | In-app browser layout | Add `hide_sidebar=true`, `hide_topbar=true`, or `hide_user_menu=true`. Only `true` works, and the parameters persist while the user navigates |
 
 To limit a portal to some users, add a post-login Action that returns early unless `event.client.client_id` equals the portal application's client ID, then denies access with `api.access.deny` unless `event.organization` is set and `event.authorization.roles` contains the required role.
