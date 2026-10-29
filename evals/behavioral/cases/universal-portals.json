@@ -1,0 +1,94 @@
+{
+  "slug": "universal-portals",
+  "origin_skill": "feature-universal-portals",
+  "skill_name": "auth0",
+  "notes": "Graded case: the agent writes the Management API request bodies for a consumer portal and its portal application, without calling any API. Graders read the files it writes. Setup and audit command flows are in universal-portals-cli.json (expectations-only, they need a tenant).",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Set up a consumer self-service portal on my Auth0 tenant dev-example.us.auth0.com using the Management API directly, not the CLI setup command.\n\nWrite two files and do not call any API:\n- `portal.json`: the body for POST /api/v2/portals. Slug `my-account`, name `My Account`. A Profile page with one Auth0 Form (form ID `form_abc123`) and a Security page with MFA and passkey management. Link both pages from the sidebar and make Profile the default page.\n- `portal-app.json`: the body for POST /api/v2/clients for the Regular Web Application that backs the portal. Users return to https://app.example.com after logout.\n\nUse placeholders for secrets.",
+      "expected_output": "portal.json uses pages.standard, :v2 sidebar links with page_slug, a pages.default, sections with form, mfa_management and passkey_management components. portal-app.json is a regular_web app with authorization_code, refresh_token and MFA grants only, non-rotating refresh tokens, the portals callback URL, the application URL as logout URL, and organization_usage allow.",
+      "expectations": [
+        "portal.json puts pages under pages.standard with pages.default set",
+        "Sidebar links use the :v2 types with page_slug",
+        "Security page uses mfa_management and passkey_management components",
+        "portal-app.json does not enable client_credentials",
+        "portal-app.json uses non-rotating refresh tokens",
+        "portal-app.json callback is https://<domain>/portals/auth/callback and logout is the application URL",
+        "No Management API grant is requested for the portal application"
+      ]
+    }
+  ],
+  "graders": [
+    {
+      "type": "matches",
+      "pattern": "\"standard\"\\s*:\\s*\\[",
+      "description": "Pages are defined under pages.standard"
+    },
+    {
+      "type": "not_matches",
+      "pattern": "\"pages\"\\s*:\\s*\\{[^}]*\"content\"\\s*:",
+      "description": "pages.content is not used"
+    },
+    {
+      "type": "matches",
+      "pattern": "\"default\"\\s*:\\s*\"profile\"",
+      "description": "Default page is set to the Profile page slug"
+    },
+    {
+      "type": "matches",
+      "pattern": "sidebar:component:auth0:internal_link:v2",
+      "description": "Sidebar uses the v2 internal link type"
+    },
+    {
+      "type": "matches",
+      "pattern": "\"page_slug\"\\s*:",
+      "description": "Sidebar links target pages with page_slug"
+    },
+    {
+      "type": "not_matches",
+      "pattern": "internal_link\"",
+      "description": "The unversioned internal link type is not used"
+    },
+    {
+      "type": "contains",
+      "value": "page:component:auth0:my_account:mfa_management",
+      "description": "MFA management component is included"
+    },
+    {
+      "type": "contains",
+      "value": "page:component:auth0:my_account:passkey_management",
+      "description": "Passkey management component is included"
+    },
+    {
+      "type": "contains",
+      "value": "form_abc123",
+      "description": "The existing Form ID is used, not a fabricated one"
+    },
+    {
+      "type": "not_contains_any",
+      "values": ["client_credentials", "read:branding", "read:organizations"],
+      "description": "Portal application has no Client Credentials grant or Management API scopes"
+    },
+    {
+      "type": "matches",
+      "pattern": "\"rotation_type\"\\s*:\\s*\"non-rotating\"",
+      "description": "Refresh tokens are non-rotating"
+    },
+    {
+      "type": "matches",
+      "pattern": "/portals/auth/callback",
+      "description": "Callback URL is the shared portals callback"
+    },
+    {
+      "type": "matches",
+      "pattern": "\"allowed_logout_urls\"\\s*:\\s*\\[\\s*\"https://app\\.example\\.com",
+      "description": "First allowed logout URL is the application URL, not the portal URL"
+    },
+    {
+      "type": "matches",
+      "pattern": "\"organization_usage\"\\s*:\\s*\"allow\"",
+      "description": "Organization usage is allow"
+    }
+  ]
+}
