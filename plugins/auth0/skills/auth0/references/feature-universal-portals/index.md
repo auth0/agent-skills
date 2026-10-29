@@ -79,7 +79,7 @@ AUTH0_AGENT_MODE=1 auth0-beta universal-portals audit PORTAL_ID --json
 # business: add --organization ORG_ID to also check that organization's connections
 ```
 
-Each finding has an `id`, `severity` (`error` or `warning`), `message`, and often a `remedy`. The command exits `1` when any error exists (with `--strict`, also for warnings). Audit also repairs portals that were created earlier with a different setup, such as a portal application that still has the Client Credentials grant or a Management API grant.
+Each finding has an `id`, `severity` (`error` or `warning`), `message`, and often a `remedy`. The command exits `1` when any error exists (with `--strict`, also for warnings).
 
 `--fix` repairs errors only, and repairs may create a missing portal application or delete Management API grants from it. Show the developer the dry-run findings, get approval, then run:
 
