@@ -111,8 +111,8 @@ Each API the portal calls needs two things for the same audience and scopes: a c
 
 | Component | API and audience | Scopes |
 |---|---|---|
-| `my_account:mfa_management` | My Account, `https://YOUR_CANONICAL_DOMAIN/me/` | `read:me:factors`, `read:me:authentication_methods`, `create:me:authentication_methods`, `update:me:authentication_methods`, `delete:me:authentication_methods` |
-| `my_account:passkey_management` | My Account | `read:me:authentication_methods`, `create:me:authentication_methods`, `update:me:authentication_methods`, `delete:me:authentication_methods` |
+| `my_account:mfa_management` | My Account, `https://YOUR_CANONICAL_DOMAIN/me/` | `read:me:factors`, `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
+| `my_account:passkey_management` | My Account | `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
 | `my_organization:details_edit` | My Organization, `https://YOUR_CANONICAL_DOMAIN/my-org/` | `read:my_org:details`, `update:my_org:details`, `read:my_org:configuration` |
 | `my_organization:domain_table` | My Organization | `read:my_org:domains`, `create:my_org:domains`, `update:my_org:domains`, `delete:my_org:domains`, `read:my_org:identity_providers`, `create:my_org:identity_providers_domains`, `delete:my_org:identity_providers_domains` |
 
@@ -149,7 +149,6 @@ Create the application with `auth0 api post clients --data '<payload>'`. This bo
           "read:me:factors",
           "read:me:authentication_methods",
           "create:me:authentication_methods",
-          "update:me:authentication_methods",
           "delete:me:authentication_methods"
         ]
       }
