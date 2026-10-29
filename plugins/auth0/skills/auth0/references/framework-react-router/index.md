@@ -7,7 +7,7 @@ Add authentication to React Router framework-mode applications (v7 or later) usi
 ## Prerequisites
 
 - React Router framework-mode project, v7 or later (`react-router.config.ts` present)
-- Node.js 18 or newer (20 LTS recommended)
+- Node.js 20 or newer for React Router v7 (22.22 or newer for v8)
 - Auth0 account and application configured
 - If Auth0 isn't set up yet, set it up first with the Auth0 CLI (`auth0 login`, then `auth0 apps create`)
 
@@ -173,6 +173,25 @@ Visit `http://localhost:5173/auth/login` — should redirect to Auth0 Universal 
 
 ## Advanced Patterns
 
+**Enable middleware (React Router ≥ 7.9.0)** — `defineRouteAuth` below needs the middleware API, and `getAccessToken` needs `auth0Middleware` on the root route to save refreshed tokens back to the session cookie (without it the refresh repeats on every request). On 7.x, opt in with the future flag; v8 enables middleware by default, so skip the flag there:
+
+```ts
+// react-router.config.ts (7.9+ only)
+import type { Config } from '@react-router/dev/config'
+
+export default {
+  // ...existing config
+  future: { v8_middleware: true },
+} satisfies Config
+```
+
+```ts
+// app/root.tsx — add alongside the root loader from step 5
+import { auth0Middleware } from '@auth0/auth0-react-router/server'
+
+export const middleware = [auth0Middleware]
+```
+
 **Call a backend API with an access token:**
 
 ```ts
@@ -183,7 +202,7 @@ import type { Route } from './+types/items'
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
   try {
-    const token = await getAccessToken(request)  // auto-refreshes if expired (needs offline_access)
+    const token = await getAccessToken(request)  // auto-refreshes if expired (needs offline_access + auth0Middleware)
     const data = await fetch('https://api.example.com/items', {
       headers: { Authorization: `Bearer ${token}` },
     }).then(r => r.json())
@@ -195,7 +214,7 @@ export const loader = async ({ request }: Route.LoaderArgs) => {
 }
 ```
 
-**Role-based route protection (requires React Router ≥ 7.9.0 for the middleware API; on earlier 7.x use `requireSession` in the loader instead):**
+**Role-based route protection (requires the middleware setup above; on React Router < 7.9.0 call `requireSession` in the loader and check the roles claim yourself):**
 
 ```ts
 // app/routes/admin.tsx
@@ -222,7 +241,7 @@ exports.onExecutePostLogin = async (event, api) => {
 }
 ```
 
-**SPA mode** — activated automatically when `VITE_AUTH0_DOMAIN` + `VITE_AUTH0_CLIENT_ID` are present. It replaces the server setup: remove the `AUTH0_*` vars from step 2, since hybrid mode isn't supported (SPA logout won't clear the server session cookie).
+**SPA mode** — activated automatically when `VITE_AUTH0_DOMAIN` + `VITE_AUTH0_CLIENT_ID` are present. It replaces the whole server setup: skip the `AUTH0_*` vars, `app/auth0.server.ts`, the `auth/*` route and the root `loader` from steps 2–5 (keep `<Auth0Provider>` in `root.tsx`). Hybrid mode isn't supported — SPA logout won't clear a server session cookie, and the root loader fails without server config.
 
 ```bash
 npm install @auth0/auth0-spa-js

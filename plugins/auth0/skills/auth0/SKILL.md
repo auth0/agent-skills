@@ -252,8 +252,9 @@ request. **Stop at the first match.**
 | Ionic (Angular/React/Vue) | `ionic-angular` / `ionic-react` / `ionic-vue` |
 
 > **React Router note:** map to `react-router` only with a framework-mode signal
-> (v7+ framework mode, route loaders/actions, SSR, `react-router.config.ts`, or
-> `@auth0/auth0-react-router`). A plain "React Router" mention may be a
+> (v7+ framework mode, `react-router.config.ts`, `@react-router/dev`,
+> `app/routes.ts`, or `@auth0/auth0-react-router`). A plain "React Router"
+> mention — or loaders/actions alone, which data-mode SPAs also use — may be a
 > library-mode SPA, which maps to `react`. If unclear, ask before loading.
 
 ### Variant disambiguation (web app vs API)
