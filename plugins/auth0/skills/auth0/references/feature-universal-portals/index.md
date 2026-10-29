@@ -82,7 +82,7 @@ The portal endpoints are part of Management API v2. Prefer `auth0 api` when it i
 | Update | `auth0 api patch portals/{id} --data '<payload>'` | 200 |
 | Delete | `auth0 api delete portals/{id}` | 204 |
 
-The list endpoint returns at most 50 `PortalSummary` objects: `id`, `name`, `slug`, `created_at`, and `updated_at`. Create, read, and update return a full Portal object containing those fields plus `client`, `navigation`, and `pages`. The client secret is write-only and is never returned.
+The list endpoint returns `{ "portals": [...] }` with at most 50 `PortalSummary` objects sorted by name and no pagination: `id`, `name`, `slug`, `created_at`, and `updated_at`. Create, read, and update return a full Portal object containing those fields plus `client`, and `navigation`, `pages`, and `custom_code` when set. The client secret is write-only and is never returned. Writes are rate limited; wait for `Retry-After` on a `429`.
 
 ### Create a minimal portal
 
@@ -106,15 +106,16 @@ A create request requires `slug`, `name`, and `client`:
 
 | Field | Constraints |
 |---|---|
-| `slug` | Unique URL-safe kebab-case portal slug |
+| `slug` | Unique within the tenant; matches `^[a-z][a-z0-9-]{0,99}$` (starts with a letter, lowercase letters, digits, and hyphens, up to 100 characters) |
 | `name` | 1–150 characters |
 | `client.token_endpoint_auth_method` | Literal `client_secret_post` |
-| `client.client_id` | Regular Web App client ID |
+| `client.client_id` | Regular Web App client ID (5–64 characters) |
 | `client.client_secret` | 1–256 characters; write-only |
 | `navigation` | Optional sidebar definition |
 | `pages` | Optional page definition; a portal with no pages is valid |
+| `custom_code.head` | Optional HTML for the page `<head>` (1–10000 characters). Injected only when the portal is served from a custom domain |
 
-A duplicate slug returns `409 Conflict`. Read the portal list, choose a different slug, or update the existing portal after confirming it is the intended resource; do not delete an existing portal merely to reuse its slug.
+A request with a key outside this table is rejected with `400 invalid_body`. A duplicate slug returns `409 Conflict` with error code `portal_conflict`. Read the portal list, choose a different slug, or update the existing portal after confirming it is the intended resource; do not delete an existing portal merely to reuse its slug.
 
 ### Read, patch, and delete safely
 
@@ -132,11 +133,12 @@ auth0 api get portals/PORTAL_ID
 
 PATCH has true patch semantics:
 
-- omit `navigation` or `pages` to leave that field unchanged;
-- send `"navigation": null` or `"pages": null` to remove the entire field; and
-- send a complete replacement value when changing navigation or pages.
+- omit `navigation`, `pages`, or `custom_code` to leave that field unchanged;
+- send `null` for `navigation`, `pages`, or `custom_code` to remove the entire field (`slug`, `name`, and `client` cannot be `null`);
+- send a complete replacement value when changing navigation, pages, or custom code, because nested values are replaced, not merged; and
+- expect `409 Conflict` when a new `slug` is already taken.
 
-Deletion is destructive. First list or read the portal, name the target ID and slug to the developer, obtain confirmation, then call delete. Expect HTTP 204 with no response body.
+Deletion is destructive. First list or read the portal, name the target ID and slug to the developer, obtain confirmation, then call delete. Expect HTTP 204 with no response body, including for an ID that does not exist, so read the portal list afterwards to confirm the portal is gone.
 
 ## Compose navigation and pages
 
@@ -151,39 +153,40 @@ A portal may have a sidebar and a set of pages:
   },
   "pages": {
     "default": "profile",
-    "content": []
+    "standard": []
   }
 }
 ```
 
-`pages.default` and `pages.content` are individually optional. When a default is specified, make it the slug of a page in `content`.
+Set `pages.default` to the slug of a page in `pages.standard`. Without it, the portal root URL shows "Page not found". Neither the default page nor sidebar targets are checked when you write the portal, so read the portal back and confirm every `page_slug` and `default` matches a page slug.
 
 ### Sidebar components
 
 | Type | Required config | Optional config |
 |---|---|---|
-| `sidebar:component:auth0:internal_link` | `label` (1–50) | `to` (page slug, 1–50), `icon` |
-| `sidebar:component:auth0:external_link` | `label` (1–50), `url` (1–200) | `icon` |
+| `sidebar:component:auth0:internal_link:v2` | `label` (1–50), `page_slug` (1–50) | `icon` (1–50) |
+| `sidebar:component:auth0:external_link:v2` | `label` (1–50), `href` (URL, 1–200) | `icon` (1–50) |
 
-Icons are Lucide icon names in kebab-case, such as `user`, `shield`, `file-text`, `building-2`, and `lock-keyhole`.
+Icons are Lucide icon names in kebab-case, such as `user`, `shield`, `file-text`, `building-2`, and `lock-keyhole`. Keep page slugs to 50 characters or fewer so the sidebar can link to them.
 
 ### Page components
 
-Each page has `title` (1–150 characters), a slug, and optional `components`.
+Each page has `title` (1–150 characters), a `slug` (same pattern as the portal slug), and optional `components`.
 
 | Type | Required config | Optional config |
 |---|---|---|
 | `page:component:auth0:form` | `form_id` (1–50), `completion_message` (1–200) | — |
-| `page:component:auth0:typography:heading` | `title` (1–50) | `description` (1–200) |
+| `page:component:auth0:typography:heading` | `title` (1–50) | `description` (1–200; basic HTML: links, bold, italic, underline) |
 | `page:component:auth0:typography:rich_text` | `content` (1–10000 HTML) | — |
+| `page:component:auth0:media:image` | `src` (URL, 1–500) | `position` (`left`, `center`, or `right`), `height` (1–500) |
 | `page:component:auth0:structure:section` | `variant` (`card` or `none`), `children` (0–20) | `title` (1–50), `description` (1–200) |
-| `page:component:auth0:structure:separator` | — | `variant` (`dashed`, `none`, or `solid`), `text` (1–50) |
+| `page:component:auth0:structure:separator` | — | `variant` (`dashed`, `none`, or `solid`; default `solid`), `text` (1–50; ignored when `variant` is `none`) |
 | `page:component:auth0:my_account:passkey_management` | — | — |
 | `page:component:auth0:my_account:mfa_management` | — | — |
 | `page:component:auth0:my_organization:details_edit` | — | — |
 | `page:component:auth0:my_organization:domain_table` | — | — |
 
-A section's `children` can contain any page component except another section. Do not nest sections. Rich text supports headings, bold, italics, underline, links, alignment, and lists; use `<em>` for italic placeholder text.
+A section's `children` can contain any page component except another section. Do not nest sections. A component without config takes no `config` key, or an empty one. Rich text supports headings, bold, italics, underline, links, alignment, and lists; use `<em>` for italic placeholder text.
 
 ### Starter consumer portal payload
 
@@ -202,19 +205,19 @@ This creates Profile and Security pages using a pre-existing Form. Replace the p
     "sidebar": {
       "components": [
         {
-          "type": "sidebar:component:auth0:internal_link",
-          "config": { "label": "Profile", "to": "profile", "icon": "user" }
+          "type": "sidebar:component:auth0:internal_link:v2",
+          "config": { "label": "Profile", "page_slug": "profile", "icon": "user" }
         },
         {
-          "type": "sidebar:component:auth0:internal_link",
-          "config": { "label": "Security", "to": "security", "icon": "shield" }
+          "type": "sidebar:component:auth0:internal_link:v2",
+          "config": { "label": "Security", "page_slug": "security", "icon": "shield" }
         }
       ]
     }
   },
   "pages": {
     "default": "profile",
-    "content": [
+    "standard": [
       {
         "title": "Profile",
         "slug": "profile",
@@ -235,7 +238,13 @@ This creates Profile and Security pages using a pre-existing Form. Replace the p
                 }
               ]
             }
-          },
+          }
+        ]
+      },
+      {
+        "title": "Security",
+        "slug": "security",
+        "components": [
           {
             "type": "page:component:auth0:structure:section",
             "config": {
@@ -246,13 +255,7 @@ This creates Profile and Security pages using a pre-existing Form. Replace the p
                 { "type": "page:component:auth0:my_account:passkey_management" }
               ]
             }
-          }
-        ]
-      },
-      {
-        "title": "Security",
-        "slug": "security",
-        "components": [
+          },
           {
             "type": "page:component:auth0:structure:section",
             "config": {
@@ -271,7 +274,74 @@ This creates Profile and Security pages using a pre-existing Form. Replace the p
 }
 ```
 
-For a business portal, add a page whose section children include `page:component:auth0:my_organization:details_edit` or `page:component:auth0:my_organization:domain_table`. Only include organization controls when the chosen portal experience and application grants support them.
+### Starter business portal payload
+
+A business portal manages one organization's details and domains. It needs the My Organization API access described in the portal application settings.
+
+```json
+{
+  "slug": "my-organization",
+  "name": "My Organization",
+  "client": {
+    "token_endpoint_auth_method": "client_secret_post",
+    "client_id": "YOUR_REGULAR_WEB_APP_CLIENT_ID",
+    "client_secret": "YOUR_REGULAR_WEB_APP_CLIENT_SECRET"
+  },
+  "navigation": {
+    "sidebar": {
+      "components": [
+        {
+          "type": "sidebar:component:auth0:internal_link:v2",
+          "config": { "label": "Organization", "page_slug": "organization", "icon": "building-2" }
+        },
+        {
+          "type": "sidebar:component:auth0:internal_link:v2",
+          "config": { "label": "Domains", "page_slug": "domains", "icon": "globe" }
+        }
+      ]
+    }
+  },
+  "pages": {
+    "default": "organization",
+    "standard": [
+      {
+        "title": "Organization",
+        "slug": "organization",
+        "components": [
+          {
+            "type": "page:component:auth0:structure:section",
+            "config": {
+              "title": "Organization details",
+              "variant": "card",
+              "children": [
+                { "type": "page:component:auth0:my_organization:details_edit" }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "title": "Domains",
+        "slug": "domains",
+        "components": [
+          {
+            "type": "page:component:auth0:structure:section",
+            "config": {
+              "title": "Verified domains",
+              "variant": "card",
+              "children": [
+                { "type": "page:component:auth0:my_organization:domain_table" }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Combine both payloads in one portal when the same people need personal and organization settings.
 
 ## Validate the portal
 
