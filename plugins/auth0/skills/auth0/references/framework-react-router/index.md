@@ -40,6 +40,8 @@ AUTH0_SESSION_SECRET=replace-with-a-32-byte-random-value
 AUTH0_APP_BASE_URL=http://localhost:5173
 # Required when calling APIs with getAccessToken():
 # AUTH0_AUDIENCE=https://your-api-identifier
+# Required for getAccessToken() to auto-refresh (also enable Allow Offline Access on the API):
+# AUTH0_SCOPE=openid profile email offline_access
 ```
 
 In Auth0 Dashboard, set for the application (Regular Web Application type):
@@ -181,7 +183,7 @@ import type { Route } from './+types/items'
 
 export const loader = async ({ request }: Route.LoaderArgs) => {
   try {
-    const token = await getAccessToken(request)  // auto-refreshes if expired
+    const token = await getAccessToken(request)  // auto-refreshes if expired (needs offline_access)
     const data = await fetch('https://api.example.com/items', {
       headers: { Authorization: `Bearer ${token}` },
     }).then(r => r.json())
@@ -201,8 +203,9 @@ import { defineRouteHandle } from '@auth0/auth0-react-router'
 import { defineRouteAuth, auth0UserContext } from '@auth0/auth0-react-router/server'
 import type { Route } from './+types/admin'
 
-export const handle = defineRouteHandle({ role: 'admin' })
-export const middleware = defineRouteAuth({ role: 'admin' }).middleware
+const auth = { role: 'admin', rolesClaim: 'https://myapp.example.com/roles' }
+export const handle = defineRouteHandle(auth)
+export const middleware = defineRouteAuth(auth).middleware
 
 export const loader = ({ context }: Route.LoaderArgs) => {
   const user = context.get(auth0UserContext)  // guaranteed to have the admin role
@@ -210,7 +213,20 @@ export const loader = ({ context }: Route.LoaderArgs) => {
 }
 ```
 
-**SPA mode** — activated automatically when `VITE_AUTH0_DOMAIN` + `VITE_AUTH0_CLIENT_ID` are present (no server changes needed):
+Auth0 doesn't add roles to tokens by default, and the SDK's default claim (`https://auth0.com/claims/roles`) uses a reserved Auth0 namespace that Actions can't set — so always pass your own `rolesClaim`, and add it with a post-login Action (otherwise every user gets a 403):
+
+```js
+// Auth0 Dashboard → Actions → Triggers → post-login
+exports.onExecutePostLogin = async (event, api) => {
+  api.idToken.setCustomClaim('https://myapp.example.com/roles', event.authorization?.roles ?? [])
+}
+```
+
+**SPA mode** — activated automatically when `VITE_AUTH0_DOMAIN` + `VITE_AUTH0_CLIENT_ID` are present. It replaces the server setup: remove the `AUTH0_*` vars from step 2, since hybrid mode isn't supported (SPA logout won't clear the server session cookie).
+
+```bash
+npm install @auth0/auth0-spa-js
+```
 
 ```bash
 VITE_AUTH0_DOMAIN=example.us.auth0.com
@@ -246,7 +262,7 @@ VITE_AUTH0_CLIENT_ID=your_spa_client_id
 - `<Auth0Provider>` — wraps the app; reads session from root loader data
 - `<SignedIn>`, `<SignedOut>`, `<AuthLoading>` — conditional rendering
 - `<LoginButton>`, `<LogoutButton>` — pre-wired nav buttons
-- `<RequireAuth>`, `<RequireRole role="…">` — client-side guards
+- `<RequireAuth>`, `<RequireRole role="…" rolesClaim="…">` — client-side guards
 
 
 ## References
