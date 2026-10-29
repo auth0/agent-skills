@@ -48,16 +48,75 @@ It creates:
 
 Open the URL that the command prints and test it with a test user. Treat the generated application credentials as secrets; do not commit them or include them in browser code.
 
-## Manual portal prerequisites
+## Portal application settings
 
-When setup is not used, configure the Regular Web App before creating a portal:
+When setup is not used, create one Regular Web Application for each portal and apply these settings before creating the portal. They match what `setup` configures.
 
-1. In **Applications → Applications**, create a **Regular Web Application**.
-2. Set its callback URL to `https://YOUR_AUTH0_DOMAIN/portals/auth/callback`.
-3. Set its logout URL to `https://YOUR_AUTH0_DOMAIN/portals/YOUR_PORTAL_SLUG`.
-4. In **Advanced Settings → Grant Types**, enable Authorization Code, Refresh Token, Client Credentials, and MFA.
-5. In **API Access**, grant the user-delegated My Account and My Organization API scopes needed by the selected components. Enable multi-resource refresh tokens for those same user-delegated API scopes.
-6. Grant the client access to the Management API scopes needed by the portal. A basic portal requires `read:branding` and `read:organizations`; add only the scopes required by the selected experience.
+| Setting | Value |
+|---|---|
+| Allowed Callback URLs | `https://YOUR_AUTH0_DOMAIN/portals/auth/callback` (use the custom domain when the tenant has one) |
+| Allowed Logout URLs | The URL of the developer's own application, where users land after logging out. Auth0 redirects to the first entry |
+| Grant types | Authorization Code, Refresh Token, and MFA |
+| Trust token endpoint IP header | On |
+| Refresh tokens | Non-rotating, 3600 s idle lifetime, 86400 s maximum lifetime, matching the portal session |
+| Organizations | Type of Users `Both` (`organization_usage: allow`), Login Flow `No Prompt` |
+| Connections | At least one enabled; users cannot sign in without one |
+
+Keep the application at these settings: leave DPoP, refresh token rotation, the Client Credentials grant, and Management API grants off, give each portal its own application, and keep the idle lifetime at 3600 s or more. Forms that update users call the Management API through a separate machine-to-machine application.
+
+Each API the portal calls needs two things for the same audience and scopes: a client grant (`subject_type: user`) and a refresh token policy. If either is missing, components fail with API errors. Grant only the scopes of the components the portal uses:
+
+| Component | API and audience | Scopes |
+|---|---|---|
+| `my_account:mfa_management` | My Account, `https://YOUR_AUTH0_DOMAIN/me/` | `read:me:factors`, `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
+| `my_account:passkey_management` | My Account | `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
+| `my_organization:details_edit` | My Organization, `https://YOUR_AUTH0_DOMAIN/my-org/` | `read:my_org:details`, `update:my_org:details`, `read:my_org:configuration` |
+| `my_organization:domain_table` | My Organization | `read:my_org:domains`, `create:my_org:domains`, `update:my_org:domains`, `delete:my_org:domains`, `read:my_org:identity_providers`, `create:my_org:identity_providers_domains`, `delete:my_org:identity_providers_domains` |
+
+To open the portal from a native application, also add `"session_transfer": { "allowed_authentication_methods": ["query"], "enforce_device_binding": "ip" }` to the application.
+
+Create the application with `auth0 api post clients --data '<payload>'`. This body is for a consumer portal; add the My Organization policy for a business portal:
+
+```json
+{
+  "name": "My Account (Universal Portals)",
+  "app_type": "regular_web",
+  "oidc_conformant": true,
+  "callbacks": ["https://YOUR_AUTH0_DOMAIN/portals/auth/callback"],
+  "allowed_logout_urls": ["https://app.example.com"],
+  "grant_types": [
+    "authorization_code",
+    "refresh_token",
+    "http://auth0.com/oauth/grant-type/mfa-oob",
+    "http://auth0.com/oauth/grant-type/mfa-otp",
+    "http://auth0.com/oauth/grant-type/mfa-recovery-code"
+  ],
+  "token_endpoint_auth_method": "client_secret_post",
+  "is_token_endpoint_ip_header_trusted": true,
+  "organization_usage": "allow",
+  "refresh_token": {
+    "rotation_type": "non-rotating",
+    "expiration_type": "expiring",
+    "token_lifetime": 86400,
+    "idle_token_lifetime": 3600,
+    "policies": [
+      {
+        "audience": "https://YOUR_AUTH0_DOMAIN/me/",
+        "scope": [
+          "read:me:factors",
+          "read:me:authentication_methods",
+          "create:me:authentication_methods",
+          "delete:me:authentication_methods"
+        ]
+      }
+    ]
+  }
+}
+```
+
+Then create the matching client grant for each audience with `auth0 api post client-grants`, using the new client ID, the audience, `"subject_type": "user"`, and the same scopes.
+
+### Administration scopes
 
 For API-driven portal administration, pre-authorize these Management API scopes on the application that will administer portals:
 
@@ -68,7 +127,7 @@ For API-driven portal administration, pre-authorize these Management API scopes 
 | `update:portals` | Update a portal |
 | `delete:portals` | Delete a portal |
 
-With `client_credentials`, these scopes are granted in **Application → API Access → Auth0 Management API**. They are not requested in the token request. A `403` generally means that the administration application lacks a required pre-authorized scope or the feature is not enabled.
+The administration application is a separate machine-to-machine application, not the portal application. With `client_credentials`, these scopes are granted in **Application → API Access → Auth0 Management API**. They are not requested in the token request. A `403` generally means that the administration application lacks a required pre-authorized scope or the feature is not enabled for the tenant.
 
 ## Portal API operations
 
