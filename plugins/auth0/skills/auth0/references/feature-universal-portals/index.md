@@ -225,7 +225,7 @@ Read the portal before a change and re-read it after the change:
 auth0 api get portals/PORTAL_ID
 
 auth0 api patch portals/PORTAL_ID --data '{
-  "name": "Customer Account"
+  "name": "Account Center"
 }'
 
 auth0 api get portals/PORTAL_ID
@@ -443,32 +443,72 @@ A business portal manages one organization's details and domains. It needs the M
 
 Combine both payloads in one portal when the same people need personal and organization settings.
 
+## Open the portal
+
+The portal URL is `https://YOUR_DOMAIN/portals/SLUG`, where `YOUR_DOMAIN` is the custom domain when the tenant has one and the Auth0 domain otherwise. A page lives at `/portals/SLUG/pages/PAGE_SLUG`. The URL opens `pages.default`; without it, the portal shows "Page not found".
+
+| Entry point | How |
+|---|---|
+| Web application | Link to the portal URL. A user with an Auth0 session on the same domain arrives signed in; otherwise Auth0 shows the login page and returns the user to the portal |
+| Native application | Exchange the refresh token for a session transfer token immediately before opening an in-app browser: `POST /oauth/token` with `grant_type: refresh_token`, `client_id`, `refresh_token`, and `audience: urn:YOUR_AUTH0_DOMAIN:session_transfer`. Open `https://YOUR_DOMAIN/portals/SLUG?session_transfer_token=TOKEN`. The token works once and expires after 60 seconds. The portal application needs the `session_transfer` setting |
+| Organization | Add `?organization=ORG_ID` (or the organization name when the tenant accepts names). Always add it for a business portal, because the My Organization API acts on an organization, and for consumer portals when users belong to several organizations. The user must be a member. A different `organization` replaces the existing portal session; for a native app it must match the organization of the session transfer token |
+| In-app browser layout | Add `hide_sidebar=true`, `hide_topbar=true`, or `hide_user_menu=true`. Only `true` works, and the parameters persist while the user navigates |
+
+To limit a portal to some users, add a post-login Action that returns early unless `event.client.client_id` equals the portal application's client ID, then denies access with `api.access.deny` unless `event.organization` is set and `event.authorization.roles` contains the required role.
+
+The portal session lasts 1 hour of inactivity and 1 day in total; when it ends, a user with an active Auth0 session signs in again without a prompt. Tokens stay on the portal server, and component requests go through the portal, which allows only the My Account and My Organization audiences. Portals inherit the tenant's branding, and use the organization's branding when opened with `organization`.
+
+Use a custom domain from the start: custom code requires one, and passkeys enrolled on the Auth0 domain must be enrolled again after a switch. The My Organization components do not disable buttons for users without write permission; the error appears after the user saves.
+
 ## Validate the portal
 
-1. Read the portal through `auth0 api get portals/PORTAL_ID` and check the stored name, slug, sidebar targets, default page, and component types.
-2. Open the portal URL in a private browser session with a test user.
+1. Read the portal with `auth0 api get portals/PORTAL_ID`. Done when the name, slug, `pages.default`, every sidebar `page_slug`, and every component type match what was requested.
+2. Open the portal URL in a private browser session with a test user. Done when sign-in completes and a page with a Universal Component renders without an error. Dashboard **Preview** shows the last published version, so publish before previewing; for a portal changed through the API, re-read it and open the URL.
 3. Test each included capability: form submission, passkey management, MFA management, and organization editing or domain viewing as applicable.
-4. Confirm logout returns to the configured logout URL and that the callback completes.
-5. In the Dashboard, use Preview before Publish when working through the visual editor.
+4. Confirm logout lands on the first Allowed Logout URL.
+5. When `audit` is available, run it. Done when it reports no errors.
 
 ## Troubleshooting
 
+Check the tenant logs first; most sign-in and access errors appear there.
+
 | Symptom | Cause and next action |
 |---|---|
-| Feature or endpoint is unavailable | Confirm a non-production tenant and Universal Portals enablement. Request beta access through Auth0 Support. |
-| `403 Forbidden` from portal API | Pre-authorize the required `*:portals` scope on the administration application. Check that the active CLI session or client credentials use that application. |
+| Feature or endpoint is unavailable (`403 feature_not_enabled`) | Universal Portals is not enabled for the tenant. Direct the developer to Auth0 Support. |
+| `403 Forbidden` from the portal API | Pre-authorize the required `*:portals` scope on the administration application. Check that the active CLI session or client credentials use that application. |
 | `409 Conflict` on create | The slug already exists in this tenant. List portals, then choose another slug or intentionally patch the existing portal. |
-| Portal cannot finish login or logout | Verify the portal application's callback and logout URLs, grant types, API access, and multi-resource refresh token configuration. |
+| `400 invalid_body` | The payload has a key or value outside the schema. Compare it with the starter payloads and the constraints above. |
+| Error page 401, 403, 404 "Portal not found" or "Page not found", or 500 | 401: open the portal URL again and sign in. 403: check the portal application settings. "Portal not found": check the slug and domain. "Page not found": check the page slug and `pages.default`. 500: retry, then contact Auth0 Support with the time and slug. |
+| Login prompt after the portal session ends | Expected when the Auth0 session also ended. Extend the Auth0 session in tenant session settings. |
+| Session transfer token rejected | The token expired, was already used, the portal application lacks `session_transfer`, or `organization` differs from the token's organization. |
+| User lands on an unexpected page after logout | Auth0 redirects to the first Allowed Logout URL. Put the application URL first. |
+| User cannot sign in; no connection | Enable at least one connection on the portal application. With organizations, enable one on the organization as well. |
+| Cannot sign in with `organization` | The user is not a member, the organization has no enabled connection, or `organization_usage` is not `allow`. |
+| Organization components show an error or no data | The portal was opened without `organization`. Add it to the URL. |
+| Shows tenant branding instead of the organization's | Open the portal with `organization` and check that the organization has branding. |
+| A component shows “We couldn't load this information” | A client grant or refresh token policy is missing for the API or scopes the component needs. Add both. |
+| Components fail intermittently | Refresh token rotation is on. Turn it off. |
+| `403` "This audience is not allowed" | Only the My Account and My Organization APIs of this tenant are reachable. Check the portal application's client grant. |
+| MFA challenge never appears when deleting an authenticator | The browser blocked the popup. Allow popups for the portal domain. |
+| “Too many requests” on a component | The My Account API rate limit applied. Wait, then retry. |
 | Form fails to render | Verify that `form_id` refers to an existing Auth0 Forms resource and that the portal application can use the required API access. |
-| Passkey, MFA, or organization component fails | Confirm its underlying Auth0 capability and the matching My Account or My Organization scopes. Do not replace the managed component with a browser-side implementation. |
+| Form saves but the user is not updated | The Flow has no Forms vault connection, or its machine-to-machine application lacks `update:users` and `update:users_app_metadata`. |
+| Components fail after logging out of another application | Logout invalidated the portal's refresh token. Ask the user to log out of the portal and open it again. |
+| `hide_*` parameters have no effect | Use exactly `hide_sidebar=true`, `hide_topbar=true`, or `hide_user_menu=true`. |
+| Passkeys stop working after a domain switch | Passkeys are bound to the domain; users enroll again on the new one. |
 | Secret disappears after reading a portal | Expected behavior: `client_secret` is write-only. Keep the source secret in an approved secret store and supply it only when creating or changing the portal client. |
 
 ## Sources
 
 Run `auth0 docs search "universal portals"` for the latest Auth0 docs on this topic.
 
-- https://auth0.com/docs/customize/portals/overview
+- https://auth0.com/docs/customize/portals
 - https://auth0.com/docs/customize/portals/quickstart
-- https://auth0.com/docs/api/management/v2
+- https://auth0.com/docs/customize/portals/architecture
+- https://auth0.com/docs/customize/portals/configure-portal-application
+- https://auth0.com/docs/customize/portals/customize-portals
+- https://auth0.com/docs/customize/portals/portal-components
+- https://auth0.com/docs/customize/portals/access-portals
+- https://auth0.com/docs/customize/portals/troubleshoot-portals
 - https://auth0.github.io/auth0-cli/auth0_api.html
 - https://lucide.dev/icons/
