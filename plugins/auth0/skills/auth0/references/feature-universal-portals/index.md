@@ -1,52 +1,93 @@
 # Auth0 Universal Portals
 
-Auth0 Universal Portals is a hosted identity experience platform. It provides managed consumer and business self-service portals instead of an application-owned “My Account” or “My Organization” UI.
+Auth0 Universal Portals provides hosted, self-service portals instead of an application-owned “My Account” or “My Organization” UI. A **consumer portal** lets end users manage their profile, passkeys, and MFA. A **business portal** lets organization administrators manage organization details and domains. One **combined portal** can do both.
 
-> **Beta — non-production only.** Universal Portals is available only in enabled non-production tenants. Do not configure, test, or suggest it for a production tenant. If the feature is not enabled, direct the developer to Auth0 Support.
+> **Developer Preview.** Universal Portals works in tenants where Auth0 has enabled it. If the feature is not enabled for the tenant, direct the developer to Auth0 Support.
 
-A portal is backed by a Regular Web Application. The portal server uses that application's credentials for SSO, keeps tokens server-side, and sets browser session cookies. It requests section-specific access tokens and refreshes them through a multi-resource refresh token. Do not build a browser-side token exchange or expose the portal application's client secret.
+A portal is backed by a Regular Web Application, the **portal application**. The portal server uses that application's credentials for SSO, keeps tokens server-side, and sets browser session cookies. It requests section-specific access tokens and refreshes them through a multi-resource refresh token. Do not build a browser-side token exchange or expose the portal application's client secret.
+
+Universal Portals is a hosted surface, not an SDK integration, unlike Universal Components, which you embed and wire up with SDKs. Do not add a React, Next.js, or mobile SDK to render portal components. An application may link users to the hosted portal, but the portal's pages and navigation are configured in Auth0.
 
 ## Choose the right workflow
 
 | Developer goal | Use |
 |---|---|
-| Get a test portal, resource servers, grants, and a Regular Web App quickly | `auth0-beta universal-portals setup` |
-| Configure a portal visually | Dashboard → **Portals** → create or open a portal → visual editor |
+| Create a consumer or business portal with its APIs, application, grants, and forms in one step | `auth0-beta universal-portals setup` |
+| Check or repair the configuration of an existing portal | `auth0-beta universal-portals audit` |
+| Configure a portal visually | Dashboard → **Portals** → **Create Portal**, which creates the application, grants, and a default template from a name and slug |
 | Script portal creation, reads, updates, or deletion | Management API `portals` endpoints, preferably through `auth0 api` |
 | Build tenant configuration as Terraform | Use Terraform for the surrounding application and APIs, then use the Management API for the portal. Do not invent an `auth0_portal` resource. |
 
-Universal Portals is a hosted surface, not an SDK integration. Do not add a React, Next.js, or mobile SDK to render portal components. An application may link users to the hosted portal, but the portal's pages and navigation are configured in Auth0.
-
 ## Gather the minimum design input
 
-Before changing the tenant, establish:
+Collect these before any command that writes to the tenant:
 
-1. **Tenant and rollout boundary** — confirm that it is a non-production tenant with Universal Portals enabled.
-2. **Portal name and unique slug** — use a URL-safe kebab-case slug such as `my-account`; the slug is unique within a tenant.
-3. **Components** — choose which components to include: Profile/forms, passkeys, and MFA for a consumer self-service experience; organization details and organization domains for a business self-service experience. Confirm which Auth0 Forms IDs already exist before adding form components.
-4. **Portal application** — use the Regular Web App created by setup, or identify an existing Regular Web App and obtain its client ID and secret through a secure path.
+1. **Tenant** - the tenant domain, which you name back to the developer. A `feature_not_enabled` error means Universal Portals is not enabled for it.
+2. **Portal type** - consumer, business, or both.
+3. **Portal name and unique slug** - a kebab-case slug such as `my-account`.
+4. **Business portals** - the test user (email or user ID) and the organization the user belongs to.
+5. **Custom domain** - the portal URL uses the tenant's custom domain when one is ready, and custom code needs one.
+6. **Forms** - the IDs of existing Auth0 Forms, if the portal needs form components. A `form_id` is not a label and cannot be fabricated; create the Forms resource first and insert its ID.
 
-If the developer asks to create Forms, use the available tenant tooling to create the Forms resource first, then insert the resulting ID in the portal payload. A `form_id` is not a label and cannot be fabricated.
+Run no write command until the developer has confirmed the tenant, type, name, slug, and (for business) user and organization. `setup` has no rollback.
 
-## Fast setup: Auth0 Beta CLI
+## Create a portal with the CLI
 
-The setup command provisions the baseline in one step:
+Run `setup` with `--json` and `AUTH0_AGENT_MODE=1`. Without `--json` an agent sees only the exit code.
 
 ```bash
 auth0-beta login
-auth0-beta universal-portals setup
-# alias: auth0-beta up setup
+
+# consumer portal
+AUTH0_AGENT_MODE=1 auth0-beta universal-portals setup --no-input --json \
+  --template consumer --name "Acme Account" --slug acme-account
+
+# business portal; add --organization ORG_ID_OR_NAME when the user belongs to several
+AUTH0_AGENT_MODE=1 auth0-beta universal-portals setup --no-input --json \
+  --template business --name "Acme Admin" --slug acme-admin --user jane@acme.com
 ```
 
-It creates:
+`--no-input` requires `--template` and `--name`, and a business portal also requires `--user`. The alias `auth0-beta up` works for `universal-portals`. If the stable `auth0` CLI shadows the beta, alias `auth0-beta` to the beta binary. If the CLI rejects `--template` or has no `audit` command, it predates this tool; use the Portal application settings and Portal API operations below.
 
-- My Account API for user account operations;
-- My Organization API for organization operations;
-- a Regular Web App linked to the portal;
-- client grants for My Account, My Organization, and Management API operations; and
-- a default portal and its URL.
+`setup` creates, or reuses by name and slug, so rerunning it resumes a failed run:
 
-Open the URL that the command prints and test it with a test user. Treat the generated application credentials as secrets; do not commit them or include them in browser code.
+- the My Account API, and the My Organization API for business;
+- the portal application, named `NAME (Universal Portals)`, with the settings in Portal application settings and client grants for those APIs;
+- one shared forms-vault machine-to-machine application and its vault connection, plus three forms (profile, communication preferences, privacy);
+- the portal, from the template: Profile, Security, and Legal & privacy pages for consumer; Organization, Domains, Security, and Preferences pages for business.
+
+The result goes to stdout as JSON: `portal` (`id`, `slug`, `url`, `status`), `application`, `vault`, `forms`, `resources`, and `organization` for business, each with a `status` of `created`, `reused`, or `updated`. The client secret is never printed. Open `portal.url` with a test user. For a business portal, `organization.hasRole: false` means the user lacks the My Organization permissions, so the organization components will not work for that user; report this.
+
+Errors go to stderr as JSON with an `error` code and, where possible, `fixes`:
+
+| `error` | Meaning and next action |
+|---|---|
+| `usage` | A flag is missing or invalid; correct the command |
+| `missing_scopes` | The CLI login lacks scopes; run the `auth0 login --scopes ...` command from `fixes`, then rerun |
+| `feature_not_enabled` | Universal Portals is not enabled for the tenant; direct the developer to Auth0 Support |
+| `business_access` | The user is missing, ambiguous, not in the organization, or the organization has no enabled connection; follow `fixes` or pass `--organization` |
+| `slug_race` or `setup_failed` | The slug or application name is taken by something this run did not create; choose another name and slug |
+
+Anything created before a failure stays in the tenant.
+
+## Audit a portal
+
+Audit reads the portal, its application, grants, forms, and connections, and reports findings. Run it without `--fix` first:
+
+```bash
+AUTH0_AGENT_MODE=1 auth0-beta universal-portals audit PORTAL_ID --json
+# business: add --organization ORG_ID to also check that organization's connections
+```
+
+Each finding has an `id`, `severity` (`error` or `warning`), `message`, and often a `remedy`. The command exits `1` when any error exists (with `--strict`, also for warnings). Audit also repairs portals that were created earlier with a different setup, such as a portal application that still has the Client Credentials grant or a Management API grant.
+
+`--fix` repairs errors only, and repairs may create a missing portal application or delete Management API grants from it. Show the developer the dry-run findings, get approval, then run:
+
+```bash
+AUTH0_AGENT_MODE=1 auth0-beta universal-portals audit PORTAL_ID --fix --json
+```
+
+Run audit once more afterwards: the final JSON lists what remains but not what was fixed, and one repair can expose new findings. These findings need manual action: a sidebar link to a missing page, an empty page, a form missing from the tenant, custom code without a ready custom domain, no connection enabled on the portal application, an organization without a shared connection, and session transfer not enabled. Warnings are never auto-fixed.
 
 ## Portal application settings
 
