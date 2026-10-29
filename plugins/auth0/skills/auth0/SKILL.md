@@ -251,6 +251,11 @@ request. **Stop at the first match.**
 | React Native / Expo | `react-native` / `expo` |
 | Ionic (Angular/React/Vue) | `ionic-angular` / `ionic-react` / `ionic-vue` |
 
+> **React Router note:** map to `react-router` only with a framework-mode signal
+> (v7+ framework mode, route loaders/actions, SSR, `react-router.config.ts`, or
+> `@auth0/auth0-react-router`). A plain "React Router" mention may be a
+> library-mode SPA, which maps to `react`. If unclear, ask before loading.
+
 ### Variant disambiguation (web app vs API)
 
 Some frameworks have separate web-app and API references. When Tier 1 did not

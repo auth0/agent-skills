@@ -35,7 +35,8 @@ Create `.env` at the project root (**add to `.gitignore` immediately**):
 AUTH0_DOMAIN=your-tenant.auth0.com
 AUTH0_CLIENT_ID=your-client-id
 AUTH0_CLIENT_SECRET=your-client-secret
-AUTH0_SESSION_SECRET=<openssl rand -base64 32>
+# Encrypts the session cookie; must be at least 32 characters. Generate with: openssl rand -hex 32
+AUTH0_SESSION_SECRET=replace-with-a-32-byte-random-value
 AUTH0_APP_BASE_URL=http://localhost:5173
 # Required when calling APIs with getAccessToken():
 # AUTH0_AUDIENCE=https://your-api-identifier
@@ -159,7 +160,7 @@ Visit `http://localhost:5173/auth/login` — should redirect to Auth0 Universal 
 
 | Mistake | Fix |
 |---------|-----|
-| `AUTH0_SESSION_SECRET` fewer than 32 characters | `openssl rand -base64 32`; store in `.env`, add `.env` to `.gitignore` |
+| `AUTH0_SESSION_SECRET` fewer than 32 characters | `openssl rand -hex 32`; store in `.env`, add `.env` to `.gitignore` |
 | Callback URL mismatch after login | Add `http://localhost:5173/auth/callback` to Allowed Callback URLs in Dashboard |
 | 404 on `/auth/login` | Confirm `auth.$.tsx` exists and is registered in `app/routes.ts` |
 | `rootAuthLoader` returns `undefined` | Ensure root route exports `loader = ({ request }) => rootAuthLoader(request)` and its id is `root` |
@@ -173,10 +174,12 @@ Visit `http://localhost:5173/auth/login` — should redirect to Auth0 Universal 
 **Call a backend API with an access token:**
 
 ```ts
+// app/routes/items.tsx
 import { getAccessToken, deleteSession } from '@auth0/auth0-react-router/server'
 import { TokenError } from '@auth0/auth0-react-router/errors'
+import type { Route } from './+types/items'
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request }: Route.LoaderArgs) => {
   try {
     const token = await getAccessToken(request)  // auto-refreshes if expired
     const data = await fetch('https://api.example.com/items', {
@@ -190,17 +193,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 }
 ```
 
-**Role-based route protection (React Router framework mode, requires the middleware API — check your version supports it):**
+**Role-based route protection (requires React Router ≥ 7.9.0 for the middleware API; on earlier 7.x use `requireSession` in the loader instead):**
 
 ```ts
 // app/routes/admin.tsx
 import { defineRouteHandle } from '@auth0/auth0-react-router'
 import { defineRouteAuth, auth0UserContext } from '@auth0/auth0-react-router/server'
+import type { Route } from './+types/admin'
 
 export const handle = defineRouteHandle({ role: 'admin' })
 export const middleware = defineRouteAuth({ role: 'admin' }).middleware
 
-export const loader = ({ context }: LoaderFunctionArgs) => {
+export const loader = ({ context }: Route.LoaderArgs) => {
   const user = context.get(auth0UserContext)  // guaranteed to have the admin role
   return { user }
 }
