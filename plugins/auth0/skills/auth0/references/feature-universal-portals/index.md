@@ -1,304 +1,85 @@
 # Auth0 Universal Portals
 
-Auth0 Universal Portals is a hosted identity experience platform. It provides managed consumer and business self-service portals instead of an application-owned “My Account” or “My Organization” UI.
+Hosted, self-service portals that replace an app-owned "My Account" or "My Organization" UI. The **consumer** template covers profile, passkeys, and MFA. The **business** template covers organization details and domains. A portal can mix components from both.
 
-> **Beta — non-production only.** Universal Portals is available only in enabled non-production tenants. Do not configure, test, or suggest it for a production tenant. If the feature is not enabled, direct the developer to Auth0 Support.
+> **Developer Preview.** Works only in tenants where Auth0 has enabled it. If the feature is not enabled, direct the developer to Auth0 Support.
 
-A portal is backed by a Regular Web Application. The portal server uses that application's credentials for SSO, keeps tokens server-side, and sets browser session cookies. It requests section-specific access tokens and refreshes them through a multi-resource refresh token. Do not build a browser-side token exchange or expose the portal application's client secret.
+A portal is backed by a Regular Web Application, the **portal application**. Its server keeps tokens and sets session cookies. Do not add an SDK to render portal components, do not build a browser-side token exchange, and do not expose the portal application's client secret. Concepts: https://auth0.com/docs/customize/portals/architecture
 
-## Choose the right workflow
+## Choose the workflow
 
-| Developer goal | Use |
+| Goal | Use |
 |---|---|
-| Get a test portal, resource servers, grants, and a Regular Web App quickly | `auth0-beta universal-portals setup` |
-| Configure a portal visually | Dashboard → **Portals** → create or open a portal → visual editor |
-| Script portal creation, reads, updates, or deletion | Management API `portals` endpoints, preferably through `auth0 api` |
-| Build tenant configuration as Terraform | Use Terraform for the surrounding application and APIs, then use the Management API for the portal. Do not invent an `auth0_portal` resource. |
+| Create a portal from a template | `auth0-beta universal-portals setup` |
+| Check or repair an existing portal | `auth0-beta universal-portals audit` |
+| Script reads, updates, or deletion | Management API `portals` endpoints, preferably through `auth0 api` |
+| Terraform | Use it for the surrounding application and APIs only. Do not invent an `auth0_portal` resource |
 
-Universal Portals is a hosted surface, not an SDK integration. Do not add a React, Next.js, or mobile SDK to render portal components. An application may link users to the hosted portal, but the portal's pages and navigation are configured in Auth0.
+## Before any write
 
-## Gather the minimum design input
+Confirm with the developer: tenant domain, template (or a mix), portal name and kebab-case slug, and for the business template the test user and organization. A `form_id` is never a label: create the Forms resource first and use its ID. `setup` has no rollback, and anything created before a failure stays in the tenant.
 
-Before changing the tenant, establish:
-
-1. **Tenant and rollout boundary** — confirm that it is a non-production tenant with Universal Portals enabled.
-2. **Portal name and unique slug** — use a URL-safe kebab-case slug such as `my-account`; the slug is unique within a tenant.
-3. **Components** — choose which components to include: Profile/forms, passkeys, and MFA for a consumer self-service experience; organization details and organization domains for a business self-service experience. Confirm which Auth0 Forms IDs already exist before adding form components.
-4. **Portal application** — use the Regular Web App created by setup, or identify an existing Regular Web App and obtain its client ID and secret through a secure path.
-
-If the developer asks to create Forms, use the available tenant tooling to create the Forms resource first, then insert the resulting ID in the portal payload. A `form_id` is not a label and cannot be fabricated.
-
-## Fast setup: Auth0 Beta CLI
-
-The setup command provisions the baseline in one step:
+## Create with the CLI
 
 ```bash
-auth0-beta login
-auth0-beta universal-portals setup
-# alias: auth0-beta up setup
+AUTH0_AGENT_MODE=1 auth0-beta universal-portals setup --no-input --json \
+  --template consumer --name "Acme Account" --slug acme-account
+# business: --template business --user jane@acme.com [--organization ORG_ID_OR_NAME]
 ```
 
-It creates:
+- Always pass `--json`. Without it an agent sees only the exit code. `--no-input` requires `--template` and `--name`; the business template also requires `--user`.
+- Rerunning resumes a failed run: `setup` creates or reuses resources by name and slug.
+- Open `portal.url` with a test user. For business, `organization.hasRole: false` means the user lacks My Organization permissions; report it.
 
-- My Account API for user account operations;
-- My Organization API for organization operations;
-- a Regular Web App linked to the portal;
-- client grants for My Account, My Organization, and Management API operations; and
-- a default portal and its URL.
-
-Open the URL that the command prints and test it with a test user. Treat the generated application credentials as secrets; do not commit them or include them in browser code.
-
-## Manual portal prerequisites
-
-When setup is not used, configure the Regular Web App before creating a portal:
-
-1. In **Applications → Applications**, create a **Regular Web Application**.
-2. Set its callback URL to `https://YOUR_AUTH0_DOMAIN/portals/auth/callback`.
-3. Set its logout URL to `https://YOUR_AUTH0_DOMAIN/portals/YOUR_PORTAL_SLUG`.
-4. In **Advanced Settings → Grant Types**, enable Authorization Code, Refresh Token, Client Credentials, and MFA.
-5. In **API Access**, grant the user-delegated My Account and My Organization API scopes needed by the selected components. Enable multi-resource refresh tokens for those same user-delegated API scopes.
-6. Grant the client access to the Management API scopes needed by the portal. A basic portal requires `read:branding` and `read:organizations`; add only the scopes required by the selected experience.
-
-For API-driven portal administration, pre-authorize these Management API scopes on the application that will administer portals:
-
-| Scope | Allows |
+| `error` | Action |
 |---|---|
-| `create:portals` | Create a portal |
-| `read:portals` | List and read portals |
-| `update:portals` | Update a portal |
-| `delete:portals` | Delete a portal |
+| `missing_scopes` | Run the `auth0 login --scopes ...` command in `fixes`, then rerun |
+| `feature_not_enabled` | Direct the developer to Auth0 Support |
+| `business_access` | The user is missing, ambiguous, or not in the organization, or the organization has no enabled connection. Follow `fixes` or pass `--organization` |
+| `slug_race`, `setup_failed` | Something this run did not create holds the name or slug. Pick another |
 
-With `client_credentials`, these scopes are granted in **Application → API Access → Auth0 Management API**. They are not requested in the token request. A `403` generally means that the administration application lacks a required pre-authorized scope or the feature is not enabled.
+If the CLI rejects `--template` or has no `audit` command, it predates this tool. Create the portal application by hand from https://auth0.com/docs/customize/portals/configure-portal-application and follow the rules agents get wrong:
 
-## Portal API operations
+- No Client Credentials grant and no Management API scopes. Refresh tokens are non-rotating (3600 s idle, 86400 s maximum).
+- Allowed Logout URLs starts with the developer's own application URL. Users land on the first entry.
+- Each API needs both a client grant (`subject_type: user`) and a refresh token policy, for the same audience and scopes. Grant only the scopes of the components the portal uses.
+- Callback and portal URLs use `YOUR_DOMAIN`, the custom domain when the tenant has one. API audiences (`https://CANONICAL_DOMAIN/me/` and `/my-org/`) always use the tenant's Auth0 domain.
 
-The portal endpoints are part of Management API v2. Prefer `auth0 api` when it is available because it uses the active Auth0 CLI session; use a direct Management API request in CI or another non-interactive context.
+## Audit
 
-| Operation | Command | Success |
-|---|---|---|
-| Create | `auth0 api post portals --data '<payload>'` | 201 |
-| List | `auth0 api get portals` | 200 |
-| Read | `auth0 api get portals/{id}` | 200 |
-| Update | `auth0 api patch portals/{id} --data '<payload>'` | 200 |
-| Delete | `auth0 api delete portals/{id}` | 204 |
+Dry run first: `AUTH0_AGENT_MODE=1 auth0-beta universal-portals audit PORTAL_ID --json` (business: add `--organization ORG_ID` to also check that organization's connections). The command exits `1` when any error exists.
 
-The list endpoint returns at most 50 `PortalSummary` objects: `id`, `name`, `slug`, `created_at`, and `updated_at`. Create, read, and update return a full Portal object containing those fields plus `client`, `navigation`, and `pages`. The client secret is write-only and is never returned.
+`--fix` repairs errors only, and may create a missing portal application or delete Management API grants from it. Show the developer the dry-run findings, get approval, then run `audit PORTAL_ID --fix --json`. Run the dry run again afterward: the final output lists what remains, not what changed, and one repair can expose another.
 
-### Create a minimal portal
+Warnings are never auto-fixed. These need manual action: a sidebar link to a missing page, an empty page, a form missing from the tenant, custom code without a ready custom domain, no connection enabled on the portal application, an organization without a shared connection, and session transfer not enabled.
 
-Use `client_secret_post` exactly as shown. The portal API currently supports no other token endpoint authentication method.
+## Write the portal API payload
 
-```bash
-auth0 api post portals --data '{
-  "slug": "my-account",
-  "name": "My Account",
-  "client": {
-    "token_endpoint_auth_method": "client_secret_post",
-    "client_id": "YOUR_REGULAR_WEB_APP_CLIENT_ID",
-    "client_secret": "YOUR_REGULAR_WEB_APP_CLIENT_SECRET"
-  }
-}'
-```
+Pages go under `pages.standard`. Sidebar links use the `:v2` types, with `page_slug` (internal) or `href` (external). Set `pages.default`, or the root URL shows "Page not found". Neither is checked on write, so read the portal back and check every `page_slug` and `default` against a page slug. Payload example, component types, and limits: https://auth0.com/docs/customize/portals/customize-portals and https://auth0.com/docs/customize/portals/portal-components
 
-Keep real secrets in the user's secret manager or environment. Do not place a client secret in a source-controlled JSON example, a frontend variable, or chat output.
+- Create with `client.token_endpoint_auth_method: "client_secret_post"`, the only supported method. Keep real secrets out of source, frontend variables, and chat.
+- A key outside the schema returns `400 invalid_body`. A duplicate slug returns `409 portal_conflict`: list portals and choose another slug. Do not delete a portal to reuse its slug. The list returns at most 50 portals with no pagination, so it can miss an existing slug.
+- PATCH: omit a field to keep it; send `null` to remove `navigation`, `pages`, or `custom_code` (not `slug`, `name`, or `client`); send complete replacements, because nested values are replaced, not merged. A taken new slug returns `409`. Read before and after.
+- Delete returns `204` even for an ID that does not exist. Name the ID and slug, get confirmation, delete, then list to confirm.
 
-A create request requires `slug`, `name`, and `client`:
+## Open the portal
 
-| Field | Constraints |
-|---|---|
-| `slug` | Unique URL-safe kebab-case portal slug |
-| `name` | 1–150 characters |
-| `client.token_endpoint_auth_method` | Literal `client_secret_post` |
-| `client.client_id` | Regular Web App client ID |
-| `client.client_secret` | 1–256 characters; write-only |
-| `navigation` | Optional sidebar definition |
-| `pages` | Optional page definition; a portal with no pages is valid |
+`https://YOUR_DOMAIN/portals/SLUG`. Use a custom domain from the start: custom code requires one, and passkeys enrolled on the Auth0 domain must be enrolled again after a switch. Add `?organization=ORG_ID` for any portal that manages an organization (always for business) and for consumer portals when users belong to several. Entry points, session transfer, and layout parameters: https://auth0.com/docs/customize/portals/access-portals
 
-A duplicate slug returns `409 Conflict`. Read the portal list, choose a different slug, or update the existing portal after confirming it is the intended resource; do not delete an existing portal merely to reuse its slug.
+## Validate
 
-### Read, patch, and delete safely
-
-Read the portal before a change and re-read it after the change:
-
-```bash
-auth0 api get portals/PORTAL_ID
-
-auth0 api patch portals/PORTAL_ID --data '{
-  "name": "Customer Account"
-}'
-
-auth0 api get portals/PORTAL_ID
-```
-
-PATCH has true patch semantics:
-
-- omit `navigation` or `pages` to leave that field unchanged;
-- send `"navigation": null` or `"pages": null` to remove the entire field; and
-- send a complete replacement value when changing navigation or pages.
-
-Deletion is destructive. First list or read the portal, name the target ID and slug to the developer, obtain confirmation, then call delete. Expect HTTP 204 with no response body.
-
-## Compose navigation and pages
-
-A portal may have a sidebar and a set of pages:
-
-```json
-{
-  "navigation": {
-    "sidebar": {
-      "components": []
-    }
-  },
-  "pages": {
-    "default": "profile",
-    "content": []
-  }
-}
-```
-
-`pages.default` and `pages.content` are individually optional. When a default is specified, make it the slug of a page in `content`.
-
-### Sidebar components
-
-| Type | Required config | Optional config |
-|---|---|---|
-| `sidebar:component:auth0:internal_link` | `label` (1–50) | `to` (page slug, 1–50), `icon` |
-| `sidebar:component:auth0:external_link` | `label` (1–50), `url` (1–200) | `icon` |
-
-Icons are Lucide icon names in kebab-case, such as `user`, `shield`, `file-text`, `building-2`, and `lock-keyhole`.
-
-### Page components
-
-Each page has `title` (1–150 characters), a slug, and optional `components`.
-
-| Type | Required config | Optional config |
-|---|---|---|
-| `page:component:auth0:form` | `form_id` (1–50), `completion_message` (1–200) | — |
-| `page:component:auth0:typography:heading` | `title` (1–50) | `description` (1–200) |
-| `page:component:auth0:typography:rich_text` | `content` (1–10000 HTML) | — |
-| `page:component:auth0:structure:section` | `variant` (`card` or `none`), `children` (0–20) | `title` (1–50), `description` (1–200) |
-| `page:component:auth0:structure:separator` | — | `variant` (`dashed`, `none`, or `solid`), `text` (1–50) |
-| `page:component:auth0:my_account:passkey_management` | — | — |
-| `page:component:auth0:my_account:mfa_management` | — | — |
-| `page:component:auth0:my_organization:details_edit` | — | — |
-| `page:component:auth0:my_organization:domain_table` | — | — |
-
-A section's `children` can contain any page component except another section. Do not nest sections. Rich text supports headings, bold, italics, underline, links, alignment, and lists; use `<em>` for italic placeholder text.
-
-### Starter consumer portal payload
-
-This creates Profile and Security pages using a pre-existing Form. Replace the placeholder values only through a secure input path.
-
-```json
-{
-  "slug": "my-account",
-  "name": "My Account",
-  "client": {
-    "token_endpoint_auth_method": "client_secret_post",
-    "client_id": "YOUR_REGULAR_WEB_APP_CLIENT_ID",
-    "client_secret": "YOUR_REGULAR_WEB_APP_CLIENT_SECRET"
-  },
-  "navigation": {
-    "sidebar": {
-      "components": [
-        {
-          "type": "sidebar:component:auth0:internal_link",
-          "config": { "label": "Profile", "to": "profile", "icon": "user" }
-        },
-        {
-          "type": "sidebar:component:auth0:internal_link",
-          "config": { "label": "Security", "to": "security", "icon": "shield" }
-        }
-      ]
-    }
-  },
-  "pages": {
-    "default": "profile",
-    "content": [
-      {
-        "title": "Profile",
-        "slug": "profile",
-        "components": [
-          {
-            "type": "page:component:auth0:structure:section",
-            "config": {
-              "title": "Personal information",
-              "description": "Update the information you use across our services.",
-              "variant": "card",
-              "children": [
-                {
-                  "type": "page:component:auth0:form",
-                  "config": {
-                    "form_id": "YOUR_PERSONAL_INFO_FORM_ID",
-                    "completion_message": "Your personal information has been updated."
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "type": "page:component:auth0:structure:section",
-            "config": {
-              "title": "Passkeys",
-              "description": "Manage passwordless sign-in methods for this account.",
-              "variant": "card",
-              "children": [
-                { "type": "page:component:auth0:my_account:passkey_management" }
-              ]
-            }
-          }
-        ]
-      },
-      {
-        "title": "Security",
-        "slug": "security",
-        "components": [
-          {
-            "type": "page:component:auth0:structure:section",
-            "config": {
-              "title": "Multi-factor authentication",
-              "description": "Manage the additional verification methods for this account.",
-              "variant": "card",
-              "children": [
-                { "type": "page:component:auth0:my_account:mfa_management" }
-              ]
-            }
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-For a business portal, add a page whose section children include `page:component:auth0:my_organization:details_edit` or `page:component:auth0:my_organization:domain_table`. Only include organization controls when the chosen portal experience and application grants support them.
-
-## Validate the portal
-
-1. Read the portal through `auth0 api get portals/PORTAL_ID` and check the stored name, slug, sidebar targets, default page, and component types.
-2. Open the portal URL in a private browser session with a test user.
-3. Test each included capability: form submission, passkey management, MFA management, and organization editing or domain viewing as applicable.
-4. Confirm logout returns to the configured logout URL and that the callback completes.
-5. In the Dashboard, use Preview before Publish when working through the visual editor.
+1. `auth0 api get portals/PORTAL_ID`. Done when the name, slug, `pages.default`, every sidebar `page_slug`, and every component type match the request.
+2. Publish dashboard changes first: Preview opens only the last published version. Then open the portal URL in a private session with a test user. Done when sign-in completes and a Universal Component renders.
+3. Test each included capability (form submission, passkeys, MFA, organization editing or domains) and confirm logout lands on the first Allowed Logout URL.
+4. When `audit` is available, run it. Done when it reports no errors.
 
 ## Troubleshooting
 
-| Symptom | Cause and next action |
+Check tenant logs first. Full list: https://auth0.com/docs/customize/portals/troubleshoot-portals
+
+| Symptom | Action |
 |---|---|
-| Feature or endpoint is unavailable | Confirm a non-production tenant and Universal Portals enablement. Request beta access through Auth0 Support. |
-| `403 Forbidden` from portal API | Pre-authorize the required `*:portals` scope on the administration application. Check that the active CLI session or client credentials use that application. |
-| `409 Conflict` on create | The slug already exists in this tenant. List portals, then choose another slug or intentionally patch the existing portal. |
-| Portal cannot finish login or logout | Verify the portal application's callback and logout URLs, grant types, API access, and multi-resource refresh token configuration. |
-| Form fails to render | Verify that `form_id` refers to an existing Auth0 Forms resource and that the portal application can use the required API access. |
-| Passkey, MFA, or organization component fails | Confirm its underlying Auth0 capability and the matching My Account or My Organization scopes. Do not replace the managed component with a browser-side implementation. |
-| Secret disappears after reading a portal | Expected behavior: `client_secret` is write-only. Keep the source secret in an approved secret store and supply it only when creating or changing the portal client. |
-
-## Sources
-
-Run `auth0 docs search "universal portals"` for the latest Auth0 docs on this topic.
-
-- https://auth0.com/docs/customize/portals/overview
-- https://auth0.com/docs/customize/portals/quickstart
-- https://auth0.com/docs/api/management/v2
-- https://auth0.github.io/auth0-cli/auth0_api.html
-- https://lucide.dev/icons/
+| `403 Forbidden` from the portal API | Pre-authorize the `*:portals` Management API scopes (`create`, `read`, `update`, `delete`) on the administration application, a machine-to-machine app separate from the portal application. Check that the CLI session or client credentials use it |
+| "We couldn't load this information" | A client grant or refresh token policy is missing for that API or its scopes. Add both |
+| Components fail intermittently | Refresh token rotation is on. Turn it off |
+| Form saves but the user is not updated | The Flow has no Forms vault connection, or its machine-to-machine application lacks `update:users` and `update:users_app_metadata` |
