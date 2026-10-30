@@ -8,6 +8,10 @@ reviews:
   auto_review:
     enabled: true
     drafts: false
+    ignore_title_keywords:
+      - "Release v"
+    labels:
+      - "!release"
   path_instructions:
     - path: "plugins/**/SKILL.md"
       instructions: |

@@ -1,0 +1,25 @@
+name: Label release PR
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches: [main]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  label:
+    # Tags release/* PRs with `release` so .coderabbit.yaml skips them.
+    if: startsWith(github.head_ref, 'release/')
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+    - name: Add release label
+      run: |
+        gh label create release --color 0E8A16 --description "Release PR" --force
+        gh pr edit "$PR_NUMBER" --add-label release
