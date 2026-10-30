@@ -37,11 +37,26 @@ Load the `plugins/auth0` directory using the client's plugin install flow.
 [Agent Plugins](https://agent-plugins.org/) defines the portable package format,
 not a universal install command.
 
+**Via Antigravity:**
+
+```bash
+agy plugin install plugins/auth0
+```
+
+**Via Gemini CLI:**
+
+Install from a local clone — `gemini extensions install` expects a manifest at
+the repository root, and this manifest lives at `plugins/auth0/`:
+
+```bash
+gemini extensions install ./plugins/auth0
+```
+
 ## Skills
 
 | Skill | Description | Documentation |
 |-------|-------------|---------------|
-| [auth0](skills/auth0) | Adds Auth0 authentication to any app. Covers 35+ frameworks (React, Next.js, TanStack Start, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Kotlin Multiplatform, Flutter, Laravel, Go, PHP, .NET MAUI, ASP.NET Core, React Native, Expo, Ionic, and more), MFA, Organizations, Universal Portals for hosted account and organization self-service, Vercel native integration, custom domains, ACUL screen generation, branding, debugging auth errors, security best practices, running a tenant security & configuration audit (CheckMate), a plan-aware tenant health check, and migration from other providers. | [SKILL.md](skills/auth0/SKILL.md) |
+| [auth0](skills/auth0) | Adds Auth0 authentication to any app. Covers 37+ frameworks (React, Next.js, React Router, TanStack Start, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Kotlin Multiplatform, Flutter, Laravel, Go, PHP, .NET MAUI, ASP.NET Core, React Native, Expo, Ionic, and more), MFA, Organizations, Universal Portals for hosted account and organization self-service, Vercel native integration, custom domains, ACUL screen generation, branding, debugging auth errors, security best practices, running a tenant security & configuration audit (CheckMate), a plan-aware tenant health check, and migration from other providers. | [SKILL.md](skills/auth0/SKILL.md) |
 
 ## Forcing the skill with `/auth0`
 

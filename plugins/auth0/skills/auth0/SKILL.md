@@ -4,7 +4,7 @@ description: Use when adding, fixing, or improving how an app authenticates user
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
-  version: '2.3.0'
+  version: '2.8.0'
   openclaw:
     emoji: "\U0001F510"
     homepage: https://github.com/auth0/agent-skills
@@ -31,10 +31,9 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 ## Step 1: Detect intent
 
 Match the request against the **What the developer wants** column — it describes
-the goal in plain language, not just the Auth0 term (someone who says *"make
-users confirm with a code from their phone"* lands on `feature:mfa`). The
-**Intent** you pick is a lookup key: in **Step 4** it appears verbatim as a
-section heading (`### feature:mfa`) listing which reference files to load.
+the goal in plain language, not just the Auth0 term. The **Intent** you pick is a
+lookup key: in **Step 4** it appears verbatim as a section heading
+(`### feature:mfa`) listing which reference files to load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
@@ -42,11 +41,14 @@ section heading (`### feature:mfa`) listing which reference files to load.
 | Require a second step **after** the password — a one-time code, SMS or email code, authenticator app, or a passkey/fingerprint/face/security key used as an *additional* factor; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
 | Let users sign up or sign in with a passkey, fingerprint, or Face ID **instead of** a password — passwordless WebAuthn as the primary credential — or let a signed-in user add a passkey to their account. *Auth0: passkeys, WebAuthn, passwordless login.* | **feature:passkeys** |
 | Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
+| Let business customers sign in through their own company's identity provider by typing a work email that routes them to the employer's login. *Auth0: Enterprise Connect, B2B Connect - Enterprise, enterprise SSO.* | **feature:enterprise-connect** |
 | Deploy a hosted self-service portal for profile, passkeys, MFA, or organization details instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
 | Serve the login page from your own web address (e.g. `login.example.com`, `auth.company.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
 | Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
+| Trade an external or partner token (legacy system, MCP/agent, or another IdP) for Auth0 tokens with no interactive login. *Auth0: Custom Token Exchange (CTE), RFC 8693, subject_token.* | **feature:custom-token-exchange** |
+| Call a third-party API (Google, GitHub, Slack) as the signed-in user. *Auth0: Token Vault, Connected Accounts.* | **feature:token-vault** |
 | Audit a tenant for security/config issues, report, then optionally fix findings. *Auth0: tenant audit, CheckMate.* | **audit** |
 | Check if a tenant is healthy and on the right plan — two scores + a recommendation. *Auth0: health check.* | **healthcheck** |
 | Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
@@ -85,6 +87,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 | `@capacitor/browser` + `@auth0/auth0-vue` | `ionic-vue` |
 | `@auth0/nextjs-auth0` | `nextjs` |
 | `@auth0/auth0-nuxt` | `nuxt` |
+| `@auth0/auth0-react-router` | `react-router` |
 | `@auth0/auth0-tanstack-start-react` | `tanstack-start` |
 | `@auth0/auth0-react` | `react` |
 | `@auth0/auth0-vue` | `vue` |
@@ -112,6 +115,7 @@ bare-SDK row.
 | `auth0-server-python` + `flask` | `flask` |
 | `auth0-server-python` (no Flask web framework) | `server-python` |
 | `auth0-fastapi-api` | `fastapi-api` |
+| `auth0-api-python` | `api-python` |
 
 ### Java / Kotlin — check `build.gradle` or `pom.xml`
 
@@ -175,6 +179,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 |---|---|
 | `next` in `package.json` | `nextjs` |
 | `nuxt` in `package.json` | `nuxt` |
+| `react-router` in `package.json` + `react-router.config.ts` present | `react-router` |
 | `@tanstack/react-start` in `package.json` | `tanstack-start` |
 | `@ionic/*` + `@angular/core` | `ionic-angular` |
 | `@ionic/*` + `react` | `ionic-react` |
@@ -224,12 +229,14 @@ request. **Stop at the first match.**
 | `@auth0/auth0-api-js` / auth0-api-js / low-level resource-server SDK | `auth0-api-js` |
 | `@auth0/auth0-server-js` / auth0-server-js / server-side Auth0 session SDK | `auth0-server-js` |
 | `@auth0/auth0-auth-js` / auth0-auth-js / AuthClient / low-level OAuth OIDC | `auth0-auth-js` |
+| React Router (framework mode, v7+) / `@auth0/auth0-react-router` | `react-router` |
 | Express (web app / server-rendered) | `express` |
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
 | Flask | `flask` |
 | FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
 | `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
+| `auth0-api-python` / Python API JWT validator (resource server / `verify_access_token`) | `api-python` |
 | Spring Boot | `springboot-api` |
 | Java MVC / servlet | `java-mvc` |
 | ASP.NET Core web app / API | `aspnetcore-auth` / `aspnetcore-api` |
@@ -243,6 +250,12 @@ request. **Stop at the first match.**
 | Flutter (native / web / Windows) | `flutter-native` / `flutter-web` / `flutter-windows` |
 | React Native / Expo | `react-native` / `expo` |
 | Ionic (Angular/React/Vue) | `ionic-angular` / `ionic-react` / `ionic-vue` |
+
+> **React Router note:** map to `react-router` only with a framework-mode signal
+> (v7+ framework mode, `react-router.config.ts`, `@react-router/dev`,
+> `app/routes.ts`, or `@auth0/auth0-react-router`). A plain "React Router"
+> mention — or loaders/actions alone, which data-mode SPAs also use — may be a
+> library-mode SPA, which maps to `react`. If unclear, ask before loading.
 
 ### Variant disambiguation (web app vs API)
 
@@ -309,7 +322,7 @@ Read: references/tooling-{tooling}/index.md
 ### feature:passkeys
 ```
 Read: references/feature-passkeys/index.md
-Then Read the detected SDK's passkey leaf from the hub's "Example code snippets" table (e.g. nextjs → references/feature-passkeys/nextjs-auth0.md, react → references/feature-passkeys/auth0-react.md) — the leaf has the exact API surface and the required ceremony; do not implement from framework-{framework}/index.md alone.
+Then Read the detected SDK's passkey leaf from the hub's "Example code snippets" table (e.g. nextjs → nextjs-auth0.md; react-native/expo → ONLY react-native-auth0.md, which covers react-native-web — never auth0-react.md) — it has the exact API and ceremony; don't implement from framework-{framework}/index.md alone.
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 ```
@@ -320,6 +333,13 @@ Read: references/feature-organizations/index.md
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 If multi-tenant architecture / B2B SaaS design question: also Read references/pattern-multi-tenant/index.md
+```
+
+### feature:enterprise-connect
+```
+Read: references/feature-enterprise-connect/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
 ```
 
 ### feature:universal-portals
@@ -352,6 +372,20 @@ Read: references/feature-dpop/index.md
 Read: references/tooling-{tooling}/index.md
 If a SPA framework is detected (vue/react/angular/spa-js): Read references/framework-{framework}/index.md
 DPoP is SPA-only (no SSR: Next.js/Nuxt) — feature-dpop/index.md states the exclusion.
+```
+
+### feature:custom-token-exchange
+```
+Read: references/feature-custom-token-exchange/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
+```
+
+### feature:token-vault
+```
+Read: references/feature-token-vault/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
 ```
 
 ### guidance

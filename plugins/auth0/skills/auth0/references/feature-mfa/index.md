@@ -186,14 +186,16 @@ it first or fall back to the language-neutral mechanic. Several MFA API flows ar
 | `express-openid-connect` | 2.17.0 | redirect step-up | `references/feature-mfa/express-oidc.md` |
 | `Auth0.swift` (iOS/macOS) | verify — 3.0+ | MFA API | `references/feature-mfa/auth0-swift.md` |
 | `Auth0.Android` | verify — 3.13+ | MFA API | `references/feature-mfa/auth0-android.md` |
+| `react-native-auth0` | 5.10.0 | MFA API | `references/feature-mfa/react-native-auth0.md` |
 | `auth0-server-python` | 1.0.0b10 (MFA API) · 1.0.0b15 (step-up) | step-up, MFA API | `references/feature-mfa/auth0-server-python.md` |
 | `Auth0.OidcClient.*` (.NET native/desktop) | 4.4.0 | client-initiated step-up | `references/feature-mfa/oidc-client-net.md` |
 | `go-jwt-middleware` (Go, resource server) | v2.2.1 | API-side scope gate | `references/feature-mfa/go-jwt-middleware.md` |
 | `Auth0.AspNetCore.Authentication.Api` (resource server) | 1.0.1 | API-side scope gate | `references/feature-mfa/aspnetcore-api.md` |
 | `spring-boot-starter-oauth2-resource-server` (Java) | Spring Boot 3.3 / Security 6 | API-side scope gate | `references/feature-mfa/spring-security-api.md` |
+| `auth0-api-python` (Python resource server) | 1.0.0b10 | API-side scope gate | `references/feature-mfa/auth0-api-python.md` |
 
 Note: the resource-server rows (`go-jwt-middleware`, `Auth0.AspNetCore.Authentication.Api`, Spring
-Security) do not run MFA — the API enforces the step-up **scope** the tenant issues post-MFA, gating a
+Security, `auth0-api-python`) do not run MFA — the API enforces the step-up **scope** the tenant issues post-MFA, gating a
 sensitive route on it. `Auth0.OidcClient.*` is a native client that triggers step-up via `acr_values`.
 
 Note: the JS SPA/framework SDKs (`auth0-react`, `auth0-vue`, `auth0-angular`, `auth0-spa-js`)
@@ -218,21 +220,21 @@ The CLI anchor for the tenant-wide path (enable factors, then enforce the policy
 
 ```bash
 # TOTP / Authenticator app
-auth0 api put "guardian/factors/otp" --data '{"enabled": true}'
+auth0 guardian factors set otp --enabled
 
-# SMS — three steps required
-auth0 api put "guardian/factors/sms" --data '{"enabled": true}'
-auth0 api put "guardian/factors/phone/message-types" --data '{"message_types": ["sms"]}'
-auth0 api put "guardian/factors/phone/selected-provider" --data '{"provider": "auth0"}'
+# SMS — three separate commands required
+auth0 guardian factors set sms --enabled
+auth0 guardian factors phone set-message-types --message-type sms
+auth0 guardian factors phone set-provider --provider auth0   # legacy phone config only; unified-phone tenants set the provider in Dashboard > Branding > Phone Provider
 
 # Email
-auth0 api put "guardian/factors/email" --data '{"enabled": true}'
+auth0 guardian factors set email --enabled
 
-# Enforce MFA for all applications (PUT replaces the whole list; wrong verb returns 404)
-auth0 api put "guardian/policies" --data '["all-applications"]'
+# Enforce MFA for all applications
+auth0 guardian policies set --policy all-applications
 
-# Verify with the list endpoint only — do not GET individual factors, they return 404
-auth0 api get "guardian/factors"
+# Verify
+auth0 guardian factors list
 ```
 
 The full factor set, the `confidence-score` (adaptive) policy, the Terraform
@@ -284,8 +286,8 @@ which uses the `mfa_token` and the MFA API surface instead:
 | Ignoring `mfa_required` from a silent token call | The step-up silently fails and the action proceeds unverified | Catch it and re-authenticate interactively |
 | Preferring SMS by default | SMS is vulnerable to SIM-swap | Prefer TOTP or WebAuthn; treat SMS as a fallback |
 | No recovery codes enabled | Users get locked out when they lose a device | Enable recovery codes during enrollment |
-| Wrong HTTP verb on `guardian/policies` | Returns a misleading 404 | Use `PUT` with a bare JSON array |
-| Sending `message_type` or `provider` to `guardian/factors/sms` directly | Returns a 400 — those fields are not accepted on that endpoint | Use `PUT guardian/factors/phone/message-types` for the message type and `PUT guardian/factors/phone/selected-provider` for the provider |
+| Wrong HTTP verb on `guardian/policies` | Returns a misleading 404 | Use `auth0 guardian policies set --policy all-applications` |
+| Sending `message_type` or `provider` to `guardian/factors/sms` directly | Returns a 400 — those fields are not accepted on that endpoint | Use `auth0 guardian factors phone set-message-types --message-type sms` for the message type and `auth0 guardian factors phone set-provider --provider auth0` for the provider (legacy phone config only — on the unified phone experience, set the provider in Dashboard > Branding > Phone Provider) |
 | Using the Management API to list or remove a user's own factors during the sign-in flow | Forces the app to hold Management API admin scopes and ignores the `mfa_token` the flow already issued | List and challenge through the SDK's MFA client on the `mfa_token`; remove with a post-MFA `remove:authenticators` access token (mfa audience); reserve the Management API for admin / out-of-band |
 | Assuming an already-enrolled factor needs no challenge and jumping straight to verify | Diverges from the SDK's documented enrolled-factor flow and breaks for out-of-band factors (SMS/push), whose challenge is what delivers the code | Challenge the enrolled authenticator, then verify |
 

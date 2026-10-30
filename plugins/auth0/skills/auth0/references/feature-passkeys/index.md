@@ -49,7 +49,7 @@ Before writing code, read the detected SDK's file (see "Example code snippets").
 
 The deliverable is the **application code**, written from the detected SDK's leaf file. Write it early; do not spend the task investigating.
 
-- **Trust the per-SDK file's method/option names — they are verified against the installed SDK.** Do NOT grep `node_modules`, read `.d.ts`/`.d.cts`/site-packages/SDK source, run the SDK's test suite, or write throwaway probes to confirm a signature. Write the code; inspect the installed package only if a specific line fails to compile, and then only that line.
+- **Trust the per-SDK file's method/option names — they are verified against the installed SDK.** Do NOT grep `node_modules`, read `.d.ts`/`.d.cts`/site-packages/SDK source, run the SDK's test suite, write throwaway probes, **fetch the SDK's GitHub/source or any web page, run a filesystem-wide search (`find /`), or cross-check against the Auth0-docs MCP** to confirm a signature. The leaf is authoritative; when it names a symbol, use it. Write the code; inspect the installed package only if a specific line fails to compile, and then only that line.
 - **The minimum version in each SDK file is informational.** The scaffold already pins a compatible release; don't read `package.json`/`node_modules` to confirm it unless a `verify — X+` row tells you to.
 - You're done when the app code is in place (and, for a JS/TS app, `npm run build` passes if quick). Stop there.
 
@@ -144,7 +144,7 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 | `auth0-server-python` | 1.0.0b13 | signup, login | `references/feature-passkeys/auth0-server-python.md` |
 | `Auth0.swift` (iOS/macOS/visionOS) | 2.12.0 · 2.13.0 (enrollment) | signup, login, enrollment | `references/feature-passkeys/auth0-swift.md` |
 | `Auth0.Android` | 3.2.0 | signup, login | `references/feature-passkeys/auth0-android.md` |
-| `react-native-auth0` | 5.7.0 | signup, login, enrollment | `references/feature-passkeys/react-native-auth0.md` |
+| `react-native-auth0` | 5.7.0 (native) · 5.11.0 (web) | signup, login, enrollment | `references/feature-passkeys/react-native-auth0.md` |
 
 ## Common mistakes
 
@@ -157,6 +157,7 @@ A passkey login can still hit MFA if the tenant/connection requires a second fac
 | Treating a passkey as a second factor | Passkeys here are the primary credential; the MFA reference covers the second-factor case | For step-up, use `feature-mfa`; for passwordless primary login, use this reference |
 | Reusing a signup challenge for login (or vice-versa) | Registration and assertion are different ceremonies | Use the signup challenge with `create()` and the login challenge with `get()` |
 | Returning the token-exchange result (raw tokens / server-side session state) in the HTTP response, or logging it | Leaks Auth0 access / ID / refresh tokens to the client | Let the SDK persist the session in its state store; respond with success/redirect only and read claims server-side |
+| Swapping in `@auth0/auth0-react` / `@auth0/auth0-spa-js` (or hand-rolled `/me/v1` fetches) for the **web build of a React Native app** | A different session/token model from react-native-auth0; splits the flow across two SDKs | Keep react-native-auth0 (`5.11.0`+ for web) on every platform; branch only the WebAuthn ceremony (`navigator.credentials` on web). See `react-native-auth0.md` → "react-native-web — one SDK, branch only the ceremony" |
 
 ## References
 

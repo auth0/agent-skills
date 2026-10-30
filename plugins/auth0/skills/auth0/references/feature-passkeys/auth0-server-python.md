@@ -68,6 +68,30 @@ closes the loop. base64url-decode `authn_params_public_key.challenge` and
 POSTing them back into `PasskeyAuthResponse` (signup returns `attestationObject`;
 login returns `authenticatorData` + `signature` + `userHandle`).
 
+## Session / state store (the usual failure point)
+
+`signin_with_passkey()` persists the session **through the configured `state_store`**
+(line 22). If that store is broken, the whole passkey flow silently fails even
+though every challenge/exchange call is correct — this is the single most common
+way these integrations break. Do **not** hand-roll a store with your own crypto:
+
+- **Prefer the SDK's built-in store.** For a web app a stateless cookie-backed
+  store constructed with your `AUTH0_SESSION_SECRET` is enough — the SDK owns the
+  secret-based encryption. Do not reimplement it.
+- **If you must subclass**, extend `StateStore` (an `AbstractDataStore[dict[str, Any]]`)
+  and implement its documented `async` `get` / `set` / `delete`. Two things to get right:
+  - `get(...)` returns a **plain `dict`** (or `None`) — that is the store's type
+    parameter (`AbstractDataStore[dict[str, Any]]`). The SDK reads it with dict
+    access (`get_user()` does `state_data.get("user")`, `get_access_token()` reads
+    `state_data["token_sets"]`) and `.dict()`-normalizes a Pydantic value first, so
+    returning a dict is correct and does **not** raise. (`PasskeyLoginResult.state_data`
+    is likewise a dict — see Data classes.)
+  - **Reuse the base crypto — don't reinvent it.** `AbstractDataStore` already
+    provides `self.encrypt` / `self.decrypt`, keyed off the `secret` you pass the
+    constructor. Call `super().__init__({"secret": <AUTH0_SESSION_SECRET>})` — the
+    `__init__(self, options)` dict *is* the documented contract — and let the base own
+    encryption instead of hand-rolling your own.
+
 ## Data classes (from `auth0_server_python.auth_types`)
 
 - `PasskeyUserProfile` — the signup identity; all optional: `email`, `name`, `username`, `phone_number`, `given_name`, `family_name`, `nickname`, `picture`.

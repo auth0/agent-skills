@@ -4,14 +4,14 @@
 
 [![License](https://img.shields.io/:license-apache-blue.svg?style=flat)](https://opensource.org/licenses/Apache-2.0)
 
-AI agent skills that help coding assistants implement Auth0 authentication correctly. Works with [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com), [Codex](https://openai.com/codex/), [GitHub Copilot](https://github.com/features/copilot), and [40+ other agents](https://agentskills.io/clients) that support the [Agent Skills](https://agentskills.io) format.
+AI agent skills that help coding assistants implement Auth0 authentication correctly. Works with [Claude Code](https://claude.ai/code), [Cursor](https://cursor.com), [Codex](https://openai.com/codex/), [Antigravity](https://antigravity.google/), [Gemini CLI](https://geminicli.com), [GitHub Copilot](https://github.com/features/copilot), and [40+ other agents](https://agentskills.io/clients) that support the [Agent Skills](https://agentskills.io) format.
 
 [Documentation](https://auth0.com/docs/quickstart/agent-skills) · [Getting Started](#prerequisites) · [Feedback](#feedback)
 
 ## Prerequisites
 
 - An [Auth0 account](https://auth0.com/signup) (free)
-- An AI coding assistant (Claude Code, Cursor, Codex, GitHub Copilot, or any [Agent Skills-compatible](https://agentskills.io/clients) tool)
+- An AI coding assistant (Claude Code, Cursor, Codex, Antigravity, Gemini CLI, GitHub Copilot, or any [Agent Skills-compatible](https://agentskills.io/clients) tool)
 
 ## Install
 
@@ -50,6 +50,29 @@ repository's marketplace from `.agents/plugins/marketplace.json`, then install
 For public availability, Auth0 must submit the plugin through the
 [OpenAI plugin submission portal](https://platform.openai.com/plugins). Approval
 is required before it appears in the universal ChatGPT and Codex directory.
+
+### Antigravity
+
+```bash
+git clone https://github.com/auth0/agent-skills.git
+cd agent-skills
+
+agy plugin install plugins/auth0
+```
+
+### Gemini CLI
+
+Gemini's `extensions install` command expects a manifest at the root of the
+repository it's given, so it can't install directly from this repo's GitHub
+URL (the manifest lives at `plugins/auth0/`, not the repo root). Install from
+a local clone instead:
+
+```bash
+git clone https://github.com/auth0/agent-skills.git
+cd agent-skills
+
+gemini extensions install ./plugins/auth0
+```
 
 ### Any Agent (Skills CLI)
 

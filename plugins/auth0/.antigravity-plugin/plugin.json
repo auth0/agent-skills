@@ -1,0 +1,39 @@
+{
+  "name": "auth0",
+  "displayName": "Auth0",
+  "version": "2.8.0",
+  "description": "Add Auth0 authentication to any app: login, MFA, SSO, Organizations, RBAC, custom domains, and branding. Debug auth errors and migrate from other providers.",
+  "logo": "assets/antigravity-logo.png",
+  "suggestedPrompts": [
+    "Add Auth0 login to my app",
+    "Debug why my Auth0 login is failing",
+    "Audit my Auth0 tenant's health and security"
+  ],
+  "category": "Developer Tools",
+  "keywords": [
+    "auth0",
+    "authentication",
+    "authorization",
+    "oauth",
+    "oidc",
+    "mfa",
+    "sso",
+    "rbac",
+    "jwt",
+    "sdk",
+    "migration",
+    "security",
+    "universal-login",
+    "custom-domains",
+    "acul",
+    "quickstart"
+  ],
+  "author": {
+    "name": "Auth0",
+    "email": "support@auth0.com",
+    "url": "https://auth0.com"
+  },
+  "homepage": "https://auth0.com/docs/quickstart/agent-skills",
+  "repository": "https://github.com/auth0/agent-skills",
+  "license": "Apache-2.0"
+}

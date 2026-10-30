@@ -200,9 +200,11 @@ object, not on every command** — this table (or `<command> --help`) says which
 | `orgs`, `client-grants` | — | — |
 
 `connections enabled-clients update` also takes `--data` / `--schema`. A resource
-outside the ✅ rows (e.g. `orgs`, `client-grants`) has no structured input — use
-its named flags, or fall back to `auth0 api` with `--data @file` as the JSON-body
-escape hatch.
+outside the ✅ rows (e.g. `orgs`, `client-grants`) has no structured input, but it
+does have typed commands with named flags (for example `auth0 client-grants create`
+and `auth0 orgs create`). Prefer those. Fall back to `auth0 api` with `--data @file`
+only for an operation that has no typed command, and check
+`auth0 commands <resource>` first.
 
 Several **configuration commands** accept structured input beyond the classic
 resources — custom domains, email templates, universal-login (including prompts),
