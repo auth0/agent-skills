@@ -4,7 +4,7 @@ Use this only when the Auth0 CLI cannot run `universal-portals setup --template`
 
 ## Domains
 
-`YOUR_DOMAIN` is the tenant's custom domain when it has one, or the Auth0 domain (`*.auth0.com`) otherwise. Use it in callback URLs, portal URLs, and API audiences.
+`YOUR_DOMAIN` is the tenant's custom domain when it has one, or the Auth0 domain (`*.auth0.com`) otherwise. Use it in callback URLs and portal URLs. `YOUR_CANONICAL_DOMAIN` is always the tenant's Auth0 domain. Use it in every API audience, including the client grant and the refresh token policy, as `setup` creates them. Without a custom domain both are the same value.
 
 ## Portal application settings
 
@@ -35,17 +35,17 @@ If either is missing, components fail with API errors. Grant only the scopes of 
 
 | Component | Audience | Scopes |
 |---|---|---|
-| `my_account:mfa_management` | `https://YOUR_DOMAIN/me/` | `read:me:factors`, `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
-| `my_account:passkey_management` | `https://YOUR_DOMAIN/me/` | `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
-| `my_organization:details_edit` | `https://YOUR_DOMAIN/my-org/` | `read:my_org:details`, `update:my_org:details`, `read:my_org:configuration` |
-| `my_organization:domain_table` | `https://YOUR_DOMAIN/my-org/` | `read:my_org:domains`, `create:my_org:domains`, `update:my_org:domains`, `delete:my_org:domains`, `read:my_org:identity_providers`, `create:my_org:identity_providers_domains`, `delete:my_org:identity_providers_domains` |
+| `my_account:mfa_management` | `https://YOUR_CANONICAL_DOMAIN/me/` | `read:me:factors`, `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
+| `my_account:passkey_management` | `https://YOUR_CANONICAL_DOMAIN/me/` | `read:me:authentication_methods`, `create:me:authentication_methods`, `delete:me:authentication_methods` |
+| `my_organization:details_edit` | `https://YOUR_CANONICAL_DOMAIN/my-org/` | `read:my_org:details`, `update:my_org:details`, `read:my_org:configuration` |
+| `my_organization:domain_table` | `https://YOUR_CANONICAL_DOMAIN/my-org/` | `read:my_org:domains`, `create:my_org:domains`, `update:my_org:domains`, `delete:my_org:domains`, `read:my_org:identity_providers`, `create:my_org:identity_providers_domains`, `delete:my_org:identity_providers_domains` |
 
 Client grant body, one per audience (replace the client ID and scopes):
 
 ```json
 {
   "client_id": "NEW_CLIENT_ID",
-  "audience": "https://YOUR_DOMAIN/me/",
+  "audience": "https://YOUR_CANONICAL_DOMAIN/me/",
   "subject_type": "user",
   "scope": ["read:me:factors", "read:me:authentication_methods", "create:me:authentication_methods", "delete:me:authentication_methods"]
 }
@@ -92,7 +92,7 @@ Create the application with `auth0 api post clients --data '<payload>'`. Replace
     "idle_token_lifetime": 3600,
     "policies": [
       {
-        "audience": "https://YOUR_DOMAIN/me/",
+        "audience": "https://YOUR_CANONICAL_DOMAIN/me/",
         "scope": [
           "read:me:factors",
           "read:me:authentication_methods",
@@ -105,6 +105,6 @@ Create the application with `auth0 api post clients --data '<payload>'`. Replace
 }
 ```
 
-For the business template, add a second `refresh_token.policies` entry for `https://YOUR_DOMAIN/my-org/` with the My Organization scopes from the table above, and keep the My Account entry: the Security and Preferences pages use My Account. Then create a matching client grant for each audience, as described in the grants section.
+For the business template, add a second `refresh_token.policies` entry for `https://YOUR_CANONICAL_DOMAIN/my-org/` with the My Organization scopes from the table above, and keep the My Account entry: the Security and Preferences pages use My Account. Then create a matching client grant for each audience, as described in the grants section.
 
 Once the application exists, create the portal with the `portals` payload in the index. The client secret is write-only and is never returned by the API.
