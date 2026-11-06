@@ -24,7 +24,7 @@ client = create_mcp_client(
 
 ## The store interface
 
-`AbstractTokenStore` is exported from `auth0_ai_mcp`. It is abstract, so you provide a concrete implementation with three async methods, `get`, `set`, and `delete`. The base class takes a `secret` of at least 32 characters (for example from `openssl rand -hex 32`) and gives you `encrypt(key, value)` and `decrypt(key, data)`, so the store only ever holds encrypted values.
+`AbstractTokenStore` is exported from `auth0_ai_mcp`. It is abstract, so you provide a concrete implementation with three async methods, `get`, `set`, and `delete`. The base class takes a `secret` of at least 32 characters (for example from `openssl rand -hex 32`) and gives you `encrypt(key, value)` and `decrypt(key, data)` helpers. The SDK passes plain values to `set`, so call `self.encrypt(key, value)` in `set` and `self.decrypt(key, data)` in `get`. Otherwise the store holds tokens in plain text.
 
 The package ships no concrete store. The example server includes in-memory `InMemoryTokenStore` and `InMemoryIndexedTokenStore` classes in `token_store.py`. They show the shape of a store but lose every token on restart, so a production server needs a shared store such as Redis.
 
