@@ -110,10 +110,11 @@ SDK, so check the `@capacitor/browser` rows before it.
 
 Rows are most-specific first: `auth0-server-python` is the framework-agnostic
 server core, so check for a co-installed web framework before falling back to the
-bare-SDK row. `auth0-ai-mcp` builds on `auth0-api-python`, so it is checked first.
+bare-SDK row. `auth0-ai-fastmcp` and `auth0-ai-mcp` build on `auth0-api-python`, so they come first, in that order.
 
 | Package | Framework |
 |---|---|
+| `auth0-ai-fastmcp` | `ai-fastmcp-python` |
 | `auth0-ai-mcp` | `ai-mcp-python` |
 | `auth0-server-python` + `flask` | `flask` |
 | `auth0-server-python` (no Flask web framework) | `server-python` |
@@ -194,6 +195,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `react` (no meta-framework above) | `react` (SPA) — see note |
 | `express` in `package.json` | `express` (variant below) |
 | `fastify` in `package.json` | `fastify` (variant below) |
+| `fastmcp` in `requirements.txt`/`pyproject.toml` | `ai-fastmcp-python` |
 | `mcp` in `requirements.txt`/`pyproject.toml` | `ai-mcp-python` |
 | `flask` in `requirements.txt`/`pyproject.toml` | `flask` |
 | `fastapi` in `requirements.txt`/`pyproject.toml` | `fastapi-api` (variant below) |
@@ -241,6 +243,7 @@ request. **Stop at the first match.**
 | FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
 | `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
 | `auth0-api-python` / Python API JWT validator (resource server / `verify_access_token`) | `api-python` |
+| `auth0-ai-fastmcp` / protecting a Python MCP server built on FastMCP with Auth0 | `ai-fastmcp-python` |
 | `auth0-ai-mcp` / protecting a Python MCP server with Auth0 (official `mcp` SDK, FastAPI or Starlette) | `ai-mcp-python` |
 | Spring Boot | `springboot-api` |
 | Java MVC / servlet | `java-mvc` |
@@ -420,7 +423,7 @@ If multi-tenant / B2B architecture: Read references/pattern-multi-tenant/index.m
 ### debug
 ```
 Read: references/pattern-common-errors/index.md
-If the framework is `ai-mcp-python`: Read references/pattern-mcp-common-errors/index.md, then Read the SDK's leaf from its hub table.
+If the framework is `ai-mcp-python` or `ai-fastmcp-python`: Read references/pattern-mcp-common-errors/index.md, then Read the SDK's leaf from its hub table.
 If framework detected: Read references/framework-{framework}/index.md
 ```
 

@@ -248,6 +248,34 @@
       "expect_refs": ["pattern-common-errors/index.md", "pattern-mcp-common-errors/index.md", "framework-ai-mcp-python/index.md"]
     },
     {
+      "id": "integrate-ai-fastmcp-python",
+      "intent": "integrate",
+      "framework": "ai-fastmcp-python",
+      "tooling": "cli",
+      "expect_refs": ["framework-ai-fastmcp-python/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-mcp-on-behalf-of-ai-fastmcp-python-combo",
+      "intent": "feature:mcp-on-behalf-of",
+      "framework": "ai-fastmcp-python",
+      "tooling": "cli",
+      "expect_refs": ["feature-mcp-on-behalf-of/index.md", "tooling-cli/index.md", "framework-ai-fastmcp-python/index.md"]
+    },
+    {
+      "id": "feature-mcp-token-caching-ai-fastmcp-python-combo",
+      "intent": "feature:mcp-token-caching",
+      "framework": "ai-fastmcp-python",
+      "tooling": "cli",
+      "expect_refs": ["feature-mcp-token-caching/index.md", "tooling-cli/index.md", "framework-ai-fastmcp-python/index.md"]
+    },
+    {
+      "id": "debug-ai-fastmcp-python",
+      "intent": "debug",
+      "framework": "ai-fastmcp-python",
+      "tooling": "cli",
+      "expect_refs": ["pattern-common-errors/index.md", "pattern-mcp-common-errors/index.md", "framework-ai-fastmcp-python/index.md"]
+    },
+    {
       "id": "guidance-token-handling",
       "intent": "guidance",
       "framework": null,
