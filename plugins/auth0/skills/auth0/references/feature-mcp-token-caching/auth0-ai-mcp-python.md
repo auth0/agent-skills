@@ -52,3 +52,68 @@ Connection tokens from `get_token_for_connection` are keyed on tenant, client ID
 - `list_index_members(index_key)` returns every member, or `[]` when the index does not exist. It may include expired members, because the SDK skips those on read.
 
 The SDK never removes members from an index, so the store should expire the whole index key. Pushing its TTL out to the latest member's `expires_at` on every add keeps it alive exactly as long as its newest token.
+
+---
+
+## A Redis store
+
+A store for any shared key-value database follows the same three steps. Encrypt on `set`, decrypt on `get`, and give each entry a TTL that matches `expires_at`. This one uses an async `redis.asyncio.Redis` client.
+
+```python
+import time
+
+from auth0_ai_mcp import AbstractTokenStore, TokenSet
+
+
+class RedisTokenStore(AbstractTokenStore):
+    def __init__(self, redis_client, *, secret: str) -> None:
+        super().__init__(secret=secret)
+        self._redis = redis_client
+
+    async def get(self, key: str) -> TokenSet | None:
+        raw = await self._redis.get(key)
+        if raw is None:
+            return None
+        # Redis returns bytes by default and decrypt expects str.
+        if isinstance(raw, bytes):
+            raw = raw.decode()
+        return self.decrypt(key, raw)
+
+    async def set(self, key: str, value: TokenSet) -> None:
+        ttl = value["expires_at"] - int(time.time())
+        if ttl > 0:
+            await self._redis.set(key, self.encrypt(key, value), ex=ttl)
+
+    async def delete(self, key: str) -> None:
+        await self._redis.delete(key)
+```
+
+For `scope_matching="non_strict"`, subclass it with `IndexedTokenStore`. A Redis hash with one field per token makes `add_index_member` a single atomic `HSET`, so concurrent adds never lose each other.
+
+```python
+import json
+import time
+
+from auth0_ai_mcp import IndexedTokenStore, TokenIndexMember
+
+
+class RedisIndexedTokenStore(RedisTokenStore, IndexedTokenStore):
+    async def add_index_member(self, index_key: str, member: TokenIndexMember) -> None:
+        await self._redis.hset(index_key, member["token_key"], json.dumps(member))
+
+    async def list_index_members(self, index_key: str) -> list[TokenIndexMember]:
+        raw = await self._redis.hgetall(index_key)
+        now = int(time.time())
+        live: list[TokenIndexMember] = []
+        expired_fields = []
+        for field, value in raw.items():
+            member = json.loads(value)
+            if member["expires_at"] > now:
+                live.append(member)
+            else:
+                expired_fields.append(field)
+        # Drop expired fields so the hash does not grow as tokens age out.
+        if expired_fields:
+            await self._redis.hdel(index_key, *expired_fields)
+        return live
+```
