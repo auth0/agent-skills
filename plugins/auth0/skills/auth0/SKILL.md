@@ -49,6 +49,8 @@ lookup key: in **Step 4** it appears verbatim as a section heading
 | Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
 | Trade an external or partner token (legacy system, MCP/agent, or another IdP) for Auth0 tokens with no interactive login. *Auth0: Custom Token Exchange (CTE), RFC 8693, subject_token.* | **feature:custom-token-exchange** |
 | Call a third-party API (Google, GitHub, Slack) as the signed-in user. *Auth0: Token Vault, Connected Accounts.* | **feature:token-vault** |
+| Let a tool in an MCP server call another API as the signed-in user, with its own narrower token for that API. *Auth0: On-Behalf-Of (OBO) token exchange for MCP servers.* | **feature:mcp-on-behalf-of** |
+| Avoid a token exchange on every MCP tool call, write a token store for exchanged tokens, or choose between `strict` and `non_strict` scope matching. *Auth0: OBO token caching for MCP servers.* | **feature:mcp-token-caching** |
 | Audit a tenant for security/config issues, report, then optionally fix findings. *Auth0: tenant audit, CheckMate.* | **audit** |
 | Check if a tenant is healthy and on the right plan — two scores + a recommendation. *Auth0: health check.* | **healthcheck** |
 | Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
@@ -108,10 +110,11 @@ SDK, so check the `@capacitor/browser` rows before it.
 
 Rows are most-specific first: `auth0-server-python` is the framework-agnostic
 server core, so check for a co-installed web framework before falling back to the
-bare-SDK row.
+bare-SDK row. `auth0-ai-mcp` builds on `auth0-api-python`, so it is checked first.
 
 | Package | Framework |
 |---|---|
+| `auth0-ai-mcp` | `ai-mcp-python` |
 | `auth0-server-python` + `flask` | `flask` |
 | `auth0-server-python` (no Flask web framework) | `server-python` |
 | `auth0-fastapi-api` | `fastapi-api` |
@@ -191,6 +194,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `react` (no meta-framework above) | `react` (SPA) — see note |
 | `express` in `package.json` | `express` (variant below) |
 | `fastify` in `package.json` | `fastify` (variant below) |
+| `mcp` in `requirements.txt`/`pyproject.toml` | `ai-mcp-python` |
 | `flask` in `requirements.txt`/`pyproject.toml` | `flask` |
 | `fastapi` in `requirements.txt`/`pyproject.toml` | `fastapi-api` (variant below) |
 | `spring-boot` in `pom.xml`/`build.gradle` | `springboot-api` |
@@ -237,6 +241,7 @@ request. **Stop at the first match.**
 | FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
 | `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
 | `auth0-api-python` / Python API JWT validator (resource server / `verify_access_token`) | `api-python` |
+| `auth0-ai-mcp` / protecting a Python MCP server with Auth0 (official `mcp` SDK, FastAPI or Starlette) | `ai-mcp-python` |
 | Spring Boot | `springboot-api` |
 | Java MVC / servlet | `java-mvc` |
 | ASP.NET Core web app / API | `aspnetcore-auth` / `aspnetcore-api` |
@@ -388,6 +393,22 @@ Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 ```
 
+### feature:mcp-on-behalf-of
+```
+Read: references/feature-mcp-on-behalf-of/index.md
+Then Read the detected SDK's leaf from the hub's SDK table. It has the exact calls, so don't implement from framework-{framework}/index.md alone.
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
+```
+
+### feature:mcp-token-caching
+```
+Read: references/feature-mcp-token-caching/index.md
+Then Read the detected SDK's leaf from the hub's SDK table.
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
+```
+
 ### guidance
 ```
 Read: references/pattern-security/index.md
@@ -399,6 +420,7 @@ If multi-tenant / B2B architecture: Read references/pattern-multi-tenant/index.m
 ### debug
 ```
 Read: references/pattern-common-errors/index.md
+If the framework is `ai-mcp-python`: Read references/pattern-mcp-common-errors/index.md, then Read the SDK's leaf from its hub table.
 If framework detected: Read references/framework-{framework}/index.md
 ```
 
