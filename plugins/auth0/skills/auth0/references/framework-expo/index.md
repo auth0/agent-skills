@@ -150,17 +150,21 @@ const REAUTH_ERRORS: string[] = [
 function HomeScreen() {
   const { authorize, clearSession, getCredentials, user, isLoading, error } = useAuth0();
 
-  const login = async () => {
+  // Returns true once the user is logged in, false if they cancelled or login failed
+  const login = async (): Promise<boolean> => {
     try {
       await authorize(
         // offline_access: a refresh token, so getCredentials() can renew silently
         { scope: 'openid profile email offline_access' },
         { customScheme: 'YOUR_CUSTOM_SCHEME' }
       );
+      return true;
     } catch (e) {
       // Handle Auth0's typed errors, not a generic catch-all (see Error Handling below)
-      if (e instanceof WebAuthError && e.type === WebAuthErrorCodes.USER_CANCELLED) return;
-      console.error('Login error:', e);
+      if (!(e instanceof WebAuthError && e.type === WebAuthErrorCodes.USER_CANCELLED)) {
+        console.error('Login error:', e);
+      }
+      return false;
     }
   };
 
@@ -172,7 +176,7 @@ function HomeScreen() {
     } catch (e) {
       // Re-authenticate only for session errors; network, biometric and other errors propagate
       if (!(e instanceof CredentialsManagerError) || !REAUTH_ERRORS.includes(e.type)) throw e;
-      await login();
+      if (!(await login())) return; // cancelled or failed: don't call the API without a session
       credentials = await getCredentials(); // then retry the request with the new session
     }
     // return fetch(API_URL, { headers: { Authorization: `Bearer ${credentials.accessToken}` } });

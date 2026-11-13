@@ -326,7 +326,7 @@ Claims on the **access token** (from `getTokenSilently({ detailedResponse: true 
 - [ ] `getTokenSilently()` returns a JWT string
 - [ ] Access token decoded at [jwt.io](https://jwt.io) shows correct `aud`, `iss`, `sub`
 - [ ] Tokens are **not** stored in `localStorage` (DevTools → Application → Local Storage)
-- [ ] Page refresh maintains authentication (silent auth via `checkSession`)
+- [ ] Page refresh keeps the user logged in, if the app needs that. With the default memory cache the refresh token is lost on reload and `checkSession()` silently finds no session; keep sessions with `cacheLocation: 'localstorage'` (XSS trade-off) or `useRefreshTokensFallback: true` (iframe silent auth: needs Allowed Web Origins and third-party cookies or a custom domain)
 - [ ] `getTokenSilently()` works without redirecting when session is active
 
 ### Error Handling
@@ -355,7 +355,7 @@ Claims on the **access token** (from `getTokenSilently({ detailedResponse: true 
 | `Unable to open popup` | Popup not triggered by user gesture | Call `loginWithPopup` directly in a click handler, never from async init |
 | Token not refreshing silently | `offline_access` scope missing | Add `scope: 'openid profile email offline_access'` with `useRefreshTokens: true` |
 | `MissingRefreshTokenError` | `useRefreshTokens` false or scope missing | Enable `useRefreshTokens: true` and include `offline_access` scope |
-| User logged out on page refresh | Allowed Web Origins missing or no refresh tokens | Add Allowed Web Origins; enable `useRefreshTokens: true` |
+| User logged out on page refresh | The default memory cache drops the refresh token on reload (`checkSession()` swallows the missing token), or Allowed Web Origins is missing for iframe silent auth | Persist the session with `cacheLocation: 'localstorage'` (XSS trade-off), or set `useRefreshTokensFallback: true` and add Allowed Web Origins (iframe; needs third-party cookies or a custom domain) |
 | Cross-origin iframe blocked | Browser blocks third-party cookies | Use `useRefreshTokens: true` instead of silent iframe auth |
 | Domain includes protocol | `domain` option should not include `https://` | Use `your-tenant.auth0.com` not `https://your-tenant.auth0.com` |
 
@@ -368,10 +368,10 @@ Claims on the **access token** (from `getTokenSilently({ detailedResponse: true 
 | Strategy | Security | Session Persistence |
 |----------|----------|-------------------|
 | In-memory (default) | Highest — no persistent token theft | Lost on page refresh |
-| Refresh tokens (`useRefreshTokens: true`) | High — refresh token in memory | Persists across page refreshes |
+| Refresh tokens (`useRefreshTokens: true`) | High — refresh token in memory | Lost on page refresh unless `useRefreshTokensFallback: true` (iframe) or `cacheLocation: 'localstorage'` |
 | `localStorage` | Lowest — vulnerable to XSS | Persists across page refreshes |
 
-**Recommendation:** Use `useRefreshTokens: true` with `cacheLocation: 'memory'` (the default) for the best balance of security and user experience.
+**Recommendation:** Use `useRefreshTokens: true` with `cacheLocation: 'memory'` (the default) for the best security. Users then log in again after a reload; if that's not acceptable, choose between `cacheLocation: 'localstorage'` (XSS exposure) and `useRefreshTokensFallback: true` (depends on third-party cookies or a custom domain).
 
 ### No Client Secret
 
@@ -631,7 +631,7 @@ const token = await auth0.getTokenSilently({
 
 ## Refresh Token Rotation
 
-Enable to maintain sessions across page refreshes without relying on third-party cookies (recommended for modern browsers):
+Enable to renew tokens without relying on third-party cookies (recommended for modern browsers). With the default memory cache the refresh token does not survive a page reload; see Token Storage for the options:
 
 ```js
 const auth0 = await createAuth0Client({
