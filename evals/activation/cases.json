@@ -5,37 +5,6 @@
 
   "cases": [
     {
-      "id": "feature-pap-app",
-      "prompt": "Add Personal Agent Protocol support to my Auth0-backed app so users can connect their personal assistants.",
-      "should_activate": true,
-      "why": "App-side PAP integration needs discovery, agent sessions, and Auth0 account authorization.",
-      "tags": ["feature", "personal-agent-protocol"],
-      "spot_check": true
-    },
-    {
-      "id": "feature-pap-planning",
-      "prompt": "We want personal assistants to use our Auth0-backed site, but haven't chosen between API access and headless browsing. Help me design the consent and session model.",
-      "should_activate": true,
-      "why": "Planning app-side personal-agent authorization needs Auth0/Poppy guidance even before implementation or alongside a brainstorming skill.",
-      "tags": ["feature", "personal-agent-protocol", "planning"],
-      "spot_check": true
-    },
-    {
-      "id": "indirect-personal-agent-access",
-      "prompt": "Let my customers' personal assistants discover our shopping API and act on their accounts after they approve access.",
-      "should_activate": true,
-      "why": "Personal-agent app integration and delegated account access without naming Auth0 or PAP.",
-      "tags": ["feature", "personal-agent-protocol", "indirect"]
-    },
-    {
-      "id": "neg-personal-agent-prompt",
-      "prompt": "Rewrite my personal assistant's system prompt so it remembers my shopping preferences. Do not change any integrations or authentication.",
-      "should_activate": false,
-      "why": "Personal-agent prompt editing has no app authentication or protocol integration work.",
-      "tags": ["negative", "personal-agent-protocol"],
-      "spot_check": true
-    },
-    {
       "id": "kw-redirect-loop",
       "prompt": "My app gets stuck in an infinite redirect loop after the user signs in. How do I fix it?",
       "should_activate": true,
