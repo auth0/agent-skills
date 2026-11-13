@@ -1,6 +1,6 @@
 # auth0
 
-Auth0 skills for setting up authentication, migrating from other providers, implementing Multi-Factor Authentication (MFA) and passwordless passkey (WebAuthn) login, framework-specific SDK integrations and CLI.
+Auth0 skills for setting up authentication, migrating from other providers, implementing Multi-Factor Authentication (MFA) and passwordless passkey (WebAuthn) login, personal-agent access (Personal Agent Protocol, beta), framework-specific SDK integrations and CLI.
 
 ## Installation
 
@@ -70,6 +70,14 @@ than direct instructions. When that happens, name the skill explicitly:
 ```
 
 Naming the skill removes the selection step entirely, so it always activates.
+
+## Personal agent access (beta)
+
+The Personal Agent Protocol (Poppy) lets a user's personal AI agent discover an
+app, call its APIs and join a browser session with the user's consent. The
+[reference](skills/auth0/references/feature-personal-agent-protocol/index.md)
+covers the tenant setup workflow, discovery, and the checks that fail silently.
+It needs a Poppy-enabled tenant, and the SDK and CLI support is still unreleased.
 
 ## Migrating from the individual skills
 

@@ -151,6 +151,7 @@ per-framework skill.
 | **Quickstart Router** | — | Detects your framework and loads the right reference files |
 | **Migration** | — | Migrate from Firebase, Cognito, Supabase, Clerk, or custom auth |
 | **MFA** | — | TOTP, SMS, email, push, WebAuthn |
+| **Personal Agent Protocol (Poppy)** | Beta | Let users' personal AI agents discover your app, call its APIs and join a session with consent |
 | **ACUL Screen Generation** | [`@auth0/auth0-acul-react`](https://github.com/auth0/universal-login) | Custom Universal Login screens and theming |
 | **React** | [`@auth0/auth0-react`](https://github.com/auth0/auth0-react) | React SPAs (Vite, CRA) |
 | **Vue** | [`@auth0/auth0-vue`](https://github.com/auth0/auth0-vue) | Vue 3 |
@@ -205,6 +206,10 @@ Migrate from Firebase Auth to Auth0
 
 ```
 Secure my Express API with Auth0 JWT validation
+```
+
+```
+Let personal agents use my Auth0-backed app through the Personal Agent Protocol
 ```
 
 ## Feedback

@@ -1,6 +1,6 @@
 ---
 name: auth0
-description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, passwordless passkey login (WebAuthn), SSO, Organizations, RBAC, custom domains, Universal Portals for hosted account and organization self-service, or Universal Login branding. Also use to audit a tenant's health, security, and plan fit (CheckMate), to debug why an auth flow fails, to migrate from another auth provider, or to set up the Vercel native integration. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
+description: Use when adding, fixing, or improving how an app authenticates users or protects an API, or when using or configuring any Auth0 feature — signing users in and out, sessions and tokens, guarding routes and endpoints, MFA, passwordless passkey login (WebAuthn), letting a user's personal AI agent use an app (Personal Agent Protocol, Poppy), SSO, Organizations, RBAC, custom domains, Universal Portals for hosted account and organization self-service, or Universal Login branding. Also use to audit a tenant's health, security, and plan fit (CheckMate), to debug why an auth flow fails, to migrate from another auth provider, or to set up the Vercel native integration. Covers any web, mobile, or backend framework and every Auth0 SDK, tool, and API. Use even if the user never mentions Auth0.
 license: Apache-2.0
 metadata:
   author: Auth0 <support@auth0.com>
@@ -47,6 +47,7 @@ lookup key: in **Step 4** it appears verbatim as a section heading
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
 | Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
+| Let a user's personal AI agent discover an app, call its APIs, or join a browser session with the user's consent. *Personal Agent Protocol (PAP), Poppy.* | **feature:personal-agent-protocol** |
 | Trade an external or partner token (legacy system, MCP/agent, or another IdP) for Auth0 tokens with no interactive login. *Auth0: Custom Token Exchange (CTE), RFC 8693, subject_token.* | **feature:custom-token-exchange** |
 | Call a third-party API (Google, GitHub, Slack) as the signed-in user. *Auth0: Token Vault, Connected Accounts.* | **feature:token-vault** |
 | Audit a tenant for security/config issues, report, then optionally fix findings. *Auth0: tenant audit, CheckMate.* | **audit** |
@@ -377,6 +378,13 @@ DPoP is SPA-only (no SSR: Next.js/Nuxt) — feature-dpop/index.md states the exc
 ### feature:custom-token-exchange
 ```
 Read: references/feature-custom-token-exchange/index.md
+Read: references/tooling-{tooling}/index.md
+If framework detected: Read references/framework-{framework}/index.md
+```
+
+### feature:personal-agent-protocol
+```
+Read: references/feature-personal-agent-protocol/index.md
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 ```

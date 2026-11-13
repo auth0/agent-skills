@@ -199,6 +199,20 @@
       "expect_refs": ["feature-custom-token-exchange/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
     },
     {
+      "id": "feature-personal-agent-protocol-standalone",
+      "intent": "feature:personal-agent-protocol",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-personal-agent-protocol/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-personal-agent-protocol-nextjs-combo",
+      "intent": "feature:personal-agent-protocol",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["feature-personal-agent-protocol/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
+    },
+    {
       "id": "feature-token-vault-standalone",
       "intent": "feature:token-vault",
       "framework": null,

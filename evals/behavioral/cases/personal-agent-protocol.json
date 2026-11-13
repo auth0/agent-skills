@@ -1,0 +1,107 @@
+{
+  "slug": "personal-agent-protocol",
+  "origin_skill": "auth0",
+  "skill_name": "auth0",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Our Auth0-backed shop has a public catalog API and private order routes. Add app-side Personal Agent Protocol support for draft 1.0. We have not verified our tenant or installed SDK supports Poppy yet. Produce a concrete discovery document and implementation plan; distinguish what we can implement now from what requires compatible Auth0 support.",
+      "expected_output": "Draft-1.0 discovery and a scoped app implementation plan with explicit tenant/SDK compatibility checks.",
+      "expectations": [
+        "Uses /.well-known/poppy.json with protocol_version 1.0, organization.domain matching its serving host, and an implemented OpenAPI or MCP interface",
+        "Requires RFC 9728 resource discovery and issuer protected_resources before claiming signed-in compatibility",
+        "Separates signed-out Poppy-Session verification from OAuth account authorization; guests need no access token",
+        "Requires delegated-key verification including poppy_dlg, request binding, token hash, and client binding",
+        "Keeps pseudonymous Session sub separate from Auth0 account identity",
+        "Checks CIMD, private_key_jwt algorithm support, consent, refresh, revocation, and resource audience behavior",
+        "Does not claim open Auth0 0.3 or CLI 0.4 previews implement draft 1.0",
+        "Does not invent released package versions, SDK methods, CLI commands, or tenant enablement fields"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Our personal agent already has orders:read on our Auth0 API. Let its headless browser join the same account session and place an order. Describe the app routes and exact authorization checks for Poppy draft 1.0.",
+      "expected_output": "Three-step browser join with account scope enforcement; read-only access cannot place orders.",
+      "expectations": [
+        "Browser GET creates only a short-lived one-use code and browser-bound cookie, with no login or session mutation",
+        "Agent authorizes the code with Poppy Session headers and an independently validated account token",
+        "Signed-in browser join requires poppy:browser-sign-in; orders:read alone does not suffice",
+        "Browser POST consumes authorized code atomically with original cookie and creates a separate agent cookie",
+        "First browser submission consumes its code even on failure; join page and cookie prevent cross-site, subdomain, framing, and caching attacks",
+        "Tokens never pass through the browser; normal and Poppy sessions remain separate",
+        "Signed-in join removes prior ordinary-login credentials so they cannot restore account access after sign-out; signed-out join preserves ordinary login",
+        "Order mutations require orders:write, or explicitly consented full website access declared through web.unscoped",
+        "Does not silently widen the read-only API grant or trust preview the SDK context scopes for authorization"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "A Poppy request has a correctly signed Session JWT from one agent and a valid Auth0 orders:write access token issued to another agent. Can we accept it? Show the verification order and failure behavior.",
+      "expected_output": "Rejects mismatched client identity despite individually valid signatures and scope.",
+      "expectations": [
+        "Verifies delegation and delegated session signature before using Session claims",
+        "Independently validates the account token, resource audience, scope, and Session ath",
+        "Rejects mismatch between token client identity and Session iss",
+        "Never looks up or mutates account state solely from Session sub, sid, or optional agent_id",
+        "Does not replace client binding with generic Custom Token Exchange or Token Vault"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "Plan our app integration for the Auth0 Poppy beta. We only need browser access now, will add an Express API later, and are not using DPoP. What beta capabilities and prerequisites should we build around?",
+      "expected_output": "Beta app integration scope with independent API/browser paths and supported SDK interfaces.",
+      "expectations": [
+        "Requires beta enrollment and approved tenant enablement, with the initial rollout in US-5 rather than claiming universal availability",
+        "Allows browser integration without first implementing an API",
+        "Includes Next.js, API.js, Server.js, and Express in the SDK plan while checking actual available helpers before using them",
+        "Uses discovery and OAuth protected-resource configuration with separate regular and Poppy session storage",
+        "Does not make DPoP mandatory for beta or configure anonymous scopes for guest API calls",
+        "Retains session-transfer-token cookies for the supported browser flow",
+        "Uses manual CIMD registration and direct authorization-code sign-in rather than promising self-registration, device sign-in, or partial consent",
+        "Does not include Conversations, payment/push extensions, or unconfirmed MCP support as beta features",
+        "Does not equate planned protocol 1.0 publication with verified SDK 1.0 support",
+        "Does not invent requirePoppyScope, an auth0 poppy agents command, or unsettled registration flags"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "We have an approved Poppy beta tenant and a personal agent's CIMD URL. Register that agent, link its Auth0 principal, and configure delegated orders:read access to our custom API. Show the verified Management API requests, permission scopes, and optional CLI linking command.",
+      "expected_output": "Manual CIMD registration followed by principal linking and a user client grant, using the returned internal Auth0 client ID.",
+      "expectations": [
+        "Posts only external_client_id to /api/v2/clients/cimd/register, with create:clients for new registration and update:clients for refresh",
+        "Uses the returned internal client_id in POST /api/v2/agents with name, requiring create:agents and feature enablement",
+        "Keeps the external CIMD URL, internal Auth0 client ID, agent principal ID, and optional protocol agent-instance ID distinct",
+        "Uses auth0 agents register when the installed CLI has it, otherwise the explicit Management API requests; does not invent flags",
+        "Posts a custom-API client grant with subject_type user, an explicit orders:read scope list, and create:client_grants permission",
+        "Does not default to a client-credentials grant, use blanket allow_all_scopes, or send M2M organization options",
+        "Does not treat registration or a client grant as customer sign-in, consent, or proof of request authorization"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "We deleted an Auth0 agent principal and revoked its refresh token. Can our orders API immediately reject every previously issued JWT? Explain how to disconnect the agent account and end its Poppy cart session.",
+      "expected_output": "Separate principal deletion, OAuth cleanup, token lifetime, and durable application session termination.",
+      "expectations": [
+        "Explains that agent-principal deletion does not itself delete the CIMD client, its client grants, or refresh tokens",
+        "Does not claim refresh revocation or registration removal immediately invalidates an already-issued JWT access token",
+        "Separates browser logout, account disconnect, OAuth grant cleanup, and Poppy Session termination",
+        "Persists an ended Session record rather than deleting it and permitting the same session key to start again",
+        "Uses application disconnect/session policy for immediate denial and defines account-switch behavior for carts or order drafts"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "Run Poppy browser joining locally against Auth0 while preserving our existing human MFA and post-login Actions. Use HTTPS, show the concrete Action compatibility branch, and explain how to test authorization without a live agent.",
+      "expected_output": "Reachable HTTPS development configuration, selective promptless-handoff policy, and real runtime verification tests.",
+      "expectations": [
+        "Uses a public HTTPS development host and consistent app origin, Company hostname, initiate_login_uri, callback and logout URLs",
+        "Does not treat a localhost certificate as a publicly discoverable agent endpoint",
+        "Uses trusted event.session.actor.sub, the intended web application ID and an agent-actor allowlist for the MFA handoff branch; event.agent alone does not skip original customer MFA",
+        "Applies MFA during original customer authorization; promptless handoff does not re-prompt or authorize broader access",
+        "Runs real SDK cryptographic verification using signed fixtures, covering client binding, expiry, token hash, guest denial, insufficient scope and ended sessions",
+        "Distinguishes runtime tests from generated-guidance behavioral cases and from a live-tenant browser handoff test"
+      ]
+    }
+  ],
+  "graders": null
+}
