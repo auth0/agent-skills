@@ -130,21 +130,56 @@ Wrap your app with `Auth0Provider` and use the `useAuth0` hook:
 
 ```typescript
 import React from 'react';
-import { Auth0Provider, useAuth0 } from 'react-native-auth0';
+import {
+  Auth0Provider,
+  useAuth0,
+  WebAuthError,
+  WebAuthErrorCodes,
+  CredentialsManagerError,
+  CredentialsManagerErrorCodes,
+} from 'react-native-auth0';
 import { View, Button, Text, ActivityIndicator } from 'react-native';
 
-function HomeScreen() {
-  const { authorize, clearSession, user, isLoading, error } = useAuth0();
+// Credentials Manager errors that mean the session is gone and the user must log in again
+const REAUTH_ERRORS: string[] = [
+  CredentialsManagerErrorCodes.NO_CREDENTIALS,
+  CredentialsManagerErrorCodes.NO_REFRESH_TOKEN,
+  CredentialsManagerErrorCodes.RENEW_FAILED,
+];
 
-  const login = async () => {
+function HomeScreen() {
+  const { authorize, clearSession, getCredentials, user, isLoading, error } = useAuth0();
+
+  // Returns true once the user is logged in, false if they cancelled or login failed
+  const login = async (): Promise<boolean> => {
     try {
       await authorize(
-        { scope: 'openid profile email' },
+        // offline_access: a refresh token, so getCredentials() can renew silently
+        { scope: 'openid profile email offline_access' },
         { customScheme: 'YOUR_CUSTOM_SCHEME' }
       );
+      return true;
     } catch (e) {
-      console.error('Login error:', e);
+      // Handle Auth0's typed errors, not a generic catch-all (see Error Handling below)
+      if (!(e instanceof WebAuthError && e.type === WebAuthErrorCodes.USER_CANCELLED)) {
+        console.error('Login error:', e);
+      }
+      return false;
     }
+  };
+
+  // Tokens come from the SDK's secure credential store, never from your own storage
+  const callApi = async () => {
+    let credentials;
+    try {
+      credentials = await getCredentials();
+    } catch (e) {
+      // Re-authenticate only for session errors; network, biometric and other errors propagate
+      if (!(e instanceof CredentialsManagerError) || !REAUTH_ERRORS.includes(e.type)) throw e;
+      if (!(await login())) return; // cancelled or failed: don't call the API without a session
+      credentials = await getCredentials(); // then retry the request with the new session
+    }
+    // return fetch(API_URL, { headers: { Authorization: `Bearer ${credentials.accessToken}` } });
   };
 
   const logout = async () => {
