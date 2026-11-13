@@ -78,7 +78,7 @@ if [ "$OLD_PATTERNS" -gt 0 ]; then
 fi
 
 # Feature file checks
-EXPECTED_FEATURES="mfa passkeys branding custom-domains migration acul dpop"
+EXPECTED_FEATURES="mfa passkeys branding custom-domains migration acul dpop personal-agent-protocol"
 for feat in $EXPECTED_FEATURES; do
   if [ ! -f "$REFS_DIR/feature-$feat/index.md" ]; then
     echo "FAIL: missing references/feature-$feat/index.md"
