@@ -1,0 +1,74 @@
+{
+  "slug": "forms-post-challenge",
+  "origin_skill": "feature-forms",
+  "skill_name": "auth0",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "After a user resets their password, show a screen asking them to add a recovery phone number, text them a 6-digit code to confirm it, and only if the code is right save the number on the user in `user_metadata.recovery_phone`. Auth0 should send the text message; we do not use Twilio. There is no Auth0 tenant available in this environment. Do not run `auth0`, `curl` or any other command against a tenant. Only write files in the current directory: `vault-connection.json`, `flow-send.json`, `flow-verify.json`, `form.json`, `action.js` and `commands.yaml`. `commands.yaml` must list the exact commands you would run, in the order to run them, as a list under `steps:`, and must end with whatever it takes to make the Action actually run for users.",
+      "expected_output": "action.js uses onExecutePostChallenge and onContinuePostChallenge with api.prompt.render; flows use OTP GENERATE_CODE, AUTH0 SEND_SMS (no vault connection) and VERIFY_CODE, then UPDATE_USER with the AUTH0 vault connection; commands bind the Action to password-reset-post-challenge after deploying it.",
+      "files": [],
+      "assertions": [
+        "Uses the post-challenge handlers, not post-login",
+        "No Twilio connection",
+        "Action is deployed and bound to the password-reset-post-challenge trigger"
+      ]
+    }
+  ],
+  "graders": [
+    {
+      "type": "file_contains",
+      "description": "Action renders on the password reset trigger",
+      "file_pattern": "action.js",
+      "value": "onExecutePostChallenge"
+    },
+    {
+      "type": "file_contains",
+      "description": "Action resumes with the post-challenge handler",
+      "file_pattern": "action.js",
+      "value": "onContinuePostChallenge"
+    },
+    {
+      "type": "not_contains",
+      "description": "does not use the post-login handler",
+      "value": "onExecutePostLogin"
+    },
+    {
+      "type": "contains",
+      "description": "binds to the password-reset-post-challenge trigger",
+      "value": "password-reset-post-challenge"
+    },
+    {
+      "type": "contains",
+      "description": "sends with the native AUTH0 SEND_SMS action",
+      "value": "SEND_SMS"
+    },
+    {
+      "type": "not_contains_any",
+      "description": "no Twilio integration",
+      "values": [
+        "TWILIO"
+      ]
+    },
+    {
+      "type": "contains",
+      "description": "generates the code",
+      "value": "GENERATE_CODE"
+    },
+    {
+      "type": "contains",
+      "description": "verifies the code",
+      "value": "VERIFY_CODE"
+    },
+    {
+      "type": "contains",
+      "description": "saves with UPDATE_USER",
+      "value": "UPDATE_USER"
+    },
+    {
+      "type": "matches",
+      "description": "deploys the Action, then binds it",
+      "pattern": "[Dd]eploy[\\s\\S]*bindings"
+    }
+  ]
+}

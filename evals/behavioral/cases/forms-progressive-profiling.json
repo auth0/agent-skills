@@ -1,0 +1,62 @@
+{
+  "slug": "forms-progressive-profiling",
+  "origin_skill": "feature-forms",
+  "skill_name": "auth0",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "On each login, ask the user only for profile data we are still missing: if `user_metadata.company` is empty ask for the company name, if `user_metadata.job_title` is empty ask for the job title, and if both are present show nothing. Save the answers to the user's `user_metadata`. Show one screen per missing item. There is no Auth0 tenant available in this environment. Do not run `auth0`, `curl` or any other command against a tenant. Only write files in the current directory: `vault-connection.json`, `flow.json`, `form.json`, `action.js` and `commands.yaml`. `commands.yaml` must list the exact commands you would run, in the order to run them, as a list under `steps:`, and must end with whatever it takes to make the Action actually run for users.",
+      "expected_output": "form.json has a ROUTER with rules on context.user.user_metadata.company and job_title (HAS_NO_VALUE or similar) and a fallback; one STEP per missing item with unique component ids; a FLOW node that updates user_metadata with UPDATE_USER using a vault connection; commands create the vault connection, flow, form, Action, deploy and bind.",
+      "files": [],
+      "assertions": [
+        "Every ROUTER has a fallback",
+        "Component ids are unique across the form",
+        "Notes the update:users scopes for the M2M app"
+      ]
+    }
+  ],
+  "graders": [
+    {
+      "type": "file_contains",
+      "description": "form uses a ROUTER node",
+      "file_pattern": "form.json",
+      "value": "ROUTER"
+    },
+    {
+      "type": "matches",
+      "description": "every ROUTER sets a fallback node id",
+      "pattern": "\\\"fallback\\\"\\s*:\\s*\\\"[^\\\"]+\\\""
+    },
+    {
+      "type": "matches",
+      "description": "routing depends on the user's missing metadata, read from context.user in the form or from event.user in the Action",
+      "pattern": "(context\\.user\\.user_metadata\\.(company|job_title)|event\\.user\\.user_metadata)"
+    },
+    {
+      "type": "contains",
+      "description": "saves with UPDATE_USER",
+      "value": "UPDATE_USER"
+    },
+    {
+      "type": "contains",
+      "description": "tells the developer the machine-to-machine app needs update:users",
+      "value": "update:users"
+    },
+    {
+      "type": "matches",
+      "description": "renders a form from a post-login Action",
+      "pattern": "api\\.prompt\\.render\\("
+    },
+    {
+      "type": "matches",
+      "description": "creates the flow before the form, then deploys the Action and binds it (in that order)",
+      "pattern": "flows[^\\n]*\\n[\\s\\S]*forms[^\\n]*\\n[\\s\\S]*[Dd]eploy[\\s\\S]*bindings"
+    },
+    {
+      "type": "judge",
+      "description": "component ids are unique across the whole form",
+      "question": "In form.json, are all component ids (every entry in every STEP's components array) unique across the WHOLE file, so that no two components share an id even in different steps? Answer YES only if all component ids are distinct.",
+      "examples": "PASS: step_company has id company_name and next_company; step_title has id job_title and next_title\nFAIL: two steps both have a component with id continue_button"
+    }
+  ]
+}
