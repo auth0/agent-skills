@@ -56,6 +56,7 @@ Delete in the reverse order: Action binding, form, flow, vault connection. The A
 | `409` deleting a flow | A form still uses it. Delete or edit the form first |
 | Form saves but the user is not updated | The flow's `UPDATE_USER` action uses a vault connection that is not ready, or its Auth0 application lacks `update:users` and `update:users_app_metadata` |
 | Form never appears at login | The Action is not deployed, or it is not bound to the trigger |
+| Login fails after the form is submitted | The Action has no resume handler (`onContinuePostLogin` or `onContinuePostChallenge`). Export it even when it is empty |
 | `auth0 api delete` waits forever | It is asking for confirmation. Add `--force` only after the developer confirms the target |
 | Branch never matches, or a variable is empty | You referenced the wrong output path. Read the execution trace (flows file) |
 

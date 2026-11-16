@@ -25,6 +25,8 @@ exports.onContinuePostLogin = async (event, api) => {
 
 The post-challenge handler names come from the Actions editor template for that trigger. The public docs do not list them, so confirm them in the editor before you rely on them. `api.prompt.render(formId, { fields, vars })` has the same signature on both triggers, and `event.user` carries the user's email and phone number.
 
+**Always export the resume handler, even when it does nothing** (`exports.onContinuePostLogin = async () => {};`). An Action that renders a form without one makes the pipeline fail when the user comes back from the form. This rule is not in the public docs.
+
 After the user submits, the resume handler reads `event.prompt.id`, `event.prompt.fields` (every field and hidden field) and `event.prompt.vars`.
 
 Limits: one form per Action, and an Action cannot both redirect and render, so use two Actions for that. Put nothing sensitive in `fields`, because the browser receives it. A key in `fields` fills a value only when a component or hidden field with that `id` exists in the form.
