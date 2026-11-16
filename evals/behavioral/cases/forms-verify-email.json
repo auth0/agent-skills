@@ -5,14 +5,17 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "My app uses Auth0. After login I want a one-screen form that asks for the user's work email and runs a flow that verifies it: the address must have an MX record and must not be a disposable address. When the check fails, the form must show a different message for a missing MX record and for a disposable address. The Action must also pass a `campaign` value into the form as a hidden field. There is no Auth0 tenant available in this environment. Do not run `auth0`, `curl` or any other command against a tenant. Only write files in the current directory: `form.json` (body for creating the form), `flow.json` (body for creating the flow), `action.js` (the Action) and `commands.yaml`. `commands.yaml` must list the exact commands you would run, in the order to run them, as a list under `steps:`, and must end with whatever it takes to make the Action actually run for users.",
+      "prompt": "My app uses Auth0. After login I want a one-screen form that asks for the user's work email and runs a flow that verifies it: the address must have an MX record and must not be a disposable address. When the check fails, the form must show a different message for a missing MX record and for a disposable address. The Action must also pass a `campaign` value into the form as a hidden field. When the check passes, show a second screen that welcomes the user and mentions their email domain (the part after the @). There is no Auth0 tenant available in this environment. Do not run `auth0`, `curl` or any other command against a tenant. Only write files in the current directory: `form.json` (body for creating the form), `flow.json` (body for creating the flow), `action.js` (the Action) and `commands.yaml`. `commands.yaml` must list the exact commands you would run, in the order to run them, as a list under `steps:`, and must end with whatever it takes to make the Action actually run for users.",
       "expected_output": "Creates a flow with EMAIL VERIFY_EMAIL (require_mx_record and block_disposable_emails true), a single FLOW MAP_VALUE action whose input is actions.<id>.body.cause and whose cases map MISSING_MX_RECORD and DISPOSABLE_EMAIL to different messages, and one ERROR_MESSAGE guarded by a condition on actions.<id>.body.valid that shows actions.<map id>.result; form.json has a STEP, a FLOW node and start.hidden_fields with campaign; action.js renders the form from onExecutePostLogin; commands.yaml creates the flow, then the form, then the Action, deploys it and binds it to post-login.",
       "files": [],
       "assertions": [
         "Output path uses body (actions.<id>.body.cause), not the documented unwrapped cause",
         "Uses one MAP_VALUE action, not a BOOLEAN_CONDITION per cause",
         "Flow is created before the form; form uses the returned flow ID",
-        "Action is deployed and bound to the trigger"
+        "Action is deployed and bound to the trigger",
+        "Writes the condition as valid equals true and gives the mapping and condition an alias",
+        "Each screen starts with a RICH_TEXT title and description; the Action exports onContinuePostLogin",
+        "Stores the domain with STORE_VARS and shows {{vars.NAME}} on a welcome screen"
       ]
     }
   ],
@@ -91,6 +94,48 @@
       "description": "FLOW node uses a placeholder, not an invented ID",
       "question": "In form.json, does the FLOW node's flow_id refer to a placeholder or a value the commands say to take from the create-flow output (for example FLOW_ID or a shell variable), rather than a made-up literal ID like af_AbCdEf...? Answer YES only if there is no invented literal ID.",
       "examples": "PASS: \"flow_id\": \"FLOW_ID_FROM_STEP_1\"\nFAIL: \"flow_id\": \"af_9xKq2LmPz4TnWv8RbYc1Dh\""
+    },
+    {
+      "type": "matches",
+      "description": "gives unclear actions an alias",
+      "pattern": "\\\"alias\\\"\\s*:\\s*\\\"[^\\\"]+\\\""
+    },
+    {
+      "type": "matches",
+      "description": "compares valid with true so the true branch is the success path",
+      "pattern": "body\\.valid\\s*\\}\\}\\\"\\s*,\\s*true"
+    },
+    {
+      "type": "file_contains",
+      "description": "personalizes the screen with a RICH_TEXT title and description",
+      "file_pattern": "form.json",
+      "value": "RICH_TEXT"
+    },
+    {
+      "type": "file_contains",
+      "description": "Action exports the resume handler",
+      "file_pattern": "action.js",
+      "value": "onContinuePostLogin"
+    },
+    {
+      "type": "contains",
+      "description": "stores the domain from the VERIFY_EMAIL output with STORE_VARS so the screen can show it",
+      "value": "STORE_VARS"
+    },
+    {
+      "type": "file_contains",
+      "description": "the welcome screen reads the stored value as {{vars.NAME}}",
+      "file_pattern": "form.json",
+      "value": "{{vars."
+    },
+    {
+      "type": "not_contains_any",
+      "description": "does not invent a store action name",
+      "values": [
+        "STORE_STATE",
+        "SET_VARIABLE",
+        "STORE_VARIABLE"
+      ]
     }
   ]
 }

@@ -11,7 +11,8 @@
       "assertions": [
         "Uses the post-challenge handlers, not post-login",
         "No Twilio connection",
-        "Action is deployed and bound to the password-reset-post-challenge trigger"
+        "Action is deployed and bound to the password-reset-post-challenge trigger",
+        "Each screen starts with a RICH_TEXT title and description"
       ]
     }
   ],
@@ -44,11 +45,9 @@
       "value": "SEND_SMS"
     },
     {
-      "type": "not_contains_any",
-      "description": "no Twilio integration",
-      "values": [
-        "TWILIO"
-      ]
+      "type": "not_matches",
+      "description": "no Twilio integration (a comment that mentions Twilio is fine)",
+      "pattern": "\\\"(app_id|type)\\\"\\s*:\\s*\\\"TWILIO\\\""
     },
     {
       "type": "contains",
@@ -69,6 +68,12 @@
       "type": "matches",
       "description": "deploys the Action, then binds it",
       "pattern": "[Dd]eploy[\\s\\S]*bindings"
+    },
+    {
+      "type": "file_contains",
+      "description": "personalizes the screen with a RICH_TEXT title and description",
+      "file_pattern": "form.json",
+      "value": "RICH_TEXT"
     }
   ]
 }

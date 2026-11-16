@@ -11,7 +11,8 @@
       "assertions": [
         "Every ROUTER has a fallback",
         "Component ids are unique across the form",
-        "Notes the update:users scopes for the M2M app"
+        "Notes the update:users scopes for the M2M app",
+        "Saves with ONE UPDATE_USER using nullish defaults, no condition per field"
       ]
     }
   ],
@@ -57,6 +58,34 @@
       "description": "component ids are unique across the whole form",
       "question": "In form.json, are all component ids (every entry in every STEP's components array) unique across the WHOLE file, so that no two components share an id even in different steps? Answer YES only if all component ids are distinct.",
       "examples": "PASS: step_company has id company_name and next_company; step_title has id job_title and next_title\nFAIL: two steps both have a component with id continue_button"
+    },
+    {
+      "type": "file_contains",
+      "description": "personalizes the screen with a RICH_TEXT title and description",
+      "file_pattern": "form.json",
+      "value": "RICH_TEXT"
+    },
+    {
+      "type": "file_contains",
+      "description": "Action exports the resume handler",
+      "file_pattern": "action.js",
+      "value": "onContinuePostLogin"
+    },
+    {
+      "type": "matches",
+      "description": "patches with nullish defaults so unanswered fields keep their stored value",
+      "pattern": "\\{\\{\\s*fields\\.[A-Za-z0-9_]+\\s*\\?\\?"
+    },
+    {
+      "type": "not_contains",
+      "description": "no BOOLEAN_CONDITION per field in the save flow",
+      "value": "BOOLEAN_CONDITION"
+    },
+    {
+      "type": "judge",
+      "description": "one UPDATE_USER action",
+      "question": "In flow.json, is there exactly ONE UPDATE_USER action that sets both company and job_title in a single call (using nullish defaults), rather than one UPDATE_USER per field? Answer YES only if there is a single UPDATE_USER.",
+      "examples": "PASS: one UPDATE_USER with user_metadata {company: {{fields.company ?? ...}}, job_title: {{fields.job_title ?? ...}}}\nFAIL: update_company and update_job_title as two actions"
     }
   ]
 }
