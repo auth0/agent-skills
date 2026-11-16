@@ -472,19 +472,27 @@ auth0 actions create --name a --trigger post-login \
 
 ### Forms and Flows — Self-Service Journeys
 
-`auth0 forms` manages hosted forms (e.g. signup surveys, profile completion);
-`auth0 flows` orchestrates multi-step journeys, with executions and a credential
-vault.
+`auth0 forms` (CLI 1.35.0 or newer) manages hosted forms (e.g. signup surveys,
+profile completion); `auth0 flows` (CLI 1.34.0 or newer) orchestrates multi-step
+journeys, with executions and a credential vault. Both have `list`, `show`,
+`create`, `update`, `delete`, and `open`.
 
 ```bash
 auth0 forms create --name "Signup Survey"
+auth0 forms create --example > form.json   # starter body; --schema prints the payload schema
 auth0 forms create --data @form.json
+auth0 forms update <form-id> --data @form.json
 auth0 forms import --data @form.json
 
+auth0 flows create --actions-template      # --actions-file must be {"actions": [...]}, not a bare array
 auth0 flows create --name "My Flow" --actions-file ./flow.json
+auth0 flows update <flow-id> --actions-file ./flow.json   # replaces the whole actions list
 auth0 flows executions list <flow-id>
-auth0 flows vault connections create
+auth0 flows vault connections create --name "My connection" --app-id AUTH0 --setup-file ./setup.json
 ```
+
+For the full workflow (creation order, vault connections, rendering a form from
+an Action), use the `feature:forms` intent.
 
 ### Logs — Debugging & Monitoring
 

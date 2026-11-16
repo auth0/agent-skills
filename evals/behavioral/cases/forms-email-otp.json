@@ -1,0 +1,116 @@
+{
+  "slug": "forms-email-otp",
+  "origin_skill": "feature-forms",
+  "skill_name": "auth0",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "After login, if the user's email is not verified, show a form that emails them a 6-digit code and asks them to type it. When the code is right, mark the email as verified on the Auth0 user; otherwise show an error. Keep the user's email address in a shared variable so both flows and the screen text reuse it, and make the code screen say which address the code was sent to. We do not use SendGrid or any other email service: the tenant already has an email provider configured in Auth0. There is no Auth0 tenant available in this environment. Do not run `auth0`, `curl` or any other command against a tenant. Only write files in the current directory: `vault-connection.json` (body for the vault connection the flow needs), `flow-send.json` (generates and sends the code), `flow-verify.json` (checks the code and updates the user), `form.json`, `action.js` and `commands.yaml`. `commands.yaml` must list the exact commands you would run, in the order to run them, as a list under `steps:`, and must end with whatever it takes to make the Action actually run for users.",
+      "expected_output": "Creates an AUTH0 vault connection (secrets as placeholders), a send flow (OTP GENERATE_CODE then AUTH0 SEND_EMAIL with no connection) and a verify flow (OTP VERIFY_CODE, BOOLEAN_CONDITION on actions.<id>.valid, UPDATE_USER with the connection or ERROR_MESSAGE); commands create the vault connection, flows, form, Action, deploy and bind.",
+      "files": [],
+      "assertions": [
+        "Does not create or mention a SendGrid or Mailjet connection",
+        "Notes that the M2M app behind the vault connection needs update:users",
+        "Action is deployed and bound",
+        "Stores the address once with STORE_VARS and reads it as {{vars.NAME}} in the second flow and the screen text",
+        "Each screen starts with a RICH_TEXT title and description; the Action exports onContinuePostLogin even if it is empty"
+      ]
+    }
+  ],
+  "graders": [
+    {
+      "type": "contains",
+      "description": "generates the code with the OTP action",
+      "value": "GENERATE_CODE"
+    },
+    {
+      "type": "contains",
+      "description": "checks the code with the OTP action",
+      "value": "VERIFY_CODE"
+    },
+    {
+      "type": "contains",
+      "description": "sends with the native AUTH0 SEND_EMAIL action",
+      "value": "SEND_EMAIL"
+    },
+    {
+      "type": "not_contains_any",
+      "description": "no third-party email integration",
+      "values": [
+        "SENDGRID",
+        "MAILJET"
+      ]
+    },
+    {
+      "type": "contains",
+      "description": "updates the user with UPDATE_USER",
+      "value": "UPDATE_USER"
+    },
+    {
+      "type": "file_contains",
+      "description": "vault connection uses the AUTH0 app",
+      "file_pattern": "vault-connection.json",
+      "value": "AUTH0"
+    },
+    {
+      "type": "contains",
+      "description": "tells the developer the machine-to-machine app needs update:users",
+      "value": "update:users"
+    },
+    {
+      "type": "not_matches",
+      "description": "no real-looking client secret in the vault connection (a placeholder or environment variable is fine)",
+      "pattern": "\"client_secret\"\\s*:\\s*\"(?=[^\"]*[a-z])(?=[^\"]*[0-9A-Z])(?!\\$|<|\\{|your|YOUR)[A-Za-z0-9_\\-]{16,}\""
+    },
+    {
+      "type": "matches",
+      "description": "reads the check result from the OTP output",
+      "pattern": "actions\\.[A-Za-z0-9_]+\\.valid"
+    },
+    {
+      "type": "matches",
+      "description": "deploys the Action, then binds it",
+      "pattern": "[Dd]eploy[\\s\\S]*bindings"
+    },
+    {
+      "type": "judge",
+      "description": "SEND_EMAIL has no connection, UPDATE_USER has one",
+      "question": "In the flow files, does the AUTH0 SEND_EMAIL action have NO connection_id, while the AUTH0 UPDATE_USER action DOES reference a connection (a placeholder or a value taken from the vault connection created earlier)? Answer YES only if both are true.",
+      "examples": "PASS: SEND_EMAIL params have to/subject/body only; UPDATE_USER params include connection_id\nFAIL: SEND_EMAIL params include connection_id, or UPDATE_USER has none"
+    },
+    {
+      "type": "contains_any",
+      "description": "keeps the address in a shared variable (STORE_VARS in a flow, or vars passed by the Action)",
+      "values": [
+        "STORE_VARS",
+        "vars:"
+      ]
+    },
+    {
+      "type": "matches",
+      "description": "reuses it as {{vars.NAME}} in a flow or in the screen text",
+      "pattern": "\\{\\{\\s*vars\\.[A-Za-z0-9_]+\\s*\\}\\}"
+    },
+    {
+      "type": "not_contains_any",
+      "description": "does not invent a store action name",
+      "values": [
+        "STORE_STATE",
+        "SET_VARIABLE",
+        "STORE_VARIABLE"
+      ]
+    },
+    {
+      "type": "file_contains",
+      "description": "personalizes the screen with a RICH_TEXT title and description",
+      "file_pattern": "form.json",
+      "value": "RICH_TEXT"
+    },
+    {
+      "type": "file_contains",
+      "description": "Action exports the resume handler",
+      "file_pattern": "action.js",
+      "value": "onContinuePostLogin"
+    }
+  ]
+}
