@@ -143,6 +143,13 @@
       "expect_refs": ["feature-universal-portals/index.md", "tooling-cli/index.md"]
     },
     {
+      "id": "feature-forms",
+      "intent": "feature:forms",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-forms/index.md", "tooling-cli/index.md"]
+    },
+    {
       "id": "feature-enterprise-connect-standalone",
       "intent": "feature:enterprise-connect",
       "framework": null,
