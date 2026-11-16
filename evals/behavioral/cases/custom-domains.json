@@ -58,14 +58,14 @@
     {
       "id": 4,
       "prompt": "I have three custom domains on this tenant. Make login-eu.example.com the default, and set the relying party identifier on login.example.com to example.com.",
-      "expected_output": "Should route to capability 3 (Manage existing domains). Lists current state, stages both changes as a batch, confirms tenant, shows diffs, applies PATCH /tenants/settings for the default and PATCH /custom-domains/{id} for the RPID. Warns that existing passkeys become invalid when RPID changes.",
+      "expected_output": "Should route to capability 3 (Manage existing domains). Lists current state, stages both changes as a batch, confirms tenant, shows diffs, applies auth0 domains default set <domain> for the default and PATCH /custom-domains/{id} for the RPID. Warns that existing passkeys become invalid when RPID changes.",
       "files": [],
       "assertions": [
         "Invokes the auth0-custom-domains skill",
         "Routes to capability 3 (Manage existing domains)",
         "Fetches current custom domains and tenant settings once, reuses cached state",
         "Confirms the active tenant before PATCHing",
-        "Uses PATCH /custom-domains/default or PATCH /tenants/settings for the default (does NOT reference a non-existent `auth0 domains default set` CLI command)",
+        "Uses auth0 domains default set <domain> (preferred) or PATCH /tenants/settings for the default domain change",
         "Uses PATCH /custom-domains/{id} with relying_party_identifier for the RPID change",
         "Shows a diff (current → new) before applying each change",
         "Warns that changing relying_party_identifier invalidates existing passkeys",

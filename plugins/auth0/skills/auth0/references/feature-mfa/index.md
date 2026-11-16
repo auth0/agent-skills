@@ -37,6 +37,15 @@ MFA must be enforced in two independent places; getting either wrong ships a byp
 
 Before writing code, read the detected SDK's example (see "Example code snippets").
 
+### Scope — do this, then stop
+
+The deliverable is the **application code**, written from the detected SDK's example file. Write it early; do not spend the task investigating. Specifically:
+
+- **Trust the per-SDK file's method/option names — they are verified against the installed SDK.** Do NOT grep `node_modules`, read `.d.ts`/`.d.cts`/site-packages/SDK source, run the SDK's own test suite, or write throwaway `python -c`/`node -e` probes to confirm a signature. Write the code; inspect the installed package only if a specific line you wrote fails to compile, and then only that line.
+- **The minimum version in each SDK file is informational.** The scaffold already pins a compatible release, so don't read `node_modules`/`package.json` to confirm the installed version meets it — only `verify — X+` rows call for a check.
+- **Don't add dependencies you weren't asked for.** A `barcode_uri`/`barcodeUri` is a string you can render or return as-is; don't `npm install` a QR library unless the task requires rendering one.
+- You're done when the app code is in place (and, for a JS/TS app, `npm run build` passes if quick). Stop there.
+
 ### The mechanic: browser step-up
 
 Recipe (do in order):
@@ -56,13 +65,14 @@ Recipe (do in order):
 
 | Your context | Verify with |
 |---|---|
-| Session-managing SDK (web app) | The `amr` claim (contains `mfa` when MFA completed) off the SDK's own session / current-user accessor - already validated, so trust it as-is. Accessor name is SDK-specific -> see the `framework-*` reference. |
-| Resource API (raw bearer token) | The high-value **scope** (e.g. `transfer:funds`) on the access token, via your *existing* JWT/scope-check middleware - see "Related capabilities". |
+| Session-managing SDK (web app) | The `amr` claim (contains `mfa` when MFA completed) off the SDK's own session / current-user accessor - already validated, so trust it as-is. Accessor name is SDK-specific -> see the SDK's own example ("Example code snippets" below). |
+| Resource API (raw bearer token) | The high-value **scope** (e.g. `transfer:funds`) on the access token, via your *existing* JWT/scope-check middleware - see "Related capabilities". For `express-oauth2-jwt-bearer`, read the express-jwt skill reference and add the step-up scope to the existing `requiredScopes()` as a space-separated string or array (`requiredScopes('write:transfers transfer:funds')`); passing multiple string args (`requiredScopes('a', 'b')`) silently drops all but the first and leaves the gate open. |
 | Frontend | Nothing - treat any `amr` check as UX, never enforcement. |
 
 Notes: a silent token request may instead surface an `mfa_required` error - handle it by
 re-authenticating interactively. Never re-decode or re-verify the token by hand (see
-"Common mistakes"). `amr` is not a reliable contract for *which* factor ran; to enforce a
+"Common mistakes"). Some session SDKs persist only a default subset of ID-token claims, so
+`amr` can be missing from the accessor until you opt it in (see "Common mistakes"). `amr` is not a reliable contract for *which* factor ran; to enforce a
 **specific** factor, have the post-login Action read `event.authentication.methods[].type`
 into a custom claim. Action-defined MFA overrides the Guardian policy (it refines, not
 replaces) and differs from **Adaptive MFA** (the Guardian `confidence-score` policy, owned
@@ -73,7 +83,7 @@ not relax it.
 
 The app collects credentials, so no browser runs the challenge: sign-in returns an
 `mfa_required` error carrying an `mfa_token`. Each step is a method on the SDK's own MFA
-client - get exact names from the `framework-*` example; never hand-roll the token grant
+client - get exact names from the SDK's own example ("Example code snippets" below); never hand-roll the token grant
 or the MFA API URLs.
 
 Recipe (do in order):
@@ -116,7 +126,7 @@ and what the app must get right:
 
 SDK-specific symbols (an SDK's own method or option name - e.g. the silent-token call,
 the `mfa_required`/`MfaRequiredError` handling, the interactive re-auth option, refresh-token
-requirements) are **not** listed here; they belong in the relevant `framework-*` reference.
+requirements) are **not** listed here; get them from the SDK's own example (see "Example code snippets").
 
 ### `amr` claim values
 
@@ -148,29 +158,49 @@ Returned by the token/authorization endpoints during an MFA flow (KEEP INLINE):
 
 ### Example code snippets
 
-**Before writing MFA code:** find the row below matching the detected SDK **and** the flow
-being implemented — for SDKs with both an `(MFA)` and a `(step-up)` row, default to `(step-up)` unless the user explicitly requests the MFA API flow.
-Read ONLY the named section from its URL (from that heading down to the next `## `) - these
-are large multi-topic files, so with `WebFetch` ask it to return just that section verbatim.
-No matching row (a backend SDK not listed below), or the fetch fails? Fall back to the
-language-neutral mechanic above. Never substitute a web search for "how to do MFA".
+**Before writing MFA code:** find the detected SDK's row below and **`Read:` the file in its
+Reference column** (the path is relative to the skill root, e.g. `Read: references/feature-mfa/auth0-react.md`).
+That file is required reading — it has the SDK's exact method/option names for the step-up
+and/or MFA API flow, plus the minimum version the feature needs. These files are the trusted
+source; implement directly from them. The method and option names in them are verified against
+the installed SDK — **do NOT re-verify signatures** by grepping `node_modules`, reading `.d.ts`
+files or SDK source, fetching from GitHub, web-searching "how to do MFA", or querying the
+auth0-docs MCP. Write the code from the file. Only inspect `node_modules` if a specific call
+you wrote fails to compile — and then only that call. No matching row (a backend SDK not
+listed)? Fall back to the language-neutral mechanic above.
 
-| SDK | Raw example file (markdown) | Find section |
-|---|---|---|
-| `@auth0/auth0-react` (MFA) | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
-| `@auth0/auth0-react` (step-up) | https://raw.githubusercontent.com/auth0/auth0-react/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-vue` (MFA) | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
-| `@auth0/auth0-vue` (step-up) | https://raw.githubusercontent.com/auth0/auth0-vue/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-angular` (MFA) | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
-| `@auth0/auth0-angular` (step-up) | https://raw.githubusercontent.com/auth0/auth0-angular/main/EXAMPLES.md | `## Step-Up Authentication` |
-| `@auth0/auth0-spa-js` (step-up) | https://raw.githubusercontent.com/auth0/auth0-spa-js/main/examples/step-up-authentication.md | whole file |
-| `@auth0/nextjs-auth0` | https://raw.githubusercontent.com/auth0/nextjs-auth0/main/EXAMPLES.md | `## Multi-Factor Authentication (MFA)` |
-| `@auth0/auth0-auth-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-auth-js/examples/mfa.md | whole file |
-| `@auth0/auth0-server-js` | https://raw.githubusercontent.com/auth0/auth0-auth-js/main/packages/auth0-server-js/MFA.md | whole file |
-| `Auth0.swift` (iOS/macOS) | https://raw.githubusercontent.com/auth0/Auth0.swift/master/examples/mfa-api.md | whole file |
-| `Auth0.Android` | https://raw.githubusercontent.com/auth0/Auth0.Android/main/examples/authentication-api/mfa-flexible-factors.md | whole file |
-| `auth0-server-python` (MFA flow) | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/MFA.md | whole file |
-| `auth0-server-python` (step-up) | https://raw.githubusercontent.com/auth0/auth0-server-python/main/examples/StepUpAuthentication.md | whole file |
+**Min version** is the earliest SDK release where the feature shipped; `verify — X+` marks a
+version to confirm against the installed package. If the app pins an older version, upgrade
+it first or fall back to the language-neutral mechanic. Several MFA API flows are Early Access
+(noted in the file) and need tenant enablement.
+
+| SDK | Min version | Flow(s) | Reference (Read this file) |
+|---|---|---|---|
+| `@auth0/auth0-react` | 2.14.0 (MFA API) · 2.15.0 (popup step-up) | popup step-up, MFA API | `references/feature-mfa/auth0-react.md` |
+| `@auth0/auth0-vue` | 2.6.0 | popup step-up, MFA API | `references/feature-mfa/auth0-vue.md` |
+| `@auth0/auth0-angular` | 2.9.0 | popup step-up, MFA API | `references/feature-mfa/auth0-angular.md` |
+| `@auth0/auth0-spa-js` | 2.16.0 | popup step-up | `references/feature-mfa/auth0-spa-js.md` |
+| `@auth0/nextjs-auth0` | 4.15.0 (MFA + APIs) · verify — 4.19+ (popup step-up) | step-up, MFA API, popup | `references/feature-mfa/nextjs-auth0.md` |
+| `@auth0/auth0-auth-js` | 1.8.0 | MFA API | `references/feature-mfa/auth0-auth-js.md` |
+| `@auth0/auth0-server-js` | 1.5.0 | MFA API | `references/feature-mfa/auth0-server-js.md` |
+| `express-openid-connect` | 2.17.0 | redirect step-up | `references/feature-mfa/express-oidc.md` |
+| `Auth0.swift` (iOS/macOS) | verify — 3.0+ | MFA API | `references/feature-mfa/auth0-swift.md` |
+| `Auth0.Android` | verify — 3.13+ | MFA API | `references/feature-mfa/auth0-android.md` |
+| `react-native-auth0` | 5.10.0 | MFA API | `references/feature-mfa/react-native-auth0.md` |
+| `auth0-server-python` | 1.0.0b10 (MFA API) · 1.0.0b15 (step-up) | step-up, MFA API | `references/feature-mfa/auth0-server-python.md` |
+| `Auth0.OidcClient.*` (.NET native/desktop) | 4.4.0 | client-initiated step-up | `references/feature-mfa/oidc-client-net.md` |
+| `go-jwt-middleware` (Go, resource server) | v2.2.1 | API-side scope gate | `references/feature-mfa/go-jwt-middleware.md` |
+| `Auth0.AspNetCore.Authentication.Api` (resource server) | 1.0.1 | API-side scope gate | `references/feature-mfa/aspnetcore-api.md` |
+| `spring-boot-starter-oauth2-resource-server` (Java) | Spring Boot 3.3 / Security 6 | API-side scope gate | `references/feature-mfa/spring-security-api.md` |
+| `auth0-api-python` (Python resource server) | 1.0.0b10 | API-side scope gate | `references/feature-mfa/auth0-api-python.md` |
+
+Note: the resource-server rows (`go-jwt-middleware`, `Auth0.AspNetCore.Authentication.Api`, Spring
+Security, `auth0-api-python`) do not run MFA — the API enforces the step-up **scope** the tenant issues post-MFA, gating a
+sensitive route on it. `Auth0.OidcClient.*` is a native client that triggers step-up via `acr_values`.
+
+Note: the JS SPA/framework SDKs (`auth0-react`, `auth0-vue`, `auth0-angular`, `auth0-spa-js`)
+drive step-up through the SDK's `interactiveErrorHandler: 'popup'` option, not the
+`acr_values`/`max_age=0` parameters of the language-neutral mechanic above — see the file.
 
 ## Tenant configuration
 
@@ -186,17 +216,25 @@ first, then choose an enforcement path - the two are independent:
   calls `api.multifactor.enable(...)`; do **not** set the `all-applications` policy, or MFA
   becomes mandatory for every application instead of the conditions the Action defines.
 
-The CLI anchor for the tenant-wide path (enable factor, then require the policy):
+The CLI anchor for the tenant-wide path (enable factors, then enforce the policy). SMS requires three separate endpoints — `guardian/factors/sms` does not accept `message_type` or `provider` in its body (returns 400); use the phone sub-endpoints below:
 
 ```bash
-# 1. Enable a factor (otp shown; others: sms, email, push-notification,
-#    webauthn-roaming, webauthn-platform)
-auth0 api put "guardian/factors/otp" --data '{"enabled": true}'
+# TOTP / Authenticator app
+auth0 guardian factors set otp --enabled
 
-# 2. Require MFA tenant-wide. PUT replaces the whole policy list with a bare array;
-#    the wrong verb answers with a 404 that reads like a path/permissions problem.
-#    An empty array means "available but NOT required".
-auth0 api put "guardian/policies" --data '["all-applications"]'
+# SMS — three separate commands required
+auth0 guardian factors set sms --enabled
+auth0 guardian factors phone set-message-types --message-type sms
+auth0 guardian factors phone set-provider --provider auth0   # legacy phone config only; unified-phone tenants set the provider in Dashboard > Branding > Phone Provider
+
+# Email
+auth0 guardian factors set email --enabled
+
+# Enforce MFA for all applications
+auth0 guardian policies set --policy all-applications
+
+# Verify
+auth0 guardian factors list
 ```
 
 The full factor set, the `confidence-score` (adaptive) policy, the Terraform
@@ -243,11 +281,13 @@ which uses the `mfa_token` and the MFA API surface instead:
 | Trusting a frontend MFA check | The client can be bypassed entirely | Enforce server-side: `amr` on a web/session backend, the high-value scope on a resource API |
 | Checking `amr` on a resource API's access token | Access tokens carry no `amr` by default, so valid stepped-up callers are rejected | Gate the API on the high-value scope; add `amr` as a custom claim only if this API also validates it |
 | Hand-decoding the token to read `amr` (`jwt.decode`, `PyJWKClient`, `id_token.split`, manual JWKS) | Reinvents validation the SDK already performed, and usually disables `exp`/`iss`/audience checks in the process | Read `amr` from the SDK's session/current-user accessor; its claims are already verified |
+| Assuming the session accessor always carries `amr` | Some SDKs persist only a default claim subset, so `amr` is silently absent and the check never passes | Opt the claim in: `@auth0/nextjs-auth0` v4 needs a `beforeSessionSaved` hook to copy `amr` into the session (`session.user.amr`); `express-openid-connect` keeps the full claims on `req.oidc.idTokenClaims`, not the filtered `req.oidc.user` |
 | Omitting `max_age=0` on step-up | A still-valid session satisfies the request with no fresh challenge | Send `max_age=0` (or the SDK's fresh-auth option) for step-up |
 | Ignoring `mfa_required` from a silent token call | The step-up silently fails and the action proceeds unverified | Catch it and re-authenticate interactively |
 | Preferring SMS by default | SMS is vulnerable to SIM-swap | Prefer TOTP or WebAuthn; treat SMS as a fallback |
 | No recovery codes enabled | Users get locked out when they lose a device | Enable recovery codes during enrollment |
-| Wrong HTTP verb on `guardian/policies` | Returns a misleading 404 | Use `PUT` with a bare JSON array |
+| Wrong HTTP verb on `guardian/policies` | Returns a misleading 404 | Use `auth0 guardian policies set --policy all-applications` |
+| Sending `message_type` or `provider` to `guardian/factors/sms` directly | Returns a 400 — those fields are not accepted on that endpoint | Use `auth0 guardian factors phone set-message-types --message-type sms` for the message type and `auth0 guardian factors phone set-provider --provider auth0` for the provider (legacy phone config only — on the unified phone experience, set the provider in Dashboard > Branding > Phone Provider) |
 | Using the Management API to list or remove a user's own factors during the sign-in flow | Forces the app to hold Management API admin scopes and ignores the `mfa_token` the flow already issued | List and challenge through the SDK's MFA client on the `mfa_token`; remove with a post-MFA `remove:authenticators` access token (mfa audience); reserve the Management API for admin / out-of-band |
 | Assuming an already-enrolled factor needs no challenge and jumping straight to verify | Diverges from the SDK's documented enrolled-factor flow and breaks for out-of-band factors (SMS/push), whose challenge is what delivers the code | Challenge the enrolled authenticator, then verify |
 
@@ -255,8 +295,9 @@ which uses the `mfa_token` and the MFA API surface instead:
 
 - **Tenant setup and Actions** - `tooling-cli` and `tooling-terraform` own Guardian
   factor/policy configuration and Action deployment (`auth0 actions ...`).
-- **SDK-side step-up trigger** - the detected `framework-*` reference owns the SDK's own
-  step-up call, its `mfa_required` handling, and any refresh-token requirement.
+- **SDK-side step-up trigger** - the SDK's own step-up call, its `mfa_required` handling,
+  and any refresh-token requirement live in that SDK's own example (see "Example code
+  snippets"), not in a `framework-*` reference.
 - **Server-side MFA enforcement** - the API `framework-*` references (JWT validation) own
   the scope/claim-check middleware; on a resource API gate the sensitive endpoint on the
   high-value scope (access tokens carry no `amr` by default), and on a web/session backend
@@ -265,5 +306,8 @@ which uses the `mfa_token` and the MFA API surface instead:
   before layering MFA.
 
 ## References
+
+Run `auth0 docs search "multi-factor authentication"` for the latest Auth0 docs on this topic.
+
 [Auth0 MFA docs](https://auth0.com/docs/secure/multi-factor-authentication)
 [Step-Up Authentication](https://auth0.com/docs/secure/multi-factor-authentication/step-up-authentication).

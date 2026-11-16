@@ -141,6 +141,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 | Missing `<uses-permission android:name="android.permission.INTERNET" />` | Add the INTERNET permission to `AndroidManifest.xml`. The SDK requires network access for authentication. |
 | Custom scheme in lowercase | Android requires scheme names to be lowercase. Use `https` (recommended) or lowercase custom scheme like `myapp://callback`. |
 | Forgetting `.validateClaims()` on direct auth calls | Always call `.validateClaims()` when using `AuthenticationAPIClient` directly (for database, passwordless, or API login). Web Auth validates automatically. |
+| Reading ID-token claims via a `credentials.claims` map | No such property exists on Auth0.Android `Credentials`. Standard claims are accessors on `credentials.user` (a `UserProfile`); custom / namespaced claims come from `credentials.user.getExtraInfo()`. |
 | Storing tokens in SharedPreferences without encryption | Use `SecureCredentialsManager` to store credentials. Never store tokens manually in plain text. The manager encrypts tokens at rest. |
 | Missing manifest placeholders | Add `manifestPlaceholders = [auth0Domain: "@string/com_auth0_domain", auth0Scheme: "@string/com_auth0_scheme"]` to your `build.gradle` `defaultConfig` block. |
 
@@ -159,7 +160,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 |-------|---------|
 | `Auth0` | Entry point for SDK, holds app credentials |
 | `WebAuthProvider` | OAuth 2.0 login/logout via browser |
-| `AuthenticationAPIClient` | Direct API calls (database login, passwordless, MFA) |
+| `AuthenticationAPIClient` | Direct API calls (database login, passwordless) |
 | `SecureCredentialsManager` | Secure storage and retrieval of credentials |
 | `Credentials` | User tokens and expiration |
 
@@ -171,10 +172,11 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 - Require biometric authentication (see the Biometric-Protected Credentials section below)
 - Database login (see the Database Login section below)
 - Passwordless authentication (see the Passwordless Authentication section below)
-- Handle MFA (see the MFA Handling section below)
 - Call protected APIs (see the Calling Protected APIs section below)
 
 ## References
+
+Run `auth0 docs search "auth0 android"` for the latest Auth0 docs on this topic.
 
 - [Auth0 Android SDK Documentation](https://auth0.com/docs/libraries/auth0-android)
 - [Auth0 Android GitHub Repository](https://github.com/auth0/auth0-android)
@@ -375,7 +377,6 @@ authentication.login(email, password, realm)
 authentication.signUp(email, password, username, connection)
 authentication.passwordlessWithEmail(email, type)
 authentication.loginWithEmail(email, code)
-authentication.mfaClient(mfaToken)
 ```
 
 ### SecureCredentialsManager
@@ -405,11 +406,11 @@ val expiresAt = credentials.expiresAt          // Expiration timestamp
 val scope = credentials.scope                  // Granted scopes
 val type = credentials.type                    // "Bearer"
 
-// ID token claims
-val sub = credentials.claims["sub"]            // Subject (user ID)
-val name = credentials.claims["name"]
-val email = credentials.claims["email"]
-val emailVerified = credentials.claims["email_verified"]
+// ID token claims — Auth0.Android has NO credentials.claims property.
+// Standard claims are accessors on credentials.user (a UserProfile);
+// custom / namespaced claims come from getExtraInfo().
+val sub = credentials.user.getId()             // Subject (user ID)
+val roles = credentials.user.getExtraInfo()["https://myapp.example.com/roles"] as? List<*>
 ```
 
 ### LocalAuthenticationOptions
@@ -684,7 +685,7 @@ authentication.login(
         override fun onFailure(error: AuthenticationException) {
             when {
                 error.isMultifactorRequired -> {
-                    // MFA required - see MFA Handling section
+                    // MFA required — see the feature:mfa reference
                 }
                 error.statusCode == 403 -> {
                     // Invalid credentials
@@ -839,86 +840,6 @@ manager.getCredentials(object : Callback<Credentials, CredentialsManagerExceptio
 })
 ```
 
-## MFA Handling
-
-Handle multi-factor authentication challenges:
-
-### Detect MFA Required
-
-```kotlin
-authentication.login(...)
-    .validateClaims()
-    .start(object : Callback<Credentials, AuthenticationException> {
-        override fun onFailure(error: AuthenticationException) {
-            if (error.isMultifactorRequired) {
-                val mfaToken = error.mfaRequiredErrorPayload?.mfaToken
-                // Proceed to enrollment or challenge screen
-            }
-        }
-    })
-```
-
-### Enroll in MFA
-
-```kotlin
-val mfaToken = error.mfaRequiredErrorPayload?.mfaToken ?: return
-val mfaClient = authentication.mfaClient(mfaToken)
-
-// Enroll in OTP
-mfaClient.enroll(MfaEnrollmentType.Otp)
-    .start(object : Callback<MfaEnrollment, AuthenticationException> {
-        override fun onSuccess(enrollment: MfaEnrollment) {
-            val recoveryCode = enrollment.recoveryCode
-            val secret = enrollment.secret  // For OTP app
-            // Show QR code to user
-        }
-
-        override fun onFailure(error: AuthenticationException) {
-            Log.e("MFA", error.message.orEmpty())
-        }
-    })
-```
-
-### Challenge MFA
-
-```kotlin
-mfaClient.challenge(
-    authenticatorId = "dev_abc123",  // From enrollments list
-    challengeType = MfaChallengeType.OTP
-)
-    .start(object : Callback<MfaChallenge, AuthenticationException> {
-        override fun onSuccess(challenge: MfaChallenge) {
-            val challengeId = challenge.challengeId
-            // Show user OTP input screen
-        }
-
-        override fun onFailure(error: AuthenticationException) {
-            Log.e("MFA", error.message.orEmpty())
-        }
-    })
-```
-
-### Verify Challenge
-
-```kotlin
-mfaClient.verifyChallenge(
-    challengeId = "Fe26...session_id",
-    otp = "123456"  // User's one-time password
-)
-    .validateClaims()
-    .start(object : Callback<Credentials, AuthenticationException> {
-        override fun onSuccess(result: Credentials) {
-            // MFA verified - user now authenticated
-            manager.saveCredentials(result)
-        }
-
-        override fun onFailure(error: AuthenticationException) {
-            // Invalid OTP or expired challenge
-            Log.e("MFA", error.message.orEmpty())
-        }
-    })
-```
-
 ## Organizations
 
 Use Organizations for enterprise SSO and multi-tenancy:
@@ -932,7 +853,7 @@ WebAuthProvider.login(account)
     .start(this, object : Callback<Credentials, AuthenticationException> {
         override fun onSuccess(result: Credentials) {
             // User authenticated to organization
-            val orgId = result.claims["org_id"]
+            val orgId = result.user.getExtraInfo()["org_id"] as? String
         }
 
         override fun onFailure(error: AuthenticationException) {
@@ -963,7 +884,7 @@ authentication.login(...)
         override fun onFailure(error: AuthenticationException) {
             when {
                 error.isMultifactorRequired -> {
-                    // MFA enrollment or challenge required
+                    // MFA required — see the feature:mfa reference
                 }
                 error.isBrowserAppNotAvailable -> {
                     // No browser available
@@ -1116,12 +1037,15 @@ if [ -z "$PACKAGE_NAME" ]; then
   exit 1
 fi
 
-# List existing apps and prompt to pick or create
+# Fastest path — auto-detects framework, creates the Auth0 app, and writes strings.xml:
+# auth0 qs setup --app --framework android --type native
+#
+# Manual alternative (full control over callback URLs):
 auth0 apps list
 read -p "Enter app ID (or press Enter to create a new one): " APP_ID
 
 if [ -z "$APP_ID" ]; then
-  DOMAIN=$(auth0 tenants list --csv --no-input 2>/dev/null | grep '→' | cut -d',' -f2 | tr -d ' ')
+  DOMAIN=$(auth0 tenants list --json-compact | jq -r '.[] | select(.active) | .name')
   CALLBACK_URL="${SCHEME}://${DOMAIN}/android/${PACKAGE_NAME}/callback"
   CLIENT_JSON=$(auth0 apps create \
     --name "${PACKAGE_NAME}-android" \
@@ -1129,29 +1053,22 @@ if [ -z "$APP_ID" ]; then
     --auth-method none \
     --callbacks "$CALLBACK_URL" \
     --logout-urls "$CALLBACK_URL" \
-    --json \
+    --json-compact \
     --no-input)
-  CLIENT_ID=$(echo "$CLIENT_JSON" | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+  CLIENT_ID=$(echo "$CLIENT_JSON" | jq -r '.client_id')
 else
-  CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-  DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
+  CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+  DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
   CALLBACK_URL="${SCHEME}://${DOMAIN}/android/${PACKAGE_NAME}/callback"
 fi
 
 # Check / create database connection
-CONNECTIONS_JSON=$(auth0 api get connections --no-input 2>/dev/null || echo "[]")
-CONNECTION_ID=$(echo "$CONNECTIONS_JSON" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-for c in data:
-    if c.get('name') == 'Username-Password-Authentication':
-        print(c['id'])
-        break
-" 2>/dev/null)
+CONNECTIONS_JSON=$(auth0 connections list --json-compact --no-input 2>/dev/null || echo "[]")
+CONNECTION_ID=$(echo "$CONNECTIONS_JSON" | jq -r '.[] | select(.name=="Username-Password-Authentication") | .id' 2>/dev/null)
 if [ -z "$CONNECTION_ID" ]; then
-  CONNECTION_ID=$(auth0 api post connections \
-    --data "{\"strategy\":\"auth0\",\"name\":\"Username-Password-Authentication\"}" \
-    --no-input | python3 -c "import sys, json; print(json.load(sys.stdin)['id'])" 2>/dev/null)
+  CONNECTION_ID=$(auth0 connections create \
+    --data '{"strategy":"auth0","name":"Username-Password-Authentication"}' \
+    --json-compact --no-input | jq -r '.id' 2>/dev/null)
 fi
 if [ -z "$CONNECTION_ID" ]; then
   echo "Failed to find or create the Username-Password-Authentication connection." >&2
@@ -1160,7 +1077,7 @@ fi
 
 # Enable the connection for this app. Only the client_id sent changes, so re-running
 # this is safe.
-auth0 api patch "connections/$CONNECTION_ID/clients" \
+auth0 connections enabled-clients update "$CONNECTION_ID" \
   --data "[{\"client_id\":\"$CLIENT_ID\",\"status\":true}]" \
   --no-input > /dev/null
 

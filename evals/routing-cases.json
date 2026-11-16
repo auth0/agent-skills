@@ -67,6 +67,13 @@
       "expect_refs": ["framework-flask/index.md", "tooling-terraform/index.md"]
     },
     {
+      "id": "integrate-server-python",
+      "intent": "integrate",
+      "framework": "server-python",
+      "tooling": "cli",
+      "expect_refs": ["framework-server-python/index.md", "tooling-cli/index.md"]
+    },
+    {
       "id": "feature-mfa-standalone",
       "intent": "feature:mfa",
       "framework": null,
@@ -78,7 +85,42 @@
       "intent": "feature:mfa",
       "framework": "nextjs",
       "tooling": "cli",
-      "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
+      "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-passkeys-standalone",
+      "intent": "feature:passkeys",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-passkeys/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-passkeys-react-combo",
+      "intent": "feature:passkeys",
+      "framework": "react",
+      "tooling": "cli",
+      "expect_refs": ["feature-passkeys/index.md", "tooling-cli/index.md", "framework-react/index.md"]
+    },
+    {
+      "id": "feature-passkeys-nextjs-combo",
+      "intent": "feature:passkeys",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["feature-passkeys/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
+    },
+    {
+      "id": "feature-passkeys-android-combo",
+      "intent": "feature:passkeys",
+      "framework": "android",
+      "tooling": "cli",
+      "expect_refs": ["feature-passkeys/index.md", "tooling-cli/index.md", "framework-android/index.md"]
+    },
+    {
+      "id": "feature-passkeys-server-python-combo",
+      "intent": "feature:passkeys",
+      "framework": "server-python",
+      "tooling": "terraform",
+      "expect_refs": ["feature-passkeys/index.md", "tooling-terraform/index.md", "framework-server-python/index.md"]
     },
     {
       "id": "feature-organizations-b2b-combo",
@@ -117,11 +159,74 @@
       "expect_refs": ["feature-universal-portals/index.md", "tooling-cli/index.md"]
     },
     {
+      "id": "feature-enterprise-connect-standalone",
+      "intent": "feature:enterprise-connect",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-enterprise-connect/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-enterprise-connect-nextjs-combo",
+      "intent": "feature:enterprise-connect",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["feature-enterprise-connect/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
+    },
+    {
+      "id": "feature-enterprise-connect-auth0-server-js-combo",
+      "intent": "feature:enterprise-connect",
+      "framework": "auth0-server-js",
+      "tooling": "terraform",
+      "expect_refs": ["feature-enterprise-connect/index.md", "tooling-terraform/index.md", "framework-auth0-server-js/index.md"]
+    },
+    {
+      "id": "feature-enterprise-connect-vue-combo",
+      "intent": "feature:enterprise-connect",
+      "framework": "vue",
+      "tooling": "cli",
+      "expect_refs": ["feature-enterprise-connect/index.md", "tooling-cli/index.md", "framework-vue/index.md"]
+    },
+    {
+      "id": "feature-enterprise-connect-react-combo",
+      "intent": "feature:enterprise-connect",
+      "framework": "react",
+      "tooling": "cli",
+      "expect_refs": ["feature-enterprise-connect/index.md", "tooling-cli/index.md", "framework-react/index.md"]
+    },
+    {
       "id": "feature-dpop-spa-combo",
       "intent": "feature:dpop",
       "framework": "vue",
       "tooling": "cli",
       "expect_refs": ["feature-dpop/index.md", "tooling-cli/index.md", "framework-vue/index.md"]
+    },
+    {
+      "id": "feature-custom-token-exchange-standalone",
+      "intent": "feature:custom-token-exchange",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-custom-token-exchange/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-custom-token-exchange-nextjs-combo",
+      "intent": "feature:custom-token-exchange",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["feature-custom-token-exchange/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
+    },
+    {
+      "id": "feature-token-vault-standalone",
+      "intent": "feature:token-vault",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-token-vault/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-token-vault-nextjs-combo",
+      "intent": "feature:token-vault",
+      "framework": "nextjs",
+      "tooling": "cli",
+      "expect_refs": ["feature-token-vault/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
     },
     {
       "id": "guidance-token-handling",
@@ -278,6 +383,55 @@
       "framework": null,
       "tooling": "cli",
       "expect_refs": ["feature-healthcheck/index.md", "feature-audit/index.md", "feature-audit-pricing/index.md", "feature-audit-remediation/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-auth0-auth-js",
+      "intent": "integrate",
+      "framework": "auth0-auth-js",
+      "tooling": "cli",
+      "expect_refs": ["framework-auth0-auth-js/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-auth0-server-js",
+      "intent": "integrate",
+      "framework": "auth0-server-js",
+      "tooling": "cli",
+      "expect_refs": ["framework-auth0-server-js/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-auth0-api-js",
+      "intent": "integrate",
+      "framework": "auth0-api-js",
+      "tooling": "cli",
+      "expect_refs": ["framework-auth0-api-js/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-mfa-auth0-server-js-combo",
+      "intent": "feature:mfa",
+      "framework": "auth0-server-js",
+      "tooling": "cli",
+      "expect_refs": ["feature-mfa/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-flutter-windows",
+      "intent": "integrate",
+      "framework": "flutter-windows",
+      "tooling": "cli",
+      "expect_refs": ["framework-flutter-windows/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-react-router",
+      "intent": "integrate",
+      "framework": "react-router",
+      "tooling": "cli",
+      "expect_refs": ["framework-react-router/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "integrate-tanstack-start",
+      "intent": "integrate",
+      "framework": "tanstack-start",
+      "tooling": "cli",
+      "expect_refs": ["framework-tanstack-start/index.md", "tooling-cli/index.md"]
     }
   ]
 }

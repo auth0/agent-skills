@@ -173,6 +173,8 @@ ng serve
 
 ## References
 
+Run `auth0 docs search "angular"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Angular SDK Documentation](https://auth0.com/docs/libraries/auth0-angular)
 - [Auth0 Angular Quickstart](https://auth0.com/docs/quickstart/spa/angular)
 - [SDK GitHub Repository](https://github.com/auth0/auth0-angular)
@@ -815,32 +817,41 @@ if ! auth0 tenants list &> /dev/null; then
   auth0 login
 fi
 
-# Create or select app
-auth0 apps list
-read -p "Enter your Auth0 app ID (or press Enter to create new): " APP_ID
+# qs setup replaces an existing environment.ts, so use it only when the file doesn't exist yet.
+if [ ! -f src/environments/environment.ts ]; then
+  if ! auth0 qs setup --app --framework angular --type spa; then
+    echo "❌ auth0 qs setup failed"
+    exit 1
+  fi
+  echo "✅ Configuration complete! Auth0 settings written to src/environments/environment.ts"
+else
+  # Create or select app
+  auth0 apps list
+  read -p "Enter your Auth0 app ID (or press Enter to create new): " APP_ID
 
-if [ -z "$APP_ID" ]; then
-  APP_NAME="${PWD##*/}-angular-app"
-  APP_ID=$(auth0 apps create \
-    --name "$APP_NAME" \
-    --type spa \
-    --auth-method None \
-    --callbacks "http://localhost:4200" \
-    --logout-urls "http://localhost:4200" \
-    --origins "http://localhost:4200" \
-    --web-origins "http://localhost:4200" \
-    --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+  if [ -z "$APP_ID" ]; then
+    APP_NAME="${PWD##*/}-angular-app"
+    APP_ID=$(auth0 apps create \
+      --name "$APP_NAME" \
+      --type spa \
+      --auth-method None \
+      --callbacks "http://localhost:4200" \
+      --logout-urls "http://localhost:4200" \
+      --origins "http://localhost:4200" \
+      --web-origins "http://localhost:4200" \
+      --metadata "created_by=agent_skills" \
+      --json-compact | jq -r '.client_id')
+  fi
+
+  # Get credentials
+  AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+  AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+
+  echo "✅ Configuration complete!"
+  echo "Update src/environments/environment.ts with:"
+  echo "  domain: '$AUTH0_DOMAIN'"
+  echo "  clientId: '$AUTH0_CLIENT_ID'"
 fi
-
-# Get credentials
-AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
-
-echo "✅ Configuration complete!"
-echo "Update src/environments/environment.ts with:"
-echo "  domain: '$AUTH0_DOMAIN'"
-echo "  clientId: '$AUTH0_CLIENT_ID'"
 ```
 
 ---

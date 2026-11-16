@@ -297,6 +297,8 @@ authoritative: you do not need to read `.d.ts` files, the SDK README, or anythin
 
 ## References
 
+Run `auth0 docs search "react native"` for the latest Auth0 docs on this topic.
+
 - [Auth0 React Native SDK Documentation](https://auth0.com/docs/libraries/react-native-auth0)
 - [Auth0 React Native Quickstart](https://auth0.com/docs/quickstart/native/react-native)
 - [SDK GitHub Repository](https://github.com/auth0/react-native-auth0)

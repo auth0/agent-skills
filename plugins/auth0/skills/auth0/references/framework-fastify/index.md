@@ -41,7 +41,13 @@ npm install @auth0/auth0-fastify fastify @fastify/view ejs dotenv
 
 ### 2. Configure Environment
 
-Create `.env`:
+If the project has no `.env` yet, `auth0 qs setup` creates the Auth0 app and writes `.env` in one step (it replaces an existing `.env`, so skip it when one exists):
+
+```bash
+[ ! -f .env ] && auth0 qs setup --app --framework fastify --type regular
+```
+
+Otherwise, add these to `.env`:
 
 ```bash
 AUTH0_DOMAIN=your-tenant.auth0.com
@@ -187,6 +193,8 @@ If step 1 or 2 fails, read the server logs before changing code — a callback U
 - Call APIs → set `audience`, then `getAccessToken({ request, reply })`
 
 ## References
+
+Run `auth0 docs search "fastify"` for the latest Auth0 docs on this topic.
 
 - [Auth0 Fastify Documentation](https://auth0.com/docs/quickstart/webapp/fastify)
 - [SDK GitHub Repository](https://github.com/auth0/auth0-fastify)

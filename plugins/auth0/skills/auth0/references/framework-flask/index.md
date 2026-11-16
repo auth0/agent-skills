@@ -338,6 +338,8 @@ if user is None:
 
 ## References
 
+Run `auth0 docs search "flask"` for the latest Auth0 docs on this topic.
+
 - [auth0-server-python on PyPI](https://pypi.org/project/auth0-server-python/)
 - [auth0-server-python GitHub](https://github.com/auth0/auth0-server-python)
 - [Auth0 Flask Quickstart](https://auth0.com/docs/quickstart/webapp/python)
@@ -964,12 +966,12 @@ if [ -z "$APP_ID" ]; then
     --callbacks "http://localhost:5000/callback" \
     --logout-urls "http://localhost:5000" \
     --metadata "created_by=agent_skills" \
-    --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+    --json-compact | jq -r '.client_id')
 fi
 
 # Get credentials
-DOMAIN=$(auth0 apps show "$APP_ID" --json | grep -o '"domain":"[^"]*' | cut -d'"' -f4)
-CLIENT_ID=$(auth0 apps show "$APP_ID" --json | grep -o '"client_id":"[^"]*' | cut -d'"' -f4)
+DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
+CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
 SECRET=$(openssl rand -hex 64)
 
 # Determine target env file

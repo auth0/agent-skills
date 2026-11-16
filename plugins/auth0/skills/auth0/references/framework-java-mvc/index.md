@@ -318,6 +318,8 @@ Built-in support for routing users to the correct Auth0 domain via `DomainResolv
 
 ## References
 
+Run `auth0 docs search "java mvc"` for the latest Auth0 docs on this topic.
+
 - [Auth0 Java Web App Quickstart](https://auth0.com/docs/quickstart/webapp/java)
 - [SDK GitHub Repository](https://github.com/auth0/auth0-java-mvc-common)
 - [Auth0 Universal Login](https://auth0.com/docs/authenticate/login/auth0-universal-login)
@@ -1105,7 +1107,7 @@ Or manually in Auth0 Dashboard:
 
 ```bash
 # List existing connections
-auth0 api get connections
+auth0 connections list
 
 # Enable your app on the default database connection
 # (done automatically if using Option A: Automatic Setup)

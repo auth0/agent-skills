@@ -14,6 +14,7 @@
 ## When NOT to Use
 
 - **Flutter mobile (iOS/Android)**: use the Auth0 integration workflow for Flutter native — mobile uses a different platform interface with Web Auth via system browser
+- **Flutter Windows desktop**: use the Auth0 integration workflow for Flutter Windows — Windows uses `windowsWebAuthentication()` and a custom URL scheme protocol handler, not the browser-embedded `Auth0Web` API
 - **Native iOS (Swift)**: use the Auth0 integration workflow for Swift
 - **Native Android (Kotlin/Java)**: use the Auth0 integration workflow for Android
 - **React SPA**: use the Auth0 integration workflow for React
@@ -367,6 +368,8 @@ For complete patterns with Riverpod, Bloc, and advanced scenarios, see the Integ
 | CORS errors on token endpoint | Ensure `Allowed Web Origins` is configured in Auth0 Dashboard (not just Callback URLs) |
 
 ## References
+
+Run `auth0 docs search "flutter web"` for the latest Auth0 docs on this topic.
 
 - [auth0_flutter on pub.dev](https://pub.dev/packages/auth0_flutter)
 - [auth0_flutter GitHub](https://github.com/auth0/auth0-flutter)
