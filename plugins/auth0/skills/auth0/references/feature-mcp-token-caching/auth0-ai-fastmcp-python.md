@@ -87,7 +87,7 @@ class RedisTokenStore(AbstractTokenStore):
         await self._redis.delete(key)
 ```
 
-For `scope_matching="non_strict"`, subclass it with `IndexedTokenStore`. A Redis hash with one field per token makes `add_index_member` a single atomic `HSET`, so concurrent adds never lose each other.
+For `scope_matching="non_strict"`, subclass it with `IndexedTokenStore`. A Redis hash with one field per token makes `add_index_member` a single atomic `HSET`, so concurrent adds never lose each other. The hash also gets an expiry that follows its newest member, so an index nobody reads again still goes away. The two `EXPIREAT` options need Redis 7 or later.
 
 ```python
 import json
@@ -97,7 +97,12 @@ from auth0_ai_mcp import IndexedTokenStore, TokenIndexMember
 
 class RedisIndexedTokenStore(RedisTokenStore, IndexedTokenStore):
     async def add_index_member(self, index_key: str, member: TokenIndexMember) -> None:
-        await self._redis.hset(index_key, member["token_key"], json.dumps(member))
+        async with self._redis.pipeline(transaction=True) as pipe:
+            pipe.hset(index_key, member["token_key"], json.dumps(member))
+            # NX sets the first expiry and GT only ever extends it.
+            pipe.expireat(index_key, member["expires_at"], nx=True)
+            pipe.expireat(index_key, member["expires_at"], gt=True)
+            await pipe.execute()
 
     async def list_index_members(self, index_key: str) -> list[TokenIndexMember]:
         raw = await self._redis.hgetall(index_key)

@@ -115,6 +115,7 @@ bare-SDK row. `auth0-ai-fastmcp` and `auth0-ai-mcp` build on `auth0-api-python`,
 | Package | Framework |
 |---|---|
 | `auth0-ai-fastmcp` | `ai-fastmcp-python` |
+| `auth0-ai-mcp` + `fastmcp` | `ai-fastmcp-python` |
 | `auth0-ai-mcp` | `ai-mcp-python` |
 | `auth0-server-python` + `flask` | `flask` |
 | `auth0-server-python` (no Flask web framework) | `server-python` |

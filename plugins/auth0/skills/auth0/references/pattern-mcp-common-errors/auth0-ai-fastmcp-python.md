@@ -16,7 +16,7 @@ SDK-specific errors only. Tenant setup errors are in the hub.
 
 **Error:** `MCP endpoint not found`
 
-**Fix:** The URL given to Claude Code has to end in `/mcp`, because that is where the server listens. Pointing Claude Code at `http://localhost:3002` alone fails.
+**Fix:** The URL given to Claude Code has to end in the server's MCP path, which is `/mcp` unless you set `mcp_path` in the configuration. Pointing Claude Code at `http://localhost:3002` alone fails.
 
 ```bash
 claude mcp add --transport http b2b-ecommerce http://localhost:3002/mcp
@@ -119,7 +119,7 @@ except ApiError as exc:
 
 **Error:** Every request gets a `401`. The server advertises a `/mcp/mcp` resource, so the audience becomes that value and no longer matches the API registered in Auth0.
 
-**Fix:** Make sure `MCP_RESOURCE_URL` does not end in `/mcp`. FastMCP appends `/mcp` to `resource_url` and advertises the result, and the MCP client asks Auth0 for a token for that value, which is also the audience. The API identifier in Auth0 must be that value, for example `https://your-api.example.com/mcp` for `resource_url="https://your-api.example.com"`.
+**Fix:** Make sure `MCP_RESOURCE_URL` does not end in `/mcp`. FastMCP appends the MCP path (`/mcp` by default, or your `mcp_path`) to `resource_url` and advertises the result, and the MCP client asks Auth0 for a token for that value, which is also the audience. The API identifier in Auth0 must be that value, for example `https://your-api.example.com/mcp` for `resource_url="https://your-api.example.com"`.
 
 ### Tools fail with `UnauthenticatedError`
 
