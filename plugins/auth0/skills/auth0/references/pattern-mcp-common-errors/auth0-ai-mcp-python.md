@@ -32,13 +32,16 @@ SDK-specific errors only. Tenant setup errors are in the hub.
 
 **Error:** Every request gets a `421` with the text `Invalid Host header`, and nothing reaches the auth middleware.
 
-**Fix:** The `mcp` SDK only accepts the `127.0.0.1`, `localhost` and `::1` hosts by default. Pass your public host to `streamable_http_app`, with and without a port.
+**Fix:** The `mcp` SDK only accepts the `127.0.0.1`, `localhost` and `::1` hosts by default. Pass your public host to `streamable_http_app`, with and without a port. Browser clients also send an `Origin` header, and one that is not in `allowed_origins` gets a `403` with `Invalid Origin header`, so list those origins too.
 
 ```python
 from mcp.server.transport_security import TransportSecuritySettings
 
 mcp.streamable_http_app(
-    transport_security=TransportSecuritySettings(allowed_hosts=["your-mcp-server", "your-mcp-server:*"]),
+    transport_security=TransportSecuritySettings(
+        allowed_hosts=["your-mcp-server", "your-mcp-server:*"],
+        allowed_origins=["https://your-client-origin"],
+    ),
 )
 ```
 
@@ -122,7 +125,7 @@ mcp.streamable_http_app(
 
 **Error:** Every `with_required_scopes` check fails because the token arrives with an empty `scope` claim.
 
-**Fix:** Check that `Auth0AsgiMiddleware` gets `scopes_supported` with every tool scope, the way the example `server.py` does.
+**Fix:** Check that `Auth0AsgiMiddleware` gets `scopes_supported` with every tool scope, the way the example `server.py` does. Make sure the client grant allows those scopes too, then have the client get a new token, because a token that was already issued keeps its old scopes.
 
 ### Every request gets a `401` because `AUTH0_AUDIENCE` is not the URL clients use
 

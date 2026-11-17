@@ -237,11 +237,11 @@ request. **Stop at the first match.**
 | Express (web app / server-rendered) | `express` |
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
+| `auth0-ai-mcp` / protecting a Python MCP server with Auth0 (official `mcp` SDK, FastAPI or Starlette) | `ai-mcp-python` |
 | Flask | `flask` |
 | FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
 | `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
 | `auth0-api-python` / Python API JWT validator (resource server / `verify_access_token`) | `api-python` |
-| `auth0-ai-mcp` / protecting a Python MCP server with Auth0 (official `mcp` SDK, FastAPI or Starlette) | `ai-mcp-python` |
 | Spring Boot | `springboot-api` |
 | Java MVC / servlet | `java-mvc` |
 | ASP.NET Core web app / API | `aspnetcore-auth` / `aspnetcore-api` |

@@ -93,10 +93,19 @@ The tenant setup gets Auth0 to put the right `org_id` in the token when the user
 1. Add your test user to the organization.
 
    ```bash
-   auth0 orgs members add YOUR_ORG_ID --user-id YOUR_USER_ID
+   auth0 api post "organizations/YOUR_ORG_ID/members" --data '{"members":["YOUR_USER_ID"]}'
    ```
 
-2. Make the login client require an organization at login.
+2. Enable the connection the user logs in with for the organization.
+
+   ```bash
+   auth0 api post "organizations/YOUR_ORG_ID/enabled_connections" \
+     --data '{"connection_id":"YOUR_CONNECTION_ID"}'
+   ```
+
+   Skip this if the connection is already enabled for the organization. Without it, login in the organization fails even for a member.
+
+3. Make the login client require an organization at login.
 
    ```bash
    auth0 api patch "clients/YOUR_LOGIN_CLIENT_ID" \
@@ -105,7 +114,7 @@ The tenant setup gets Auth0 to put the right `org_id` in the token when the user
 
    With this, Auth0 asks the user to pick the organization after they log in, and the token comes back with `org_id`.
 
-3. Add the login client to the organization.
+4. Add the login client to the organization.
 
    ```bash
    auth0 api post "organizations/YOUR_ORG_ID/clients" \
