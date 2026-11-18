@@ -119,7 +119,7 @@ except ApiError as exc:
 
 **Error:** Every request gets a `401`. The server advertises a `/mcp/mcp` resource, so the audience becomes that value and no longer matches the API registered in Auth0.
 
-**Fix:** Make sure `MCP_RESOURCE_URL` does not end in `/mcp`. FastMCP appends the MCP path (`/mcp` by default, or your `mcp_path`) to `resource_url` and advertises the result, and the MCP client asks Auth0 for a token for that value, which is also the audience. The API identifier in Auth0 must be that value, for example `https://your-api.example.com/mcp` for `resource_url="https://your-api.example.com"`.
+**Fix:** Make sure `MCP_RESOURCE_URL` does not end in the MCP path, which is `/mcp` unless you set `mcp_path`. FastMCP appends the MCP path (`/mcp` by default, or your `mcp_path`) to `resource_url` and advertises the result, and the MCP client asks Auth0 for a token for that value, which is also the audience. The API identifier in Auth0 must be that value, for example `https://your-api.example.com/mcp` for `resource_url="https://your-api.example.com"` with the default path.
 
 ### Tools fail with `UnauthenticatedError`
 
