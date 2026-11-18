@@ -12,6 +12,8 @@ Errors raised by the SDK itself, such as middleware responses and scope errors, 
 |---|---|---|
 | `auth0-ai-mcp` (Python) | Middleware responses, scope checks, exchange and cache errors | `Read: references/pattern-mcp-common-errors/auth0-ai-mcp-python.md` |
 | `auth0-ai-fastmcp` (Python) | Middleware and provider responses, scope checks, exchange and cache errors | `Read: references/pattern-mcp-common-errors/auth0-ai-fastmcp-python.md` |
+| `@auth0/ai-mcp` (Node.js) | Handler responses, scope checks, exchange and DPoP errors | `Read: references/pattern-mcp-common-errors/auth0-ai-mcp-js.md` |
+| `@auth0/ai-fastmcp` (Node.js) | Authenticate and tool responses, scope checks, exchange errors | `Read: references/pattern-mcp-common-errors/auth0-ai-fastmcp-js.md` |
 
 ---
 

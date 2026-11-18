@@ -26,6 +26,8 @@ Get the exact calls from the per-SDK reference. **`Read:` the file for the detec
 |---|---|---|
 | `auth0-ai-mcp` (Python) | The exchange from a tool, scope handling, org mode | `Read: references/feature-mcp-on-behalf-of/auth0-ai-mcp-python.md` |
 | `auth0-ai-fastmcp` (Python) | The exchange from a tool, scope handling, org mode | `Read: references/feature-mcp-on-behalf-of/auth0-ai-fastmcp-python.md` |
+| `@auth0/ai-mcp` (Node.js) | The exchange from a tool, scope handling, org mode | `Read: references/feature-mcp-on-behalf-of/auth0-ai-mcp-js.md` |
+| `@auth0/ai-fastmcp` (Node.js) | The exchange from a tool, scope handling, org mode | `Read: references/feature-mcp-on-behalf-of/auth0-ai-fastmcp-js.md` |
 
 ---
 
