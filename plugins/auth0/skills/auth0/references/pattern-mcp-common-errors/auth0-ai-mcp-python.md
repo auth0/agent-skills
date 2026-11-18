@@ -125,7 +125,7 @@ mcp.streamable_http_app(
 
 **Error:** Every `with_required_scopes` check fails because the token arrives with an empty `scope` claim.
 
-**Fix:** Check that `Auth0AsgiMiddleware` gets `scopes_supported` with every tool scope, the way the example `server.py` does. Make sure the client grant allows those scopes too. If RBAC is on for the API, the user also has to hold the permission, because Auth0 only puts the scopes the user's roles grant into the token. Then have the client get a new token, because a token that was already issued keeps its old scopes.
+**Fix:** Check that `Auth0AsgiMiddleware` gets `scopes_supported` with every tool scope, the way the example `server.py` does. Make sure the client grant allows those scopes too. If RBAC is on for the API, the user also has to hold the permission, because Auth0 only puts the scopes the user's roles grant into the token. On an organization login, the role has to be assigned to the user inside that organization, because a tenant-level role gives no scope there. Then have the client get a new token, because a token that was already issued keeps its old scopes.
 
 ### Every request gets a `401` because `AUTH0_AUDIENCE` is not the URL clients use
 
