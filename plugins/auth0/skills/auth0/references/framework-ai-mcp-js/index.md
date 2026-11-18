@@ -80,14 +80,14 @@ To keep the settings in code, pass `domain`, `audience`, `clientId` and `clientS
 Before any tool runs, the handler does the following.
 
 - It reads the `Authorization` header (Bearer, or DPoP with a `DPoP` proof header) and verifies the token against your tenant: signature, issuer, audience, expiry, and the organization policy.
-- A missing credential gets a `401` with a bare `Bearer resource_metadata="..."` challenge. A token that fails verification gets a `401` with `error="invalid_token"`. A malformed header gets a `400`. A token missing a `requiredScopes` scope gets a `403` with `error="insufficient_scope"`. None of these reach a tool.
+- A missing credential gets a `401` with a `Bearer` challenge that has no `error` value and names `resource_metadata` (plus `scope` when `requiredScopes` is set). A token that fails verification gets a `401` with `error="invalid_token"`. A malformed header gets a `400`. A token missing a `requiredScopes` scope gets a `403` with `error="insufficient_scope"`. None of these reach a tool.
 - DPoP fails closed: a bad or missing proof is a `401` with `error="invalid_dpop_proof"` or `use_dpop_nonce`, and `dpop: { mode: 'disabled' }` is Bearer only. Do not use `disabled` to "make DPoP errors go away".
 - On success it builds a `Principal` (`sub`, `scopes`, `clientId`, `orgId`, `permissions`, `expiresAt`) and binds it with a request-scoped client to the request, so tool code reads the caller without taking an auth argument.
 - It serves the RFC 9728 metadata at `/.well-known/oauth-protected-resource/mcp` (the well-known path followed by the path of the resource). `resource` defaults to the audience and, if you set it, must equal it. The audience must therefore be the public URL of the server and an absolute `http` or `https` URL, such as `https://mcp.example.com/mcp`. A value like `urn:acme:mcp` throws.
 
 On Express, route both paths to the handler and mount it before any body-parsing middleware:
 
-```ts
+```text
 app.all('/mcp', handler);
 app.get('/.well-known/oauth-protected-resource/mcp', handler);
 ```
@@ -120,7 +120,7 @@ For how the exchange works, see On-Behalf-Of.
 
 ### 6. Test
 
-1. Request the MCP endpoint without a token. The response should be a `401` whose `WWW-Authenticate` header starts with `Bearer resource_metadata="..."` and carries no `error`.
+1. Request the MCP endpoint without a token. The response should be a `401` whose `WWW-Authenticate` header has a `Bearer` challenge with `resource_metadata` and `scope="mcp:access"` and no `error`.
 
    ```bash
    curl -i -X POST http://localhost:3000/mcp -H "content-type: application/json" -H "accept: application/json, text/event-stream" -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'
