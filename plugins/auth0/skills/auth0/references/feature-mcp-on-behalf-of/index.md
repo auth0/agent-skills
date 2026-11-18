@@ -90,13 +90,7 @@ Swap in your own ids where the commands say `YOUR_...`.
 
 The tenant setup gets Auth0 to put the right `org_id` in the token when the user logs in. It is done once per tenant. The OBO client part is item 5 in Step 1. The rest covers the login client, which is the MCP client users log in with, such as Claude Code.
 
-1. Add your test user to the organization.
-
-   ```bash
-   auth0 api post "organizations/YOUR_ORG_ID/members" --data '{"members":["YOUR_USER_ID"]}'
-   ```
-
-2. Enable the connection the user logs in with for the organization.
+1. Enable the connection the user logs in with for the organization.
 
    ```bash
    auth0 api post "organizations/YOUR_ORG_ID/enabled_connections" \
@@ -104,6 +98,12 @@ The tenant setup gets Auth0 to put the right `org_id` in the token when the user
    ```
 
    Skip this if the connection is already enabled for the organization. Without it, login in the organization fails even for a member.
+
+2. Add your test user to the organization.
+
+   ```bash
+   auth0 api post "organizations/YOUR_ORG_ID/members" --data '{"members":["YOUR_USER_ID"]}'
+   ```
 
 3. Make the login client require an organization at login.
 
