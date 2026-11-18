@@ -46,7 +46,7 @@ OBO_CLIENT_ID=
 OBO_CLIENT_SECRET=
 ```
 
-`resource_url` is the base URL of the server without `/mcp`, because FastMCP appends `/mcp` itself. The audience defaults to that base URL plus `/mcp`, so it is not set separately. If `resource_url` includes `/mcp`, the server advertises `/mcp/mcp` and the client never gets a token the server accepts. See [Configuration](https://github.com/auth0/auth0-ai-python/blob/main/packages/auth0-ai-fastmcp/docs/Configuration.md) for the full explanation.
+`resource_url` is the base URL of the server without the MCP path (`/mcp` unless you set `mcp_path`), because FastMCP appends the MCP path itself. The audience defaults to that base URL plus the MCP path, so it is not set separately. If `resource_url` already includes the MCP path, the server advertises it twice, such as `/mcp/mcp`, and the client never gets a token the server accepts. See [Configuration](https://github.com/auth0/auth0-ai-python/blob/main/packages/auth0-ai-fastmcp/docs/Configuration.md) for the full explanation.
 
 `OBO_CLIENT_ID` and `OBO_CLIENT_SECRET` are needed only when tools call `get_token_on_behalf_of`, `get_client_credentials_token` or `get_token_for_connection`. See [`.env.example`](https://github.com/auth0/auth0-ai-python/blob/main/packages/auth0-ai-fastmcp/examples/b2b_ecommerce/.env.example) for the complete list of variables used by the example.
 
@@ -107,7 +107,7 @@ The same client also has `get_client_credentials_token(audience=..., scope=...)`
 
 ### 7. Test
 
-Start the server and add it to the MCP client. The URL has to end in `/mcp`, because that is where the server listens. This example uses Claude Code and the port from the example server.
+Start the server and add it to the MCP client. The URL has to end in the MCP path, which is `/mcp` unless you set `mcp_path`, because that is where the server listens. This example uses Claude Code and the port from the example server.
 
 ```bash
 claude mcp add --transport http b2b-ecommerce http://localhost:3002/mcp
@@ -154,8 +154,8 @@ Add these scopes to `tool_scopes` too, so the MCP client requests them at login.
 |---------|-----|
 | Forgetting `mcp.add_middleware(auth0.middleware)` | Add it after creating `FastMCP`. Without it, tools fail with `UnauthenticatedError` about the request context. |
 | Creating `FastMCP` without `auth=auth0.provider` | Pass it. Otherwise every request except `initialize`, `ping` and `server/discover` fails with `UnauthenticatedError: No verified access token on this request`. |
-| Setting `resource_url` to the full MCP URL | Use the base URL without `/mcp`. Otherwise every request gets a `401` because the audience becomes `/mcp/mcp` and no longer matches the API in Auth0. See step 3. |
-| Pointing the MCP client at the base URL | Use the URL ending in `/mcp`. Otherwise the client reports `MCP endpoint not found`. |
+| Setting `resource_url` to the full MCP URL | Use the base URL without the MCP path (`/mcp` unless you set `mcp_path`). Otherwise every request gets a `401` because the audience ends in the MCP path twice, such as `/mcp/mcp`, and no longer matches the API in Auth0. See step 3. |
+| Pointing the MCP client at the base URL | Use the URL ending in the MCP path (`/mcp` unless you set `mcp_path`). Otherwise the client reports `MCP endpoint not found`. |
 | Leaving a gated tool's scope out of `tool_scopes` | Add it to `tool_scopes` so the client requests it at login. |
 | A new `tool:*` scope never shows up in the token | Adding a scope to the MCP API does not add it to existing grants. Update the login client's grant with the full scope list. |
 | Mixing up `tool:*` scopes and downstream scopes | They are two separate layers. `tool:*` scopes gate the tool and downstream scopes go to `get_token_on_behalf_of`. |
@@ -172,7 +172,7 @@ Add these scopes to `tool_scopes` too, so the MCP client requests them at login.
 
 **Auth0FastMCPOptions fields** (full list in [Configuration](https://github.com/auth0/auth0-ai-python/blob/main/packages/auth0-ai-fastmcp/docs/Configuration.md)):
 - `domain` - Auth0 tenant domain as a bare host, no scheme, path, query or whitespace
-- `resource_url` - base URL of this server, without `/mcp`
+- `resource_url` - base URL of this server, without the MCP path
 - `audience` - optional, this server's API identifier. Defaults to `resource_url` plus `mcp_path` and must equal it when set
 - `mcp_path` - path the MCP endpoint is mounted at, default `/mcp`
 - `tool_scopes` - scopes advertised in the metadata. A tool is gated by `with_required_scopes`, not by being listed here. `required_scopes` are advertised too
@@ -186,7 +186,7 @@ Add these scopes to `tool_scopes` too, so the MCP client requests them at login.
 
 **Environment variables used by the example:**
 - `AUTH0_DOMAIN` - Auth0 tenant domain, no `https://`
-- `MCP_RESOURCE_URL` - base URL of this server, without `/mcp`
+- `MCP_RESOURCE_URL` - base URL of this server, without the MCP path
 - `OBO_CLIENT_ID` and `OBO_CLIENT_SECRET` - OBO client credentials
 
 **Docs in the package:**
