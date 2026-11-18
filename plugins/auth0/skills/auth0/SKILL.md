@@ -30,48 +30,47 @@ Detect intent → detect framework → detect tooling → load 2–3 reference f
 
 ## Step 1: Detect intent
 
-Match the request against the **What the developer wants** column — it describes
-the goal in plain language, not just the Auth0 term. The **Intent** you pick is a
-lookup key: in **Step 4** it appears verbatim as a section heading
-(`### feature:mfa`) listing which reference files to load.
+Match the request against the **What the developer wants** column (goals in plain
+language). The **Intent** you pick is a lookup key: **Step 4** has a section
+heading with it verbatim (`### feature:mfa`) listing the reference files to load.
 
 | What the developer wants (plain language + Auth0 term) | Intent |
 |---|---|
 | Add login, signup, sign-in, "let users log in / create accounts" to an app, or otherwise add and use an Auth0 SDK in an app or script | **integrate** |
-| Require a second step **after** the password — a one-time code, SMS or email code, authenticator app, or a passkey/fingerprint/face/security key used as an *additional* factor; or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
-| Let users sign up or sign in with a passkey, fingerprint, or Face ID **instead of** a password — passwordless WebAuthn as the primary credential — or let a signed-in user add a passkey to their account. *Auth0: passkeys, WebAuthn, passwordless login.* | **feature:passkeys** |
-| Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
-| Let business customers sign in through their own company's identity provider by typing a work email that routes them to the employer's login. *Auth0: Enterprise Connect, B2B Connect - Enterprise, enterprise SSO.* | **feature:enterprise-connect** |
+| Require a second step **after** the password (one-time code, SMS or email code, authenticator app, or a passkey/fingerprint/face/security key as an *additional* factor), or re-confirm identity before a sensitive action. *Auth0: multi-factor authentication (MFA), two-factor (2FA), two-step verification, step-up authentication.* | **feature:mfa** |
+| Let users sign up or sign in with a passkey, fingerprint, or Face ID **instead of** a password (passwordless WebAuthn as the primary credential), or add a passkey to a signed-in account. *Auth0: passkeys, WebAuthn, passwordless login.* | **feature:passkeys** |
+| Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login (typically B2B products). *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
+| Let business customers sign in through their own company's identity provider, routed by their work email. *Auth0: Enterprise Connect, B2B Connect - Enterprise, enterprise SSO.* | **feature:enterprise-connect** |
 | Deploy a hosted self-service portal for profile, passkeys, MFA, or organization details instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
-| Serve the login page from your own web address (e.g. `login.example.com`, `auth.company.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
+| Serve the login page from your own web address (e.g. `login.example.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
-| Bind tokens to the client so a stolen or leaked token can't be reused/replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
-| Trade an external or partner token (legacy system, MCP/agent, or another IdP) for Auth0 tokens with no interactive login. *Auth0: Custom Token Exchange (CTE), RFC 8693, subject_token.* | **feature:custom-token-exchange** |
+| Bind tokens to the client so a stolen token can't be replayed from another machine. *Auth0: DPoP (Demonstrating Proof-of-Possession), sender-constrained tokens.* | **feature:dpop** |
+| Trade an external or partner token (legacy system, MCP/agent, other IdP) for Auth0 tokens, no interactive login. *Auth0: Custom Token Exchange (CTE), RFC 8693, subject_token.* | **feature:custom-token-exchange** |
 | Call a third-party API (Google, GitHub, Slack) as the signed-in user. *Auth0: Token Vault, Connected Accounts.* | **feature:token-vault** |
-| Let a tool in an MCP server call another API as the signed-in user, with its own narrower token for that API. *Auth0: On-Behalf-Of (OBO) token exchange for MCP servers.* | **feature:mcp-on-behalf-of** |
-| Avoid a token exchange on every MCP tool call, write a token store for exchanged tokens, or choose between `strict` and `non_strict` scope matching. *Auth0: OBO token caching for MCP servers.* | **feature:mcp-token-caching** |
+| Let a tool in an MCP server call another API as the signed-in user with its own narrower token. *Auth0: On-Behalf-Of (OBO) token exchange for MCP servers.* | **feature:mcp-on-behalf-of** |
+| Avoid a token exchange on every MCP tool call, write a token store for exchanged tokens, or pick `strict` or `non_strict` scope matching. *Auth0: OBO token caching for MCP servers.* | **feature:mcp-token-caching** |
 | Audit a tenant for security/config issues, report, then optionally fix findings. *Auth0: tenant audit, CheckMate.* | **audit** |
 | Check if a tenant is healthy and on the right plan — two scores + a recommendation. *Auth0: health check.* | **healthcheck** |
 | Ask for best practices, "is this secure?", how to handle tokens safely, "how should I do X". *Auth0: guidance / security.* | **guidance** |
 | Hit an error: 401 Unauthorized, 403 Forbidden, CORS, callback URL mismatch, redirect loop. *Auth0: debugging.* | **debug** |
 | Hit rate limiting: 429 Too Many Requests, quota exceeded. *Auth0: rate limits.* | **debug:rate-limit** |
 | Move an existing app off Clerk, NextAuth.js, Firebase, Cognito, Okta, Supabase, Passport.js, or another auth provider. *Auth0: provider migration.* | **migrate** |
-| Upgrade the Auth0 SDK itself to a new major version (e.g. Auth0.swift v2→v3, Auth0.Android v3→v4) — breaking changes, deprecated APIs, "update to the latest SDK". *Auth0: SDK major-version upgrade.* | **upgrade-sdk** |
-| Install Auth0's Vercel Marketplace integration, connect Auth0 to a Vercel project, or sync Auth0 configuration into a Vercel-hosted Next.js app. *Auth0: Vercel native integration.* | **integrate** |
-| Use the Auth0 CLI directly — "create an app/API with the `auth0` CLI", script tenant setup, or automate Auth0 config in CI — with no application framework in play. *Auth0: CLI / tooling-only.* | **tooling** |
+| Upgrade the Auth0 SDK itself to a new major version (e.g. Auth0.swift v2→v3, Auth0.Android v3→v4): breaking changes, deprecated APIs, "update to the latest SDK". *Auth0: SDK major-version upgrade.* | **upgrade-sdk** |
+| Install Auth0's Vercel Marketplace integration, connect Auth0 to a Vercel project, or sync Auth0 config into a Vercel-hosted Next.js app. *Auth0: Vercel native integration.* | **integrate** |
+| Use the Auth0 CLI directly ("create an app/API with the `auth0` CLI", script tenant setup, automate config in CI) with no application framework in play. *Auth0: CLI / tooling-only.* | **tooling** |
 
 ### If nothing clearly matches
 
-Pick the closest goal. If the goal is genuinely unclear, ask the developer what they're trying to accomplish - don't guess an intent.
+Pick the closest goal. If it is genuinely unclear, ask what they're trying to accomplish; don't guess an intent.
 
 ---
 
 ## Step 2: Detect framework
 
-> **Skip this step for the `tooling` intent** — a CLI-first request has no
-> framework. Go to Step 3, load the tooling reference; only ask about a
-> framework if the developer later pivots to integrating auth into an app.
+> **Skip this step for the `tooling` intent**: a CLI-first request has no
+> framework. Go to Step 3; ask about a framework only if the developer later
+> pivots to integrating auth into an app.
 
 Work top-down. **Stop at the first tier that yields a framework.**
 
@@ -80,7 +79,7 @@ Work top-down. **Stop at the first tier that yields a framework.**
 ### Node.js / JavaScript / TypeScript — check `package.json` → `dependencies`
 
 Rows are most-specific first: an Ionic/Capacitor project also carries the base
-SDK, so check the `@capacitor/browser` rows before it.
+SDK, so the `@capacitor/browser` rows come first.
 
 | Package | Framework |
 |---|---|
@@ -112,7 +111,7 @@ SDK, so check the `@capacitor/browser` rows before it.
 
 Rows are most-specific first: `auth0-server-python` is the framework-agnostic
 server core, so check for a co-installed web framework before falling back to the
-bare-SDK row. `auth0-ai-fastmcp` and `auth0-ai-mcp` build on `auth0-api-python`, so they come first, in that order.
+bare-SDK row.
 
 | Package | Framework |
 |---|---|
@@ -156,7 +155,7 @@ bare-SDK row. `auth0-ai-fastmcp` and `auth0-ai-mcp` build on `auth0-api-python`,
 | `auth0/login` + `AuthorizationGuard` | `laravel-api` |
 
 > If `auth0/auth0-php` is installed but no `SdkConfiguration` strategy is set
-> yet (fresh project), fall through to variant disambiguation below.
+> (fresh project), fall through to variant disambiguation below.
 
 ### Go — check `go.mod`
 
@@ -178,9 +177,9 @@ bare-SDK row. `auth0-ai-fastmcp` and `auth0-ai-mcp` build on `auth0-api-python`,
 ### Tier 2 — Framework from non-Auth0 workspace dependencies
 
 If no Auth0 SDK matched, detect the framework from ordinary (non-Auth0)
-dependencies. **Stop at the first match.** This picks the base; any web-vs-API
-variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
-`@ionic/*` rows before their base framework.
+dependencies. **Stop at the first match.** This picks the base; the web-vs-API
+variant is resolved in "Variant disambiguation" below. Check `@ionic/*` rows
+before their base framework.
 
 | Signal | Base framework |
 |---|---|
@@ -219,8 +218,7 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `*.csproj` ASP.NET (web app or API) | `aspnetcore` (variant below) |
 
 > **`react` note:** a plain React project maps to `react` for an SPA using the
-> React SDK, or `spa-js` if the app is framework-agnostic vanilla JS. If unclear,
-> ask before loading.
+> React SDK, or `spa-js` for framework-agnostic vanilla JS. If unclear, ask.
 
 ### Tier 3 — Framework from the prompt
 
@@ -244,8 +242,8 @@ request. **Stop at the first match.**
 | Express (web app / server-rendered) | `express` |
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
-| `auth0-ai-fastmcp` / `@auth0/ai-fastmcp` / protecting a FastMCP server with Auth0 | `ai-fastmcp-python` / `ai-fastmcp-js` |
-| `auth0-ai-mcp` / `@auth0/ai-mcp` / protecting an MCP server with Auth0 (Python official `mcp` SDK, FastAPI or Starlette; Node `@modelcontextprotocol/server`) | `ai-mcp-python` / `ai-mcp-js` |
+| `auth0-ai-fastmcp` / `@auth0/ai-fastmcp` / FastMCP server with Auth0 | `ai-fastmcp-python` / `ai-fastmcp-js` |
+| `auth0-ai-mcp` / `@auth0/ai-mcp` / MCP server with Auth0 (Python `mcp` SDK, FastAPI, Starlette; Node `@modelcontextprotocol/server`) | `ai-mcp-python` / `ai-mcp-js` |
 | Flask | `flask` |
 | FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
 | `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
@@ -294,15 +292,14 @@ Ask the developer what framework/language they are using. Do not guess.
 ### Conflicts
 
 If Tier 2 (workspace) and Tier 3 (prompt) disagree materially (e.g. the prompt
-says "Next.js" but `package.json` has no `next`), **state the conflict and ask**
-rather than silently picking. Workspace signals outrank the prompt when both are
+says "Next.js" but `package.json` has no `next`), **state the conflict and ask**. Workspace signals outrank the prompt when both are
 present and consistent.
 
 ---
 
 ## Step 3: Detect tooling
 
-Read the project file tree and the request — a project-context decision, not a product preference.
+Read the project file tree and the request (a project-context decision, not a product preference).
 
 | Project has... | Load |
 |---|---|
@@ -335,7 +332,7 @@ Read: references/tooling-{tooling}/index.md
 ### feature:passkeys
 ```
 Read: references/feature-passkeys/index.md
-Then Read the detected SDK's passkey leaf from the hub's "Example code snippets" table (e.g. nextjs → nextjs-auth0.md; react-native/expo → ONLY react-native-auth0.md, which covers react-native-web — never auth0-react.md) — it has the exact API and ceremony; don't implement from framework-{framework}/index.md alone.
+Then Read the detected SDK's passkey leaf from the hub's "Example code snippets" table (e.g. nextjs → nextjs-auth0.md; react-native/expo → ONLY react-native-auth0.md, which covers react-native-web, never auth0-react.md). It has the exact API and ceremony; don't implement from framework-{framework}/index.md alone.
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 ```
@@ -404,7 +401,7 @@ If framework detected: Read references/framework-{framework}/index.md
 ### feature:mcp-on-behalf-of
 ```
 Read: references/feature-mcp-on-behalf-of/index.md
-Then Read the detected SDK's leaf from the hub's SDK table. It has the exact calls, so don't implement from framework-{framework}/index.md alone.
+Then Read the detected SDK's leaf from the hub's SDK table (exact calls; don't implement from framework-{framework}/index.md alone).
 Read: references/tooling-{tooling}/index.md
 If framework detected: Read references/framework-{framework}/index.md
 ```
@@ -460,21 +457,21 @@ Read: references/feature-audit/index.md
 Read: references/feature-audit-pricing/index.md
 Read: references/feature-audit-remediation/index.md
 Read: references/tooling-{tooling}/index.md
-If a scan can run, do the audit workflow first, then score and recommend a plan. If not, score capability fit and recommend anyway. Never quote Enterprise pricing.
+If a scan can run, audit first, then score and recommend a plan. If not, score capability fit and recommend anyway. Never quote Enterprise pricing.
 ```
 
 ### upgrade-sdk
 ```
 Read: references/framework-{framework}/index.md
 Follow its "Major Version Migration" section (e.g. Auth0.swift v3, Auth0.Android v4).
-This is an Auth0 SDK version bump — NOT a provider migration. Do not load feature-migration/index.md.
+This is an Auth0 SDK version bump, NOT a provider migration. Do not load feature-migration/index.md.
 If no framework is detected: ask which Auth0 SDK the developer is upgrading.
 ```
 
 ### tooling
 ```
 Read: references/tooling-{tooling}/index.md
-No framework file — this is a CLI/tooling-only task (create apps/APIs, script
+No framework file: this is a CLI/tooling-only task (create apps/APIs, script
 tenant setup, automate config in CI). If the developer then wants to integrate
 auth into an app, return to Step 1 with the integrate intent.
 ```
