@@ -84,6 +84,8 @@ SDK, so check the `@capacitor/browser` rows before it.
 
 | Package | Framework |
 |---|---|
+| `@auth0/ai-fastmcp` | `ai-fastmcp-js` |
+| `@auth0/ai-mcp` | `ai-mcp-js` |
 | `@capacitor/browser` + `@auth0/auth0-angular` | `ionic-angular` |
 | `@capacitor/browser` + `@auth0/auth0-react` | `ionic-react` |
 | `@capacitor/browser` + `@auth0/auth0-vue` | `ionic-vue` |
@@ -194,6 +196,8 @@ variant is resolved in "Variant disambiguation" below. As in Tier 1, check the
 | `expo` in `package.json` | `expo` |
 | `react-native` (no `expo`) | `react-native` |
 | `react` (no meta-framework above) | `react` (SPA) — see note |
+| `fastmcp` in `package.json` | `ai-fastmcp-js` |
+| `@modelcontextprotocol/server` in `package.json` | `ai-mcp-js` |
 | `express` in `package.json` | `express` (variant below) |
 | `fastify` in `package.json` | `fastify` (variant below) |
 | `fastmcp` in `requirements.txt`/`pyproject.toml` | `ai-fastmcp-python` |
@@ -240,8 +244,8 @@ request. **Stop at the first match.**
 | Express (web app / server-rendered) | `express` |
 | Express API / protect API routes | `express-jwt` |
 | Fastify (web) / Fastify API | `fastify` / `fastify-api` |
-| `auth0-ai-fastmcp` / protecting a Python MCP server built on FastMCP with Auth0 | `ai-fastmcp-python` |
-| `auth0-ai-mcp` / protecting a Python MCP server with Auth0 (official `mcp` SDK, FastAPI or Starlette) | `ai-mcp-python` |
+| `auth0-ai-fastmcp` / `@auth0/ai-fastmcp` / protecting a FastMCP server with Auth0 | `ai-fastmcp-python` / `ai-fastmcp-js` |
+| `auth0-ai-mcp` / `@auth0/ai-mcp` / protecting an MCP server with Auth0 (Python official `mcp` SDK, FastAPI or Starlette; Node `@modelcontextprotocol/server`) | `ai-mcp-python` / `ai-mcp-js` |
 | Flask | `flask` |
 | FastAPI (web app) / FastAPI API | `server-python` / `fastapi-api` |
 | `auth0-server-python` / framework-agnostic Python server SDK / Python OIDC web server with no dedicated reference (Django, Starlette, Sanic, Quart, aiohttp) | `server-python` |
@@ -424,7 +428,7 @@ If multi-tenant / B2B architecture: Read references/pattern-multi-tenant/index.m
 ### debug
 ```
 Read: references/pattern-common-errors/index.md
-If the framework is `ai-mcp-python` or `ai-fastmcp-python`: Read references/pattern-mcp-common-errors/index.md, then Read the SDK's leaf from its hub table.
+If the framework is `ai-mcp-*` or `ai-fastmcp-*`: Read references/pattern-mcp-common-errors/index.md, then Read the SDK's leaf from its hub table.
 If framework detected: Read references/framework-{framework}/index.md
 ```
 

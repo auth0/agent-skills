@@ -276,6 +276,62 @@
       "expect_refs": ["pattern-common-errors/index.md", "pattern-mcp-common-errors/index.md", "framework-ai-fastmcp-python/index.md"]
     },
     {
+      "id": "integrate-ai-mcp-js",
+      "intent": "integrate",
+      "framework": "ai-mcp-js",
+      "tooling": "cli",
+      "expect_refs": ["framework-ai-mcp-js/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-mcp-on-behalf-of-ai-mcp-js-combo",
+      "intent": "feature:mcp-on-behalf-of",
+      "framework": "ai-mcp-js",
+      "tooling": "cli",
+      "expect_refs": ["feature-mcp-on-behalf-of/index.md", "tooling-cli/index.md", "framework-ai-mcp-js/index.md"]
+    },
+    {
+      "id": "feature-mcp-token-caching-ai-mcp-js-combo",
+      "intent": "feature:mcp-token-caching",
+      "framework": "ai-mcp-js",
+      "tooling": "cli",
+      "expect_refs": ["feature-mcp-token-caching/index.md", "tooling-cli/index.md", "framework-ai-mcp-js/index.md"]
+    },
+    {
+      "id": "debug-ai-mcp-js",
+      "intent": "debug",
+      "framework": "ai-mcp-js",
+      "tooling": "cli",
+      "expect_refs": ["pattern-common-errors/index.md", "pattern-mcp-common-errors/index.md", "framework-ai-mcp-js/index.md"]
+    },
+    {
+      "id": "integrate-ai-fastmcp-js",
+      "intent": "integrate",
+      "framework": "ai-fastmcp-js",
+      "tooling": "cli",
+      "expect_refs": ["framework-ai-fastmcp-js/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-mcp-on-behalf-of-ai-fastmcp-js-combo",
+      "intent": "feature:mcp-on-behalf-of",
+      "framework": "ai-fastmcp-js",
+      "tooling": "cli",
+      "expect_refs": ["feature-mcp-on-behalf-of/index.md", "tooling-cli/index.md", "framework-ai-fastmcp-js/index.md"]
+    },
+    {
+      "id": "feature-mcp-token-caching-ai-fastmcp-js-combo",
+      "intent": "feature:mcp-token-caching",
+      "framework": "ai-fastmcp-js",
+      "tooling": "cli",
+      "expect_refs": ["feature-mcp-token-caching/index.md", "tooling-cli/index.md", "framework-ai-fastmcp-js/index.md"]
+    },
+    {
+      "id": "debug-ai-fastmcp-js",
+      "intent": "debug",
+      "framework": "ai-fastmcp-js",
+      "tooling": "cli",
+      "expect_refs": ["pattern-common-errors/index.md", "pattern-mcp-common-errors/index.md", "framework-ai-fastmcp-js/index.md"]
+    },
+    {
       "id": "guidance-token-handling",
       "intent": "guidance",
       "framework": null,
