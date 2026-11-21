@@ -357,7 +357,7 @@ Claims on the **access token** (from `getTokenSilently({ detailedResponse: true 
 | `MissingRefreshTokenError` | `useRefreshTokens` false or scope missing | Enable `useRefreshTokens: true` and include `offline_access` scope |
 | User logged out on page refresh | The default memory cache drops the refresh token on reload (`checkSession()` swallows the missing token), or Allowed Web Origins is missing for iframe silent auth | Persist the session with `cacheLocation: 'localstorage'` (XSS trade-off), or set `useRefreshTokensFallback: true` and add Allowed Web Origins (iframe; needs third-party cookies or a custom domain) |
 | Cross-origin iframe blocked | Browser blocks third-party cookies | Use `useRefreshTokens: true` instead of silent iframe auth |
-| `Refused to create a worker from 'blob:...'` | A Content Security Policy blocks the token worker (used with `useRefreshTokens: true` and the default memory cache) | Add `worker-src blob:` to the CSP, or host the worker yourself and pass its URL as `workerUrl` |
+| `Refused to create a worker from 'blob:...'` | A Content Security Policy blocks the token worker (used with `useRefreshTokens: true` and the default memory cache) | Add `blob:` to the CSP's existing `worker-src` sources (e.g. `worker-src 'self' blob:`), or host the worker yourself and pass its URL as `workerUrl` |
 | Domain includes protocol | `domain` option should not include `https://` | Use `your-tenant.auth0.com` not `https://your-tenant.auth0.com` |
 
 ---
@@ -632,7 +632,7 @@ With `useRefreshTokens: true`, the refresh token only covers the audience and sc
 this audience and these scopes at login (`authorizationParams` in `createAuth0Client()`), otherwise this call throws
 `MissingRefreshTokenError`. To get tokens for more than one API, add Multi-Resource Refresh Token policies for those
 APIs on the application and set `useMrrt: true`, set `useRefreshTokensFallback: true` (iframe; needs third-party cookies or a custom
-domain), or catch the error and call `loginWithRedirect()` with the new audience.
+domain), or catch the error and call `loginWithRedirect()` with the new audience and the scopes it needs.
 
 ---
 

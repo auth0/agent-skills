@@ -74,7 +74,9 @@ npx expo install react-native-auth0
 ```
 
 The examples below need react-native-auth0 5.3.0 or later, the first release that exports
-`WebAuthErrorCodes` and `CredentialsManagerErrorCodes`. If the project pins an older version, upgrade it.
+`WebAuthErrorCodes` and `CredentialsManagerErrorCodes`. Pick the major version from the project's Expo SDK:
+react-native-auth0 6.x needs Expo SDK 55 or later; on Expo SDK 53–54, install the 5.x line instead
+(`npx expo install react-native-auth0@^5.3.0`).
 
 Create `.env` for the values your JavaScript reads. Expo inlines `EXPO_PUBLIC_*` variables at build
 time, so no extra config is needed:
@@ -148,9 +150,11 @@ const REAUTH_ERRORS: string[] = [
   CredentialsManagerErrorCodes.NO_CREDENTIALS,
   CredentialsManagerErrorCodes.NO_REFRESH_TOKEN,
   CredentialsManagerErrorCodes.RENEW_FAILED,
+  'SESSION_EXPIRED', // SDK 5.11+: the upstream session expired
 ];
 
-const API_URL = 'https://api.example.com/data'; // your API
+const API_URL = 'https://api.example.com/data'; // an endpoint of your API
+const API_AUDIENCE = 'https://api.example.com'; // your API's Identifier in the Auth0 Dashboard
 
 function HomeScreen() {
   const { authorize, clearSession, getCredentials, getDPoPHeaders, user, isLoading, error } = useAuth0();
@@ -159,8 +163,8 @@ function HomeScreen() {
   const login = async (): Promise<boolean> => {
     try {
       await authorize(
-        // offline_access: a refresh token, so getCredentials() can renew silently
-        { scope: 'openid profile email offline_access' },
+        // audience: an access token for your API; offline_access: a refresh token, so getCredentials() can renew silently
+        { audience: API_AUDIENCE, scope: 'openid profile email offline_access read:data' },
         { customScheme: 'YOUR_CUSTOM_SCHEME' }
       );
       return true;
@@ -184,7 +188,8 @@ function HomeScreen() {
       if (!(await login())) return; // cancelled or failed: don't call the API without a session
       credentials = await getCredentials(); // then retry the request with the new session
     }
-    // DPoP is on by default, so build the headers from the token type instead of hardcoding Bearer
+    // The token is DPoP-bound with useDPoP on (default in 5.x, opt-in in 6.x) and Bearer otherwise,
+    // so build the headers from the token type instead of hardcoding Bearer
     const headers = await getDPoPHeaders({
       url: API_URL,
       method: 'GET',
@@ -341,7 +346,7 @@ read `.d.ts` files, the SDK README, or anything else under `node_modules/` to co
 | `clientId` | `string` | Yes | Auth0 application Client ID |
 | `localAuthenticationOptions` | `LocalAuthenticationOptions` | No | Biometric authentication configuration |
 | `maxRetries` | `number` | No | Credential renewal retry count (iOS only, default: 0) |
-| `useDPoP` | `boolean` | No | Enable DPoP token binding (default: true) |
+| `useDPoP` | `boolean` | No | Enable DPoP token binding (default: `false` in 6.x, `true` in 5.x) |
 | `headers` | `Record<string, string>` | No | Custom headers for all API requests |
 
 ### authorize() Options
@@ -495,7 +500,7 @@ Custom URL schemes can be subject to [client impersonation attacks](https://data
 - Use `getCredentials()` to access tokens — it auto-refreshes expired tokens
 - Request `offline_access` scope for refresh token support
 - Do not store tokens in React state — use `getCredentials()` on demand
-- Enable DPoP for enhanced token security (enabled by default)
+- Enable DPoP for enhanced token security (`useDPoP: true`; on by default only in 5.x)
 
 ### Network Security
 
@@ -784,13 +789,14 @@ DPoP cryptographically binds tokens to a client-specific key pair, preventing to
 
 ### Enable DPoP
 
-DPoP is enabled by default in react-native-auth0:
+DPoP is opt-in from react-native-auth0 6.0 (5.x enables it by default). Turn it on for the application in the
+Auth0 Dashboard, then set it on the provider:
 
 ```typescript
 <Auth0Provider
   domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
   clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
-  // DPoP is enabled by default (useDPoP: true)
+  useDPoP={true}
 >
   <App />
 </Auth0Provider>
