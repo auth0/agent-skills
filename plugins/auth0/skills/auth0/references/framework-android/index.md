@@ -8,7 +8,10 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
 > gh api repos/auth0/Auth0.Android/releases/latest --jq '.tag_name'
 > ```
 > Use the returned version in all `implementation` dependency lines instead of any hardcoded version below. If the command fails, fall back to checking https://github.com/auth0/Auth0.Android/releases.
-> Auth0.Android 4.x requires `minSdk` 26+ and Java 17. If the project's `minSdk` is 21–25, use the latest 3.x release instead.
+> Auth0.Android 4.x requires `minSdk` 26+ and Java 17. If the project's `minSdk` is 21–25, use the latest 3.x release instead:
+> ```
+> gh api "repos/auth0/Auth0.Android/releases?per_page=100" --paginate --jq '.[] | select(.prerelease | not) | .tag_name | select(startswith("3."))' | head -1
+> ```
 
 ## Critical rules
 
@@ -38,7 +41,7 @@ Add authentication to Android applications using `com.auth0.android:auth0`.
    ```
    `{LATEST_VERSION}` is the release tag from the agent instruction at the top (latest 3.x if `minSdk` is below 26).
    Only if that lookup fails, use Maven Central, which needs no credentials (`<release>` can be a beta, so take the last stable version):
-   `curl -s https://repo1.maven.org/maven2/com/auth0/android/auth0/maven-metadata.xml | grep -o '<version>[0-9.]*</version>' | tail -1`
+   `curl -s https://repo1.maven.org/maven2/com/auth0/android/auth0/maven-metadata.xml | grep -o '<version>[0-9.]*</version>' | tail -1 | sed 's/<[^>]*>//g'`
    (for 3.x, use `grep -o '<version>3\.[0-9.]*</version>'`).
    If neither is reachable, write a concrete version you know from the right major line and say so; never leave
    the placeholder or a `+` range in the build file.
