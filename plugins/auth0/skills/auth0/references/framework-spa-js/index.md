@@ -632,7 +632,9 @@ With `useRefreshTokens: true`, the refresh token only covers the audience and sc
 this audience and these scopes at login (`authorizationParams` in `createAuth0Client()`), otherwise this call throws
 `MissingRefreshTokenError`. To get tokens for more than one API, add Multi-Resource Refresh Token policies for those
 APIs on the application and set `useMrrt: true`, set `useRefreshTokensFallback: true` (iframe; needs third-party cookies or a custom
-domain), or catch the error and call `loginWithRedirect()` with the new audience and the scopes it needs.
+domain), or catch the error and call `loginWithRedirect()` with the new audience and the scopes it needs. With the default
+memory cache that redirect reloads the page and drops the tokens for other audiences; to keep several, use a
+persistent cache (`cacheLocation: 'localstorage'`) or `loginWithPopup()`, which does not reload the page.
 
 ---
 

@@ -78,6 +78,14 @@ The examples below need react-native-auth0 5.3.0 or later, the first release tha
 react-native-auth0 6.x needs Expo SDK 55 or later; on Expo SDK 53–54, install the 5.x line instead
 (`npx expo install react-native-auth0@^5.3.0`).
 
+6.x also needs Android `minSdk` 26, JDK 17 and an iOS deployment target of 15.1. Expo SDK 55 already targets iOS
+15.1 but defaults to `minSdk` 24, so raise it with `expo-build-properties` (`npx expo install expo-build-properties`)
+in `app.json`, and build Android with JDK 17:
+
+```json
+["expo-build-properties", { "android": { "minSdkVersion": 26 }, "ios": { "deploymentTarget": "15.1" } }]
+```
+
 Create `.env` for the values your JavaScript reads. Expo inlines `EXPO_PUBLIC_*` variables at build
 time, so no extra config is needed:
 
@@ -151,6 +159,7 @@ const REAUTH_ERRORS: string[] = [
   CredentialsManagerErrorCodes.NO_REFRESH_TOKEN,
   CredentialsManagerErrorCodes.RENEW_FAILED,
   'SESSION_EXPIRED', // SDK 5.11+: the upstream session expired
+  'DPOP_NOT_CONFIGURED', // SDK 6+: DPoP-bound credentials saved by a 5.x app, read with useDPoP off
 ];
 
 const API_URL = 'https://api.example.com/data'; // an endpoint of your API
@@ -238,6 +247,10 @@ export default function App() {
   );
 }
 ```
+
+Silent renewal needs a refresh token: enable **Allow Offline Access** on the API and keep the **Refresh Token** grant
+on the application in the Auth0 Dashboard. Without them, `offline_access` returns no refresh token and the user has
+to log in again whenever the access token expires.
 
 ### 7. Verify
 
@@ -824,6 +837,10 @@ const callApi = async () => {
 ```
 
 ### Handle DPoP Token Migration
+
+Upgrading from 5.x, where DPoP was on by default: credentials saved by the 5.x app are DPoP-bound. Keep
+`useDPoP={true}` to keep those sessions, or leave it off and log the user in again when `getCredentials()` fails with
+`DPOP_NOT_CONFIGURED` (the quick-start `callApi` does this). To move users onto DPoP instead:
 
 ```typescript
 const { getCredentials, clearSession, authorize } = useAuth0();
