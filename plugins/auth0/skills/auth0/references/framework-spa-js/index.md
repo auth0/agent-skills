@@ -61,6 +61,8 @@ In Auth0 Dashboard, set for your **Single Page Application**:
 - **Allowed Callback URLs**: `http://localhost:5173`
 - **Allowed Logout URLs**: `http://localhost:5173`
 - **Allowed Web Origins**: `http://localhost:5173`
+- **Refresh Token** grant and **Refresh Token Rotation** enabled (for `useRefreshTokens: true` below)
+- If you pass an API `audience`: **Allow Offline Access** enabled on that API
 
 ### 3. Initialize Auth0 Client
 
@@ -70,8 +72,10 @@ import { createAuth0Client } from '@auth0/auth0-spa-js';
 const auth0 = await createAuth0Client({
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
+  useRefreshTokens: true, // renew tokens via rotating refresh tokens, not third-party cookies (default memory cache: lost on reload)
   authorizationParams: {
-    redirect_uri: window.location.origin
+    redirect_uri: window.location.origin,
+    scope: 'openid profile email offline_access'
   }
 });
 
@@ -322,7 +326,7 @@ Claims on the **access token** (from `getTokenSilently({ detailedResponse: true 
 - [ ] `getTokenSilently()` returns a JWT string
 - [ ] Access token decoded at [jwt.io](https://jwt.io) shows correct `aud`, `iss`, `sub`
 - [ ] Tokens are **not** stored in `localStorage` (DevTools → Application → Local Storage)
-- [ ] Page refresh maintains authentication (silent auth via `checkSession`)
+- [ ] Page refresh keeps the user logged in, if the app needs that. With the default memory cache the refresh token is lost on reload and `checkSession()` silently finds no session; keep sessions with `cacheLocation: 'localstorage'` (XSS trade-off) or `useRefreshTokensFallback: true` (iframe silent auth: needs Allowed Web Origins and third-party cookies or a custom domain)
 - [ ] `getTokenSilently()` works without redirecting when session is active
 
 ### Error Handling
@@ -351,8 +355,9 @@ Claims on the **access token** (from `getTokenSilently({ detailedResponse: true 
 | `Unable to open popup` | Popup not triggered by user gesture | Call `loginWithPopup` directly in a click handler, never from async init |
 | Token not refreshing silently | `offline_access` scope missing | Add `scope: 'openid profile email offline_access'` with `useRefreshTokens: true` |
 | `MissingRefreshTokenError` | `useRefreshTokens` false or scope missing | Enable `useRefreshTokens: true` and include `offline_access` scope |
-| User logged out on page refresh | Allowed Web Origins missing or no refresh tokens | Add Allowed Web Origins; enable `useRefreshTokens: true` |
+| User logged out on page refresh | The default memory cache drops the refresh token on reload (`checkSession()` swallows the missing token), or Allowed Web Origins is missing for iframe silent auth | Persist the session with `cacheLocation: 'localstorage'` (XSS trade-off), or set `useRefreshTokensFallback: true` and add Allowed Web Origins (iframe; needs third-party cookies or a custom domain) |
 | Cross-origin iframe blocked | Browser blocks third-party cookies | Use `useRefreshTokens: true` instead of silent iframe auth |
+| `Refused to create a worker from 'blob:...'` | A Content Security Policy blocks the token worker (used with `useRefreshTokens: true` and the default memory cache) | Add `worker-src blob:` to the CSP, or host the worker yourself and pass its URL as `workerUrl` |
 | Domain includes protocol | `domain` option should not include `https://` | Use `your-tenant.auth0.com` not `https://your-tenant.auth0.com` |
 
 ---
@@ -364,10 +369,10 @@ Claims on the **access token** (from `getTokenSilently({ detailedResponse: true 
 | Strategy | Security | Session Persistence |
 |----------|----------|-------------------|
 | In-memory (default) | Highest — no persistent token theft | Lost on page refresh |
-| Refresh tokens (`useRefreshTokens: true`) | High — refresh token in memory | Persists across page refreshes |
+| Refresh tokens (`useRefreshTokens: true`) | High — refresh token in memory | Lost on page refresh unless `useRefreshTokensFallback: true` (iframe) or `cacheLocation: 'localstorage'` |
 | `localStorage` | Lowest — vulnerable to XSS | Persists across page refreshes |
 
-**Recommendation:** Use `useRefreshTokens: true` with `cacheLocation: 'memory'` (the default) for the best balance of security and user experience.
+**Recommendation:** Use `useRefreshTokens: true` with `cacheLocation: 'memory'` (the default) for the best security. Users then log in again after a reload; if that's not acceptable, choose between `cacheLocation: 'localstorage'` (XSS exposure) and `useRefreshTokensFallback: true` (depends on third-party cookies or a custom domain).
 
 ### No Client Secret
 
@@ -406,8 +411,10 @@ import { createAuth0Client } from '@auth0/auth0-spa-js';
 const auth0 = await createAuth0Client({
   domain: import.meta.env.VITE_AUTH0_DOMAIN,
   clientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
+  useRefreshTokens: true, // renew tokens via rotating refresh tokens, not third-party cookies (default memory cache: lost on reload)
   authorizationParams: {
-    redirect_uri: window.location.origin
+    redirect_uri: window.location.origin,
+    scope: 'openid profile email offline_access'
   }
 });
 ```
@@ -621,11 +628,17 @@ const token = await auth0.getTokenSilently({
 });
 ```
 
+With `useRefreshTokens: true`, the refresh token only covers the audience and scopes it was issued for. Request
+this audience and these scopes at login (`authorizationParams` in `createAuth0Client()`), otherwise this call throws
+`MissingRefreshTokenError`. To get tokens for more than one API, add Multi-Resource Refresh Token policies for those
+APIs on the application and set `useMrrt: true`, set `useRefreshTokensFallback: true` (iframe; needs third-party cookies or a custom
+domain), or catch the error and call `loginWithRedirect()` with the new audience.
+
 ---
 
 ## Refresh Token Rotation
 
-Enable to maintain sessions across page refreshes without relying on third-party cookies (recommended for modern browsers):
+Enable to renew tokens without relying on third-party cookies (recommended for modern browsers). With the default memory cache the refresh token does not survive a page reload; see Token Storage for the options:
 
 ```js
 const auth0 = await createAuth0Client({
@@ -915,6 +928,7 @@ if [ ! -f .env ] && [ ! -f .env.local ] && { [ -f vite.config.ts ] || [ -f vite.
     echo "❌ auth0 qs setup failed"
     exit 1
   fi
+  echo "In the Dashboard, check that the new app has the Refresh Token grant and Refresh Token Rotation enabled (needed for useRefreshTokens: true)."
 else
   # Detect env var prefix from project
   if grep -q '"vite"' package.json 2>/dev/null; then
@@ -942,13 +956,23 @@ else
       --logout-urls "http://localhost:3000,http://localhost:5173" \
       --origins "http://localhost:3000,http://localhost:5173" \
       --web-origins "http://localhost:3000,http://localhost:5173" \
+      --refresh-token '{"rotation_type":"rotating","expiration_type":"expiring"}' \
       --json-compact | jq -r '.client_id')
     echo "Created SPA app with ID: $APP_ID"
   fi
 
+  # useRefreshTokens: true needs the Refresh Token grant and Refresh Token Rotation on the app
+  APP_JSON=$(auth0 apps show "$APP_ID" --json-compact)
+  if ! echo "$APP_JSON" | jq -e '(.grant_types // []) | index("refresh_token")' > /dev/null; then
+    echo "⚠️  Enable the Refresh Token grant: Dashboard > Applications > $APP_ID > Advanced Settings > Grant Types"
+  fi
+  if [ "$(echo "$APP_JSON" | jq -r '.refresh_token.rotation_type // empty')" != "rotating" ]; then
+    echo "⚠️  Enable Refresh Token Rotation: Dashboard > Applications > $APP_ID > Settings > Refresh Token Rotation"
+  fi
+
   # Get app details and append Auth0 credentials to .env
-  AUTH0_DOMAIN=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.domain')
-  AUTH0_CLIENT_ID=$(auth0 apps show "$APP_ID" --json-compact | jq -r '.client_id')
+  AUTH0_DOMAIN=$(echo "$APP_JSON" | jq -r '.domain')
+  AUTH0_CLIENT_ID=$(echo "$APP_JSON" | jq -r '.client_id')
 
   # Append to .env.local if it exists (it overrides .env), otherwise to .env
   TARGET_FILE=$([ -f .env.local ] && echo .env.local || echo .env)
@@ -1017,6 +1041,14 @@ if ([string]::IsNullOrEmpty($appId)) {
 
 # Get credentials
 $appDetails = auth0 apps show $appId --json | ConvertFrom-Json
+
+# useRefreshTokens: true needs the Refresh Token grant and Refresh Token Rotation on the app
+if ($appDetails.grant_types -notcontains "refresh_token") {
+  Write-Host "⚠️  Enable the Refresh Token grant: Dashboard > Applications > $appId > Advanced Settings > Grant Types"
+}
+if ($appDetails.refresh_token.rotation_type -ne "rotating") {
+  Write-Host "⚠️  Enable Refresh Token Rotation: Dashboard > Applications > $appId > Settings > Refresh Token Rotation"
+}
 
 @"
 ${prefix}_DOMAIN=$($appDetails.domain)
