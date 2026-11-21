@@ -73,6 +73,9 @@ Do **not** hand-edit `ios/` or `android/` native files — the config plugin gen
 npx expo install react-native-auth0
 ```
 
+The examples below need react-native-auth0 5.3.0 or later, the first release that exports
+`WebAuthErrorCodes` and `CredentialsManagerErrorCodes`. If the project pins an older version, upgrade it.
+
 Create `.env` for the values your JavaScript reads. Expo inlines `EXPO_PUBLIC_*` variables at build
 time, so no extra config is needed:
 
@@ -147,8 +150,10 @@ const REAUTH_ERRORS: string[] = [
   CredentialsManagerErrorCodes.RENEW_FAILED,
 ];
 
+const API_URL = 'https://api.example.com/data'; // your API
+
 function HomeScreen() {
-  const { authorize, clearSession, getCredentials, user, isLoading, error } = useAuth0();
+  const { authorize, clearSession, getCredentials, getDPoPHeaders, user, isLoading, error } = useAuth0();
 
   // Returns true once the user is logged in, false if they cancelled or login failed
   const login = async (): Promise<boolean> => {
@@ -179,7 +184,14 @@ function HomeScreen() {
       if (!(await login())) return; // cancelled or failed: don't call the API without a session
       credentials = await getCredentials(); // then retry the request with the new session
     }
-    // return fetch(API_URL, { headers: { Authorization: `Bearer ${credentials.accessToken}` } });
+    // DPoP is on by default, so build the headers from the token type instead of hardcoding Bearer
+    const headers = await getDPoPHeaders({
+      url: API_URL,
+      method: 'GET',
+      accessToken: credentials.accessToken,
+      tokenType: credentials.tokenType,
+    });
+    return fetch(API_URL, { headers });
   };
 
   const logout = async () => {
