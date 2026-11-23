@@ -23,6 +23,7 @@ Get the exact calls from the per-SDK reference. **`Read:` the file for the detec
 | SDK | What it covers | Read this file |
 |---|---|---|
 | `auth0-ai-mcp` (Python) | Turning the cache on, the store interface, the indexed store | `Read: references/feature-mcp-token-caching/auth0-ai-mcp-python.md` |
+| `auth0-ai-fastmcp` (Python) | Turning the cache on, the store interface, the indexed store | `Read: references/feature-mcp-token-caching/auth0-ai-fastmcp-python.md` |
 
 ---
 
