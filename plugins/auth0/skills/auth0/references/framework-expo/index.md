@@ -86,6 +86,8 @@ in `app.json`, and build Android with JDK 17:
 ["expo-build-properties", { "android": { "minSdkVersion": 26 }, "ios": { "deploymentTarget": "15.1" } }]
 ```
 
+These are minimums: if the project already sets a higher `minSdkVersion` or `deploymentTarget`, keep its value.
+
 Create `.env` for the values your JavaScript reads. Expo inlines `EXPO_PUBLIC_*` variables at build
 time, so no extra config is needed:
 
@@ -160,13 +162,15 @@ const REAUTH_ERRORS: string[] = [
   CredentialsManagerErrorCodes.RENEW_FAILED,
   'SESSION_EXPIRED', // SDK 5.11+: the upstream session expired
   'DPOP_NOT_CONFIGURED', // SDK 6+: DPoP-bound credentials saved by a 5.x app, read with useDPoP off
+  'DPOP_KEY_MISSING', // the DPoP key is gone from the keystore/keychain
+  'DPOP_KEY_MISMATCH', // the DPoP key no longer matches the saved credentials
 ];
 
 const API_URL = 'https://api.example.com/data'; // an endpoint of your API
 const API_AUDIENCE = 'https://api.example.com'; // your API's Identifier in the Auth0 Dashboard
 
 function HomeScreen() {
-  const { authorize, clearSession, getCredentials, getDPoPHeaders, user, isLoading, error } = useAuth0();
+  const { authorize, clearSession, clearCredentials, getCredentials, getDPoPHeaders, user, isLoading, error } = useAuth0();
 
   // Returns true once the user is logged in, false if they cancelled or login failed
   const login = async (): Promise<boolean> => {
@@ -194,6 +198,7 @@ function HomeScreen() {
     } catch (e) {
       // Re-authenticate only for session errors; network, biometric and other errors propagate
       if (!(e instanceof CredentialsManagerError) || !REAUTH_ERRORS.includes(e.type)) throw e;
+      await clearCredentials(); // drop the unusable stored credentials before logging in again
       if (!(await login())) return; // cancelled or failed: don't call the API without a session
       credentials = await getCredentials(); // then retry the request with the new session
     }
