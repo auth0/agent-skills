@@ -12,11 +12,11 @@ SDK-specific errors only. Tenant setup errors are in the hub.
 
 ---
 
-## A Token Vault call fails with `invalid_grant`
+## A Token Vault call fails with `federated_connection_refresh_token_not_found`
 
-**Error:** `get_token_for_connection` fails with `invalid_grant`.
+**Error:** `get_token_for_connection` raises an `ApiError` with `code` set to `federated_connection_refresh_token_not_found` and a `401` status.
 
-**Fix:** The user has not linked an account for that connection yet, so there is nothing in the vault to exchange. Link the account first with the Connected Accounts flow, as described under "Linking an account" in [Token Vault](https://github.com/auth0/auth0-ai-python/blob/main/packages/auth0-ai-mcp/docs/TokenVault.md).
+**Fix:** The user has not linked an account for that connection yet, or none of their linked accounts match the `login_hint` that was passed, so there is nothing in the vault to exchange. Link the account first with the Connected Accounts flow, as described under "Linking an account" in [Token Vault](https://github.com/auth0/auth0-ai-python/blob/main/packages/auth0-ai-mcp/docs/TokenVault.md). A connection name that is wrong or not enabled for the client is a different error, `invalid_request` with a `400`.
 
 ---
 
