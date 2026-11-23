@@ -77,7 +77,7 @@ The Personal Agent Protocol (Poppy) lets a user's personal AI agent discover an
 app, call its APIs and join a browser session with the user's consent. The
 [reference](skills/auth0/references/feature-personal-agent-protocol/index.md)
 covers the tenant setup workflow, discovery, and the checks that fail silently.
-It needs a Poppy-enabled tenant, and the SDK and CLI support is still unreleased.
+It needs a Poppy-enabled tenant and the beta releases of the Auth0 SDKs and CLI.
 
 ## Migrating from the individual skills
 

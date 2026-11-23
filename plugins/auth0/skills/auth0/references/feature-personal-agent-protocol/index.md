@@ -15,13 +15,23 @@ change faster than this file.
 - **Tenant enablement.** Poppy is a beta on an approved tenant (US-5 first).
   Confirm enablement before configuring account sign-in or browser joining; a
   rejected field means the tenant lacks the feature, not that the call is wrong.
-- **Unreleased tooling.** The Poppy SDK builds and the `auth0 poppy` CLI commands
-  may not be published yet. Confirm the installed package exports and run
-  `auth0 poppy --help` before using either. Do not invent package versions, SDK
-  methods, CLI commands or flags.
-- **Versions differ.** The SDKs serve protocol 0.3 (camelCase config); the CLI
-  writes 0.4 (snake_case `poppy.json`). Neither targets the 1.0 draft yet. Convert
-  at the boundary. Changing a version string does not upgrade a verifier.
+- **Beta releases only.** Poppy support ships on the npm `beta` tag, not
+  `latest`: `@auth0/nextjs-auth0` 4.34.0-beta.0, `@auth0/auth0-express` and
+  `@auth0/auth0-express-api` 1.1.0-beta.0, `@auth0/auth0-server-js`
+  1.18.0-beta.0 and `@auth0/auth0-api-js` 1.8.0-beta.0 are the first. The
+  `latest` releases have no Poppy APIs. Install from the `beta` tag and pin the
+  exact version, since Poppy can change without a major release. The CLI
+  commands (`auth0 poppy setup`, `config` and `doctor`, `auth0 agents register`
+  and `unregister`) ship in Auth0 CLI v1.41.0-beta.0 as Experimental. Confirm
+  the installed package exports and run `auth0 poppy --help` before using
+  either, and use only the package versions, SDK methods, CLI commands and
+  flags you found there.
+- **Protocol 1.0 everywhere.** The released SDKs and the CLI target Poppy 1.0:
+  `poppy.json` uses snake_case keys and `"protocol_version": "1.0"`. The web
+  SDKs serve your `poppy.json` as written, so publish the file the CLI wrote
+  without converting it. The API SDKs accept only the `Poppy-Version` values
+  they serve (`1.0` by default) and refuse a `Poppy-Session` request that
+  lacks the header. Changing a version string does not upgrade a verifier.
 - **Out of scope for the beta:** device or mediated sign-in, Conversations,
   payment and push extensions, agent self-registration, partial consent
   (consent is all or nothing). MCP support is unconfirmed; advertise an MCP
@@ -100,7 +110,14 @@ Advertise only what the app implements.
   agent and human sessions. A signed-in join needs the `poppy:browser-sign-in`
   scope; a narrow API scope must not silently become full website access. A
   signed-in join clears earlier human-login credentials so they cannot restore
-  access after the agent signs out; a guest join keeps ordinary login.
+  access after the agent signs out.
+- **A guest join can sign a person out.** The spec says a guest join SHOULD keep
+  the browser's own login. Auth0 refuses a guest join in a browser signed in to
+  an account (a `session_conflict` page on Auth0's domain). When the app's own
+  session outlived Auth0's, the Auth0 web SDKs (Next.js, Express, Server.js) end
+  that session, a person's or a signed-in agent's, so the agent never acts with
+  an account it was not approved for. Tell the developer a guest join can sign
+  the person out of the app, and keep the SDK's session isolation as it is.
 - **MFA and Actions.** Complete MFA and consent at the customer's original sign-in;
   the later hand-off must not prompt. In post-login Actions, key the exemption on
   `event.session.actor`, the exact web app ID and an allowlist of registered
@@ -133,10 +150,23 @@ say so when it was not tested.
 
 ## Where the details live
 
-Until each SDK ships its own Poppy guide, the open implementation PRs are the
-reference for method names and config:
+Each SDK's beta branch has its own Poppy guide and a runnable example. Read the
+one for the installed package for method names, config and errors:
 
-- Next.js: https://github.com/auth0/nextjs-auth0/pull/2939
-- API (`@auth0/auth0-api-js`): https://github.com/auth0/auth0-auth-js/pull/342
-- Server.js and Express: https://github.com/auth0/auth0-auth-js/pull/343
-- CLI: https://github.com/auth0/auth0-cli/pull/1755 (`poppy setup`, `config`)
+- Next.js (`@auth0/nextjs-auth0`): the Poppy guide in
+  https://github.com/auth0/nextjs-auth0/tree/beta/guides, example
+  https://github.com/auth0/nextjs-auth0/tree/beta/examples/with-poppy-discovery
+- Express website (`@auth0/auth0-express`): the "Personal Agent Protocol
+  (Poppy)" section of EXAMPLES in
+  https://github.com/auth0/auth0-express/tree/beta/packages/auth0-express,
+  example https://github.com/auth0/auth0-express/tree/beta/examples/example-express-web-poppy
+- Express API (`@auth0/auth0-express-api`): the "Personal Agents (Poppy)"
+  section of EXAMPLES in
+  https://github.com/auth0/auth0-express/tree/beta/packages/auth0-express-api,
+  example https://github.com/auth0/auth0-express/tree/beta/examples/example-express-api-poppy
+- Any Node.js API (`@auth0/auth0-api-js`) and website (`@auth0/auth0-server-js`):
+  the "Personal Agent Protocol (Poppy)" section of EXAMPLES in
+  https://github.com/auth0/auth0-auth-js/tree/beta/packages/auth0-api-js and
+  https://github.com/auth0/auth0-auth-js/tree/beta/packages/auth0-server-js
+- CLI: https://github.com/auth0/auth0-cli/releases/tag/v1.41.0-beta.0
+  (`auth0 poppy setup`, `config`, `doctor`; `auth0 agents register`, `unregister`)
