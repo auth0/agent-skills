@@ -1,5 +1,11 @@
 # Change Log
 
+## [v2.9.0](https://github.com/auth0/agent-skills/tree/v2.9.0) (2026-11-23)
+[Full Changelog](https://github.com/auth0/agent-skills/compare/v2.8.0...v2.9.0)
+
+**Added**
+- feat(auth0): add Personal Agent Protocol (Poppy) reference [\#276](https://github.com/auth0/agent-skills/pull/276) ([brth31](https://github.com/brth31))
+
 ## [v2.8.0](https://github.com/auth0/agent-skills/tree/v2.8.0) (2026-10-30)
 [Full Changelog](https://github.com/auth0/agent-skills/compare/v2.7.0...v2.8.0)
 
