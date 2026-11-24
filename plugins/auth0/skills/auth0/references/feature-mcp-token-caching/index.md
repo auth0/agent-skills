@@ -24,6 +24,8 @@ Get the exact calls from the per-SDK reference. **`Read:` the file for the detec
 |---|---|---|
 | `auth0-ai-mcp` (Python) | Turning the cache on, the store interface, the indexed store | `Read: references/feature-mcp-token-caching/auth0-ai-mcp-python.md` |
 | `auth0-ai-fastmcp` (Python) | Turning the cache on, the store interface, the indexed store | `Read: references/feature-mcp-token-caching/auth0-ai-fastmcp-python.md` |
+| `@auth0/ai-mcp` (Node.js) | Turning the cache on, the key and revocation window, the stores, the indexed store | `Read: references/feature-mcp-token-caching/auth0-ai-mcp-js.md` |
+| `@auth0/ai-fastmcp` (Node.js) | Turning the cache on, the key and revocation window, scope matching, shared stores | `Read: references/feature-mcp-token-caching/auth0-ai-fastmcp-js.md` |
 
 ---
 
