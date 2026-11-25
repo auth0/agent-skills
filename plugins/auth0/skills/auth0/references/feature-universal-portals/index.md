@@ -17,26 +17,31 @@ A portal is backed by a Regular Web Application, the **portal application**. Its
 
 ## Before any write
 
-Confirm with the developer: tenant domain, template (or a mix), portal name and kebab-case slug, and for the business template the test user and organization. A `form_id` is never a label: create the Forms resource first and use its ID. `setup` has no rollback, and anything created before a failure stays in the tenant.
+Confirm with the developer: tenant domain, template (or a mix), portal name and kebab-case slug, the developer's application URL (where users land after logout), and for the business template the test user and organization. A `form_id` is never a label: create the Forms resource first and use its ID. `setup` has no rollback, and anything created before a failure stays in the tenant.
 
 ## Create with the CLI
 
 ```bash
 AUTH0_AGENT_MODE=1 auth0-beta universal-portals setup --no-input --json \
-  --template consumer --name "Acme Account" --slug acme-account
+  --template consumer --name "Acme Account" --slug acme-account \
+  --logout-url https://app.acme.com
 # business: --template business --user jane@acme.com [--organization ORG_ID_OR_NAME]
 ```
 
-- Always pass `--json`. Without it an agent sees only the exit code. `--no-input` requires `--template` and `--name`; the business template also requires `--user`.
+- The beta installs as `auth0`. If `auth0-beta` is not found, add the alias from https://auth0.com/docs/customize/portals/quickstart.
+- Always pass `--json`. Without it an agent sees only the exit code. `--no-input` requires `--template` and `--name`; the business template also requires `--user`. Without `--logout-url`, a new application logs users out to the portal host.
 - Rerunning resumes a failed run: `setup` creates or reuses resources by name and slug.
 - Open `portal.url` with a test user. For business, `organization.hasRole: false` means the user lacks My Organization permissions; report it.
 
-| `error` | Action |
+On failure, the JSON error has the code in `error.reason` and the steps that resolve it in `error.details.fixes`.
+
+| `error.reason` | Action |
 |---|---|
-| `missing_scopes` | Run the `auth0 login --scopes ...` command in `fixes`, then rerun |
+| `missing_scopes` | Run the `auth0 login --scopes ...` command in `error.details.fixes`, then rerun |
 | `feature_not_enabled` | Direct the developer to Auth0 Support |
-| `business_access` | The user is missing, ambiguous, or not in the organization, or the organization has no enabled connection. Follow `fixes` or pass `--organization` |
-| `slug_race`, `setup_failed` | Something this run did not create holds the name or slug. Pick another |
+| `business_access` | The user is missing, ambiguous, or not in the organization, or the organization has no enabled connection. Follow `error.details.fixes` or pass `--organization` |
+| `name_in_use`, `slug_taken` | Something this run did not create holds the name or slug. Pick another |
+| `slug_race` | Another portal took the slug while setup ran. Rerun with a new `--name` and `--slug` |
 
 If the CLI rejects `--template` or has no `audit` command, it predates this tool. Create the portal application by hand from https://auth0.com/docs/customize/portals/configure-portal-application and follow the rules agents get wrong:
 
@@ -60,7 +65,7 @@ Pages go under `pages.standard`. Sidebar links use the `:v2` types, with `page_s
 - Create with `client.token_endpoint_auth_method: "client_secret_post"`, the only supported method. Keep real secrets out of source, frontend variables, and chat.
 - A key outside the schema returns `400 invalid_body`. A duplicate slug returns `409 portal_conflict`: list portals and choose another slug. Do not delete a portal to reuse its slug. The list returns at most 50 portals with no pagination, so it can miss an existing slug.
 - PATCH: omit a field to keep it; send `null` to remove `navigation`, `pages`, or `custom_code` (not `slug`, `name`, or `client`); send complete replacements, because nested values are replaced, not merged. A taken new slug returns `409`. Read before and after.
-- Delete returns `204` even for an ID that does not exist. Name the ID and slug, get confirmation, delete, then list to confirm.
+- Delete returns `204` even for an ID that does not exist, and the list can miss a portal. Read the portal by ID, name its ID and slug, get confirmation, delete, then read the same ID again to confirm it is gone.
 
 ## Open the portal
 
@@ -71,7 +76,7 @@ Pages go under `pages.standard`. Sidebar links use the `:v2` types, with `page_s
 1. `auth0 api get portals/PORTAL_ID`. Done when the name, slug, `pages.default`, every sidebar `page_slug`, and every component type match the request.
 2. Publish dashboard changes first: Preview opens only the last published version. Then open the portal URL in a private session with a test user. Done when sign-in completes and a Universal Component renders.
 3. Test each included capability (form submission, passkeys, MFA, organization editing or domains) and confirm logout lands on the first Allowed Logout URL.
-4. When `audit` is available, run it. Done when it reports no errors.
+4. When `audit` is available, run it. Done when it reports no errors and `unchecked` is empty. Rules listed in `unchecked` did not run, so get the missing permissions or report those rules as not checked.
 
 ## Troubleshooting
 
