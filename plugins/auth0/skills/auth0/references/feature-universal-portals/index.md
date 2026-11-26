@@ -29,7 +29,7 @@ AUTH0_AGENT_MODE=1 auth0-beta universal-portals setup --no-input --json \
 # business: --template business --user jane@acme.com [--organization ORG_ID_OR_NAME]
 ```
 
-- Pass `--tenant` with the confirmed tenant domain on every `setup` and `audit` command. Without it the CLI writes to its default tenant, which may be another one.
+- Pass `--tenant` with the confirmed tenant domain on every `auth0-beta` and `auth0 api` command in this reference. Without it the CLI uses its default tenant, which may be another one.
 - Run with `--dry-run` first. It only reads from the tenant and lists the writes it would make in `requests`. Show the developer those writes, get approval, then rerun the same command without `--dry-run`.
 - The beta installs as `auth0`. If `auth0-beta` is not found, add the alias from https://auth0.com/docs/customize/portals/quickstart.
 - Always pass `--json`. Without it an agent sees only the exit code. `--no-input` requires `--template` and `--name`; the business template also requires `--user`. Without `--logout-url`, a new application logs users out to the portal host.
@@ -57,7 +57,7 @@ If the CLI rejects `--template` or has no `audit` command, it predates this tool
 
 Dry run first: `AUTH0_AGENT_MODE=1 auth0-beta universal-portals audit PORTAL_ID --tenant TENANT_DOMAIN --json` (business: add `--organization ORG_ID` to also check that organization's connections). The command exits `1` when any error exists.
 
-`--fix` repairs errors only, and may create a missing portal application or delete Management API grants from it. Show the developer the dry-run findings, get approval, then run `audit PORTAL_ID --tenant TENANT_DOMAIN --fix --json`. Run the dry run again afterward: the final output lists what remains, not what changed, and one repair can expose another.
+`--fix` repairs errors only, and may create a missing portal application or delete Management API grants from it. `--fix` also repairs, in up to three rounds, errors that its own repairs expose, which the dry run did not show. Show the developer the dry-run findings, say that follow-on repairs can run too, get approval, then run `audit PORTAL_ID --tenant TENANT_DOMAIN --fix --json`. Run the dry run again afterward: the final output lists what remains, not what changed, and one repair can expose another.
 
 Warnings are never auto-fixed. These need manual action: a sidebar link to a missing page, an empty page, a form missing from the tenant, custom code without a ready custom domain, no connection enabled on the portal application, an organization without a shared connection, and session transfer not enabled.
 
@@ -76,7 +76,7 @@ Pages go under `pages.standard`. Sidebar links use the `:v2` types, with `page_s
 
 ## Validate
 
-1. `auth0 api get portals/PORTAL_ID`. Done when the name, slug, `pages.default`, every sidebar `page_slug`, and every component type match the request.
+1. `auth0 api get portals/PORTAL_ID --tenant TENANT_DOMAIN`. Done when the name, slug, `pages.default`, every sidebar `page_slug`, and every component type match the request.
 2. Publish dashboard changes first: Preview opens only the last published version. Then open the portal URL in a private session with a test user. Done when sign-in completes and a Universal Component renders.
 3. Test each included capability (form submission, passkeys, MFA, organization editing or domains) and confirm logout lands on the first Allowed Logout URL.
 4. When `audit` is available, run it. Done when it reports no errors and `unchecked` is empty. Rules listed in `unchecked` did not run, so get the missing permissions or report those rules as not checked.
