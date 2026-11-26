@@ -131,14 +131,15 @@ Verify the exchange (optional). `/oauth/token` is the Authentication API, which 
 reach, so use a direct HTTP client and keep secrets out of argv:
 
 ```bash
+# the developer exports AUTH0_CLIENT_SECRET and SUBJECT_TOKEN in their own shell; never paste them into chat
 curl -s -o /dev/null -w '%{http_code}\n' -X POST "https://<tenant-domain>/oauth/token" \
   --data-urlencode "grant_type=urn:auth0:params:oauth:grant-type:token-exchange:federated-connection-access-token" \
   --data-urlencode "subject_token_type=urn:ietf:params:oauth:token-type:refresh_token" \
   --data-urlencode "requested_token_type=http://auth0.com/oauth/token-type/federated-connection-access-token" \
   --data-urlencode "connection=<connection-name>" \
-  --config - <<'EOF'
-user = "<client-id>:<client-secret>"
-data-urlencode = "subject_token=<auth0-refresh-token>"
+  --config - <<EOF
+user = "<client-id>:$AUTH0_CLIENT_SECRET"
+data-urlencode = "subject_token=$SUBJECT_TOKEN"
 EOF
 # Access-token exchange: use the Custom API Client's id/secret, an access token whose aud is the API,
 # and subject_token_type=urn:ietf:params:oauth:token-type:access_token.
