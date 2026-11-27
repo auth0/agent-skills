@@ -1,0 +1,65 @@
+{
+  "skill_name": "auth0-b2b-saas",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I'm starting a B2B SaaS app where each customer company is its own tenant. Set up the Auth0 side: customers should be Organizations, new customers should be able to sign themselves up and create their org, and the first user of each org should be its admin. Walk me through how to architect and provision this.",
+      "expected_output": "Should describe the two-client architecture (a Dashboard regular_web client with organization_usage=require for org-context login, plus a separate Management client with a client grant for Management API provisioning), create an org per customer, and a self-service onboarding flow where the first user creates the org and is assigned the admin role, then re-logs in org-bound. Should provision via the auth0 CLI.",
+      "files": [],
+      "assertions": [
+        "Uses two separate Auth0 applications: a Dashboard/login client and a Management client (does NOT use a single client for both login and provisioning)",
+        "Sets organization_usage to require (and an organization_require_behavior such as post_login_prompt) on the login client",
+        "Creates a Management client with a client grant for the Management API scopes needed to manage organizations",
+        "Creates an organization per customer (auth0 orgs create or Management API organizations.create)",
+        "Describes a self-service org-creation onboarding flow where the signing-up user creates the org",
+        "Assigns the admin role to the org creator, and re-logs the user in with the organization parameter to get an org-bound token",
+        "Does NOT invent non-existent CLI flags or Management API endpoints"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "In my B2B app I need the user's roles inside the access token so my API can authorize requests, and my API must only ever return data for the organization the user logged into. Show me how to shape the token and how to enforce isolation in an Express API.",
+      "expected_output": "Should add roles via a namespaced custom claim using a post-login Action reading event.authorization.roles, note that org_id is added automatically, and enforce tenant isolation server-side by reading org_id from the validated access token (never from the URL/body/header) and scoping all queries to it.",
+      "files": [],
+      "assertions": [
+        "Uses a post-login Action that sets a custom claim from event.authorization.roles",
+        "Uses a NAMESPACED claim key (e.g. https://yourapp/roles), not a bare 'roles' claim",
+        "States that the org_id claim is added automatically when the user authenticates through an organization",
+        "Reads org_id from the validated access token to determine the active tenant",
+        "Explicitly does NOT trust an organization id taken from the URL, request body, path, or a client-set header",
+        "Scopes data queries/authorization to the token's org_id",
+        "Validates the access token (issuer, audience, signature) before trusting any claim"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "My enterprise customers want to set up their own SSO. Let an org admin connect their Okta/Azure via OIDC or SAML self-service, and route users to the right connection by their work email domain. How should this work safely?",
+      "expected_output": "Should create one connection per customer IdP enabled only on that org, use domain_aliases with identifier-first / Home Realm Discovery for routing, and CRUCIALLY verify domain ownership (e.g. a DNS TXT record) before honoring the domain alias. Should optionally enable JIT membership via assign_membership_on_login.",
+      "files": [],
+      "assertions": [
+        "Creates a per-customer enterprise connection (oidc or samlp strategy) enabled only on that organization",
+        "Uses domain_aliases together with identifier-first / Home Realm Discovery to route logins by email domain",
+        "Requires verifying domain ownership (e.g. DNS TXT record) BEFORE attaching/honoring the domain alias",
+        "Explains the security risk of honoring an unverified domain (one org hijacking another org's email domain)",
+        "Mentions assign_membership_on_login for just-in-time membership where appropriate",
+        "Restricts the self-service connection management to org admins",
+        "Does NOT enable the customer's SSO connection tenant-wide for all organizations"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "We invite teammates by email and also auto-add anyone from a customer's SSO. New users keep showing up with no role, so role-based checks break. How do I make sure invited and just-in-time users always get a role, and can I send users to login by organization name instead of an ID?",
+      "expected_output": "Should deploy an 'add default role' post-login Action that assigns the member role when event.organization is set and the user has no role yet. For org name login, should explain that the organization parameter takes an org ID by default and that org names require enabling 'Use Organization Names in the Authentication API', and that org_name must then be validated in addition to org_id (IDs preferred as the trust anchor).",
+      "files": [],
+      "assertions": [
+        "Recommends a post-login Action that assigns a default (member) role when the user has no org role",
+        "Conditions the default-role logic on the organization context (event.organization) and the absence of an existing role",
+        "Explains that invitations carry the invitation parameter and JIT uses assign_membership_on_login",
+        "States that the organization parameter accepts an organization ID by default",
+        "Notes that using organization NAMES requires enabling 'Use Organization Names in the Authentication API' on the tenant",
+        "Advises validating org_name in addition to org_id, and prefers org IDs as the trust anchor because names are mutable",
+        "Does NOT claim org names work in the authorize request without the tenant setting enabled"
+      ]
+    }
+  ]
+}
