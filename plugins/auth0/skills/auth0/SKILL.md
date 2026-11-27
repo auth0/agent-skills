@@ -43,6 +43,7 @@ lookup key: in **Step 4** it appears verbatim as a section heading
 | Let separate companies, teams, workspaces, or tenants each have their own users, members, roles, and login — typically a product sold to businesses. *Auth0: Organizations, multi-org, B2B SaaS.* | **feature:organizations** |
 | Let business customers sign in through their own company's identity provider by typing a work email that routes them to the employer's login. *Auth0: Enterprise Connect, B2B Connect - Enterprise, enterprise SSO.* | **feature:enterprise-connect** |
 | Deploy a hosted self-service portal for profile, passkeys, MFA, or organization details instead of building a “My Account” or “My Organization” UI. *Auth0: Universal Portals, My Account portal, My Organization portal.* | **feature:universal-portals** |
+| Show a custom form during login or password reset to collect extra profile fields, consent, or a verification code, or script those forms and the flows behind them. *Auth0: Forms, Flows, vault connections, render a form from an Action.* | **feature:forms** |
 | Serve the login page from your own web address (e.g. `login.example.com`, `auth.company.com`) instead of the default Auth0 URL. *Auth0: custom domain.* | **feature:custom-domains** |
 | Build fully custom login/signup screens with your own code or framework, beyond what theme settings allow. *Auth0: Advanced Customization for Universal Login (ACUL).* | **feature:acul** |
 | Change how the login page looks — logo, colors, fonts, background, overall theme. *Auth0: branding, Universal Login customization.* | **feature:branding** |
@@ -346,6 +347,12 @@ If framework detected: Read references/framework-{framework}/index.md
 ### feature:universal-portals
 ```
 Read: references/feature-universal-portals/index.md
+Read: references/tooling-{tooling}/index.md
+```
+
+### feature:forms
+```
+Read: references/feature-forms/index.md
 Read: references/tooling-{tooling}/index.md
 ```
 

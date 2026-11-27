@@ -283,6 +283,28 @@
       "tags": ["negative"]
     },
     {
+      "id": "feat-forms-extra-fields-indirect",
+      "prompt": "After users log in I want to show a screen that asks for their company name and job title and saves it on their profile, without building our own login UI. How do we do that?",
+      "should_activate": true,
+      "why": "Indirect Forms request: an Auth0 Form rendered from a post-login Action. The prompt never says 'form' or 'Action', so the description must carry the intent.",
+      "tags": ["indirect", "feature"],
+      "spot_check": true
+    },
+    {
+      "id": "feat-forms-render-from-action",
+      "prompt": "Create an Auth0 Form that checks the user's email address in a Flow and shows a different error for a missing MX record, then render it from a post-login Action.",
+      "should_activate": true,
+      "why": "Explicit Forms, Flows and Actions request. Covers the feature:forms intent end to end.",
+      "tags": ["feature"]
+    },
+    {
+      "id": "neg-forms-react-signup-wizard",
+      "prompt": "Build a multi-step signup form in React with client-side validation using Zod and React Hook Form.",
+      "should_activate": false,
+      "why": "NEAR-MISS NEGATIVE. A front-end form with 'signup' in it, but no Auth0 involvement: validation and wizard state live in the app.",
+      "tags": ["negative", "near-miss"]
+    },
+    {
       "id": "neg-bar-chart",
       "prompt": "Build me a bar chart of monthly signups.",
       "should_activate": false,

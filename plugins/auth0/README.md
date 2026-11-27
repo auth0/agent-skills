@@ -56,7 +56,7 @@ gemini extensions install ./plugins/auth0
 
 | Skill | Description | Documentation |
 |-------|-------------|---------------|
-| [auth0](skills/auth0) | Adds Auth0 authentication to any app. Covers 37+ frameworks (React, Next.js, React Router, TanStack Start, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Kotlin Multiplatform, Flutter, Laravel, Go, PHP, .NET MAUI, ASP.NET Core, React Native, Expo, Ionic, and more), MFA, Organizations, Universal Portals for hosted account and organization self-service, Vercel native integration, custom domains, ACUL screen generation, branding, debugging auth errors, security best practices, running a tenant security & configuration audit (CheckMate), a plan-aware tenant health check, and migration from other providers. | [SKILL.md](skills/auth0/SKILL.md) |
+| [auth0](skills/auth0) | Adds Auth0 authentication to any app. Covers 37+ frameworks (React, Next.js, React Router, TanStack Start, Vue, Angular, Express, Flask, FastAPI, Spring Boot, Swift, Android, Kotlin Multiplatform, Flutter, Laravel, Go, PHP, .NET MAUI, ASP.NET Core, React Native, Expo, Ionic, and more), MFA, Organizations, Universal Portals for hosted account and organization self-service, Forms with their Flows and vault connections (including rendering a form from an Action), Vercel native integration, custom domains, ACUL screen generation, branding, debugging auth errors, security best practices, running a tenant security & configuration audit (CheckMate), a plan-aware tenant health check, and migration from other providers. | [SKILL.md](skills/auth0/SKILL.md) |
 
 ## Forcing the skill with `/auth0`
 
