@@ -113,7 +113,8 @@ If `tenants list` returns empty / 401, authenticate. There are two ways:
 - **As a user** (recommended for personal/interactive machines) — device authorization flow, run `auth0 login`. **Cannot** be used for private cloud tenants.
 - **As a machine** (recommended for servers, CI, or private cloud tenants) — client credentials flow:
   ```bash
-  auth0 login --domain <domain> --client-id <client-id> --client-secret <client-secret>
+  # the developer exports AUTH0_CLIENT_SECRET in their own shell; never paste it into chat
+  auth0 login --domain <domain> --client-id <client-id> --client-secret "$AUTH0_CLIENT_SECRET"
   # or, with a private key instead of a secret:
   auth0 login --domain <domain> --client-id <client-id> --client-assertion-private-key <path-to-private-key> --client-assertion-signing-alg <signing-algorithm>
   ```
