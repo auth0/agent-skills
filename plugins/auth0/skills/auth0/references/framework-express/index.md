@@ -45,10 +45,19 @@ Generate secret: `openssl rand -hex 32`
 
 ### 3. Configure Auth Middleware
 
-Update your Express app (`app.js` or `index.js`):
+Update your Express app (`app.js` or `index.js`). Read every credential **only** from
+`process.env` — never write `process.env.CLIENT_SECRET || '<value>'` (or any literal default) for
+`secret`, `clientID`, `clientSecret`, or `issuerBaseURL`: the literal ends up in source control.
+Values the developer gives you go in `.env`, not in code. Fail fast instead when one is missing:
 
 ```javascript
 require('dotenv').config();
+
+// Fail fast on missing config — no literal fallbacks in source.
+for (const name of ['SECRET', 'BASE_URL', 'CLIENT_ID', 'ISSUER_BASE_URL', 'CLIENT_SECRET']) {
+  if (!process.env[name]) throw new Error(`Missing ${name} - set it in .env`);
+}
+
 const express = require('express');
 const { auth, requiresAuth } = require('express-openid-connect');
 
@@ -127,6 +136,7 @@ Visit `http://localhost:3000` and test the login flow.
 | Setting authRequired: true globally | Set to false and use `requiresAuth()` middleware on specific routes |
 | App created as SPA type in Auth0 | Must be Regular Web Application type for server-side auth |
 | Session secret exposed in code | Always use environment variables, never hardcode secrets |
+| Credential as an env fallback (`process.env.CLIENT_SECRET \|\| 'abc123'`) | Still a hardcoded secret. Use plain `process.env.X` and throw at startup when it's unset; put the real values in `.env` |
 | Wrong baseURL for production | Update BASE_URL to match your production domain |
 | Not handling logout returnTo | Add your domain to Allowed Logout URLs in Auth0 Dashboard |
 
