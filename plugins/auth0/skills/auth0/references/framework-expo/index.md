@@ -73,6 +73,21 @@ Do **not** hand-edit `ios/` or `android/` native files — the config plugin gen
 npx expo install react-native-auth0
 ```
 
+The examples below need react-native-auth0 5.3.0 or later, the first release that exports
+`WebAuthErrorCodes` and `CredentialsManagerErrorCodes`. Pick the major version from the project's Expo SDK:
+react-native-auth0 6.x needs Expo SDK 55 or later; on Expo SDK 53–54, install the 5.x line instead
+(`npx expo install react-native-auth0@^5.3.0`).
+
+6.x also needs Android `minSdk` 26, JDK 17 and an iOS deployment target of 15.1. Expo SDK 55 already targets iOS
+15.1 but defaults to `minSdk` 24, so raise it with `expo-build-properties` (`npx expo install expo-build-properties`)
+in `app.json`, and build Android with JDK 17:
+
+```json
+["expo-build-properties", { "android": { "minSdkVersion": 26 }, "ios": { "deploymentTarget": "15.1" } }]
+```
+
+These are minimums: if the project already sets a higher `minSdkVersion` or `deploymentTarget`, keep its value.
+
 Create `.env` for the values your JavaScript reads. Expo inlines `EXPO_PUBLIC_*` variables at build
 time, so no extra config is needed:
 
@@ -130,21 +145,72 @@ Wrap your app with `Auth0Provider` and use the `useAuth0` hook:
 
 ```typescript
 import React from 'react';
-import { Auth0Provider, useAuth0 } from 'react-native-auth0';
+import {
+  Auth0Provider,
+  useAuth0,
+  WebAuthError,
+  WebAuthErrorCodes,
+  CredentialsManagerError,
+  CredentialsManagerErrorCodes,
+} from 'react-native-auth0';
 import { View, Button, Text, ActivityIndicator } from 'react-native';
 
-function HomeScreen() {
-  const { authorize, clearSession, user, isLoading, error } = useAuth0();
+// Credentials Manager errors that mean the session is gone and the user must log in again
+const REAUTH_ERRORS: string[] = [
+  CredentialsManagerErrorCodes.NO_CREDENTIALS,
+  CredentialsManagerErrorCodes.NO_REFRESH_TOKEN,
+  CredentialsManagerErrorCodes.RENEW_FAILED,
+  'SESSION_EXPIRED', // SDK 5.11+: the upstream session expired
+  'DPOP_NOT_CONFIGURED', // SDK 6+: DPoP-bound credentials saved by a 5.x app, read with useDPoP off
+  'DPOP_KEY_MISSING', // the DPoP key is gone from the keystore/keychain
+  'DPOP_KEY_MISMATCH', // the DPoP key no longer matches the saved credentials
+];
 
-  const login = async () => {
+const API_URL = 'https://api.example.com/data'; // an endpoint of your API
+const API_AUDIENCE = 'https://api.example.com'; // your API's Identifier in the Auth0 Dashboard
+
+function HomeScreen() {
+  const { authorize, clearSession, clearCredentials, getCredentials, getDPoPHeaders, user, isLoading, error } = useAuth0();
+
+  // Returns true once the user is logged in, false if they cancelled or login failed
+  const login = async (): Promise<boolean> => {
     try {
       await authorize(
-        { scope: 'openid profile email' },
+        // audience: an access token for your API; offline_access: a refresh token, so getCredentials() can renew silently
+        { audience: API_AUDIENCE, scope: 'openid profile email offline_access read:data' },
         { customScheme: 'YOUR_CUSTOM_SCHEME' }
       );
+      return true;
     } catch (e) {
-      console.error('Login error:', e);
+      // Handle Auth0's typed errors, not a generic catch-all (see Error Handling below)
+      if (!(e instanceof WebAuthError && e.type === WebAuthErrorCodes.USER_CANCELLED)) {
+        console.error('Login error:', e);
+      }
+      return false;
     }
+  };
+
+  // Tokens come from the SDK's secure credential store, never from your own storage
+  const callApi = async () => {
+    let credentials;
+    try {
+      credentials = await getCredentials();
+    } catch (e) {
+      // Re-authenticate only for session errors; network, biometric and other errors propagate
+      if (!(e instanceof CredentialsManagerError) || !REAUTH_ERRORS.includes(e.type)) throw e;
+      await clearCredentials(); // drop the unusable stored credentials before logging in again
+      if (!(await login())) return; // cancelled or failed: don't call the API without a session
+      credentials = await getCredentials(); // then retry the request with the new session
+    }
+    // The token is DPoP-bound with useDPoP on (default in 5.x, opt-in in 6.x) and Bearer otherwise,
+    // so build the headers from the token type instead of hardcoding Bearer
+    const headers = await getDPoPHeaders({
+      url: API_URL,
+      method: 'GET',
+      accessToken: credentials.accessToken,
+      tokenType: credentials.tokenType,
+    });
+    return fetch(API_URL, { headers });
   };
 
   const logout = async () => {
@@ -186,6 +252,10 @@ export default function App() {
   );
 }
 ```
+
+Silent renewal needs a refresh token: enable **Allow Offline Access** on the API and keep the **Refresh Token** grant
+on the application in the Auth0 Dashboard. Without them, `offline_access` returns no refresh token and the user has
+to log in again whenever the access token expires.
 
 ### 7. Verify
 
@@ -294,7 +364,7 @@ read `.d.ts` files, the SDK README, or anything else under `node_modules/` to co
 | `clientId` | `string` | Yes | Auth0 application Client ID |
 | `localAuthenticationOptions` | `LocalAuthenticationOptions` | No | Biometric authentication configuration |
 | `maxRetries` | `number` | No | Credential renewal retry count (iOS only, default: 0) |
-| `useDPoP` | `boolean` | No | Enable DPoP token binding (default: true) |
+| `useDPoP` | `boolean` | No | Enable DPoP token binding (default: `false` in 6.x, `true` in 5.x) |
 | `headers` | `Record<string, string>` | No | Custom headers for all API requests |
 
 ### authorize() Options
@@ -448,7 +518,7 @@ Custom URL schemes can be subject to [client impersonation attacks](https://data
 - Use `getCredentials()` to access tokens — it auto-refreshes expired tokens
 - Request `offline_access` scope for refresh token support
 - Do not store tokens in React state — use `getCredentials()` on demand
-- Enable DPoP for enhanced token security (enabled by default)
+- Enable DPoP for enhanced token security (`useDPoP: true`; on by default only in 5.x)
 
 ### Network Security
 
@@ -737,13 +807,14 @@ DPoP cryptographically binds tokens to a client-specific key pair, preventing to
 
 ### Enable DPoP
 
-DPoP is enabled by default in react-native-auth0:
+DPoP is opt-in from react-native-auth0 6.0 (5.x enables it by default). Turn it on for the application in the
+Auth0 Dashboard, then set it on the provider:
 
 ```typescript
 <Auth0Provider
   domain={process.env.EXPO_PUBLIC_AUTH0_DOMAIN!}
   clientId={process.env.EXPO_PUBLIC_AUTH0_CLIENT_ID!}
-  // DPoP is enabled by default (useDPoP: true)
+  useDPoP={true}
 >
   <App />
 </Auth0Provider>
@@ -771,6 +842,10 @@ const callApi = async () => {
 ```
 
 ### Handle DPoP Token Migration
+
+Upgrading from 5.x, where DPoP was on by default: credentials saved by the 5.x app are DPoP-bound. Keep
+`useDPoP={true}` to keep those sessions, or leave it off and log the user in again when `getCredentials()` fails with
+`DPOP_NOT_CONFIGURED` (the quick-start `callApi` does this). To move users onto DPoP instead:
 
 ```typescript
 const { getCredentials, clearSession, authorize } = useAuth0();
