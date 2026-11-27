@@ -213,6 +213,41 @@
       "expect_refs": ["feature-token-vault/index.md", "tooling-cli/index.md", "framework-nextjs/index.md"]
     },
     {
+      "id": "integrate-ai-mcp-python",
+      "intent": "integrate",
+      "framework": "ai-mcp-python",
+      "tooling": "cli",
+      "expect_refs": ["framework-ai-mcp-python/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-mcp-on-behalf-of-standalone",
+      "intent": "feature:mcp-on-behalf-of",
+      "framework": null,
+      "tooling": "cli",
+      "expect_refs": ["feature-mcp-on-behalf-of/index.md", "tooling-cli/index.md"]
+    },
+    {
+      "id": "feature-mcp-on-behalf-of-ai-mcp-python-combo",
+      "intent": "feature:mcp-on-behalf-of",
+      "framework": "ai-mcp-python",
+      "tooling": "cli",
+      "expect_refs": ["feature-mcp-on-behalf-of/index.md", "tooling-cli/index.md", "framework-ai-mcp-python/index.md"]
+    },
+    {
+      "id": "feature-mcp-token-caching-ai-mcp-python-combo",
+      "intent": "feature:mcp-token-caching",
+      "framework": "ai-mcp-python",
+      "tooling": "cli",
+      "expect_refs": ["feature-mcp-token-caching/index.md", "tooling-cli/index.md", "framework-ai-mcp-python/index.md"]
+    },
+    {
+      "id": "debug-ai-mcp-python",
+      "intent": "debug",
+      "framework": "ai-mcp-python",
+      "tooling": "cli",
+      "expect_refs": ["pattern-common-errors/index.md", "pattern-mcp-common-errors/index.md", "framework-ai-mcp-python/index.md"]
+    },
+    {
       "id": "guidance-token-handling",
       "intent": "guidance",
       "framework": null,
